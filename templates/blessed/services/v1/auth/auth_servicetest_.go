@@ -8,15 +8,15 @@ import (
 )
 
 func authServiceTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID(constants.LoggerVarName).Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
 				jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
@@ -46,7 +46,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -66,7 +66,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("cfg"),
 					jen.ID("auth"),
 					jen.ID("userDB"),
@@ -89,7 +89,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
 					jen.ID("auth"),
 					jen.ID("userDB"),
@@ -103,5 +103,5 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

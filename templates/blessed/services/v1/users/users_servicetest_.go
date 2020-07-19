@@ -8,11 +8,11 @@ import (
 )
 
 func usersServiceTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("users")
+	code := jen.NewFile("users")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -21,7 +21,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 				jen.Lit("GetAllUserCount"),
-				jen.Qual(utils.MockPkg, "Anything"),
+				jen.Qual(constants.MockPkg, "Anything"),
 			).Dot("Return").Call(jen.ID("expectedUserCount"), jen.Nil()),
 			jen.Line(),
 			jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -34,7 +34,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 				jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
-				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -50,7 +50,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideUsersService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -66,7 +66,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 					jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -116,7 +116,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 					jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -129,5 +129,5 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

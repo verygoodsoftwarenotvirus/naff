@@ -32,16 +32,16 @@ func Test_buildIterableAPIRoutesBlock(T *testing.T) {
 			DataTypes: []models.DataType{apple, banana, cherry},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildIterableAPIRoutes(proj),
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts

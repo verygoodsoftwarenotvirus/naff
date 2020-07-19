@@ -8,11 +8,11 @@ import (
 )
 
 func actionsDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("main")
+	code := jen.NewFile("main")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrUnavailableYet is a sentinel error value."),
 			jen.ID("ErrUnavailableYet").Equals().Qual("errors", "New").Call(jen.Lit("can't do this yet")),
@@ -20,7 +20,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("actionFunc represents a thing you can do."),
 			jen.ID("actionFunc").Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()),
@@ -101,7 +101,7 @@ func actionsDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("RandomAction takes a client and returns a closure which is an action."),
 		jen.Line(),
 		jen.Func().ID("RandomAction").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().ID("Action")).Block(
@@ -110,5 +110,5 @@ func actionsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

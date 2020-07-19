@@ -98,7 +98,7 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	//if typ.BelongsToUser {
 	//	interfaceMethods = append(interfaceMethods,
 	//		jen.IDf("GetAll%sForUser", pn).Params(
-	//			utils.CtxParam(), jen.ID("userID").Uint64(),
+	//			utils.CtxParam(), constants.UserIDParam(),
 	//		).Params(jen.Index().ID(sn), jen.Error()))
 	//}
 	//if typ.BelongsToStruct != nil {
@@ -116,9 +116,9 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 }
 
 func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()
@@ -128,7 +128,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	hf := jen.Qual("net/http", "HandlerFunc")
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Commentf("%s represents %s.", sn, cnwp),
 			jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
@@ -164,7 +164,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
@@ -184,14 +184,14 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		return jen.Return(jen.AddressOf().IDf("%sUpdateInput", sn).Valuesln(lines...))
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s.", sn, cnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(jen.PointerTo().IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }
 
 func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {

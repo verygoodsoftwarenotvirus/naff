@@ -78,13 +78,13 @@ func statsDotInt64(varName, name, description string) jen.Code {
 }
 
 func runtimeDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("metrics")
+	code := jen.NewFile("metrics")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Comment("inspired by:")
-	ret.Comment("https://github.com/opencensus-integrations/caddy/blob/c8498719b7c1c2a3c707355be2395a35f03e434e/caddy/caddymain/exporters.go#L54-L110")
-	ret.Line()
+	code.Comment("inspired by:")
+	code.Comment("https://github.com/opencensus-integrations/caddy/blob/c8498719b7c1c2a3c707355be2395a35f03e434e/caddy/caddymain/exporters.go#L54-L110")
+	code.Line()
 
 	var (
 		defs []jen.Code
@@ -134,12 +134,12 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		jen.ID("DefaultRuntimeViews").Equals().Index().PointerTo().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(defs...),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("RegisterDefaultViews registers default runtime views."),
 		jen.Line(),
 		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Block(
@@ -148,7 +148,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("RecordRuntimeStats records runtime statistics at the provided interval."),
 		jen.Line(),
 		jen.Comment("Returns a stop function and an error."),
@@ -222,7 +222,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }
 
 var (

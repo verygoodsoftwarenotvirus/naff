@@ -11,18 +11,18 @@ import (
 func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("usersTableName").Equals().Lit("users"),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.ID("usersTableColumns").Equals().Index().String().Valuesln(
 				utils.FormatString("%s.id", jen.ID("usersTableName")),
@@ -39,24 +39,24 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 		jen.Line(),
 	)
 
-	ret.Add(buildScanUser(proj, dbvendor)...)
-	ret.Add(buildScanUsers(proj, dbvendor)...)
-	ret.Add(buildBuildGetUserQuery(proj, dbvendor)...)
-	ret.Add(buildGetUser(proj, dbvendor)...)
-	ret.Add(buildBuildGetUserByUsernameQuery(proj, dbvendor)...)
-	ret.Add(buildGetUserByUsername(proj, dbvendor)...)
-	ret.Add(buildBuildGetAllUsersCountQuery(proj, dbvendor)...)
-	ret.Add(buildGetAllUserCount(proj, dbvendor)...)
-	ret.Add(buildBuildGetUsersQuery(proj, dbvendor)...)
-	ret.Add(buildGetUsers(proj, dbvendor)...)
-	ret.Add(buildBuildCreateUserQuery(proj, dbvendor)...)
-	ret.Add(buildCreateUser(proj, dbvendor)...)
-	ret.Add(buildBuildUpdateUserQuery(proj, dbvendor)...)
-	ret.Add(buildUpdateUser(proj, dbvendor)...)
-	ret.Add(buildBuildArchiveUserQuery(proj, dbvendor)...)
-	ret.Add(buildArchiveUser(proj, dbvendor)...)
+	code.Add(buildScanUser(proj, dbvendor)...)
+	code.Add(buildScanUsers(proj, dbvendor)...)
+	code.Add(buildBuildGetUserQuery(proj, dbvendor)...)
+	code.Add(buildGetUser(proj, dbvendor)...)
+	code.Add(buildBuildGetUserByUsernameQuery(proj, dbvendor)...)
+	code.Add(buildGetUserByUsername(proj, dbvendor)...)
+	code.Add(buildBuildGetAllUsersCountQuery(proj, dbvendor)...)
+	code.Add(buildGetAllUserCount(proj, dbvendor)...)
+	code.Add(buildBuildGetUsersQuery(proj, dbvendor)...)
+	code.Add(buildGetUsers(proj, dbvendor)...)
+	code.Add(buildBuildCreateUserQuery(proj, dbvendor)...)
+	code.Add(buildCreateUser(proj, dbvendor)...)
+	code.Add(buildBuildUpdateUserQuery(proj, dbvendor)...)
+	code.Add(buildUpdateUser(proj, dbvendor)...)
+	code.Add(buildBuildArchiveUserQuery(proj, dbvendor)...)
+	code.Add(buildArchiveUser(proj, dbvendor)...)
 
-	return ret
+	return code
 }
 
 func buildScanUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -166,14 +166,14 @@ func buildBuildGetUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	lines := []jen.Code{
 		jen.Comment("buildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetUserQuery").Params(jen.ID("userID").Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetUserQuery").Params(constants.UserIDParam()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.ID("usersTableColumns").Spread()).
 				Dotln("From").Call(jen.ID("usersTableName")).
 				Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-				utils.FormatString("%s.id", jen.ID("usersTableName")).MapAssign().ID("userID"))).
+				utils.FormatString("%s.id", jen.ID("usersTableName")).MapAssign().ID(constants.UserIDVarName))).
 				Dotln("ToSql").Call(),
 			jen.Line(),
 			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
@@ -193,8 +193,8 @@ func buildGetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.C
 	lines := []jen.Code{
 		jen.Comment("GetUser fetches a user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID("userID")),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetUserQuery").Call(jen.ID(constants.UserIDVarName)),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
 			jen.List(jen.ID("u"), jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("scanUser").Call(jen.ID("row"), jen.False()),
@@ -619,7 +619,7 @@ func buildBuildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 			Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-			jen.Lit("id").MapAssign().ID("userID")))
+			jen.Lit("id").MapAssign().ID(constants.UserIDVarName)))
 
 		if isPostgres(dbvendor) {
 			q.Dotln("Suffix").Call(jen.Lit("RETURNING archived_on"))
@@ -630,7 +630,7 @@ func buildBuildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 	}
 
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildArchiveUserQuery").Params(jen.ID("userID").Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildArchiveUserQuery").Params(constants.UserIDParam()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			buildArchiveUserQueryQuery(),
@@ -652,8 +652,8 @@ func buildArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 	lines := []jen.Code{
 		jen.Comment("ArchiveUser archives a user by their username."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
-			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID("userID")),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()).Block(
+			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveUserQuery").Call(jen.ID(constants.UserIDVarName)),
 			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Return().Err(),
 		),

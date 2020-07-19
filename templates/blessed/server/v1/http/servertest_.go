@@ -10,9 +10,9 @@ import (
 )
 
 func serverTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("httpserver")
+	code := jen.NewFile("httpserver")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	buildServerLines := func() []jen.Code {
 		lines := []jen.Code{
@@ -21,9 +21,9 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
 			jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 			jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
-			jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("frontendService").MapAssign().Qual(proj.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
-				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values(),
 			),
 			jen.ID("webhooksService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataServer").Values(),
@@ -45,7 +45,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Block(
 			jen.ID("s").Assign().AddressOf().ID("Server").Valuesln(
 				buildServerLines()...,
@@ -77,7 +77,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 			jen.AddressOf().Qual(proj.ServiceV1UsersPackage(), "Service").Values(),
 			jen.AddressOf().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
 			jen.AddressOf().Qual(proj.ServiceV1WebhooksPackage(), "Service").Values(),
-			jen.ID("mockDB"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("mockDB"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 		)
 
@@ -90,7 +90,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 		return args
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -102,7 +102,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("WebhookList")),
 					jen.Nil(),
@@ -126,7 +126,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("WebhookList")),
 					jen.Nil(),
@@ -148,7 +148,7 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
 					constants.ObligatoryError(),
@@ -167,5 +167,5 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

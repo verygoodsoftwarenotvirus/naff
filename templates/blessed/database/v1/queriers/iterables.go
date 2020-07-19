@@ -73,41 +73,41 @@ func buildIterableVariableDecs(proj *models.Project, typ models.DataType) []jen.
 func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(jen.Const().Defs(buildIterableConstants(typ)...), jen.Line())
-	ret.Add(buildIterableVariableDecs(proj, typ)...)
-	ret.Add(buildScanSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildScanListOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildSomethingExistsFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
-	//ret.Add(buildGetSomethingCountQueryFuncDecl(proj, dbvendor, typ)...)
-	//ret.Add(buildGetSomethingCountFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
-	ret.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
-	ret.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(jen.Const().Defs(buildIterableConstants(typ)...), jen.Line())
+	code.Add(buildIterableVariableDecs(proj, typ)...)
+	code.Add(buildScanSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildScanListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildSomethingExistsFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
+	//code.Add(buildGetSomethingCountQueryFuncDecl(proj, dbvendor, typ)...)
+	//code.Add(buildGetSomethingCountFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
+	code.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
 
 	//if typ.BelongsToUser {
-	//	ret.Add(buildGetAllSomethingForUserFuncDecl(proj, dbvendor, typ)...)
+	//	code.Add(buildGetAllSomethingForUserFuncDecl(proj, dbvendor, typ)...)
 	//}
 
 	//if typ.BelongsToStruct != nil {
-	//	ret.Add(buildGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
+	//	code.Add(buildGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
 	//}
 
-	ret.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
 
-	return ret
+	return code
 }
 
 func buildTableColumns(proj *models.Project, typ models.DataType) []jen.Code {
@@ -863,7 +863,7 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 			} else {
 				comment += "a given user "
 			}
-			vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID("userID"))
+			vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID(constants.UserIDVarName))
 		}
 	}
 	comment += "as archived."

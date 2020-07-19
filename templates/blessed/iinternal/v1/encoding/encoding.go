@@ -8,11 +8,11 @@ import (
 )
 
 func encodingDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("encoding")
+	code := jen.NewFile("encoding")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("ContentTypeHeader is the HTTP standard header name for content type."),
 			jen.ID("ContentTypeHeader").Equals().Lit("Content-type"),
@@ -26,17 +26,17 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers provides ResponseEncoders for dependency injection."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				jen.ID("ProvideResponseEncoder"),
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("EncoderDecoder is an interface that allows for multiple implementations of HTTP response formats."),
 			jen.ID("EncoderDecoder").Interface(
@@ -58,7 +58,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("EncodeResponse encodes responses."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
@@ -79,7 +79,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("DecodeRequest decodes responses."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
@@ -103,7 +103,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideResponseEncoder provides a jsonResponseEncoder."),
 		jen.Line(),
 		jen.Func().ID("ProvideResponseEncoder").Params().Params(jen.ID("EncoderDecoder")).Block(
@@ -112,5 +112,5 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

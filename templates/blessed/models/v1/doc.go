@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	ret.PackageComment("Package models provides the core data models for the service\n")
+	code.PackageComment("Package models provides the core data models for the service\n")
 
-	return ret
+	return code
 }

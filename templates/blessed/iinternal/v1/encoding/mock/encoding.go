@@ -8,23 +8,23 @@ import (
 )
 
 func encodingDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("mock")
+	code := jen.NewFile("mock")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual(proj.InternalEncodingV1Package(), "EncoderDecoder").Equals().Parens(jen.PointerTo().ID("EncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("EncoderDecoder is a mock EncoderDecoder."),
 		jen.Line(),
-		jen.Type().ID("EncoderDecoder").Struct(jen.Qual(utils.MockPkg, "Mock")),
+		jen.Type().ID("EncoderDecoder").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("EncodeResponse satisfies our EncoderDecoder interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("EncoderDecoder")).ID("EncodeResponse").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
@@ -33,7 +33,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("DecodeRequest satisfies our EncoderDecoder interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("EncoderDecoder")).ID("DecodeRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
@@ -42,5 +42,5 @@ func encodingDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

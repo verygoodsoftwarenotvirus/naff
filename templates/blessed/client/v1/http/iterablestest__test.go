@@ -18,14 +18,14 @@ func Test_buildTestV1Client_BuildGetSomethingRequest(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildGetSomethingRequest(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -76,14 +76,14 @@ func Test_buildTestV1Client_GetSomething(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_GetSomething(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -151,14 +151,14 @@ func Test_buildTestV1Client_BuildGetListOfSomethingRequest(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildGetListOfSomethingRequest(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -213,14 +213,14 @@ func Test_buildTestV1Client_GetListOfSomething(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_GetListOfSomething(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -292,14 +292,14 @@ func Test_buildTestV1Client_BuildCreateSomethingRequest(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildCreateSomethingRequest(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -383,20 +383,20 @@ func Test_buildTestV1Client_CreateSomething(T *testing.T) {
 		//	DataTypes: []models.DataType{a, b, c},
 		//}
 		//
-		//ret := jen.NewFile("farts")
+		//code := jen.NewFile("farts")
 		//
-		//ret.Add(
+		//code.Add(
 		//	buildTestV1Client_CreateSomething(proj, c)...,
 		//)
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_CreateSomething(todoProj, item)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -471,14 +471,14 @@ func Test_buildTestV1Client_BuildUpdateSomethingRequest(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildUpdateSomethingRequest(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -531,14 +531,14 @@ func TestV1Client_BuildUpdateChildRequest(T *testing.T) {
 			DataTypes: []models.DataType{a, b},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildUpdateSomethingRequest(proj, b)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -587,14 +587,14 @@ func TestV1Client_BuildUpdateParentRequest(T *testing.T) {
 			DataTypes: []models.DataType{a},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildUpdateSomethingRequest(proj, a)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -643,14 +643,14 @@ func Test_buildTestV1Client_UpdateSomething(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_UpdateSomething(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -712,14 +712,14 @@ func Test_buildTestV1Client_BuildArchiveSomethingRequest(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_BuildArchiveSomethingRequest(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -781,14 +781,14 @@ func Test_buildTestV1Client_ArchiveSomething(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildTestV1Client_ArchiveSomething(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts

@@ -8,11 +8,11 @@ import (
 )
 
 func webhooksTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("integration")
+	code := jen.NewFile("integration")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -26,7 +26,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("reverse").Params(jen.ID("s").String()).Params(jen.String()).Block(
 			jen.ID("runes").Assign().Index().ID("rune").Call(jen.ID("s")),
 			jen.For(jen.List(jen.ID("i"), jen.ID("j")).Assign().List(jen.Zero(), jen.Len(jen.ID("runes")).Minus().One()), jen.ID("i").LessThan().ID("j"), jen.List(jen.ID("i"), jen.ID("j")).Equals().List(jen.ID("i").Plus().One(), jen.ID("j").Minus().One())).Block(
@@ -37,7 +37,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestWebhooks").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
@@ -235,5 +235,5 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

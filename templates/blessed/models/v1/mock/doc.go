@@ -5,10 +5,10 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("mock")
+	code := jen.NewFile("mock")
 
-	ret.PackageComment(`Package mock provides mockable implementations of every interface
+	code.PackageComment(`Package mock provides mockable implementations of every interface
 defined in the outer models package`)
 
-	return ret
+	return code
 }

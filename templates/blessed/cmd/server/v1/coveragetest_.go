@@ -7,15 +7,15 @@ import (
 )
 
 func coverageTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("main")
+	code := jen.NewFile("main")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(jen.Null(),
+	code.Add(jen.Null(),
 
 		jen.Line(),
 	)
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestRunMain").Params(jen.Underscore().PointerTo().Qual("testing", "T")).Block(
 			jen.Comment("This test is built specifically to capture the coverage that the integration"),
 			jen.Comment("tests exhibit. We run the main function (i.e. a production server)"),
@@ -33,5 +33,5 @@ func coverageTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

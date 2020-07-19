@@ -2,14 +2,15 @@ package config
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func wireDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("config")
+	code := jen.NewFile("config")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	searchEnabled := false
 	for _, typ := range proj.DataTypes {
@@ -18,13 +19,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 		}
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		jen.Comment("BEGIN it'd be neat if wire could do this for me one day."),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideConfigServerSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -37,7 +38,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideConfigAuthSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -50,7 +51,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideConfigDatabaseSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -63,7 +64,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideConfigFrontendSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -77,7 +78,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	if searchEnabled {
-		ret.Add(
+		code.Add(
 			jen.Comment("ProvideSearchSettings is an obligatory function that"),
 			jen.Line(),
 			jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -91,16 +92,16 @@ func wireDotGo(proj *models.Project) *jen.File {
 		)
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		jen.Comment("END it'd be neat if wire could do this for me one day."),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers represents this package's offering to the dependency manager."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				jen.ID("ProvideConfigServerSettings"),
 				jen.ID("ProvideConfigAuthSettings"),
 				jen.ID("ProvideConfigDatabaseSettings"),
@@ -117,5 +118,5 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

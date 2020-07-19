@@ -8,11 +8,11 @@ import (
 )
 
 func middlewareDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("webhooks")
+	code := jen.NewFile("webhooks")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("CreationInputMiddleware is a middleware for fetching, parsing, and attaching a parsed WebhookCreationInput struct from a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -34,7 +34,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("UpdateInputMiddleware is a middleware for fetching, parsing, and attaching a parsed WebhookCreationInput struct from a request."),
 		jen.Line(),
 		jen.Comment("This is the same as the creation one, but it won't always be."),
@@ -58,5 +58,5 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

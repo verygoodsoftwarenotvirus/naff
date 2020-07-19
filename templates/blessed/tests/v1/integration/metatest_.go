@@ -7,11 +7,11 @@ import (
 )
 
 func metaTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("integration")
+	code := jen.NewFile("integration")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestHoldOnForever").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -23,7 +23,7 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("checkValueAndError").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("i").Interface(), jen.Err().Error()).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -33,5 +33,5 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

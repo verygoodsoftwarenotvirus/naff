@@ -8,11 +8,11 @@ import (
 )
 
 func httpRoutesDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("users")
+	code := jen.NewFile("users")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("URIParamKey is used to refer to user IDs in router params."),
 			jen.ID("URIParamKey").Equals().Lit("userID"),
@@ -20,7 +20,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("this function tests that we have appropriate access to crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
@@ -32,7 +32,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -49,23 +49,23 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("validateCredentialChangeRequest takes a user's credentials and determines"),
 		jen.Line(),
 		jen.Comment("if they match what is on record."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("validateCredentialChangeRequest").Paramsln(
 			constants.CtxParam(),
-			jen.ID("userID").Uint64(),
+			constants.UserIDParam(),
 			jen.Listln(jen.ID("password"), jen.ID("totpToken")).String(),
 		).Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.ID("httpStatus").ID("int")).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("validateCredentialChangeRequest")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 			jen.Line(),
 			jen.Comment("fetch user data."),
-			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
+			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
 			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("net/http", "StatusNotFound")),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -96,7 +96,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ListHandler is a handler for responding with a list of users."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -126,7 +126,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("CreateHandler is our user creation route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -174,7 +174,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.ID("TwoFactorSecret").MapAssign().EmptyString(),
 				),
 				jen.Line(),
-				jen.Comment("generate a two factor secret."),
+				jen.Comment("generate a two factor seccode."),
 				jen.List(jen.ID("input").Dot("TwoFactorSecret"), jen.Err()).Equals().ID("randString").Call(),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error generating TOTP secret")),
@@ -228,8 +228,8 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Comment("buildQRCode builds a QR code for a given username and secret."),
+	code.Add(
+		jen.Comment("buildQRCode builds a QR code for a given username and seccode."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildQRCode").Params(constants.CtxParam(), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).String()).Params(jen.String()).Block(
 			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("buildQRCode")),
@@ -273,7 +273,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ReadHandler is our read route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -284,14 +284,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				jen.Comment("figure out who this is all for."),
-				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("document it for posterity."),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("fetch user data."),
-				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
+				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no such user")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
@@ -311,7 +311,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("NewTOTPSecretHandler fetches a user, and issues them a new TOTP secret, after validating"),
 		jen.Line(),
 		jen.Comment("that information received from TOTPSecretRefreshInputContextMiddleware is valid."),
@@ -334,7 +334,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("also check for the user's ID."),
-				jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()),
+				jen.List(jen.ID(constants.UserIDVarName), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()),
 				jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user ID attached to TOTP secret refresh request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
@@ -344,7 +344,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Comment("make sure this is all on the up-and-up"),
 				jen.List(jen.ID("user"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					constants.CtxVar(),
-					jen.ID("userID"),
+					jen.ID(constants.UserIDVarName),
 					jen.ID("input").Dot("CurrentPassword"),
 					jen.ID("input").Dot("TOTPToken"),
 				),
@@ -356,11 +356,11 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("document who this is for."),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
 				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user"), jen.ID("user").Dot("ID")),
 				jen.Line(),
-				jen.Comment("set the two factor secret."),
+				jen.Comment("set the two factor seccode."),
 				jen.List(jen.ID("tfs"), jen.Err()).Assign().ID("randString").Call(),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered generating random TOTP string")),
@@ -386,7 +386,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("UpdatePasswordHandler updates a user's password, after validating that information received"),
 		jen.Line(),
 		jen.Comment("from PasswordUpdateInputContextMiddleware is valid."),
@@ -407,20 +407,20 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Comment("check request context for user ID."),
-				jen.List(jen.ID("userID"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.If(jen.Not().ID("ok")).Block(
+				jen.List(jen.ID(constants.UserIDVarName), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserIDKey")).Assert(jen.Uint64()), jen.If(jen.Not().ID("ok")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user ID attached to UpdatePasswordHandler request")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
 				jen.Comment("determine relevant user ID."),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("make sure everything's on the up-and-up"),
 				jen.List(jen.ID("user"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
 					constants.CtxVar(),
-					jen.ID("userID"),
+					jen.ID(constants.UserIDVarName),
 					jen.ID("input").Dot("CurrentPassword"),
 					jen.ID("input").Dot("TOTPToken"),
 				),
@@ -456,7 +456,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ArchiveHandler is a handler for archiving a user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -467,12 +467,12 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				jen.Comment("figure out who this is for."),
-				jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+				jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("do the deed."),
-				jen.If(jen.Err().Assign().ID("s").Dot("userDataManager").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("userID")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("userDataManager").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)), jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("deleting user from database")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 					jen.Return(),
@@ -482,7 +482,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("userCounter").Dot("Decrement").Call(constants.CtxVar()),
 				jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
 					jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
-					jen.ID("Data").MapAssign().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().ID("userID")),
+					jen.ID("Data").MapAssign().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().ID(constants.UserIDVarName)),
 					jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 				)),
 				jen.Line(),
@@ -493,5 +493,5 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

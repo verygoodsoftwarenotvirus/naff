@@ -8,11 +8,11 @@ import (
 )
 
 func usersTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("dbclient")
+	code := jen.NewFile("dbclient")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -23,7 +23,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
@@ -43,7 +43,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -54,7 +54,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserByUsername"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")), jen.Nil(),
@@ -70,7 +70,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_GetAllUserCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -81,7 +81,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetAllUserCount"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("Count")), jen.Nil(),
 				),
@@ -96,7 +96,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -108,7 +108,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.Line(),
@@ -130,7 +130,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.Line(),
@@ -147,7 +147,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -159,7 +159,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
@@ -176,7 +176,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -188,7 +188,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")),
 				).Dot("Return").Call(
 					jen.ID("expected"),
@@ -203,7 +203,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -214,7 +214,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("ArchiveUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
@@ -227,5 +227,5 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

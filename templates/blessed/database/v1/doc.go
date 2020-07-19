@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("database")
+	code := jen.NewFile("database")
 
-	ret.PackageComment("Package database provides interface abstractions for interacting with relational data stores\n")
+	code.PackageComment("Package database provides interface abstractions for interacting with relational data stores\n")
 
-	return ret
+	return code
 }

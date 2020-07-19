@@ -8,20 +8,20 @@ import (
 )
 
 func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildV1Client_BuildGetOAuth2ClientRequest(proj)...)
-	ret.Add(buildV1Client_GetOAuth2Client(proj)...)
-	ret.Add(buildV1Client_BuildGetOAuth2ClientsRequest()...)
-	ret.Add(buildV1Client_GetOAuth2Clients(proj)...)
-	ret.Add(buildV1Client_BuildCreateOAuth2ClientRequest(proj)...)
-	ret.Add(buildV1Client_CreateOAuth2Client(proj)...)
-	ret.Add(buildV1Client_BuildArchiveOAuth2ClientRequest(proj)...)
-	ret.Add(buildV1Client_ArchiveOAuth2Client(proj)...)
+	code.Add(buildV1Client_BuildGetOAuth2ClientRequest(proj)...)
+	code.Add(buildV1Client_GetOAuth2Client(proj)...)
+	code.Add(buildV1Client_BuildGetOAuth2ClientsRequest()...)
+	code.Add(buildV1Client_GetOAuth2Clients(proj)...)
+	code.Add(buildV1Client_BuildCreateOAuth2ClientRequest(proj)...)
+	code.Add(buildV1Client_CreateOAuth2Client(proj)...)
+	code.Add(buildV1Client_BuildArchiveOAuth2ClientRequest(proj)...)
+	code.Add(buildV1Client_ArchiveOAuth2Client(proj)...)
 
-	return ret
+	return code
 }
 
 func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {

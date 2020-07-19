@@ -194,9 +194,9 @@ func getTimeQuery(dbvendor wordsmith.SuperPalabra) string {
 func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	n := typ.Name
 	sn := n.Singular()
@@ -204,7 +204,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 
 	gFields := buildGeneralFields("x", typ)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("buildMockRowsFrom%s", sn).Params(
 			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		).Params(
@@ -235,7 +235,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 
 	badFields := buildBadFields("x", typ)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(
 			jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn),
 		).Params(
@@ -248,23 +248,23 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 		jen.Line(),
 	)
 
-	ret.Add(buildTestScanListOfThings(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBBuildSomethingExistsQuery(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBSomethingExists(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBBuildGetSomethingQuery(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBGetAllSomethingCount(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestBuildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	ret.Add(buildTestDBArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestScanListOfThings(proj, dbvendor, typ)...)
+	code.Add(buildTestDBBuildSomethingExistsQuery(proj, dbvendor, typ)...)
+	code.Add(buildTestDBSomethingExists(proj, dbvendor, typ)...)
+	code.Add(buildTestDBBuildGetSomethingQuery(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
+	code.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetAllSomethingCount(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestBuildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
 
-	return ret
+	return code
 }
 
 func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {

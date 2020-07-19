@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -11,18 +12,6 @@ import (
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-)
-
-const (
-	CoreOAuth2Pkg      = "golang.org/x/oauth2"
-	LoggingPkg         = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	NoopLoggingPkg     = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	AssertPkg          = "github.com/stretchr/testify/assert"
-	MustAssertPkg      = "github.com/stretchr/testify/require"
-	MockPkg            = "github.com/stretchr/testify/mock"
-	FakeLibrary        = "github.com/brianvoe/gofakeit/v5"
-	TracingLibrary     = "go.opencensus.io/trace"
-	FlagParsingLibrary = "github.com/spf13/pflag"
 )
 
 func AddImports(proj *models.Project, file *jen.File) {
@@ -75,15 +64,15 @@ func AddImports(proj *models.Project, file *jen.File) {
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 
-	file.ImportName(CoreOAuth2Pkg, "oauth2")
-	file.ImportName(LoggingPkg, "logging")
-	file.ImportName(NoopLoggingPkg, "noop")
-	file.ImportName(filepath.Join(LoggingPkg, "zerolog"), "zerolog")
-	file.ImportName(AssertPkg, "assert")
-	file.ImportName(MustAssertPkg, "require")
-	file.ImportName(MockPkg, "mock")
-	file.ImportAlias(FakeLibrary, "fake")
-	file.ImportName(TracingLibrary, "trace")
+	file.ImportName(constants.CoreOAuth2Pkg, "oauth2")
+	file.ImportName(constants.LoggingPkg, "logging")
+	file.ImportName(constants.NoopLoggingPkg, "noop")
+	file.ImportName(filepath.Join(constants.LoggingPkg, "zerolog"), "zerolog")
+	file.ImportName(constants.AssertPkg, "assert")
+	file.ImportName(constants.MustAssertPkg, "require")
+	file.ImportName(constants.MockPkg, "mock")
+	file.ImportAlias(constants.FakeLibrary, "fake")
+	file.ImportName(constants.TracingLibrary, "trace")
 
 	file.ImportName("go.opencensus.io/stats", "stats")
 	file.ImportName("go.opencensus.io/stats/view", "view")

@@ -254,7 +254,7 @@ func AssertExpectationsFor(varNames ...string) jen.Code {
 		callArgs = append(callArgs, jen.ID(name))
 	}
 
-	return jen.Qual(MockPkg, "AssertExpectationsForObjects").Call(callArgs...)
+	return jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(callArgs...)
 }
 
 // RunGoimportsForFile runs the `goimports` binary for a given filename
@@ -336,5 +336,5 @@ func BuildFakeVarWithCustomName(proj *models.Project, varName, funcName string, 
 	if !strings.HasPrefix(funcName, "BuildFake") {
 		funcName = fmt.Sprintf("BuildFake%s", funcName)
 	}
-	return jen.IDf(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
+	return jen.ID(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
 }

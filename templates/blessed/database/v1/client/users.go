@@ -8,11 +8,11 @@ import (
 )
 
 func usersDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("dbclient")
+	code := jen.NewFile("dbclient")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "UserDataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 			jen.Line(),
@@ -22,25 +22,25 @@ func usersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetUser fetches a user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		),
 			jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("GetUser called")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)).Dot("Debug").Call(jen.Lit("GetUser called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetUser").Call(constants.CtxVar(), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("GetUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetUserByUsername fetches a user by their username."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
@@ -55,7 +55,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetAllUserCount fetches a count of users from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllUserCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
@@ -69,7 +69,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"), jen.Error()).Block(
@@ -84,7 +84,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("CreateUser creates a user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("CreateUser").Params(
@@ -105,7 +105,7 @@ func usersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("UpdateUser receives a complete User struct and updates its record in the database."),
 		jen.Line(),
 		jen.Comment("NOTE: this function uses the ID provided in the input to make its query."),
@@ -122,20 +122,20 @@ func usersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ArchiveUser archives a user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveUser").Params(constants.CtxParam(), jen.ID("userID").Uint64()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ArchiveUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")).Dot("Debug").Call(jen.Lit("ArchiveUser called")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)).Dot("Debug").Call(jen.Lit("ArchiveUser called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("userID")),
+			jen.Return().ID("c").Dot("querier").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
 		),
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

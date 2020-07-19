@@ -8,11 +8,11 @@ import (
 )
 
 func usersTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("integration")
+	code := jen.NewFile("integration")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -22,7 +22,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -39,7 +39,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildDummyUser").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
@@ -75,7 +75,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("checkUserCreationEquality").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
@@ -97,7 +97,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("checkUserEquality").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
@@ -118,7 +118,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
@@ -247,5 +247,5 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

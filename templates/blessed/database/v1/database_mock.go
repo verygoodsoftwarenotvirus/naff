@@ -14,12 +14,12 @@ const (
 )
 
 func databaseMockDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("database")
+	code := jen.NewFile("database")
 
 	mockModelsImp := proj.ModelsV1Package("mock")
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().ID("Database").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
 		jen.Line(),
 	)
@@ -40,7 +40,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("BuildMockDatabase builds a mock database."),
 		jen.Line(),
 		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Block(
@@ -70,7 +70,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("MockDatabase is our mock database structure."),
 		jen.Line(),
 		jen.Type().ID("MockDatabase").Struct(
@@ -79,7 +79,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Migrate satisfies the Database interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
@@ -88,7 +88,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("IsReady satisfies the Database interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
@@ -97,13 +97,13 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().ID("ResultIterator").Equals().Parens(jen.PointerTo().ID("MockResultIterator")).Call(jen.Nil()),
 		jen.Line(),
 		jen.Line(),
 		jen.Comment("MockResultIterator is our mock sql.Rows structure."), jen.Line(),
 		jen.Type().ID("MockResultIterator").Struct(
-			jen.Qual(utils.MockPkg, "Mock"),
+			jen.Qual(constants.MockPkg, "Mock"),
 		),
 		jen.Line(),
 		jen.Comment("Scan satisfies the ResultIterator interface."), jen.Line(),
@@ -127,5 +127,5 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

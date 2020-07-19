@@ -8,25 +8,25 @@ import (
 )
 
 func roundtripperDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(jen.Const().Defs(
+	code.Add(jen.Const().Defs(
 		jen.ID("userAgentHeader").Equals().Lit("User-Agent"),
 		jen.ID("userAgent").Equals().Lit("TODO Service Client"),
 	),
 		jen.Line(),
 	)
-	ret.Add(jen.Line())
+	code.Add(jen.Line())
 
-	ret.Add(jen.Type().ID("defaultRoundTripper").Struct(
+	code.Add(jen.Type().ID("defaultRoundTripper").Struct(
 		jen.ID("baseTransport").PointerTo().Qual("net/http", "Transport"),
 	),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("newDefaultRoundTripper constructs a new http.RoundTripper."),
 		jen.Line(),
 		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.PointerTo().ID("defaultRoundTripper")).Block(
@@ -38,9 +38,9 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
-	ret.Add(jen.Line())
+	code.Add(jen.Line())
 
-	ret.Add(
+	code.Add(
 		jen.Comment("RoundTrip implements the http.RoundTripper interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("t").PointerTo().ID("defaultRoundTripper")).ID("RoundTrip").Params(
@@ -58,9 +58,9 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 			),
 		),
 	)
-	ret.Add(jen.Line())
+	code.Add(jen.Line())
 
-	ret.Add(
+	code.Add(
 		jen.Comment("buildDefaultTransport constructs a new http.Transport."),
 		jen.Line(),
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.PointerTo().Qual("net/http", "Transport")).Block(
@@ -79,7 +79,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 			),
 		),
 	)
-	ret.Add(jen.Line())
+	code.Add(jen.Line())
 
-	return ret
+	return code
 }

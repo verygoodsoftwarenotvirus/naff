@@ -8,18 +8,18 @@ import (
 )
 
 func authServiceDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("serviceName").Equals().Lit("auth_service"),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes."),
@@ -39,7 +39,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(
 				jen.ID("config").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
-				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+				constants.LoggerParam(),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("userDB").Qual(proj.ModelsV1Package(), "UserDataManager"),
@@ -51,11 +51,11 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideAuthService builds a new AuthService."),
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("database").Qual(proj.ModelsV1Package(), "UserDataManager"),
@@ -86,5 +86,5 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

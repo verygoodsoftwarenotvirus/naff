@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	ret.PackageCommentf("Package %s provides common functions for attaching values to trace spans\n", packageName)
+	code.PackageCommentf("Package %s provides common functions for attaching values to trace spans\n", packageName)
 
-	return ret
+	return code
 }

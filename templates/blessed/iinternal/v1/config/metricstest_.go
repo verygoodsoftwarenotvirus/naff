@@ -2,16 +2,17 @@ package config
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func metricsTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("config")
+	code := jen.NewFile("config")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -24,13 +25,13 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				utils.AssertNotNil(jen.ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
+				utils.AssertNotNil(jen.ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -42,11 +43,11 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				utils.AssertNoError(jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
+				utils.AssertNoError(jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
 			),
 		),
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

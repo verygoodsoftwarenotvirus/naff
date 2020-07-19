@@ -8,22 +8,22 @@ import (
 )
 
 func clientDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("dbclient")
+	code := jen.NewFile("dbclient")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Line()
-	ret.Comment(`		NOTE: the primary purpose of this client is to allow convenient
+	code.Line()
+	code.Comment(`		NOTE: the primary purpose of this client is to allow convenient
 		wrapping of actual query execution.
 `)
-	ret.Line()
+	code.Line()
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Client is a wrapper around a database querier. Client is where all"),
 		jen.Line(),
 		jen.Comment("logging and trace propagation should happen, the querier is where"),
@@ -31,15 +31,15 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
 		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
-			jen.ID("debug").Bool(), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")),
+			jen.ID("debug").Bool(), constants.LoggerParam()),
 		jen.Line(),
 	)
 
-	ret.Add(buildMigrate(proj)...)
-	ret.Add(buildIsReady(proj)...)
-	ret.Add(buildProvideDatabaseClient(proj)...)
+	code.Add(buildMigrate(proj)...)
+	code.Add(buildIsReady(proj)...)
+	code.Add(buildProvideDatabaseClient(proj)...)
 
-	return ret
+	return code
 }
 
 func buildMigrate(proj *models.Project) []jen.Code {
@@ -85,7 +85,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("debug").Bool(),
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Block(
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),

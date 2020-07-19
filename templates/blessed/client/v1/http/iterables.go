@@ -12,35 +12,35 @@ import (
 )
 
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 
-	utils.AddImports(proj, ret)
-	ret.Add(jen.Const().Defs(
+	utils.AddImports(proj, code)
+	code.Add(jen.Const().Defs(
 		jen.ID(basePath).Equals().Lit(typ.Name.PluralRouteName())),
 	)
 
-	ret.Add(buildBuildSomethingExistsRequest(proj, typ)...)
-	ret.Add(buildSomethingExists(proj, typ)...)
-	ret.Add(buildBuildGetSomethingRequestFuncDecl(proj, typ)...)
-	ret.Add(buildGetSomethingFuncDecl(proj, typ)...)
+	code.Add(buildBuildSomethingExistsRequest(proj, typ)...)
+	code.Add(buildSomethingExists(proj, typ)...)
+	code.Add(buildBuildGetSomethingRequestFuncDecl(proj, typ)...)
+	code.Add(buildGetSomethingFuncDecl(proj, typ)...)
 
 	if typ.SearchEnabled {
-		ret.Add(buildBuildSearchSomethingRequestFuncDecl(proj, typ)...)
-		ret.Add(buildSearchSomethingFuncDecl(proj, typ)...)
+		code.Add(buildBuildSearchSomethingRequestFuncDecl(proj, typ)...)
+		code.Add(buildSearchSomethingFuncDecl(proj, typ)...)
 	}
 
-	ret.Add(buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)...)
-	ret.Add(buildGetListOfSomethingFuncDecl(proj, typ)...)
-	ret.Add(buildBuildCreateSomethingRequestFuncDecl(proj, typ)...)
-	ret.Add(buildCreateSomethingFuncDecl(proj, typ)...)
-	ret.Add(buildBuildUpdateSomethingRequestFuncDecl(proj, typ)...)
-	ret.Add(buildUpdateSomethingFuncDecl(proj, typ)...)
-	ret.Add(buildBuildArchiveSomethingRequestFuncDecl(proj, typ)...)
-	ret.Add(buildArchiveSomethingFuncDecl(proj, typ)...)
+	code.Add(buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)...)
+	code.Add(buildGetListOfSomethingFuncDecl(proj, typ)...)
+	code.Add(buildBuildCreateSomethingRequestFuncDecl(proj, typ)...)
+	code.Add(buildCreateSomethingFuncDecl(proj, typ)...)
+	code.Add(buildBuildUpdateSomethingRequestFuncDecl(proj, typ)...)
+	code.Add(buildUpdateSomethingFuncDecl(proj, typ)...)
+	code.Add(buildBuildArchiveSomethingRequestFuncDecl(proj, typ)...)
+	code.Add(buildArchiveSomethingFuncDecl(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func attachURIToSpanCall(proj *models.Project) jen.Code {

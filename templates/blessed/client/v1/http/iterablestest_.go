@@ -10,30 +10,30 @@ import (
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildTestV1Client_BuildSomethingExistsRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_SomethingExists(proj, typ)...)
-	ret.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_GetSomething(proj, typ)...)
-	ret.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_GetListOfSomething(proj, typ)...)
+	code.Add(buildTestV1Client_BuildSomethingExistsRequest(proj, typ)...)
+	code.Add(buildTestV1Client_SomethingExists(proj, typ)...)
+	code.Add(buildTestV1Client_BuildGetSomethingRequest(proj, typ)...)
+	code.Add(buildTestV1Client_GetSomething(proj, typ)...)
+	code.Add(buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)...)
+	code.Add(buildTestV1Client_GetListOfSomething(proj, typ)...)
 
 	if typ.SearchEnabled {
-		ret.Add(buildTestV1Client_BuildSearchSomethingRequest(proj, typ)...)
-		ret.Add(buildTestV1Client_SearchSomething(proj, typ)...)
+		code.Add(buildTestV1Client_BuildSearchSomethingRequest(proj, typ)...)
+		code.Add(buildTestV1Client_SearchSomething(proj, typ)...)
 	}
 
-	ret.Add(buildTestV1Client_BuildCreateSomethingRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_CreateSomething(proj, typ)...)
-	ret.Add(buildTestV1Client_BuildUpdateSomethingRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_UpdateSomething(proj, typ)...)
-	ret.Add(buildTestV1Client_BuildArchiveSomethingRequest(proj, typ)...)
-	ret.Add(buildTestV1Client_ArchiveSomething(proj, typ)...)
+	code.Add(buildTestV1Client_BuildCreateSomethingRequest(proj, typ)...)
+	code.Add(buildTestV1Client_CreateSomething(proj, typ)...)
+	code.Add(buildTestV1Client_BuildUpdateSomethingRequest(proj, typ)...)
+	code.Add(buildTestV1Client_UpdateSomething(proj, typ)...)
+	code.Add(buildTestV1Client_BuildArchiveSomethingRequest(proj, typ)...)
+	code.Add(buildTestV1Client_ArchiveSomething(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {

@@ -10,10 +10,10 @@ import (
 )
 
 func wireDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("main")
-	ret.HeaderComment("+build wireinject")
+	code := jen.NewFile("main")
+	code.HeaderComment("+build wireinject")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	newsmanImp := "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	loggingImp := "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
@@ -32,7 +32,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	serverImp := fmt.Sprintf("%s/server/v1", proj.OutputPath)
 
 	// if proj.EnableNewsman {
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day."),
 		jen.Line(),
 		jen.Func().ID("ProvideReporter").Params(jen.ID("n").PointerTo().Qual(newsmanImp, "Newsman")).Params(jen.Qual(newsmanImp, "Reporter")).Block(
@@ -84,7 +84,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		return args
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("BuildServer builds a server."),
 		jen.Line(),
 		jen.Func().ID("BuildServer").Paramsln(
@@ -94,7 +94,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 			jen.ID("database").Qual(databaseClientImp, "DataManager"),
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 		).Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Block(
-			jen.Qual("github.com/google/wire", "Build").Callln(
+			jen.Qual(constants.DependencyInjectionPkg, "Build").Callln(
 				buildWireBuildCallArgs()...,
 			),
 			jen.Return().List(jen.Nil(), jen.Nil()),
@@ -102,5 +102,5 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -2,14 +2,15 @@ package auth
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func wireDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	buildProviderSet := func() []jen.Code {
 		lines := []jen.Code{
@@ -25,10 +26,10 @@ func wireDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				buildProviderSet()...,
 			),
 		),
@@ -36,7 +37,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 
 	// if proj.EnableNewsman {
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").PointerTo().ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Block(
@@ -46,7 +47,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	)
 	// }
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").PointerTo().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
@@ -55,5 +56,5 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

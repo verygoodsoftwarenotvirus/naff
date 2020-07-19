@@ -8,11 +8,11 @@ import (
 )
 
 func usersTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_BuildGetUserRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -60,7 +60,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_GetUser").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -129,7 +129,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_BuildGetUsersRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -167,7 +167,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_GetUsers").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -231,7 +231,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_BuildCreateUserRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -270,7 +270,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_CreateUser").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -335,7 +335,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_BuildArchiveUserRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -383,7 +383,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_ArchiveUser").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -426,7 +426,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_BuildLoginRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -464,7 +464,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_Login").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -614,7 +614,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_BuildValidateTOTPSecretRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -639,7 +639,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("V1Client_ValidateTOTPSecret").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -786,5 +786,5 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

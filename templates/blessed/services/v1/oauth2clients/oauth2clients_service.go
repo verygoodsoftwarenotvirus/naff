@@ -8,11 +8,11 @@ import (
 )
 
 func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("oauth2clients")
+	code := jen.NewFile("oauth2clients")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -22,7 +22,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("CreationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data."),
 			jen.ID("CreationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
@@ -34,7 +34,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 			jen.Underscore().Qual("gopkg.in/oauth2.v3", "ClientStore").Equals().Parens(jen.PointerTo().ID("clientStore")).Call(jen.Nil()),
@@ -42,7 +42,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.ID("oauth2Handler").Interface(
 				jen.ID("SetAllowGetAccessRequest").Params(jen.Bool()),
@@ -63,7 +63,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Service manages our OAuth2 clients via HTTP."),
 			jen.ID("Service").Struct(
-				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+				constants.LoggerParam(),
 				jen.ID("database").Qual(proj.DatabaseV1Package(), "DataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
@@ -80,7 +80,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Block(
 			jen.ID("cs").Assign().AddressOf().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
@@ -89,7 +89,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").String()).Params(jen.Qual("gopkg.in/oauth2.v3", "ClientInfo"), jen.Error()).Block(
@@ -106,11 +106,11 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideOAuth2ClientsService builds a new OAuth2ClientsService."),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
@@ -146,7 +146,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("initializeOAuth2Handler."),
 		jen.Line(),
 		jen.Func().ID("initializeOAuth2Handler").Params(
@@ -175,7 +175,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("HandleAuthorizeRequest is a simple wrapper around the internal server's HandleAuthorizeRequest."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
@@ -188,7 +188,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("HandleTokenRequest is a simple wrapper around the internal server's HandleTokenRequest."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
@@ -201,5 +201,5 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -7,11 +7,11 @@ import (
 )
 
 func userTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestUser_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -35,5 +35,5 @@ func userTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

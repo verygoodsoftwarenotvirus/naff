@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("metrics")
+	code := jen.NewFile("metrics")
 
-	ret.PackageComment("Package metrics provides metrics collection functions and structs\n")
+	code.PackageComment("Package metrics provides metrics collection functions and structs\n")
 
-	return ret
+	return code
 }

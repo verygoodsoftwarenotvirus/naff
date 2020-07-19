@@ -63,22 +63,22 @@ func buildListArguments(proj *models.Project, varPrefix string, typ models.DataT
 }
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("integration")
+	code := jen.NewFile("integration")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			buildTestCreating(proj, typ),
 			jen.Line(),
@@ -113,7 +113,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }
 
 func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) (lines []jen.Code) {
@@ -570,7 +570,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Qual(utils.AssertPkg, "True").Callln(
+		jen.Qual(constants.AssertPkg, "True").Callln(
 			jen.ID("t"),
 			jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot(pn)),
 			jen.Lit("expected %d to be <= %d"), jen.Len(jen.ID("expected")),

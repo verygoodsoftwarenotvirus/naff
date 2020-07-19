@@ -8,15 +8,15 @@ import (
 )
 
 func authenticatorDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(jen.Null(),
+	code.Add(jen.Null(),
 
 		jen.Line(),
 	)
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid."),
 			jen.ID("ErrInvalidTwoFactorCode").Equals().Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
@@ -24,12 +24,12 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 			jen.ID("ErrPasswordHashTooWeak").Equals().Qual("errors", "New").Call(jen.Lit("password's hash is too weak")),
 			jen.Line(),
 			jen.Comment("Providers represents what this package offers to external libraries in the way of constructors."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
 			jen.Line(),
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost."),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
@@ -38,7 +38,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("PasswordHasher hashes passwords."),
 			jen.ID("PasswordHasher").Interface(
@@ -65,7 +65,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Line(),
 	)
-	ret.Add(
+	code.Add(
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
@@ -78,5 +78,5 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

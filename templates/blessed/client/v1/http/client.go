@@ -13,13 +13,13 @@ func newClientMethod(name string) *jen.Statement {
 }
 
 func mainDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
-	ret.Add(jen.Line())
+	utils.AddImports(proj, code)
+	code.Add(jen.Line())
 
 	// consts
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("defaultTimeout").Equals().Lit(30).Times().Qual("time", "Second"),
 			jen.ID("clientName").Equals().Lit("v1_client"),
@@ -27,7 +27,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	// vars
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrNotFound is a handy error to return when we receive a 404 response."),
 			jen.ID("ErrNotFound").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not found"), jen.Qual("net/http", "StatusNotFound")),
@@ -42,13 +42,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	// types
-	ret.Add(
+	code.Add(
 		jen.Commentf("%s is a client for interacting with v1 of our HTTP API.", v1),
 		jen.Line(),
 		jen.Type().ID(v1).Struct(
 			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("Debug").Bool(),
 			jen.ID("URL").PointerTo().Qual("net/url", "URL"),
 			jen.ID("Scopes").Index().String(),
@@ -57,28 +57,28 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildAuthenticatedClient()...)
-	ret.Add(buildPlainClient()...)
-	ret.Add(buildTokenSource()...)
-	ret.Add(buildTokenEndpoint()...)
-	ret.Add(buildNewClient()...)
-	ret.Add(buildNewSimpleClient()...)
-	ret.Add(buildBuildOAuthClient()...)
-	ret.Add(buildCloseResponseBody()...)
-	ret.Add(buildExportedBuildURL()...)
-	ret.Add(buildUnexportedBuildURL()...)
-	ret.Add(buildBuildVersionlessURL()...)
-	ret.Add(buildBuildWebsocketURL()...)
-	ret.Add(buildBuildHealthCheckRequest()...)
-	ret.Add(buildIsUp()...)
-	ret.Add(buildBuildDataRequest(proj)...)
-	ret.Add(buildExecuteRequest(proj)...)
-	ret.Add(buildExecuteRawRequest(proj)...)
-	ret.Add(buildCheckExistence(proj)...)
-	ret.Add(buildRetrieve(proj)...)
-	ret.Add(buildExecuteUnauthenticatedDataRequest(proj)...)
+	code.Add(buildAuthenticatedClient()...)
+	code.Add(buildPlainClient()...)
+	code.Add(buildTokenSource()...)
+	code.Add(buildTokenEndpoint()...)
+	code.Add(buildNewClient()...)
+	code.Add(buildNewSimpleClient()...)
+	code.Add(buildBuildOAuthClient()...)
+	code.Add(buildCloseResponseBody()...)
+	code.Add(buildExportedBuildURL()...)
+	code.Add(buildUnexportedBuildURL()...)
+	code.Add(buildBuildVersionlessURL()...)
+	code.Add(buildBuildWebsocketURL()...)
+	code.Add(buildBuildHealthCheckRequest()...)
+	code.Add(buildIsUp()...)
+	code.Add(buildBuildDataRequest(proj)...)
+	code.Add(buildExecuteRequest(proj)...)
+	code.Add(buildExecuteRawRequest(proj)...)
+	code.Add(buildCheckExistence(proj)...)
+	code.Add(buildRetrieve(proj)...)
+	code.Add(buildExecuteUnauthenticatedDataRequest(proj)...)
 
-	return ret
+	return code
 }
 
 func buildAuthenticatedClient() []jen.Code {
@@ -131,7 +131,7 @@ func buildNewClient() []jen.Code {
 				jen.ID("clientSecret"),
 			).String(),
 			jen.ID("address").PointerTo().Qual("net/url", "URL"),
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("hclient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("scopes").Index().String(),
 			jen.ID("debug").Bool(),
@@ -151,7 +151,7 @@ func buildNewClient() []jen.Code {
 			jen.Line(),
 			jen.If(jen.ID("debug")).Block(
 				jen.ID(constants.LoggerVarName).Dot("SetLevel").Call(
-					jen.Qual(utils.LoggingPkg, "DebugLevel"),
+					jen.Qual(constants.LoggingPkg, "DebugLevel"),
 				),
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(
 					jen.Lit("log level set to debug!"),
@@ -302,7 +302,7 @@ func buildNewSimpleClient() []jen.Code {
 				jen.EmptyString(),
 				jen.EmptyString(),
 				jen.ID("address"),
-				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.AddressOf().Qual("net/http", "Client").Values(
 					jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
 				),

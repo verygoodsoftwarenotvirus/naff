@@ -7,21 +7,21 @@ import (
 )
 
 func mainDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("main")
+	code := jen.NewFile("main")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(determineConstants(proj)...),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().ID("configFunc").Func().Params(jen.ID("filePath").String()).Params(jen.Error()),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.ID("files").Equals().Map(jen.String()).ID("configFunc").Valuesln(
 				jen.Lit("environments/local/config.toml").MapAssign().ID("developmentConfig"),
@@ -50,14 +50,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildDevelopmentConfig(proj)...)
-	ret.Add(buildFrontendTestsConfig(proj)...)
-	ret.Add(buildCoverageConfig(proj)...)
-	//ret.Add(buildProductionConfig(proj)...)
-	ret.Add(buildBuildIntegrationTestForDBImplementation(proj)...)
-	ret.Add(buildMain(proj)...)
+	code.Add(buildDevelopmentConfig(proj)...)
+	code.Add(buildFrontendTestsConfig(proj)...)
+	code.Add(buildCoverageConfig(proj)...)
+	//code.Add(buildProductionConfig(proj)...)
+	code.Add(buildBuildIntegrationTestForDBImplementation(proj)...)
+	code.Add(buildMain(proj)...)
 
-	return ret
+	return code
 }
 
 func determineConstants(proj *models.Project) []jen.Code {

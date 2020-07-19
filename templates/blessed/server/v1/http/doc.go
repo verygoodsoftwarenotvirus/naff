@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("httpserver")
+	code := jen.NewFile("httpserver")
 
-	ret.PackageComment("Package httpserver provides an HTTP server comprised of multiple HTTP services\n")
+	code.PackageComment("Package httpserver provides an HTTP server comprised of multiple HTTP services\n")
 
-	return ret
+	return code
 }

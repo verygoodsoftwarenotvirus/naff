@@ -36,29 +36,29 @@ var (
 func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildMockRowsFromWebhook(proj, dbvendor)...)
-	ret.Add(buildBuildErroneousMockRowFromWebhook(proj, dbvendor)...)
-	ret.Add(buildTestScanWebhooks(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetWebhookQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetWebhook(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetAllWebhooksCount(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetAllWebhooksQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetAllWebhooks(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetWebhooksQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetWebhooks(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildWebhookCreationQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_CreateWebhook(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildUpdateWebhookQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_UpdateWebhook(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildArchiveWebhookQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_ArchiveWebhook(proj, dbvendor)...)
+	code.Add(buildBuildMockRowsFromWebhook(proj, dbvendor)...)
+	code.Add(buildBuildErroneousMockRowFromWebhook(proj, dbvendor)...)
+	code.Add(buildTestScanWebhooks(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetWebhookQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetWebhook(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllWebhooksCount(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllWebhooksQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllWebhooks(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetWebhooksQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetWebhooks(proj, dbvendor)...)
+	code.Add(buildTestDB_buildWebhookCreationQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_CreateWebhook(proj, dbvendor)...)
+	code.Add(buildTestDB_buildUpdateWebhookQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_UpdateWebhook(proj, dbvendor)...)
+	code.Add(buildTestDB_buildArchiveWebhookQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_ArchiveWebhook(proj, dbvendor)...)
 
-	return ret
+	return code
 }
 
 func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

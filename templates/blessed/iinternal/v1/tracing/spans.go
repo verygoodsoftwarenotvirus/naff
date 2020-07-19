@@ -8,11 +8,11 @@ import (
 )
 
 func spansDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("StartSpan starts a span."),
 		jen.Line(),
 		jen.Func().ID("StartSpan").Params(
@@ -29,5 +29,5 @@ func spansDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

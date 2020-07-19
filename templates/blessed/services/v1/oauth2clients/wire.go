@@ -2,19 +2,20 @@ package oauth2clients
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func wireDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("oauth2clients")
+	code := jen.NewFile("oauth2clients")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers are what we provide for dependency injection."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				jen.ID("ProvideOAuth2ClientsService"),
 				jen.ID("ProvideOAuth2ClientDataServer"),
 			),
@@ -22,7 +23,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake."),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer")).Block(
@@ -31,5 +32,5 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

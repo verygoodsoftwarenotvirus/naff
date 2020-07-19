@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("encoding")
+	code := jen.NewFile("encoding")
 
-	ret.PackageComment("Package encoding provides HTTP response encoding abstractions\n")
+	code.PackageComment("Package encoding provides HTTP response encoding abstractions\n")
 
-	return ret
+	return code
 }

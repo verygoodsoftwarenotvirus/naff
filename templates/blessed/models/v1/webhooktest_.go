@@ -8,11 +8,11 @@ import (
 )
 
 func webhookTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -54,32 +54,32 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
-				jen.ID("w").Dot("ToListener").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("w").Dot("ToListener").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
-				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("actual").Call(constants.ObligatoryError()),
 			),
 		),
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

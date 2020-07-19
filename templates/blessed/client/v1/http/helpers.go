@@ -8,13 +8,13 @@ import (
 )
 
 func helpersDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(jen.Line())
+	code.Add(jen.Line())
 
-	ret.Add(
+	code.Add(
 		jen.Comment("argIsNotPointer checks an argument and returns whether or not it is a pointer."),
 		jen.Line(),
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
@@ -35,7 +35,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("argIsNotNil checks an argument and returns whether or not it is nil."),
 		jen.Line(),
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
@@ -54,7 +54,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("argIsNotPointerOrNil does what it says on the tin. This function"),
 		jen.Line(),
 		jen.Comment("is primarily useful for detecting if a destination value is valid"),
@@ -77,7 +77,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("unmarshalBody takes an HTTP response and JSON decodes its"),
 		jen.Line(),
 		jen.Comment("body into a destination value. `dest` must be a non-nil"),
@@ -143,7 +143,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("createBodyFromStruct takes any value in and returns an io.Reader"),
 		jen.Line(),
 		jen.Comment("for placement within http.NewRequest's last argument."),
@@ -173,5 +173,5 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

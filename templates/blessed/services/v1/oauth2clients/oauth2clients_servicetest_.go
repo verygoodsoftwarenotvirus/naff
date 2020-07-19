@@ -8,11 +8,11 @@ import (
 )
 
 func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("oauth2clients")
+	code := jen.NewFile("oauth2clients")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -24,7 +24,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("service").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("database").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("authenticator").MapAssign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.ID("urlClientIDExtractor").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -37,7 +37,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideOAuth2ClientsService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -46,7 +46,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("GetAllOAuth2Clients"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
@@ -60,7 +60,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("mockDB"),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("mockDB"),
 					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
@@ -77,7 +77,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("GetAllOAuth2Clients"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
 				jen.Line(),
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
@@ -91,7 +91,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
 					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -107,7 +107,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_clientStore_GetByID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -118,7 +118,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ClientID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.Line(),
@@ -140,7 +140,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("ID")),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
@@ -159,7 +159,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("ID")),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
@@ -177,7 +177,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_HandleAuthorizeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -188,8 +188,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("moah").Assign().AddressOf().ID("mockOAuth2Handler").Values(),
 				jen.ID("moah").Dot("On").Callln(
 					jen.Lit("HandleAuthorizeRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("moah"),
 				jen.List(jen.ID(constants.RequestVarName), jen.ID(constants.ResponseVarName)).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
@@ -202,7 +202,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_HandleTokenRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -213,8 +213,8 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("moah").Assign().AddressOf().ID("mockOAuth2Handler").Values(),
 				jen.ID("moah").Dot("On").Callln(
 					jen.Lit("HandleTokenRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("oauth2Handler").Equals().ID("moah"),
 				jen.List(jen.ID(constants.RequestVarName), jen.ID(constants.ResponseVarName)).Assign().List(jen.ID("buildRequest").Call(jen.ID("t")), jen.ID("httptest").Dot("NewRecorder").Call()),
@@ -227,5 +227,5 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

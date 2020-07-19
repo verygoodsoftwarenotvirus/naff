@@ -7,18 +7,18 @@ import (
 )
 
 func serviceDataEventsDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ServiceDataEvent is a simple string alias."),
 		jen.Line(),
 		jen.Type().ID("ServiceDataEvent").String(),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("Create represents a create event."),
 			jen.ID("Create").ID("ServiceDataEvent").Equals().Lit("create"),
@@ -30,5 +30,5 @@ func serviceDataEventsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

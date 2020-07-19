@@ -7,12 +7,12 @@ import (
 )
 
 func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(typ.Name.PackageName())
+	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	sn := typ.Name.Singular()
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("TestProvide%sDataManager", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -22,7 +22,7 @@ func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("TestProvide%sDataServer", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -32,5 +32,5 @@ func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

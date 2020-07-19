@@ -52,11 +52,11 @@ func Test_buildBuildDummySomething(T *testing.T) {
 	T.Run("normal operation", func(t *testing.T) {
 		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
 
-		ret := jen.NewFile("farts")
-		ret.Add(buildBuildDummySomething(proj, c)...)
+		code := jen.NewFile("farts")
+		code.Add(buildBuildDummySomething(proj, c)...)
 
 		var b bytes.Buffer
-		require.NoError(t, ret.Render(&b))
+		require.NoError(t, code.Render(&b))
 
 		expected := `package farts
 
@@ -108,11 +108,11 @@ func buildDummyChild(t *testing.T, ctx context.Context) *v1.Child {
 	T.Run("one dependency", func(t *testing.T) {
 		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
 
-		ret := jen.NewFile("farts")
-		ret.Add(buildBuildDummySomething(proj, b)...)
+		code := jen.NewFile("farts")
+		code.Add(buildBuildDummySomething(proj, b)...)
 
 		var b bytes.Buffer
-		require.NoError(t, ret.Render(&b))
+		require.NoError(t, code.Render(&b))
 
 		expected := `package farts
 
@@ -154,11 +154,11 @@ func buildDummyParent(t *testing.T, ctx context.Context) *v1.Parent {
 	T.Run("lone type", func(t *testing.T) {
 		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
 
-		ret := jen.NewFile("farts")
-		ret.Add(buildBuildDummySomething(proj, a)...)
+		code := jen.NewFile("farts")
+		code.Add(buildBuildDummySomething(proj, a)...)
 
 		var b bytes.Buffer
-		require.NoError(t, ret.Render(&b))
+		require.NoError(t, code.Render(&b))
 
 		expected := `package farts
 
@@ -194,13 +194,13 @@ func Test_buildRequisiteCreationCode(T *testing.T) {
 	T.Run("normal operation", func(t *testing.T) {
 		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
 
-		ret := jen.NewFile("farts")
-		ret.Add(jen.Func().ID("doSomething").Params().Block(
+		code := jen.NewFile("farts")
+		code.Add(jen.Func().ID("doSomething").Params().Block(
 			buildRequisiteCreationCode(proj, c)...,
 		))
 
 		var b bytes.Buffer
-		require.NoError(t, ret.Render(&b))
+		require.NoError(t, code.Render(&b))
 
 		expected := `package farts
 
@@ -254,13 +254,13 @@ func Test_buildRequisiteCleanupCode(T *testing.T) {
 	T.Run("normal operation", func(t *testing.T) {
 		proj := &models.Project{DataTypes: []models.DataType{a, b, c}}
 
-		ret := jen.NewFile("farts")
-		ret.Add(jen.Func().ID("doSomething").Params().Block(
+		code := jen.NewFile("farts")
+		code.Add(jen.Func().ID("doSomething").Params().Block(
 			buildRequisiteCleanupCode(proj, c)...,
 		))
 
 		var b bytes.Buffer
-		require.NoError(t, ret.Render(&b))
+		require.NoError(t, code.Render(&b))
 
 		expected := `package farts
 
@@ -294,15 +294,15 @@ func Test_buildCreationArguments(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildCreationArguments(proj, "expected", c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -325,8 +325,8 @@ func Test_buildEqualityCheckLines(T *testing.T) {
 	T.Parallel()
 
 	T.Run("normal operation", func(t *testing.T) {
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildEqualityCheckLines(
 					models.DataType{
@@ -468,7 +468,7 @@ func Test_buildEqualityCheckLines(T *testing.T) {
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -526,15 +526,15 @@ func Test_buildTestCreating(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestCreating(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -615,15 +615,15 @@ func Test_buildTestListing(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestListing(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -710,15 +710,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestListing(proj, b)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -792,15 +792,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestListing(proj, a)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -865,15 +865,15 @@ func Test_buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(T 
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -932,15 +932,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, b)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -986,15 +986,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, a)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1029,15 +1029,15 @@ func Test_buildTestReadingShouldBeReadable(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldBeReadable(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1112,15 +1112,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldBeReadable(proj, b)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1182,15 +1182,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestReadingShouldBeReadable(proj, a)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1243,15 +1243,15 @@ func Test_buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1308,15 +1308,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, b)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1360,15 +1360,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, a)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1402,15 +1402,15 @@ func Test_buildTestUpdatingShouldBeUpdateable(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldBeUpdatable(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1494,15 +1494,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldBeUpdatable(proj, b)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1573,15 +1573,15 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestUpdatingShouldBeUpdatable(proj, a)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -1643,15 +1643,15 @@ func Test_buildTestDeletingShouldBeAbleToBeDeleted(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildTestDeletingShouldBeAbleToBeDeleted(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts

@@ -8,11 +8,11 @@ import (
 )
 
 func httpRoutesDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("frontend")
+	code := jen.NewFile("frontend")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Routes returns a map of route to HandlerFunc for the parent router to set."),
 		jen.Line(),
 		jen.Comment("this keeps routing logic in the frontend service and not in the server itself."),
@@ -26,7 +26,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").String()).Params(jen.PointerTo().Qual("github.com/spf13/afero", "HttpFs"), jen.Error()).Block(jen.Var().ID("afs").Qual("github.com/spf13/afero", "Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
 			jen.ID("afs").Equals().Qual("github.com/spf13/afero", "NewMemMapFs").Call(),
 			jen.List(jen.ID("files"), jen.Err()).Assign().Qual("io/ioutil", "ReadDir").Call(jen.ID("fileDir")),
@@ -88,7 +88,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		return pairs
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			buildRegexPairs()...,
 		),
@@ -143,7 +143,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("StaticDir builds a static directory handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("StaticDir").Params(jen.ID("staticFilesDirectory").String()).Params(jen.Qual("net/http", "HandlerFunc"), jen.Error()).Block(
@@ -167,5 +167,5 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

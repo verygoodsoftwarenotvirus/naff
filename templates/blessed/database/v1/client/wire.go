@@ -2,24 +2,25 @@ package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func wireDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("dbclient")
+	code := jen.NewFile("dbclient")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers represents what we provide to dependency injectors."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				jen.ID("ProvideDatabaseClient"),
 			),
 		),
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

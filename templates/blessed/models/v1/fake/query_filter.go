@@ -7,12 +7,12 @@ import (
 )
 
 func queryFilterDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildFleshedOutQueryFilter(proj)...)
+	code.Add(buildBuildFleshedOutQueryFilter(proj)...)
 
-	return ret
+	return code
 }
 
 func buildBuildFleshedOutQueryFilter(proj *models.Project) []jen.Code {

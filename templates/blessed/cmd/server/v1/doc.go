@@ -5,10 +5,10 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("main")
+	code := jen.NewFile("main")
 
-	ret.PackageComment(`Command server is the main compilable application that runs an instance of the todo service
+	code.PackageComment(`Command server is the main compilable application that runs an instance of the todo service
 `)
 
-	return ret
+	return code
 }

@@ -10,14 +10,14 @@ import (
 )
 
 func iterableServiceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(typ.Name.PackageName())
+	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildbuildTestServiceFuncDecl(proj, typ)...)
-	ret.Add(buildTestProvideServiceFuncDecl(proj, typ)...)
+	code.Add(buildbuildTestServiceFuncDecl(proj, typ)...)
+	code.Add(buildTestProvideServiceFuncDecl(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
@@ -25,7 +25,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	uvn := typ.Name.UnexportedVarName()
 
 	serviceValues := []jen.Code{
-		jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 	}
 
@@ -76,7 +76,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	pn := typ.Name.Plural()
 
 	provideServiceLines := []jen.Code{
-		jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {

@@ -2,25 +2,26 @@ package fake
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func userDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildFakeUser(proj)...)
-	ret.Add(buildBuildDatabaseCreationResponse(proj)...)
-	ret.Add(buildBuildFakeUserList(proj)...)
-	ret.Add(buildBuildFakeUserCreationInput(proj)...)
-	ret.Add(buildBuildFakeUserCreationInputFromUser(proj)...)
-	ret.Add(buildBuildFakeUserDatabaseCreationInputFromUser(proj)...)
-	ret.Add(buildBuildFakeUserLoginInputFromUser(proj)...)
-	ret.Add(buildBuildFakePasswordUpdateInput(proj)...)
-	ret.Add(buildBuildFakeTOTPSecretRefreshInput(proj)...)
+	code.Add(buildBuildFakeUser(proj)...)
+	code.Add(buildBuildDatabaseCreationResponse(proj)...)
+	code.Add(buildBuildFakeUserList(proj)...)
+	code.Add(buildBuildFakeUserCreationInput(proj)...)
+	code.Add(buildBuildFakeUserCreationInputFromUser(proj)...)
+	code.Add(buildBuildFakeUserDatabaseCreationInputFromUser(proj)...)
+	code.Add(buildBuildFakeUserLoginInputFromUser(proj)...)
+	code.Add(buildBuildFakePasswordUpdateInput(proj)...)
+	code.Add(buildBuildFakeTOTPSecretRefreshInput(proj)...)
 
-	return ret
+	return code
 }
 
 func buildBuildFakeUser(proj *models.Project) []jen.Code {
@@ -202,7 +203,7 @@ func buildBuildFakeUserLoginInputFromUser(proj *models.Project) []jen.Code {
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
-					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
+					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
 				),
 			),
 		),
@@ -225,7 +226,7 @@ func buildBuildFakePasswordUpdateInput(proj *models.Project) []jen.Code {
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("NewPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
-					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
+					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
 				),
 			),
 		),
@@ -247,7 +248,7 @@ func buildBuildFakeTOTPSecretRefreshInput(proj *models.Project) []jen.Code {
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
-					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
+					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
 				),
 			),
 		),

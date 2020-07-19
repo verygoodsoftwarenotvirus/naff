@@ -8,11 +8,11 @@ import (
 )
 
 func metricsDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("config")
+	code := jen.NewFile("config")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("MetricsNamespace is the namespace under which we register metrics."),
 			jen.ID("MetricsNamespace").Equals().Lit("todo_server"),
@@ -25,7 +25,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.ID("metricsProvider").String(),
 			jen.ID("tracingProvider").String(),
@@ -33,7 +33,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("ErrInvalidMetricsProvider is a sentinel error value."),
 			jen.ID("ErrInvalidMetricsProvider").Equals().Qual("errors", "New").Call(jen.Lit("invalid metrics provider")),
@@ -52,11 +52,11 @@ func metricsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 		).Params(
 			jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"),
 		).Block(
@@ -100,11 +100,11 @@ func metricsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideTracing provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 		).Params(jen.Error()).Block(
 			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").MapAssign().Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.One()))),
 			jen.Line(),
@@ -136,5 +136,5 @@ func metricsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

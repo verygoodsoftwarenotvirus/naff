@@ -8,11 +8,11 @@ import (
 )
 
 func middlewareTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -24,8 +24,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("md").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 				jen.ID("md").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
 					jen.Nil(),
@@ -35,8 +35,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ms").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("ms").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
@@ -67,8 +67,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("md").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 				jen.ID("md").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
 					jen.Nil(),
@@ -121,7 +121,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -135,8 +135,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ocv").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("ocv").Dot("On").Call(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
@@ -145,7 +145,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
-					jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+					jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
@@ -156,8 +156,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("h").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -186,8 +186,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ocv").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("ocv").Dot("On").Call(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
@@ -197,7 +197,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
@@ -205,8 +205,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("h").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -234,7 +234,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("mockDB"),
@@ -242,8 +242,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("h").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -275,7 +275,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
@@ -310,8 +310,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ocv").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("ocv").Dot("On").Call(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
@@ -321,7 +321,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
@@ -355,8 +355,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ocv").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("ocv").Dot("On").Call(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
 					constants.ObligatoryError(),
@@ -367,13 +367,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("cb").Dot("On").Call(
 					jen.Lit("Decode"),
 					jen.ID("CookieName"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("cb").Dot("On").Call(
 					jen.Lit("Encode"),
 					jen.ID("CookieName"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.EmptyString(), jen.Nil()),
 				jen.ID("s").Dot("cookieManager").Equals().ID("cb"),
 				jen.Line(),
@@ -403,8 +403,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ocv").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("ocv").Dot("On").Call(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
 					jen.Nil(),
@@ -437,8 +437,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ocv").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
 				jen.ID("ocv").Dot("On").Call(
 					jen.Lit("ExtractOAuth2ClientFromRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.Nil(),
@@ -448,7 +448,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
 				).Dot("Return").Call(
 					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()),
@@ -476,7 +476,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -524,7 +524,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -553,8 +553,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ms").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("ms").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID("h").Assign().ID("s").Dot("UserLoginInputMiddleware").Call(jen.ID("ms")),
@@ -584,8 +584,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					constants.ObligatoryError(),
 				),
@@ -624,8 +624,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("DecodeRequest"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					constants.ObligatoryError(),
 				),
@@ -634,8 +634,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ms").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("ms").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID("h").Assign().ID("s").Dot("UserLoginInputMiddleware").Call(jen.ID("ms")),
@@ -647,7 +647,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -677,8 +677,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ms").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("ms").Dot("On").Call(
 					jen.Lit("ServeHTTP"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(),
 				jen.Line(),
 				jen.ID("h").Assign().ID("s").Dot("AdminMiddleware").Call(jen.ID("ms")),
@@ -747,5 +747,5 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -36,32 +36,32 @@ var (
 func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildMockRowsFromOAuth2Client(proj, dbvendor)...)
-	ret.Add(buildBuildErroneousMockRowFromOAuth2Client(proj, dbvendor)...)
-	ret.Add(buildTestScanOAuth2Clients(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetOAuth2ClientByClientIDQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetOAuth2ClientByClientID(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetAllOAuth2ClientsQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetAllOAuth2Clients(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetAllOAuth2ClientsForUser(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetOAuth2ClientQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetOAuth2Client(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetAllOAuth2ClientCountQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetAllOAuth2ClientCount(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetOAuth2ClientsQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetOAuth2Clients(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildCreateOAuth2ClientQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_CreateOAuth2Client(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildUpdateOAuth2ClientQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_UpdateOAuth2Client(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildArchiveOAuth2ClientQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_ArchiveOAuth2Client(proj, dbvendor)...)
+	code.Add(buildBuildMockRowsFromOAuth2Client(proj, dbvendor)...)
+	code.Add(buildBuildErroneousMockRowFromOAuth2Client(proj, dbvendor)...)
+	code.Add(buildTestScanOAuth2Clients(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetOAuth2ClientByClientIDQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetOAuth2ClientByClientID(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllOAuth2ClientsQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllOAuth2Clients(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllOAuth2ClientsForUser(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetOAuth2ClientQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetOAuth2Client(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllOAuth2ClientCountQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllOAuth2ClientCount(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetOAuth2ClientsQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetOAuth2Clients(proj, dbvendor)...)
+	code.Add(buildTestDB_buildCreateOAuth2ClientQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_CreateOAuth2Client(proj, dbvendor)...)
+	code.Add(buildTestDB_buildUpdateOAuth2ClientQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_UpdateOAuth2Client(proj, dbvendor)...)
+	code.Add(buildTestDB_buildArchiveOAuth2ClientQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_ArchiveOAuth2Client(proj, dbvendor)...)
 
-	return ret
+	return code
 }
 
 func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

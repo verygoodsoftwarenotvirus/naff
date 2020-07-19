@@ -10,14 +10,14 @@ import (
 )
 
 func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(typ.Name.PackageName())
+	code := jen.NewFile(typ.Name.PackageName())
 
 	uvn := typ.Name.UnexportedVarName()
 	scn := typ.Name.SingularCommonName()
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Commentf("URIParamKey is a standard string that we'll use to refer to %s IDs with.", scn),
 			jen.ID("URIParamKey").Equals().Lit(fmt.Sprintf("%sID", uvn)),
@@ -25,14 +25,14 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildListHandlerFuncDecl(proj, typ)...)
-	ret.Add(buildCreateHandlerFuncDecl(proj, typ)...)
-	ret.Add(buildExistenceHandlerFuncDecl(proj, typ)...)
-	ret.Add(buildReadHandlerFuncDecl(proj, typ)...)
-	ret.Add(buildUpdateHandlerFuncDecl(proj, typ)...)
-	ret.Add(buildArchiveHandlerFuncDecl(proj, typ)...)
+	code.Add(buildListHandlerFuncDecl(proj, typ)...)
+	code.Add(buildCreateHandlerFuncDecl(proj, typ)...)
+	code.Add(buildExistenceHandlerFuncDecl(proj, typ)...)
+	code.Add(buildReadHandlerFuncDecl(proj, typ)...)
+	code.Add(buildUpdateHandlerFuncDecl(proj, typ)...)
+	code.Add(buildArchiveHandlerFuncDecl(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj *models.Project, typ models.DataType) []jen.Code {
@@ -41,9 +41,9 @@ func buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj *models.Proj
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		lines = append(lines,
 			jen.Comment("determine user ID."),
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 			jen.Line(),
 		)
 	}
@@ -68,9 +68,9 @@ func buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj *models.Projec
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		lines = append(lines,
 			jen.Comment("determine user ID."),
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 			jen.Line(),
 		)
 	}
@@ -157,12 +157,12 @@ func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Projec
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		lines = append(lines,
 			jen.Comment("determine user ID."),
-			jen.ID("userID").Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 			func() jen.Code {
 				if assignToUser && typ.BelongsToUser {
-					return jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID("userID")
+					return jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID(constants.UserIDVarName)
 				}
 				return jen.Null()
 			}(),

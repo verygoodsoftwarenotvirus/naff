@@ -8,25 +8,25 @@ import (
 )
 
 func webhooksDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
-	ret.Add(jen.Const().Defs(
+	utils.AddImports(proj, code)
+	code.Add(jen.Const().Defs(
 		jen.ID("webhooksBasePath").Equals().Lit("webhooks"),
 	))
 
-	ret.Add(buildBuildGetWebhookRequest(proj)...)
-	ret.Add(buildGetWebhook(proj)...)
-	ret.Add(buildBuildGetWebhooksRequest(proj)...)
-	ret.Add(buildGetWebhooks(proj)...)
-	ret.Add(buildBuildCreateWebhookRequest(proj)...)
-	ret.Add(buildCreateWebhook(proj)...)
-	ret.Add(buildBuildUpdateWebhookRequest(proj)...)
-	ret.Add(buildUpdateWebhook(proj)...)
-	ret.Add(buildBuildArchiveWebhookRequest(proj)...)
-	ret.Add(buildArchiveWebhook(proj)...)
+	code.Add(buildBuildGetWebhookRequest(proj)...)
+	code.Add(buildGetWebhook(proj)...)
+	code.Add(buildBuildGetWebhooksRequest(proj)...)
+	code.Add(buildGetWebhooks(proj)...)
+	code.Add(buildBuildCreateWebhookRequest(proj)...)
+	code.Add(buildCreateWebhook(proj)...)
+	code.Add(buildBuildUpdateWebhookRequest(proj)...)
+	code.Add(buildUpdateWebhook(proj)...)
+	code.Add(buildBuildArchiveWebhookRequest(proj)...)
+	code.Add(buildArchiveWebhook(proj)...)
 
-	return ret
+	return code
 }
 
 func buildBuildGetWebhookRequest(proj *models.Project) []jen.Code {

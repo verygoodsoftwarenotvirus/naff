@@ -7,11 +7,11 @@ import (
 )
 
 func mainTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("frontend")
+	code := jen.NewFile("frontend")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
 			jen.For(jen.List(jen.Underscore(), jen.ID("bn")).Assign().Range().Index().String().Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
 				jen.ID("browserName").Assign().ID("bn"),
@@ -28,12 +28,12 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().ID("testProvider").Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestLoginPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				jen.Return().Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
@@ -56,5 +56,5 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

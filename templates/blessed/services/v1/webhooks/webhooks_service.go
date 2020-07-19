@@ -8,11 +8,11 @@ import (
 )
 
 func webhooksServiceDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("webhooks")
+	code := jen.NewFile("webhooks")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
 			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_create_input"),
@@ -27,14 +27,14 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.ID("eventManager").Interface(
 				jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
@@ -44,7 +44,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Service handles TODO ListHandler webhooks."),
 			jen.ID("Service").Struct(
-				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+				constants.LoggerParam(),
 				jen.ID("webhookCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 				jen.ID("webhookDataManager").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
@@ -63,11 +63,11 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("webhookDataManager").Qual(proj.ModelsV1Package(), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),
@@ -95,5 +95,5 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

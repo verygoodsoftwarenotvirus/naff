@@ -8,11 +8,11 @@ import (
 )
 
 func implementationDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("oauth2clients")
+	code := jen.NewFile("oauth2clients")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("gopkg.in/oauth2.v3/server specific implementations"),
 		jen.Line(),
 		jen.Line(),
@@ -20,7 +20,7 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("OAuth2InternalErrorHandler fulfills a role for the OAuth2 server-side provider"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2InternalErrorHandler").Params(jen.Err().Error()).Params(jen.PointerTo().Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
@@ -38,12 +38,12 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("OAuth2ResponseErrorHandler"),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("OAuth2ResponseErrorHandler fulfills a role for the OAuth2 server-side provider"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2ResponseErrorHandler").Params(jen.ID("re").PointerTo().Qual("gopkg.in/oauth2.v3/errors", "Response")).Block(
@@ -57,12 +57,12 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("AuthorizeScopeHandler"),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.ID("scope").String(), jen.Err().Error()).Block(
@@ -114,19 +114,19 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("UserAuthorizationHandler"),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("UserAuthorizationHandler satisfies the oauth2server UserAuthorizationHandler interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserAuthorizationHandler").Params(
 			jen.Underscore().Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(
-			jen.ID("userID").String(),
+			jen.ID(constants.UserIDVarName).String(),
 			jen.Err().Error(),
 		).Block(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
@@ -152,12 +152,12 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("ClientAuthorizedHandler"),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ClientAuthorizedHandler satisfies the oauth2server ClientAuthorizedHandler interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").String(), jen.ID("grant").Qual("gopkg.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").Bool(), jen.Err().Error()).Block(
@@ -190,12 +190,12 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()).Dot("ClientScopeHandler"),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ClientScopeHandler satisfies the oauth2server ClientScopeHandler interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).String()).Params(jen.ID("authed").Bool(), jen.Err().Error()).Block(
@@ -225,5 +225,5 @@ func implementationDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

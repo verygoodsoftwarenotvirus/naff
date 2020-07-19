@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,12 +10,12 @@ import (
 )
 
 func serverDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("server")
+	code := jen.NewFile("server")
 
 	httpPackage := fmt.Sprintf("%s/server/v1/http", proj.OutputPath)
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("Server is the structure responsible for hosting all available protocols."),
 			jen.Comment("In the events we adopted a gRPC implementation of the surface, this is"),
@@ -28,15 +29,15 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is our wire superset of providers this package offers."),
-			jen.ID("Providers").Equals().Qual("github.com/google/wire", "NewSet").Callln(jen.ID("ProvideServer")),
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(jen.ID("ProvideServer")),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideServer builds a new Server instance."),
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Params(jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"), jen.ID("httpServer").PointerTo().Qual(httpPackage, "Server")).Params(jen.PointerTo().ID("Server"), jen.Error()).Block(
@@ -50,7 +51,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Serve serves HTTP traffic."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
@@ -59,5 +60,5 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

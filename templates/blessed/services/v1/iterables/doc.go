@@ -10,9 +10,9 @@ import (
 func docDotGo(typ models.DataType) *jen.File {
 	pn := typ.Name.PackageName()
 	cn := strings.ToLower(typ.Name.Plural())
-	ret := jen.NewFile(pn)
+	code := jen.NewFile(pn)
 
-	ret.PackageCommentf("Package %s provides a series of HTTP handlers for managing %s in a compatible database.\n", pn, cn)
+	code.PackageCommentf("Package %s provides a series of HTTP handlers for managing %s in a compatible database.\n", pn, cn)
 
-	return ret
+	return code
 }

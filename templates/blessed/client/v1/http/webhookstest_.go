@@ -13,11 +13,11 @@ const (
 )
 
 func webhooksTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildGetWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -64,7 +64,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_GetWebhook").Block(
 			utils.ParallelTest(nil),
@@ -141,7 +141,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildGetWebhooksRequest").Block(
 			utils.ParallelTest(nil),
@@ -178,7 +178,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_GetWebhooks").Block(
 			utils.ParallelTest(nil),
@@ -236,7 +236,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildCreateWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -276,7 +276,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_CreateWebhook").Block(
 			utils.ParallelTest(nil),
@@ -331,7 +331,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildUpdateWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -360,7 +360,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_UpdateWebhook").Block(
 			utils.ParallelTest(nil),
@@ -405,7 +405,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildArchiveWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -456,7 +456,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_ArchiveWebhook").Block(
 			utils.ParallelTest(nil),
@@ -505,5 +505,5 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

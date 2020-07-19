@@ -8,11 +8,11 @@ import (
 )
 
 func usersServiceDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("users")
+	code := jen.NewFile("users")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("serviceName").Equals().Lit("users_service"),
 			jen.ID("topicName").Equals().Lit("users"),
@@ -22,14 +22,14 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("RequestValidator validates request."),
 			jen.ID("RequestValidator").Interface(
@@ -41,7 +41,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("cookieSecret").Index().Byte(),
 				jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
-				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+				constants.LoggerParam(),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("userCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
@@ -55,12 +55,12 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideUsersService builds a new UsersService."),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
 			jen.ID("authSettings").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
@@ -96,5 +96,5 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

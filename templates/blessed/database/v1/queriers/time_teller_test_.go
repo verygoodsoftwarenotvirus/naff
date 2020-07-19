@@ -10,11 +10,11 @@ import (
 func timeTellerTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("_stdLibTimeTeller_Now").Block(
 			utils.ParallelTest(jen.ID("T")),
 			jen.Line(),
@@ -27,5 +27,5 @@ func timeTellerTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 		),
 	)
 
-	return ret
+	return code
 }

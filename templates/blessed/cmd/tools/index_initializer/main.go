@@ -29,8 +29,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile("main")
 
 	utils.AddImports(proj, code)
-	code.ImportName(utils.FlagParsingLibrary, "flag")
-	code.ImportAlias(utils.FlagParsingLibrary, "flag")
+	code.ImportName(constants.FlagParsingLibrary, "flag")
+	code.ImportAlias(constants.FlagParsingLibrary, "flag")
 
 	validTypes := []jen.Code{}
 	for _, typ := range proj.DataTypes {
@@ -73,14 +73,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.Qual(utils.FlagParsingLibrary, "StringVarP").Call(
+			jen.Qual(constants.FlagParsingLibrary, "StringVarP").Call(
 				jen.AddressOf().ID("indexOutputPath"),
 				jen.ID("outputPathVerboseFlagName"),
 				jen.Lit("o"),
 				jen.EmptyString(),
 				jen.Lit("output path for bleve index"),
 			),
-			jen.Qual(utils.FlagParsingLibrary, "StringVarP").Call(
+			jen.Qual(constants.FlagParsingLibrary, "StringVarP").Call(
 				jen.AddressOf().ID("typeName"),
 				jen.Lit("type"),
 				jen.Lit("t"),
@@ -89,14 +89,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 
-			jen.Qual(utils.FlagParsingLibrary, "StringVarP").Call(
+			jen.Qual(constants.FlagParsingLibrary, "StringVarP").Call(
 				jen.AddressOf().ID("dbConnectionDetails"),
 				jen.ID("dbConnectionVerboseFlagName"),
 				jen.Lit("c"),
 				jen.EmptyString(),
 				jen.Lit("connection string for the relevant database"),
 			),
-			jen.Qual(utils.FlagParsingLibrary, "StringVarP").Call(
+			jen.Qual(constants.FlagParsingLibrary, "StringVarP").Call(
 				jen.AddressOf().ID("databaseType"),
 				jen.ID("dbTypeVerboseFlagName"),
 				jen.Lit("b"),
@@ -104,7 +104,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Lit("which type of database to connect to"),
 			),
 			jen.Line(),
-			jen.Qual(utils.FlagParsingLibrary, "DurationVarP").Call(
+			jen.Qual(constants.FlagParsingLibrary, "DurationVarP").Call(
 				jen.AddressOf().ID("deadline"),
 				jen.Lit("deadline"),
 				jen.Lit("d"),
@@ -172,8 +172,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("main").Params().Block(
-			jen.Qual(utils.FlagParsingLibrary, "Parse").Call(),
-			jen.ID(constants.LoggerVarName).Assign().Qual(filepath.Join(utils.LoggingPkg, "zerolog"), "NewZeroLogger").Call().Dot("WithName").Call(jen.Lit("search_index_initializer")),
+			jen.Qual(constants.FlagParsingLibrary, "Parse").Call(),
+			jen.ID(constants.LoggerVarName).Assign().Qual(filepath.Join(constants.LoggingPkg, "zerolog"), "NewZeroLogger").Call().Dot("WithName").Call(jen.Lit("search_index_initializer")),
 			constants.CreateCtx(),
 			jen.Line(),
 			jen.If(jen.ID("indexOutputPath").IsEqualTo().EmptyString()).Block(

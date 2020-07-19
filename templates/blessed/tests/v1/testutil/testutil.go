@@ -8,18 +8,18 @@ import (
 )
 
 func testutilDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("testutil")
+	code := jen.NewFile("testutil")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.Qual(utils.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
+			jen.Qual(constants.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("DetermineServiceURL returns the URL, if properly configured."),
 		jen.Line(),
 		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
@@ -38,7 +38,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other."),
 		jen.Line(),
 		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Block(
@@ -65,7 +65,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("IsUp can check if an instance of our server is alive."),
 		jen.Line(),
 		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Block(
@@ -89,7 +89,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
@@ -107,10 +107,10 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit"),
-			jen.ID("username").Assign().Qual(utils.FakeLibrary, "Username").Call().Plus().Qual(utils.FakeLibrary, "HexColor").Call().Plus().Qual(utils.FakeLibrary, "Country").Call(),
+			jen.ID("username").Assign().Qual(constants.FakeLibrary, "Username").Call().Plus().Qual(constants.FakeLibrary, "HexColor").Call().Plus().Qual(constants.FakeLibrary, "Country").Call(),
 			jen.ID("in").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("username"),
-				jen.ID("Password").MapAssign().Qual(utils.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
+				jen.ID("Password").MapAssign().Qual(constants.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
 			),
 			jen.Line(),
 			jen.List(jen.ID("ucr"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(constants.InlineCtx(), jen.ID("in")),
@@ -137,7 +137,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Spread().String()).Params(jen.String()).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -154,7 +154,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		)).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Block(
@@ -203,7 +203,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
@@ -279,5 +279,5 @@ cookie problems!
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -8,11 +8,11 @@ import (
 )
 
 func typesDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("metrics")
+	code := jen.NewFile("metrics")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("Namespace is a string alias for dependency injection's sake."),
 			jen.ID("Namespace").String(),
@@ -46,5 +46,5 @@ func typesDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	return ret
+	return code
 }

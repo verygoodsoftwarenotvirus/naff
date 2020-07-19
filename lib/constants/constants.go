@@ -5,19 +5,42 @@ import (
 )
 
 const (
+	CoreOAuth2Pkg          = "golang.org/x/oauth2"
+	LoggingPkg             = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	NoopLoggingPkg         = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	AssertPkg              = "github.com/stretchr/testify/assert"
+	MustAssertPkg          = "github.com/stretchr/testify/require"
+	MockPkg                = "github.com/stretchr/testify/mock"
+	DependencyInjectionPkg = "github.com/google/wire"
+	FakeLibrary            = "github.com/brianvoe/gofakeit/v5"
+	TracingLibrary         = "go.opencensus.io/trace"
+	FlagParsingLibrary     = "github.com/spf13/pflag"
+
+	// UserIDVarName is what we normally call a user ID
+	UserIDVarName = "userID"
+
+	// UserIDVarName is what we normally call a user ID in a struct definition
+	UserIDFieldName = "UserID"
+
 	// UserOwnershipFieldName represents the allowed field name for representing ownership by a user
 	UserOwnershipFieldName = "BelongsToUser"
 
+	// ContextVarName is what we normally call a context.Context
 	ContextVarName = "ctx"
 
+	// FilterVarName is what we normally call a models.QueryFilter
 	FilterVarName = "filter"
 
+	// LoggerVarName is what we normally call a logging.Logger
 	LoggerVarName = "logger"
 
+	// SpanVarName is what we normally call a tracing span
 	SpanVarName = "span"
 
+	// RequestVarName is what we normally call an HTTP request
 	RequestVarName = "req"
 
+	// ResponseVarName is what we normally call an HTTP response
 	ResponseVarName = "res"
 )
 
@@ -36,9 +59,14 @@ func CtxParam() jen.Code {
 	return CtxVar().Qual("context", "Context")
 }
 
+// LoggerParam is a shorthand for a context param
+func LoggerParam() jen.Code {
+	return jen.ID(LoggerVarName).Qual(LoggingPkg, "Logger")
+}
+
 // UserIDVar is a shorthand for a context param
 func UserIDVar() *jen.Statement {
-	return jen.ID("userID")
+	return jen.ID(UserIDVarName)
 }
 
 // UserIDParam is a shorthand for a context param

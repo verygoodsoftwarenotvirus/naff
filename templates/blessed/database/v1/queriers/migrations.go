@@ -603,25 +603,25 @@ func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) []jen
 func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.ID("migrations").Equals().Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(proj, dbvendor)...),
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		buildBuildMigrationFuncDecl(dbvendor)...,
 	)
 
-	ret.Add(
+	code.Add(
 		buildMigrate(dbvendor)...,
 	)
 
-	return ret
+	return code
 }
 
 func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {

@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo(vendor, dbDesc string) *jen.File {
-	ret := jen.NewFile(vendor)
+	code := jen.NewFile(vendor)
 
-	ret.PackageCommentf("Package %s provides a Database implementation that is compatible with %s\n", vendor, dbDesc)
+	code.PackageCommentf("Package %s provides a Database implementation that is compatible with %s\n", vendor, dbDesc)
 
-	return ret
+	return code
 }

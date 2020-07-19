@@ -7,11 +7,11 @@ import (
 )
 
 func authenticatorTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth_test")
+	code := jen.NewFile("auth_test")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideBcryptHashCost").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -23,5 +23,5 @@ func authenticatorTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -8,23 +8,23 @@ import (
 )
 
 func counterDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("mock")
+	code := jen.NewFile("mock")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("UnitCounter is a mock metrics.UnitCounter"),
 		jen.Line(),
-		jen.Type().ID("UnitCounter").Struct(jen.Qual(utils.MockPkg, "Mock")),
+		jen.Type().ID("UnitCounter").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Increment implements our UnitCounter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(constants.CtxParam()).Block(
@@ -33,7 +33,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("IncrementBy implements our UnitCounter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()).Block(
@@ -42,7 +42,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Decrement implements our UnitCounter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(constants.CtxParam()).Block(
@@ -51,5 +51,5 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

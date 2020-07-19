@@ -8,11 +8,11 @@ import (
 )
 
 func mainTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
 	// vars
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID(utils.BuildFakeVarName("URI")).Equals().Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 			jen.ID("asciiControlChar").Equals().String().Call(jen.Byte().Call(jen.Lit(0x7f))),
@@ -20,7 +20,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	// types
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.ID("argleBargle").Struct(
 				jen.ID("Name").String(),
@@ -31,7 +31,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(
 			jen.ID("v").ID("valuer"),
 		).ID("ToValues").Params().Params(
@@ -45,43 +45,43 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	// funcs
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		jen.Comment("begin helper funcs"),
 		jen.Line(),
 		jen.Line(),
 	)
 
-	ret.Add(buildMustParseURL()...)
-	ret.Add(buildBuildTestClient()...)
-	ret.Add(buildBuildTestClientWithInvalidURL()...)
+	code.Add(buildMustParseURL()...)
+	code.Add(buildBuildTestClient()...)
+	code.Add(buildBuildTestClientWithInvalidURL()...)
 
-	ret.Add(
+	code.Add(
 		jen.Line(),
 		jen.Line(),
 		jen.Comment("end helper funcs"),
 		jen.Line(),
 	)
 
-	ret.Add(buildTestV1Client_AuthenticatedClient()...)
-	ret.Add(buildTestV1Client_PlainClient()...)
-	ret.Add(buildTestV1Client_TokenSource()...)
-	ret.Add(buildTestNewClient()...)
-	ret.Add(buildTestNewSimpleClient()...)
-	ret.Add(buildTestV1Client_CloseRequestBody()...)
-	ret.Add(buildTestBuildURL()...)
-	ret.Add(buildTestBuildVersionlessURL()...)
-	ret.Add(buildTestV1Client_BuildWebsocketURL()...)
-	ret.Add(buildTestV1Client_BuildHealthCheckRequest()...)
-	ret.Add(buildTestV1Client_IsUp()...)
-	ret.Add(buildTestV1Client_buildDataRequest()...)
-	ret.Add(buildTestV1Client_executeRequest()...)
-	ret.Add(buildTestV1Client_executeRawRequest()...)
-	ret.Add(buildTestV1Client_checkExistence()...)
-	ret.Add(buildTestV1Client_retrieve()...)
-	ret.Add(buildTestV1Client_executeUnauthenticatedDataRequest()...)
+	code.Add(buildTestV1Client_AuthenticatedClient()...)
+	code.Add(buildTestV1Client_PlainClient()...)
+	code.Add(buildTestV1Client_TokenSource()...)
+	code.Add(buildTestNewClient()...)
+	code.Add(buildTestNewSimpleClient()...)
+	code.Add(buildTestV1Client_CloseRequestBody()...)
+	code.Add(buildTestBuildURL()...)
+	code.Add(buildTestBuildVersionlessURL()...)
+	code.Add(buildTestV1Client_BuildWebsocketURL()...)
+	code.Add(buildTestV1Client_BuildHealthCheckRequest()...)
+	code.Add(buildTestV1Client_IsUp()...)
+	code.Add(buildTestV1Client_buildDataRequest()...)
+	code.Add(buildTestV1Client_executeRequest()...)
+	code.Add(buildTestV1Client_executeRawRequest()...)
+	code.Add(buildTestV1Client_checkExistence()...)
+	code.Add(buildTestV1Client_retrieve()...)
+	code.Add(buildTestV1Client_executeUnauthenticatedDataRequest()...)
 
-	return ret
+	return code
 }
 
 func buildMustParseURL() []jen.Code {
@@ -120,7 +120,7 @@ func buildBuildTestClient() []jen.Code {
 		).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("l").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("l").Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("u").Assign().ID("mustParseURL").Call(
 				jen.ID("ts").Dot("URL"),
 			),
@@ -145,7 +145,7 @@ func buildBuildTestClientWithInvalidURL() []jen.Code {
 		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(v1)).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("l").Assign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("l").Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 			jen.ID("u").Assign().ID("mustParseURL").Call(jen.Lit("https://verygoodsoftwarenotvirus.ru")),
 			jen.ID("u").Dot("Scheme").Equals().Qual("fmt", "Sprintf").Call(
 				jen.RawString(`%s://`),
@@ -238,7 +238,7 @@ func buildTestV1Client_TokenSource() []jen.Code {
 					jen.ID("mustParseURL").Call(
 						jen.ID(utils.BuildFakeVarName("URI")),
 					),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -272,7 +272,7 @@ func buildTestNewClient() []jen.Code {
 					jen.ID("mustParseURL").Call(
 						jen.ID(utils.BuildFakeVarName("URI")),
 					),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -295,7 +295,7 @@ func buildTestNewClient() []jen.Code {
 					jen.ID("mustParseURL").Call(
 						jen.ID(utils.BuildFakeVarName("URI")),
 					),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.AddressOf().Qual("net/http", "Client").Valuesln(
 						jen.ID("Timeout").MapAssign().Zero(),
 					),
@@ -406,7 +406,7 @@ func buildTestBuildURL() []jen.Code {
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -465,7 +465,7 @@ func buildTestBuildURL() []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				"with invalid URL parts",
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(testVar()),
-				jen.Qual(utils.AssertPkg, "Empty").Call(
+				jen.Qual(constants.AssertPkg, "Empty").Call(
 					testVar(),
 					jen.ID("c").Dot("BuildURL").Call(
 						jen.Nil(),
@@ -504,7 +504,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -563,7 +563,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				"with invalid URL parts",
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(testVar()),
-				jen.Qual(utils.AssertPkg, "Empty").Call(
+				jen.Qual(constants.AssertPkg, "Empty").Call(
 					testVar(),
 					jen.ID("c").Dot("buildVersionlessURL").Call(
 						jen.Nil(),
@@ -600,7 +600,7 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.Nil(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),

@@ -10,13 +10,13 @@ import (
 )
 
 func databaseDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("database")
+	code := jen.NewFile("database")
 
 	modelsImp := fmt.Sprintf("%s/models/v1", proj.OutputPath)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().ID("Scanner").Equals().Parens(jen.PointerTo().Qual("database/sql", "Row")).Call(jen.Nil()),
 			jen.Underscore().ID("Querier").Equals().Parens(jen.PointerTo().Qual("database/sql", "DB")).Call(jen.Nil()),
@@ -47,7 +47,7 @@ func databaseDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("Scanner represents any database response (i.e. sql.Row[s])"),
 			jen.ID("Scanner").Interface(
@@ -80,5 +80,5 @@ func databaseDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

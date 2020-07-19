@@ -8,11 +8,11 @@ import (
 )
 
 func configDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("config")
+	code := jen.NewFile("config")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("DevelopmentRunMode is the run mode for a development environment"),
 			jen.ID("DevelopmentRunMode").ID("runMode").Equals().Lit("development"),
@@ -31,7 +31,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.ID("validModes").Equals().Map(jen.ID("runMode")).Struct().Valuesln(
 				jen.ID("DevelopmentRunMode").MapAssign().Values(),
@@ -42,7 +42,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -52,13 +52,13 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			buildTypeDefinitions(proj)...,
 		),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder."),
 		jen.Line(),
 		jen.Func().Params(
@@ -77,7 +77,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("BuildConfig is a constructor function that initializes a viper config."),
 		jen.Line(),
 		jen.Func().ID("BuildConfig").Params().Params(jen.PointerTo().Qual("github.com/spf13/viper", "Viper")).Block(
@@ -103,7 +103,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ParseConfigFile parses a configuration file."),
 		jen.Line(),
 		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").String()).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
@@ -138,7 +138,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -153,7 +153,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }
 
 func buildTypeDefinitions(proj *models.Project) []jen.Code {

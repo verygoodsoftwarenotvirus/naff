@@ -10,11 +10,11 @@ import (
 )
 
 func serverDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("httpserver")
+	code := jen.NewFile("httpserver")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("maxTimeout").Equals().Lit(120).Times().Qual("time", "Second"),
 			jen.ID("serverNamespace").Equals().Lit("todo-service"),
@@ -49,7 +49,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
 			jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
 			jen.ID("httpServer").PointerTo().Qual("net/http", "Server"),
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
@@ -62,7 +62,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("Server is our API httpServer."),
 			jen.ID("Server").Struct(
@@ -89,7 +89,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 			jen.ID("oauth2Service").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
 			jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
 			jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
-			jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+			constants.LoggerParam(),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 		)
 
@@ -193,7 +193,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideServer builds a new Server instance."),
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Paramsln(
@@ -204,7 +204,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment(`func (s *Server) logRoutes() {
 	if err := chi.Walk(s.router, func(method string, route string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {
 		s.logger.WithValues(map[string]interface{}{
@@ -221,7 +221,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Serve serves HTTP traffic."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
@@ -241,7 +241,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("provideHTTPServer provides an HTTP httpServer."),
 		jen.Line(),
 		jen.Func().ID("provideHTTPServer").Params().Params(jen.PointerTo().Qual("net/http", "Server")).Block(
@@ -273,5 +273,5 @@ func serverDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

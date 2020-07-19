@@ -10,9 +10,9 @@ import (
 )
 
 func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(typ.Name.PackageName())
+	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	sn := typ.Name.Singular()
 	cn := typ.Name.SingularCommonName()
@@ -20,7 +20,7 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	srn := typ.Name.RouteName()
 	prn := typ.Name.PluralRouteName()
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts.", cn),
 			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
@@ -35,17 +35,17 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(buildServiceTypeDecl(proj, typ)...)
-	ret.Add(buildProvideServiceFuncDecl(proj, typ)...)
+	code.Add(buildServiceTypeDecl(proj, typ)...)
+	code.Add(buildProvideServiceFuncDecl(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code {
@@ -55,7 +55,7 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 	uvn := typ.Name.UnexportedVarName()
 
 	structFields := []jen.Code{
-		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+		constants.LoggerParam(),
 	}
 
 	// data managers
@@ -131,7 +131,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	uvn := typ.Name.UnexportedVarName()
 
 	params := []jen.Code{
-		jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+		constants.LoggerParam(),
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {

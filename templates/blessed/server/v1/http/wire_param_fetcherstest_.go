@@ -8,15 +8,15 @@ import (
 )
 
 func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("httpserver")
+	code := jen.NewFile("httpserver")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	for _, typ := range proj.DataTypes {
 		n := typ.Name
 
 		if typ.OwnedByAUserAtSomeLevel(proj) {
-			ret.Add(
+			code.Add(
 				jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Plural()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
@@ -30,45 +30,45 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		}
 
 		for _, ot := range proj.FindOwnerTypeChain(typ) {
-			ret.Add(
+			code.Add(
 				jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 					jen.ID("T").Dot("Parallel").Call(),
 					jen.Line(),
 					utils.BuildSubTestWithoutContext(
 						"obligatory",
-						jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+						jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					),
 				),
 				jen.Line(),
 			)
 		}
 
-		ret.Add(
+		code.Add(
 			jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
 					"obligatory",
-					jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), n.Singular()).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				),
 			),
 			jen.Line(),
 		)
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideUsersServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().ID("ProvideUsersServiceUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideUsersServiceUserIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideAuthServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -80,7 +80,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideWebhooksServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -92,31 +92,31 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideWebhooksServiceWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().ID("ProvideWebhooksServiceWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideWebhooksServiceWebhookIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestProvideOAuth2ClientsServiceClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_userIDFetcherFromRequestContext").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -148,13 +148,13 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_buildRouteParamUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -178,7 +178,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -204,13 +204,13 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 
 	for _, typ := range proj.DataTypes {
 		n := typ.Name
-		ret.Add(
+		code.Add(
 			jen.Func().IDf("Test_buildRouteParam%sIDFetcher", n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
 				utils.BuildSubTestWithoutContext(
 					"happy path",
-					jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", n.Singular()).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 					jen.Line(),
 					jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -234,7 +234,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 				utils.BuildSubTestWithoutContext(
 					"with invalid value somehow",
 					jen.Comment("NOTE: This will probably never happen in dev or production"),
-					jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", n.Singular()).Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+					jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", n.Singular()).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 					jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 					jen.Line(),
 					jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -258,13 +258,13 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		)
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_buildRouteParamWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -288,7 +288,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -312,13 +312,13 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_buildRouteParamOAuth2ClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -341,7 +341,7 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -365,5 +365,5 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

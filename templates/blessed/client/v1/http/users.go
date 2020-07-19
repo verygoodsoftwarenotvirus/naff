@@ -8,26 +8,26 @@ import (
 )
 
 func usersDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(jen.Const().ID("usersBasePath").Equals().Lit("users"))
+	code.Add(jen.Const().ID("usersBasePath").Equals().Lit("users"))
 
-	ret.Add(buildBuildGetUserRequest(proj)...)
-	ret.Add(buildGetUser(proj)...)
-	ret.Add(buildBuildGetUsersRequest(proj)...)
-	ret.Add(buildGetUsers(proj)...)
-	ret.Add(buildBuildCreateUserRequest(proj)...)
-	ret.Add(buildCreateUser(proj)...)
-	ret.Add(buildBuildArchiveUserRequest(proj)...)
-	ret.Add(buildArchiveUser(proj)...)
-	ret.Add(buildBuildLoginRequest(proj)...)
-	ret.Add(buildLogin(proj)...)
-	ret.Add(buildBuildVerifyTOTPSecretRequest(proj)...)
-	ret.Add(buildVerifyTOTPSecret(proj)...)
+	code.Add(buildBuildGetUserRequest(proj)...)
+	code.Add(buildGetUser(proj)...)
+	code.Add(buildBuildGetUsersRequest(proj)...)
+	code.Add(buildGetUsers(proj)...)
+	code.Add(buildBuildCreateUserRequest(proj)...)
+	code.Add(buildCreateUser(proj)...)
+	code.Add(buildBuildArchiveUserRequest(proj)...)
+	code.Add(buildArchiveUser(proj)...)
+	code.Add(buildBuildLoginRequest(proj)...)
+	code.Add(buildLogin(proj)...)
+	code.Add(buildBuildVerifyTOTPSecretRequest(proj)...)
+	code.Add(buildVerifyTOTPSecret(proj)...)
 
-	return ret
+	return code
 }
 
 func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
@@ -39,7 +39,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 			jen.Nil(),
 			jen.ID("usersBasePath"),
 			jen.Qual("strconv", "FormatUint").Call(
-				jen.ID("userID"),
+				jen.ID(constants.UserIDVarName),
 				jen.Lit(10),
 			),
 		),
@@ -57,7 +57,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("userID").Uint64(),
+			constants.UserIDParam(),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -78,7 +78,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildGetUserRequest").Call(
 			constants.CtxVar(),
-			jen.ID("userID"),
+			jen.ID(constants.UserIDVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().List(
@@ -106,7 +106,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("userID").Uint64(),
+			constants.UserIDParam(),
 		).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Err().Error(),
@@ -290,7 +290,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 			jen.Nil(),
 			jen.ID("usersBasePath"),
 			jen.Qual("strconv", "FormatUint").Call(
-				jen.ID("userID"),
+				jen.ID(constants.UserIDVarName),
 				jen.Lit(10),
 			),
 		),
@@ -308,7 +308,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("userID").Uint64(),
+			constants.UserIDParam(),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -329,7 +329,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 			jen.Err(),
 		).Assign().ID("c").Dot("BuildArchiveUserRequest").Call(
 			constants.CtxVar(),
-			jen.ID("userID"),
+			jen.ID(constants.UserIDVarName),
 		),
 		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -350,7 +350,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("userID").Uint64(),
+			constants.UserIDParam(),
 		).Params(jen.Error()).Block(block...),
 		jen.Line(),
 	}
@@ -497,7 +497,7 @@ func buildBuildVerifyTOTPSecretRequest(proj *models.Project) []jen.Code {
 			jen.ID("uri"),
 			jen.AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretVerificationInput").Valuesln(
 				jen.ID("TOTPToken").MapAssign().ID("token"),
-				jen.ID("UserID").MapAssign().ID("userID"),
+				jen.ID(constants.UserIDFieldName).MapAssign().ID(constants.UserIDVarName),
 			),
 		)),
 	}
@@ -518,31 +518,6 @@ func buildBuildVerifyTOTPSecretRequest(proj *models.Project) []jen.Code {
 
 	return lines
 }
-
-//// VerifyTOTPSecret executes a request to verify a TOTP secret.
-//func (c *V1Client) VerifyTOTPSecret(ctx context.Context, userID uint64, token string) error {
-//	ctx, span := tracing.StartSpan(ctx, "BuildVerifyTOTPSecretRequest")
-//	defer span.End()
-//
-//	req, err := c.BuildVerifyTOTPSecretRequest(ctx, userID, token)
-//	if err != nil {
-//		return fmt.Errorf("error building TOTP validation request: %w", err)
-//	}
-//
-//	res, err := c.executeRawRequest(ctx, c.plainClient, req)
-//	if err != nil {
-//		return fmt.Errorf("executing request: %w", err)
-//	}
-//	c.closeResponseBody(res)
-//
-//	if res.StatusCode == http.StatusBadRequest {
-//		return ErrInvalidTOTPToken
-//	} else if res.StatusCode != http.StatusAccepted {
-//		return fmt.Errorf("erroneous response code when validating TOTP secret: %d", res.StatusCode)
-//	}
-//
-//	return nil
-//}
 
 func buildVerifyTOTPSecret(proj *models.Project) []jen.Code {
 	const funcName = "VerifyTOTPSecret"

@@ -36,11 +36,11 @@ func buildCORSHandlerDef() []jen.Code {
 }
 
 func routesDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("httpserver")
+	code := jen.NewFile("httpserver")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("root").Equals().Lit("/"),
 			jen.ID("numericIDPattern").Equals().Lit(`/{%s:[0-9]+}`),
@@ -49,9 +49,9 @@ func routesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildSetupRouterFuncDef(proj)...)
+	code.Add(buildSetupRouterFuncDef(proj)...)
 
-	return ret
+	return code
 }
 
 func buildIterableAPIRoutes(proj *models.Project) []jen.Code {

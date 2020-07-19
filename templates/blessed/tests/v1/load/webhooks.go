@@ -8,11 +8,11 @@ import (
 )
 
 func webhooksDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("main")
+	code := jen.NewFile("main")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks."),
 		jen.Line(),
 		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
@@ -27,7 +27,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildWebhookActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(
 			jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("GetWebhooks").MapAssign().Valuesln(
@@ -90,5 +90,5 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

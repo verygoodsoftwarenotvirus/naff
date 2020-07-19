@@ -8,23 +8,23 @@ import (
 )
 
 func initDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("frontend")
+	code := jen.NewFile("frontend")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().ID("urlToUse").String(),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("seleniumHubAddr").Equals().Lit("http://selenium-hub:4444/wd/hub"),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.ID("urlToUse").Equals().ID("testutil").Dot("DetermineServiceURL").Call(),
 			jen.Line(),
@@ -42,5 +42,5 @@ func initDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

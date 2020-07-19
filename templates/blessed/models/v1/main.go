@@ -7,11 +7,11 @@ import (
 )
 
 func mainDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("SortAscending is the pre-determined Ascending sortType for external use"),
 			jen.ID("SortAscending").ID("sortType").Equals().Lit("asc"),
@@ -21,7 +21,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("ContextKey represents strings to be used in Context objects. From the docs:"),
 			jen.Comment(`		"The provided key must be comparable and should not be of type string or`),
@@ -44,12 +44,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Error().Equals().Parens(jen.PointerTo().ID("ErrorResponse")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ErrorResponse represents a response we might send to the user in the event of an error."),
 		jen.Line(),
 		jen.Type().ID("ErrorResponse").Struct(
@@ -59,12 +59,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID("er").PointerTo().ID("ErrorResponse")).ID("Error").Params().Params(jen.String()).Block(
 			jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%d: %s"), jen.ID("er").Dot("Code"), jen.ID("er").Dot("Message")),
 		),
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

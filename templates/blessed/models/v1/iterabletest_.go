@@ -7,9 +7,9 @@ import (
 )
 
 func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 	sn := typ.Name.Singular()
 	uvn := typ.Name.UnexportedVarName()
 
@@ -37,7 +37,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		return lines
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -55,7 +55,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		}
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -72,5 +72,5 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -5,10 +5,10 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	ret.PackageComment(`Package client provides an HTTP client that can communicate with and interpret the responses
+	code.PackageComment(`Package client provides an HTTP client that can communicate with and interpret the responses
 of an instance of the todo service.`)
 
-	return ret
+	return code
 }

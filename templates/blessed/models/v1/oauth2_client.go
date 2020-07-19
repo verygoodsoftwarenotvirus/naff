@@ -8,11 +8,11 @@ import (
 )
 
 func oauth2ClientDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("OAuth2ClientKey is a ContextKey for use with contexts involving OAuth2 clients."),
 			jen.ID("OAuth2ClientKey").ID("ContextKey").Equals().Lit("oauth2_client"),
@@ -20,17 +20,17 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("OAuth2ClientDataManager handles OAuth2 clients."),
 			jen.ID("OAuth2ClientDataManager").Interface(
-				jen.ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
+				jen.ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("GetOAuth2ClientByClientID").Params(constants.CtxParam(), jen.ID("clientID").String()).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("GetAllOAuth2ClientCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetOAuth2Clients").Params(constants.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("OAuth2ClientList"), jen.Error()),
+				jen.ID("GetOAuth2Clients").Params(constants.CtxParam(), constants.UserIDParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("OAuth2ClientList"), jen.Error()),
 				jen.ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().ID("OAuth2ClientCreationInput")).Params(jen.PointerTo().ID("OAuth2Client"), jen.Error()),
 				jen.ID("UpdateOAuth2Client").Params(constants.CtxParam(), jen.ID("updated").PointerTo().ID("OAuth2Client")).Params(jen.Error()),
-				jen.ID("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
+				jen.ID("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("OAuth2ClientDataServer describes a structure capable of serving traffic related to oauth2 clients."),
@@ -91,12 +91,12 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.PointerTo().ID("OAuth2Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetID returns the client ID. NOTE: I believe this is implemented for the above interface spec (oauth2.ClientInfo)"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetID").Params().Params(jen.String()).Block(
@@ -105,8 +105,8 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Comment("GetSecret returns the ClientSecret."),
+	code.Add(
+		jen.Comment("GetSecret returns the ClientSeccode."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("ClientSecret"),
@@ -114,7 +114,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetDomain returns the client's domain."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.String()).Block(
@@ -123,7 +123,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("GetUserID returns the client's UserID."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.String()).Block(
@@ -132,7 +132,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
@@ -152,5 +152,5 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

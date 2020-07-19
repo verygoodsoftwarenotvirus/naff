@@ -10,34 +10,34 @@ import (
 )
 
 func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("mock")
+	code := jen.NewFile("mock")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	n := typ.Name
 	sn := n.Singular()
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().ID("models").Dotf("%sDataManager", sn).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Commentf("%sDataManager is a mocked models.%sDataManager for testing.", sn, sn),
 		jen.Line(),
-		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual(utils.MockPkg, "Mock")),
+		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
 	)
 
-	ret.Add(buildSomethingExists(proj, typ)...)
-	ret.Add(buildGetSomething(proj, typ)...)
-	ret.Add(buildGetAllSomethingsCount(typ)...)
-	ret.Add(buildGetListOfSomething(proj, typ)...)
-	ret.Add(buildCreateSomething(proj, typ)...)
-	ret.Add(buildUpdateSomething(proj, typ)...)
-	ret.Add(buildArchiveSomething(proj, typ)...)
+	code.Add(buildSomethingExists(proj, typ)...)
+	code.Add(buildGetSomething(proj, typ)...)
+	code.Add(buildGetAllSomethingsCount(typ)...)
+	code.Add(buildGetListOfSomething(proj, typ)...)
+	code.Add(buildCreateSomething(proj, typ)...)
+	code.Add(buildUpdateSomething(proj, typ)...)
+	code.Add(buildArchiveSomething(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {

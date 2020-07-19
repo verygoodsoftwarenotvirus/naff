@@ -14,9 +14,8 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]func() []byte{
-		"development/badges.json": badgesDotJSON,
-		".dockerignore":           dockerIgnore,
-		".gitignore":              gitIgnore,
+		".dockerignore": dockerIgnore,
+		".gitignore":    gitIgnore,
 	}
 
 	files["Makefile"] = makefile(project)

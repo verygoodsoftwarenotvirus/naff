@@ -8,16 +8,16 @@ import (
 )
 
 func counterDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("metrics")
+	code := jen.NewFile("metrics")
 
 	const (
 		typeName       = "opencensusCounter"
 		pointerVarName = "c"
 	)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("opencensusCounter is a Counter that interfaces with opencensus."),
 		jen.Line(),
 		jen.Type().ID(typeName).Struct(
@@ -29,7 +29,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("subtractFromCount").Params(
 			constants.CtxParam(),
 			jen.ID("value").Uint64(),
@@ -48,7 +48,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("addToCount").Params(
 			constants.CtxParam(),
 			jen.ID("value").Uint64(),
@@ -65,7 +65,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Decrement satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Decrement").Params(constants.CtxParam()).Block(
@@ -74,7 +74,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Increment satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Increment").Params(constants.CtxParam()).Block(
@@ -83,7 +83,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("IncrementBy satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("value").Uint64()).Block(
@@ -92,7 +92,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideUnitCounter provides a new counter."),
 		jen.Line(),
 		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").String()).Params(jen.ID("UnitCounter"), jen.Error()).Block(
@@ -122,5 +122,5 @@ func counterDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

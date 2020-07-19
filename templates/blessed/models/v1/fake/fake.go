@@ -7,10 +7,10 @@ import (
 )
 
 func fakeDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
-	ret.Add(utils.FakeSeedFunc())
+	code.Add(utils.FakeSeedFunc())
 
-	return ret
+	return code
 }

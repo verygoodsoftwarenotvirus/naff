@@ -13,9 +13,9 @@ import (
 func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	uvn := dbvendor.UnexportedVarName()
 	cn := dbvendor.SingularCommonName()
@@ -30,7 +30,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	}
 	squirrelInitConfig := jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", squirrelPlaceholder))
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("loggerName").Equals().Lit(rn),
 			jen.IDf("%sDriverName", uvn).Equals().Litf("wrapped-%s-driver", dbvendor.KebabName()),
@@ -68,7 +68,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		driverInit = jen.AddressOf().Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("init").Params().Block(
 			jen.Commentf("Explicitly wrap the %s driver with ocsql.", sn),
 			jen.ID("driver").Assign().Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
@@ -86,13 +86,13 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db.", sn, sn),
 			jen.ID(sn).Struct(
-				jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"),
+				constants.LoggerParam(),
 				jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 				func() jen.Code {
 					if isMariaDB(dbvendor) || isSqlite(dbvendor) {
@@ -127,10 +127,10 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		dbTrail = "Connection"
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger"), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
@@ -143,10 +143,10 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		dbTrail = " db"
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Block(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),
@@ -222,7 +222,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		return nil
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("IsReady reports whether or not the db is ready."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(
@@ -238,7 +238,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("logQueryBuildingError logs errors that may occur during query construction."),
 		jen.Line(),
 		jen.Comment("Such errors should be few and far between, as the generally only occur with"),
@@ -258,7 +258,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 	)
 
 	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
-		ret.Add(
+		code.Add(
 			jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
 			jen.Line(),
 			jen.Comment("Such errors should be few and far between, as the generally only occur with"),
@@ -278,7 +278,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		)
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Comment("buildError takes a given error and wraps it with a message, provided that it"),
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
@@ -297,5 +297,5 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

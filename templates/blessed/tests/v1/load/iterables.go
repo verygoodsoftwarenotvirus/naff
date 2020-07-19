@@ -10,14 +10,14 @@ import (
 )
 
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("main")
+	code := jen.NewFile("main")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildFetchRandomSomething(proj, typ)...)
-	ret.Add(buildRandomActionMap(proj, typ)...)
+	code.Add(buildFetchRandomSomething(proj, typ)...)
+	code.Add(buildRandomActionMap(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj *models.Project, typ models.DataType, call bool) []jen.Code {

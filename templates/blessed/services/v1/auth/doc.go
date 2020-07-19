@@ -5,10 +5,10 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	ret.PackageComment(`Package auth implements a user authentication layer for a web server, issuing
+	code.PackageComment(`Package auth implements a user authentication layer for a web server, issuing
 cookies, validating requests via middleware`)
 
-	return ret
+	return code
 }

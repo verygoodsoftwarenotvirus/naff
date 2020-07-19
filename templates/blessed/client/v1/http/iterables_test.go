@@ -54,14 +54,14 @@ func Test_buildParamsForMethodThatHandlesAnInstanceOfADataType(T *testing.T) {
 	}
 
 	T.Run("normal operation with dependencies", func(t *testing.T) {
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, c, false)...).Block(),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -78,14 +78,14 @@ func doSomething(ctx context.Context, grandparentID, parentID, childID uint64) {
 	})
 
 	T.Run("normal operation with fewer dependencies", func(t *testing.T) {
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, b, false)...).Block(),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -116,14 +116,14 @@ func doSomething(ctx context.Context, grandparentID, parentID uint64) {}
 			DataTypes: []models.DataType{gp},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params(buildParamsForMethodThatHandlesAnInstanceWithIDs(proj, a, false)...).Block(),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -148,16 +148,16 @@ func Test_buildParamsForMethodThatIncludesItsOwnTypeInItsParams(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params(
 				buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, c, false)...,
 			).Block(),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -179,14 +179,14 @@ func doSomething(ctx context.Context, grandparentID uint64, child *v1.Child) {}
 			DataTypes: []models.DataType{a, b},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params(buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, b, false)...).Block(),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -218,14 +218,14 @@ func doSomething(ctx context.Context, parent *v1.Parent) {}
 			DataTypes: []models.DataType{gp},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params(buildParamsForMethodThatIncludesItsOwnTypeInItsParams(proj, a, false)...).Block(),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -251,14 +251,14 @@ func TestBuildBuildGetSomethingRequestFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildBuildGetSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -298,14 +298,14 @@ func TestBuildGetSomethingFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildGetSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -344,14 +344,14 @@ func TestBuildBuildGetListOfSomethingRequestFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildBuildGetListOfSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -391,14 +391,14 @@ func TestBuildGetListOfSomethingFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildGetListOfSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -437,14 +437,14 @@ func TestBuildBuildCreateSomethingRequestFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildBuildCreateSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -484,14 +484,14 @@ func TestBuildCreateSomethingFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildCreateSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -527,14 +527,14 @@ func TestBuildBuildUpdateSomethingRequestFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildBuildUpdateSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -575,14 +575,14 @@ func TestBuildUpdateSomethingFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildUpdateSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -613,14 +613,14 @@ func (c *V1Client) UpdateChild(ctx context.Context, grandparentID uint64, child 
 			DataTypes: []models.DataType{a},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildUpdateSomethingFuncDecl(proj, a)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -656,14 +656,14 @@ func TestBuildBuildArchiveSomethingRequestFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildBuildArchiveSomethingRequestFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -703,14 +703,14 @@ func TestBuildArchiveSomethingFuncDecl(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildArchiveSomethingFuncDecl(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts

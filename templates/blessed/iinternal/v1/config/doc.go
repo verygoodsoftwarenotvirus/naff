@@ -5,9 +5,9 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("config")
+	code := jen.NewFile("config")
 
-	ret.PackageComment("Package config provides configuration structs for every service\n")
+	code.PackageComment("Package config provides configuration structs for every service\n")
 
-	return ret
+	return code
 }

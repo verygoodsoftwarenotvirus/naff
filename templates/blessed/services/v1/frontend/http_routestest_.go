@@ -9,11 +9,11 @@ import (
 )
 
 func httpRoutesTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("frontend")
+	code := jen.NewFile("frontend")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -30,9 +30,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(buildTestService_StaticDir(proj)...)
+	code.Add(buildTestService_StaticDir(proj)...)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_Routes").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -44,7 +44,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -66,7 +66,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }
 
 func buildTestService_StaticDir(proj *models.Project) []jen.Code {
@@ -75,7 +75,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"happy path",
-			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Line(),
 			jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
 			utils.RequireNoError(jen.Err(), nil),
@@ -93,7 +93,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"with frontend routing path",
-			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 			jen.Line(),
 			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),
@@ -116,7 +116,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			jen.Line(), jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
-				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 				jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 				jen.Line(),
 				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),

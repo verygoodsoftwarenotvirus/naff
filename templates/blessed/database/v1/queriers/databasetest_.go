@@ -13,18 +13,18 @@ import (
 func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
 	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.Err()).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "New").Call(),
 			utils.RequireNoError(jen.Err(), nil),
-			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.True(), jen.ID("db"), jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.True(), jen.ID("db"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
 			jen.Return().List(jen.ID(dbfl).Assert(jen.PointerTo().ID(sn)), jen.ID("mock")),
 		),
 		jen.Line(),
@@ -35,7 +35,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		regexPattern = `\$\d+`
 	}
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.ID("sqlMockReplacer").Equals().Qual("strings", "NewReplacer").PairedCallln(
 				jen.Lit("$"), jen.RawString(`\$`),
@@ -54,14 +54,14 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("formatQueryForSQLMock").Params(jen.ID("query").String()).Params(jen.String()).Block(
 			jen.Return().ID("sqlMockReplacer").Dot("Replace").Call(jen.ID("query")),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("ensureArgCountMatchesQuery").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("query").String(),
@@ -80,7 +80,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -92,7 +92,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -105,7 +105,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().IDf("Test%s_logQueryBuildingError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -119,7 +119,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	)
 
 	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
-		ret.Add(
+		code.Add(
 			jen.Func().IDf("Test%s_logIDRetrievalError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				jen.ID("T").Dot("Parallel").Call(),
 				jen.Line(),
@@ -133,5 +133,5 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		)
 	}
 
-	return ret
+	return code
 }

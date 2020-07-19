@@ -297,13 +297,14 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 									if strings.ToLower(properOwnerParts[0]) != "user" && strings.ToLower(properOwnerParts[1]) != "user" {
 										panic("too many owners, a type may only be owned by another type and a user!")
 									}
+									// we can't get here without this being true
+									alsoBelongsToUser = true
 
 									if strings.ToLower(properOwnerParts[0]) == "user" {
 										properOwner = properOwnerParts[1]
 									} else if strings.ToLower(properOwnerParts[1]) == "user" {
 										properOwner = properOwnerParts[0]
 									}
-									alsoBelongsToUser = true
 								}
 
 								if properOwner == "__nobody__" {

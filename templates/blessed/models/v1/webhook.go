@@ -8,21 +8,21 @@ import (
 )
 
 func webhookDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("models")
+	code := jen.NewFile("models")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("WebhookDataManager describes a structure capable of storing webhooks."),
 			jen.ID("WebhookDataManager").Interface(
-				jen.ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
+				jen.ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
 				jen.ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetWebhooks").Params(constants.CtxParam(), jen.ID("userID").Uint64(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
+				jen.ID("GetWebhooks").Params(constants.CtxParam(), constants.UserIDParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
 				jen.ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().ID("WebhookList"), jen.Error()),
 				jen.ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().ID("WebhookCreationInput")).Params(jen.PointerTo().ID("Webhook"), jen.Error()),
 				jen.ID("UpdateWebhook").Params(constants.CtxParam(), jen.ID("updated").PointerTo().ID("Webhook")).Params(jen.Error()),
-				jen.ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID("userID")).Uint64()).Params(jen.Error()),
+				jen.ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("WebhookDataServer describes a structure capable of serving traffic related to webhooks."),
@@ -86,7 +86,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("Update merges an WebhookCreationInput with an Webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("Update").Params(jen.ID("input").PointerTo().ID("WebhookUpdateInput")).Block(
@@ -116,8 +116,8 @@ func webhookDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Func().Params(jen.Error())).Block(
+	code.Add(
+		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), constants.LoggerParam()).Params(jen.Func().Params(jen.Error())).Block(
 			jen.Return().Func().Params(jen.Err().Error()).Block(
 				jen.ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("url").MapAssign().ID("w").Dot("URL"),
@@ -130,10 +130,10 @@ func webhookDotGo(proj *models.Project) *jen.File {
 	)
 
 	// if proj.EnableNewsman {
-	ret.Add(
+	code.Add(
 		jen.Comment("ToListener creates a newsman Listener from a Webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(jen.ID(constants.LoggerVarName).Qual(utils.LoggingPkg, "Logger")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
+		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(constants.LoggerParam()).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
 			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(
 				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID(constants.LoggerVarName)),
 				jen.AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(
@@ -152,5 +152,5 @@ func webhookDotGo(proj *models.Project) *jen.File {
 	)
 	// }
 
-	return ret
+	return code
 }

@@ -8,14 +8,14 @@ import (
 )
 
 func oauth2ClientDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildFakeOAuth2Client(proj)...)
-	ret.Add(buildBuildFakeOAuth2ClientList(proj)...)
-	ret.Add(buildBuildFakeOAuth2ClientCreationInputFromClient(proj)...)
+	code.Add(buildBuildFakeOAuth2Client(proj)...)
+	code.Add(buildBuildFakeOAuth2ClientList(proj)...)
+	code.Add(buildBuildFakeOAuth2ClientCreationInputFromClient(proj)...)
 
-	return ret
+	return code
 }
 
 func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
@@ -99,7 +99,7 @@ func buildBuildFakeOAuth2ClientCreationInputFromClient(proj *models.Project) []j
 					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
-						jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(utils.FakeLibrary, "Zip").Call()),
+						jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
 					),
 					jen.ID("Name").MapAssign().ID("client").Dot("Name"),
 					jen.ID("Scopes").MapAssign().ID("client").Dot("Scopes"),

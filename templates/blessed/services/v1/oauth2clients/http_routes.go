@@ -8,11 +8,11 @@ import (
 )
 
 func httpRoutesDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("oauth2clients")
+	code := jen.NewFile("oauth2clients")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.Comment("URIParamKey is used for referring to OAuth2 client IDs in router params."),
 			jen.ID("URIParamKey").Equals().Lit("oauth2ClientID"),
@@ -23,7 +23,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -40,7 +40,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("fetchUserID grabs a userID out of the request context."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserID").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -52,7 +52,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ListHandler is a handler that returns a list of OAuth2 clients."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -66,12 +66,12 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				jen.Comment("determine user."),
-				jen.ID("userID").Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("fetch oauth2 clients."),
-				jen.List(jen.ID("oauth2Clients"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2Clients").Call(constants.CtxVar(), jen.ID("userID"), jen.ID(constants.FilterVarName)),
+				jen.List(jen.ID("oauth2Clients"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2Clients").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.Comment("just return an empty list if there are no results."),
 					jen.ID("oauth2Clients").Equals().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
@@ -92,7 +92,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("CreateHandler is our OAuth2 client creation route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -173,7 +173,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ReadHandler is a route handler for retrieving an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -184,9 +184,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				jen.Comment("determine subject of request."),
-				jen.ID("userID").Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("determine relevant oauth2 client ID."),
 				jen.ID("oauth2ClientID").Assign().ID("s").Dot("urlClientIDExtractor").Call(jen.ID(constants.RequestVarName)),
@@ -194,7 +194,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("oauth2_client_id"), jen.ID("oauth2ClientID")),
 				jen.Line(),
 				jen.Comment("fetch oauth2 client."),
-				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID("oauth2ClientID"), jen.ID("userID")),
+				jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID("oauth2ClientID"), jen.ID(constants.UserIDVarName)),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ReadHandler called on nonexistent client")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
@@ -214,7 +214,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ArchiveHandler is a route handler for archiving an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
@@ -225,9 +225,9 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				jen.Comment("determine subject of request."),
-				jen.ID("userID").Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("userID")),
+				jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
+				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 				jen.Line(),
 				jen.Comment("determine relevant oauth2 client ID."),
 				jen.ID("oauth2ClientID").Assign().ID("s").Dot("urlClientIDExtractor").Call(jen.ID(constants.RequestVarName)),
@@ -235,7 +235,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("oauth2_client_id"), jen.ID("oauth2ClientID")),
 				jen.Line(),
 				jen.Comment("mark client as archived."),
-				jen.Err().Assign().ID("s").Dot("database").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("oauth2ClientID"), jen.ID("userID")),
+				jen.Err().Assign().ID("s").Dot("database").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("oauth2ClientID"), jen.ID(constants.UserIDVarName)),
 				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
 					utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 					jen.Return(),
@@ -253,5 +253,5 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

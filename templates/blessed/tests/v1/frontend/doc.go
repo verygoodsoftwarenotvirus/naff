@@ -5,10 +5,10 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("frontend")
+	code := jen.NewFile("frontend")
 
-	ret.PackageComment(`Package frontend is a series of selenium tests which validate certain aspects of our
+	code.PackageComment(`Package frontend is a series of selenium tests which validate certain aspects of our
 frontend, to guard against failed contributions to the frontend code.`)
 
-	return ret
+	return code
 }

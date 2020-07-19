@@ -12,11 +12,11 @@ const (
 )
 
 func bcryptDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Const().Defs(
 			jen.ID("bcryptCostCompensation").Equals().Lit(2),
 			jen.ID("defaultMinimumPasswordSize").Equals().Lit(16),
@@ -27,7 +27,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Defs(
 			jen.Underscore().ID("Authenticator").Equals().Parens(jen.PointerTo().ID("BcryptAuthenticator")).Call(jen.Nil()),
 			jen.Line(),
@@ -37,7 +37,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().Defs(
 			jen.Comment("BcryptAuthenticator is our bcrypt-based authenticator"),
 			jen.ID("BcryptAuthenticator").Struct(
@@ -52,7 +52,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ProvideBcryptAuthenticator returns a bcrypt powered Authenticator."),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptAuthenticator").Params(
@@ -69,7 +69,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(
@@ -88,7 +88,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("ValidateLogin validates a login attempt by:"),
 		jen.Line(),
 		jen.Comment("1. checking that the provided password matches the stored hashed password"),
@@ -135,7 +135,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Block(
@@ -145,7 +145,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(
@@ -162,7 +162,7 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").String()).Params(jen.Bool()).Block(
@@ -171,5 +171,5 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

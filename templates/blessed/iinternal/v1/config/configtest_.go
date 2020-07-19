@@ -7,11 +7,11 @@ import (
 )
 
 func configTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("config")
+	code := jen.NewFile("config")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
@@ -22,7 +22,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestBuildConfig").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
@@ -32,7 +32,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -94,5 +94,5 @@ connection_details = "%s"
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

@@ -8,16 +8,16 @@ import (
 )
 
 func webhookDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildFakeWebhook(proj)...)
-	ret.Add(buildBuildFakeWebhookList(proj)...)
-	ret.Add(buildBuildFakeWebhookUpdateInputFromWebhook(proj)...)
-	ret.Add(buildBuildFakeWebhookCreationInput(proj)...)
-	ret.Add(buildBuildFakeWebhookCreationInputFromWebhook(proj)...)
+	code.Add(buildBuildFakeWebhook(proj)...)
+	code.Add(buildBuildFakeWebhookList(proj)...)
+	code.Add(buildBuildFakeWebhookUpdateInputFromWebhook(proj)...)
+	code.Add(buildBuildFakeWebhookCreationInput(proj)...)
+	code.Add(buildBuildFakeWebhookCreationInputFromWebhook(proj)...)
 
-	return ret
+	return code
 }
 
 func buildBuildFakeWebhook(proj *models.Project) []jen.Code {

@@ -10,16 +10,16 @@ import (
 )
 
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile(packageName)
-	utils.AddImports(proj, ret)
+	code := jen.NewFile(packageName)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildFakeSomething(proj, typ)...)
-	ret.Add(buildBuildFakeSomethingList(proj, typ)...)
-	ret.Add(buildBuildFakeSomethingUpdateInputFromSomething(proj, typ)...)
-	ret.Add(buildBuildFakeSomethingCreationInput(proj, typ)...)
-	ret.Add(buildBuildFakeSomethingCreationInputFromSomething(proj, typ)...)
+	code.Add(buildBuildFakeSomething(proj, typ)...)
+	code.Add(buildBuildFakeSomethingList(proj, typ)...)
+	code.Add(buildBuildFakeSomethingUpdateInputFromSomething(proj, typ)...)
+	code.Add(buildBuildFakeSomethingCreationInput(proj, typ)...)
+	code.Add(buildBuildFakeSomethingCreationInputFromSomething(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Code {

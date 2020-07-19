@@ -53,15 +53,15 @@ func Test_buildInterfaceMethods(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
-		ret.Add(
+		code := jen.NewFile("farts")
+		code.Add(
 			jen.Type().ID("SomethingDataManager").Interface(
 				buildInterfaceMethods(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts

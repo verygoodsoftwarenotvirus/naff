@@ -28,6 +28,9 @@ import (
 	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics"
 	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/metrics/mock"
+	search "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/search"
+	bleve "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/search/bleve"
+	searchmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/search/mock"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/iinternal/v1/tracing"
 	misc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/misc"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/blessed/models/v1"
@@ -81,6 +84,9 @@ func RenderProject(proj *naffmodels.Project) error {
 		{name: "encodingmock", renderFunc: encodingmock.RenderPackage, activated: allActive},
 		{name: "metrics", renderFunc: metrics.RenderPackage, activated: allActive},
 		{name: "tracing", renderFunc: tracing.RenderPackage, activated: allActive},
+		{name: "search", renderFunc: search.RenderPackage, activated: searchActive},
+		{name: "searchmock", renderFunc: searchmock.RenderPackage, activated: searchActive},
+		{name: "bleve", renderFunc: bleve.RenderPackage, activated: searchActive},
 		{name: "metricsmock", renderFunc: metricsmock.RenderPackage, activated: allActive},
 		{name: "server", renderFunc: server.RenderPackage, activated: allActive},
 		{name: "testutil", renderFunc: testutil.RenderPackage, activated: allActive},

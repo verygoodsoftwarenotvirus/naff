@@ -53,16 +53,16 @@ func Test_buildRequisiteCreationCode(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildRequisiteCreationCode(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -126,14 +126,14 @@ func Test_buildRandomActionMap(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildRandomActionMap(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -249,14 +249,14 @@ func buildChildActions(c *http.V1Client) map[string]*Action {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildRandomActionMap(proj, b)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -356,14 +356,14 @@ func buildParentActions(c *http.V1Client) map[string]*Action {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildRandomActionMap(proj, a)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -445,16 +445,16 @@ func Test_buildRandomDependentIDFetchers(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildRandomDependentIDFetchers(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -476,16 +476,16 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildRandomDependentIDFetchers(proj, b)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -506,16 +506,16 @@ func doSomething() {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildRandomDependentIDFetchers(proj, a)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -538,14 +538,14 @@ func Test_buildFetchRandomSomething(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildFetchRandomSomething(proj, c)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -578,14 +578,14 @@ func fetchRandomChild(c *http.V1Client, grandparentID, parentID uint64) *v1.Chil
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildFetchRandomSomething(proj, b)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -618,14 +618,14 @@ func fetchRandomParent(c *http.V1Client, grandparentID uint64) *v1.Parent {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			buildFetchRandomSomething(proj, a)...,
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts
@@ -662,16 +662,16 @@ func Test_buildNestedDependentIDFetchers(T *testing.T) {
 			DataTypes: []models.DataType{a, b, c},
 		}
 
-		ret := jen.NewFile("farts")
+		code := jen.NewFile("farts")
 
-		ret.Add(
+		code.Add(
 			jen.Func().ID("doSomething").Params().Block(
 				buildNestedDependentIDFetchers(proj, c)...,
 			),
 		)
 
 		var b bytes.Buffer
-		err := ret.Render(&b)
+		err := code.Render(&b)
 		require.NoError(t, err)
 
 		expected := `package farts

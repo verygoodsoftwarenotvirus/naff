@@ -10,19 +10,19 @@ import (
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	ret := jen.NewFile("dbclient")
+	code := jen.NewFile("dbclient")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildTestClientSomethingExists(proj, typ)...)
-	ret.Add(buildTestClientGetSomething(proj, typ)...)
-	ret.Add(buildTestClientGetAllOfSomethingCount(proj, typ)...)
-	ret.Add(buildTestClientGetListOfSomething(proj, typ)...)
-	ret.Add(buildTestClientCreateSomething(proj, typ)...)
-	ret.Add(buildTestClientUpdateSomething(proj, typ)...)
-	ret.Add(buildTestClientArchiveSomething(proj, typ)...)
+	code.Add(buildTestClientSomethingExists(proj, typ)...)
+	code.Add(buildTestClientGetSomething(proj, typ)...)
+	code.Add(buildTestClientGetAllOfSomethingCount(proj, typ)...)
+	code.Add(buildTestClientGetListOfSomething(proj, typ)...)
+	code.Add(buildTestClientCreateSomething(proj, typ)...)
+	code.Add(buildTestClientUpdateSomething(proj, typ)...)
+	code.Add(buildTestClientArchiveSomething(proj, typ)...)
 
-	return ret
+	return code
 }
 
 func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
@@ -31,7 +31,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 
 	mockCallArgs := []jen.Code{
 		jen.Litf("%sExists", sn),
-		jen.Qual(utils.MockPkg, "Anything"),
+		jen.Qual(constants.MockPkg, "Anything"),
 	}
 	idCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(proj)
 	mockCallArgs = append(mockCallArgs, idCallArgs...)
@@ -65,7 +65,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 
 	mockCallArgs := []jen.Code{
 		jen.Litf("Get%s", sn),
-		jen.Qual(utils.MockPkg, "Anything"),
+		jen.Qual(constants.MockPkg, "Anything"),
 	}
 	idCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(proj)
 	mockCallArgs = append(mockCallArgs, idCallArgs...)
@@ -108,7 +108,7 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 				jen.ID(utils.BuildFakeVarName("Count")).Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual(utils.MockPkg, "Anything")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Count")), jen.Nil()),
+				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%sCount", pn), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Count")), jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sCount", pn).Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
@@ -129,7 +129,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 	buildSubtest := func(nilFilter bool) []jen.Code {
 		mockCalls := []jen.Code{
 			jen.Litf("Get%s", pn),
-			jen.Qual(utils.MockPkg, "Anything"),
+			jen.Qual(constants.MockPkg, "Anything"),
 		}
 
 		lines := typ.BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(proj)
@@ -192,7 +192,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 
 	mockCalls := []jen.Code{
 		jen.Litf("Create%s", sn),
-		jen.Qual(utils.MockPkg, "Anything"),
+		jen.Qual(constants.MockPkg, "Anything"),
 	}
 
 	lines := typ.BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj)
@@ -233,7 +233,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 
 	mockArgs := []jen.Code{
 		jen.Litf("Update%s", sn),
-		jen.Qual(utils.MockPkg, "Anything"),
+		jen.Qual(constants.MockPkg, "Anything"),
 	}
 
 	lines := typ.BuildRequisiteVarsForDBClientUpdateMethodTest(proj)
@@ -273,7 +273,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 	block := typ.BuildRequisiteFakeVarsForDBClientArchiveMethodTest(proj)
 	mockCallArgs := []jen.Code{
 		jen.Litf("Archive%s", sn),
-		jen.Qual(utils.MockPkg, "Anything"),
+		jen.Qual(constants.MockPkg, "Anything"),
 	}
 	idCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest()
 	mockCallArgs = append(mockCallArgs, idCallArgs...)

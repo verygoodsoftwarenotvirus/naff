@@ -8,11 +8,11 @@ import (
 )
 
 func oauth2TestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("integration")
+	code := jen.NewFile("integration")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("mustBuildCode").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("totpSecret").String()).Params(jen.String()).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
@@ -22,7 +22,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -41,7 +41,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("convertInputToClient").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
 			jen.Return().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 				jen.ID("ClientID").MapAssign().ID("input").Dot("ClientID"),
@@ -53,7 +53,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -68,13 +68,13 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("_ctx").Assign().Add(constants.InlineCtx()),
 			jen.Line(),
 			jen.Comment("create user."),
 			jen.List(jen.ID("x"), jen.ID("y"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
-			jen.Qual(utils.AssertPkg, "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
+			jen.Qual(constants.AssertPkg, "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 			jen.Line(),
 			jen.ID("input").Assign().ID("buildDummyOAuth2ClientInput").Call(
 				jen.ID("test"),
@@ -90,7 +90,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 				jen.ID("premade").Dot("ClientID"),
 				jen.ID("premade").Dot("ClientSecret"),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-				jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("PlainClient").Call(),
 				jen.ID("premade").Dot("Scopes"),
 				jen.ID("debug"),
@@ -168,7 +168,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("create user."),
 					jen.List(jen.ID("createdUser"), jen.ID("createdUserInput"), jen.Underscore()).Assign().ID("buildDummyUser").Call(jen.ID("test")),
-					jen.Qual(utils.AssertPkg, "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
+					jen.Qual(constants.AssertPkg, "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 					jen.Line(),
 					jen.ID("input").Assign().ID("buildDummyOAuth2ClientInput").Call(
 						jen.ID("test"),
@@ -188,7 +188,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 						jen.ID("premade").Dot("ClientID"),
 						jen.ID("premade").Dot("ClientSecret"),
 						jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-						jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+						jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 						jen.ID("buildHTTPClient").Call(),
 						jen.ID("premade").Dot("Scopes"),
 						jen.True(),
@@ -222,7 +222,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Assert oauth2Client list equality."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("testClient").Dot("GetOAuth2Clients").Call(constants.CtxVar(), jen.Nil()),
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-					jen.Qual(utils.AssertPkg, "True").Callln(
+					jen.Qual(constants.AssertPkg, "True").Callln(
 						jen.ID("t"),
 						jen.Len(jen.ID("actual").Dot("Clients")).Minus().ID("len").Call(jen.ID("expected")).GreaterThan().Zero(),
 						jen.Lit("expected %d - %d to be > 0"),
@@ -257,5 +257,5 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

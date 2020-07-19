@@ -8,11 +8,11 @@ import (
 )
 
 func authTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("integration")
+	code := jen.NewFile("integration")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("loginUser").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).String()).Params(jen.PointerTo().Qual("net/http", "Cookie")).Block(
 			jen.ID("loginURL").Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s://%s:%s/users/login"),
@@ -55,7 +55,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -452,7 +452,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ca").Dot("ClientID"),
 					jen.ID("ca").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("ca").Dot("Scopes"),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("ca").Dot("Scopes"),
 					jen.True(),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
@@ -469,7 +469,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("cb").Dot("ClientID"),
 					jen.ID("cb").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("cb").Dot("Scopes"),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("cb").Dot("Scopes"),
 					jen.True(),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
@@ -515,7 +515,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("premade").Dot("ClientID"),
 					jen.ID("premade").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-					jen.Qual(utils.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("premade").Dot("Scopes"),
+					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("premade").Dot("Scopes"),
 					jen.True(),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c"), jen.Err()),
@@ -528,5 +528,5 @@ func authTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

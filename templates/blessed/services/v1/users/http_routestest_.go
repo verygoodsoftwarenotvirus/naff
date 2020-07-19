@@ -8,11 +8,11 @@ import (
 )
 
 func httpRoutesTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("users")
+	code := jen.NewFile("users")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -29,7 +29,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("Test_randString").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -43,7 +43,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_validateCredentialChangeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -58,14 +58,14 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Password")), jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.ID(utils.BuildFakeVarName("TOTPToken")), jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
@@ -96,7 +96,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -123,7 +123,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
@@ -148,13 +148,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Password")),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -185,13 +185,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Password")), jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.ID(utils.BuildFakeVarName("TOTPToken")), jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
@@ -214,7 +214,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_List").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -227,16 +227,16 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserList")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserList")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -255,8 +255,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
@@ -277,16 +277,16 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserList")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserList")),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -301,7 +301,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_Create").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -315,7 +315,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -323,27 +323,27 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
 				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
+				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
 				jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(
 					jen.Lit("Report"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserCreationResponse")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserCreationResponse")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -392,7 +392,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), constants.ObligatoryError()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -420,7 +420,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -428,8 +428,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
@@ -456,7 +456,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -464,8 +464,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists")),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
@@ -492,7 +492,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -500,27 +500,27 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
 				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(utils.MockPkg, "Anything")),
+				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
 				jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(
 					jen.Lit("Report"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserCreationResponse")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.UserCreationResponse")),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -540,7 +540,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_Read").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -556,7 +556,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -564,8 +564,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -589,7 +589,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -614,7 +614,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -639,7 +639,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -647,8 +647,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -663,7 +663,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_NewTOTPSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -691,19 +691,19 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -715,8 +715,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.TOTPSecretRefreshResponse")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.TOTPSecretRefreshResponse")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -778,20 +778,20 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -828,19 +828,19 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -879,20 +879,20 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -904,8 +904,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.TOTPSecretRefreshResponse")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.TOTPSecretRefreshResponse")),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -919,7 +919,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_UpdatePassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -944,19 +944,19 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -965,7 +965,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("NewPassword")).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
@@ -1025,19 +1025,19 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -1074,22 +1074,22 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
 					jen.Nil(),
 				),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -1098,7 +1098,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("NewPassword"),
 				).Dot("Return").Call(jen.Lit("blah"), constants.ObligatoryError()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -1131,19 +1131,19 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("UpdateUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.User")),
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
 					jen.Lit("ValidateLogin"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("CurrentPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
@@ -1152,7 +1152,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
 					jen.Lit("HashPassword"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("NewPassword"),
 				).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
@@ -1167,7 +1167,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -1184,7 +1184,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("ArchiveUser"),
-					jen.Qual(utils.MockPkg, "Anything"),
+					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -1192,12 +1192,12 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 				jen.ID("r").Dot("On").Call(
 					jen.Lit("Report"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
 				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(utils.MockPkg, "Anything")),
+				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
 				jen.ID("s").Dot("ArchiveHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -1218,7 +1218,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual(utils.MockPkg, "Anything"),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
@@ -1232,5 +1232,5 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

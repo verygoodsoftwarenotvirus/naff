@@ -34,29 +34,29 @@ var (
 func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	ret := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(buildBuildMockRowsFromUser(proj, dbvendor)...)
-	ret.Add(buildBuildErroneousMockRowFromUser(proj, dbvendor)...)
-	ret.Add(buildTestScanUsers(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetUserQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetUser(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetUsersQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetUsers(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetUserByUsernameQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetUserByUsername(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildGetAllUserCountQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_GetAllUserCount(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildCreateUserQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_CreateUser(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildUpdateUserQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_UpdateUser(proj, dbvendor)...)
-	ret.Add(buildTestDB_buildArchiveUserQuery(proj, dbvendor)...)
-	ret.Add(buildTestDB_ArchiveUser(proj, dbvendor)...)
+	code.Add(buildBuildMockRowsFromUser(proj, dbvendor)...)
+	code.Add(buildBuildErroneousMockRowFromUser(proj, dbvendor)...)
+	code.Add(buildTestScanUsers(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetUserQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetUser(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetUsersQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetUsers(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetUserByUsernameQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetUserByUsername(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllUserCountQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllUserCount(proj, dbvendor)...)
+	code.Add(buildTestDB_buildCreateUserQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_CreateUser(proj, dbvendor)...)
+	code.Add(buildTestDB_buildUpdateUserQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_UpdateUser(proj, dbvendor)...)
+	code.Add(buildTestDB_buildArchiveUserQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_ArchiveUser(proj, dbvendor)...)
 
-	return ret
+	return code
 }
 
 func buildBuildMockRowsFromUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

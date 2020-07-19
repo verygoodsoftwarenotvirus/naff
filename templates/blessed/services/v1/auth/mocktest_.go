@@ -8,23 +8,23 @@ import (
 )
 
 func mockTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().ID("OAuth2ClientValidator").Equals().Parens(jen.PointerTo().ID("mockOAuth2ClientValidator")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Type().ID("mockOAuth2ClientValidator").Struct(jen.Qual(utils.MockPkg,
+	code.Add(
+		jen.Type().ID("mockOAuth2ClientValidator").Struct(jen.Qual(constants.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
 			constants.CtxParam(),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
@@ -39,19 +39,19 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().ID("cookieEncoderDecoder").Equals().Parens(jen.PointerTo().ID("mockCookieEncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Type().ID("mockCookieEncoderDecoder").Struct(jen.Qual(utils.MockPkg,
+	code.Add(
+		jen.Type().ID("mockCookieEncoderDecoder").Struct(jen.Qual(constants.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("mockCookieEncoderDecoder")).ID("Encode").Params(jen.ID("name").String(), jen.ID("value").Interface()).Params(jen.String(), jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
@@ -64,7 +64,7 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("mockCookieEncoderDecoder")).ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).String(), jen.ID("dst").Interface()).Params(jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
@@ -74,19 +74,19 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Var().Underscore().Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("MockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
-	ret.Add(
-		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual(utils.MockPkg,
+	code.Add(
+		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual(constants.MockPkg,
 			"Mock",
 		)),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot(
 				"Called",
@@ -95,5 +95,5 @@ func mockTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

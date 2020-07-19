@@ -8,18 +8,18 @@ import (
 )
 
 func helpersTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile(packageName)
+	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Type().ID("testingType").Struct(
 			jen.ID("Name").String().Tag(map[string]string{"json": "name"}),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("ArgIsNotPointerOrNil").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -59,7 +59,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("ArgIsNotPointer").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -120,7 +120,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("ArgIsNotNil").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -181,7 +181,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("UnmarshalBody").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -325,7 +325,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("rc").Assign().ID("newMockReadCloser").Call(),
 				jen.ID("rc").Dot("On").Call(
 					jen.Lit("Read"),
-					jen.Qual(utils.MockPkg, "AnythingOfType").Call(jen.Lit("[]uint8")),
+					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("[]uint8")),
 				).Dot("Return").Call(
 					jen.Zero(),
 					jen.ID("expected"),
@@ -354,7 +354,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Type().ID("testBreakableStruct").Struct(
 			jen.ID("Thing").Qual("encoding/json", "Number").Tag(map[string]string{
 				"json": "thing",
@@ -363,7 +363,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		utils.OuterTestFunc("CreateBodyFromStruct").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -426,5 +426,5 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }

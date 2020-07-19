@@ -5,10 +5,10 @@ import (
 )
 
 func docDotGo() *jen.File {
-	ret := jen.NewFile("auth")
+	code := jen.NewFile("auth")
 
-	ret.PackageComment(`Package auth provides functions and structures to facilitate salting and hashing passwords, as well as
+	code.PackageComment(`Package auth provides functions and structures to facilitate salting and hashing passwords, as well as
 validating TOTP tokens`)
 
-	return ret
+	return code
 }

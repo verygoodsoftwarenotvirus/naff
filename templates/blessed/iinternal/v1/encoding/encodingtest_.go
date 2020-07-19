@@ -8,18 +8,18 @@ import (
 )
 
 func encodingTestDotGo(proj *models.Project) *jen.File {
-	ret := jen.NewFile("encoding")
+	code := jen.NewFile("encoding")
 
-	utils.AddImports(proj, ret)
+	utils.AddImports(proj, code)
 
-	ret.Add(
+	code.Add(
 		jen.Type().ID("example").Struct(
 			jen.ID("Name").String().Tag(map[string]string{"json": "name", "xml": "name"}),
 		),
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -53,7 +53,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	ret.Add(
+	code.Add(
 		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -95,5 +95,5 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	return ret
+	return code
 }
