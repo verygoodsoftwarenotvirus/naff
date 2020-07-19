@@ -82,28 +82,6 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	return lines
 }
 
-//
-//// BuildFakeItemList builds a faked ItemList
-//func BuildFakeItemList() *models.ItemList {
-//	exampleItem1 := BuildFakeItem()
-//	exampleItem2 := BuildFakeItem()
-//	exampleItem3 := BuildFakeItem()
-//
-//	return &models.ItemList{
-//		Pagination: models.Pagination{
-//			Page:       1,
-//			Limit:      20,
-//			TotalCount: 3,
-//		},
-//		Items: []models.Item{
-//			*exampleItem1,
-//			*exampleItem2,
-//			*exampleItem3,
-//		},
-//	}
-//}
-//
-
 func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -122,7 +100,6 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
-						jen.ID("TotalCount").MapAssign().Lit(3),
 					),
 					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
 						jen.PointerTo().IDf("example%s1", sn),

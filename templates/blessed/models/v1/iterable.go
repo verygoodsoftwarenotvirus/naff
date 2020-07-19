@@ -15,23 +15,23 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 
 	for _, field := range typ.Fields {
 		if field.Pointer {
-			out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
 		} else {
-			out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+			out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
 		}
 	}
 
 	out = append(out,
-		jen.ID("CreatedOn").Uint64().Tag(jsonTag("created_on")),
-		jen.ID("UpdatedOn").PointerTo().Uint64().Tag(jsonTag("updated_on")),
-		jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archived_on")),
+		jen.ID("CreatedOn").Uint64().Tag(jsonTag("createdOn")),
+		jen.ID("LastUpdatedOn").PointerTo().Uint64().Tag(jsonTag("lastUpdatedOn")),
+		jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archivedOn")),
 	)
 
 	if typ.BelongsToUser {
-		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongs_to_user")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongsToUser")))
 	}
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
 	}
 
 	return out
@@ -43,9 +43,9 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
 			if field.Pointer {
-				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
 			} else {
-				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
 			}
 		}
 	}
@@ -54,7 +54,7 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
 	}
 
 	return out
@@ -66,9 +66,9 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
 			if field.Pointer {
-				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
 			} else {
-				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.RouteName())))
+				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
 			}
 		}
 	}
@@ -92,19 +92,18 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 		jen.IDf("%sExists", sn).Params(typ.BuildInterfaceDefinitionExistenceMethodParams(proj)...).Params(jen.Bool(), jen.Error()),
 		jen.IDf("Get%s", sn).Params(typ.BuildInterfaceDefinitionRetrievalMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
 		jen.IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
+		jen.IDf("GetAll%s", pn).Params(
+			constants.CtxParam(),
+			jen.ID("resultChannel").Chan().Index().ID(sn),
+		).Params(jen.Error()),
 		jen.IDf("Get%s", pn).Params(typ.BuildInterfaceDefinitionListRetrievalMethodParams(proj)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
+		jen.IDf("Get%sWithIDs", pn).Params(
+			constants.CtxParam(),
+			constants.UserIDParam(),
+			jen.ID("limit").Uint8(),
+			jen.ID("ids").Index().Uint64(),
+		).Params(jen.Index().ID(sn), jen.Error()),
 	}
-
-	//if typ.BelongsToUser {
-	//	interfaceMethods = append(interfaceMethods,
-	//		jen.IDf("GetAll%sForUser", pn).Params(
-	//			utils.CtxParam(), constants.UserIDParam(),
-	//		).Params(jen.Index().ID(sn), jen.Error()))
-	//}
-	//if typ.BelongsToStruct != nil {
-	//	interfaceMethods = append(interfaceMethods,
-	//		jen.IDf("GetAll%sFor%s", pn, typ.BelongsToStruct.Singular()).Params(typ.BuildGetSomethingForSomethingElseParamsForModelsPackage(proj)...).Params(jen.Index().ID(sn), jen.Error()))
-	//}
 
 	interfaceMethods = append(interfaceMethods,
 		jen.IDf("Create%s", sn).Params(typ.BuildInterfaceDefinitionCreationMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
@@ -127,6 +126,15 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	prn := n.PluralRouteName()
 
 	hf := jen.Qual("net/http", "HandlerFunc")
+
+	code.Add(
+		jen.Const().Defs(
+			jen.Comment("ItemsSearchIndexName is the name of the index used to search through items."),
+			jen.Line(),
+			jen.ID("ItemsSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
+		),
+		jen.Line(),
+	)
 
 	code.Add(
 		jen.Type().Defs(
@@ -153,6 +161,12 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.Line(),
+				func() jen.Code {
+					if typ.SearchEnabled {
+						return jen.ID("SearchHandler").Params().Params(hf)
+					}
+					return jen.Null()
+				}(),
 				jen.ID("ListHandler").Params().Params(hf),
 				jen.ID("CreateHandler").Params().Params(hf),
 				jen.ID("ExistenceHandler").Params().Params(hf),

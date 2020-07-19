@@ -55,6 +55,16 @@ func mockUserDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
+		jen.Comment("TOTPSecretVerificationInputMiddleware is a mock method to satisfy our interface requirements."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
 		jen.Comment("TOTPSecretRefreshInputMiddleware is a mock method to satisfy our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -88,6 +98,16 @@ func mockUserDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ReadHandler is a mock method to satisfy our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("TOTPSecretVerificationHandler is a mock method to satisfy our interface requirements."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretVerificationHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
 		),

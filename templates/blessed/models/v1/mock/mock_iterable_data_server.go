@@ -48,6 +48,26 @@ func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen
 		jen.Line(),
 	)
 
+	searchEnabled := false
+	for _, typ := range proj.DataTypes {
+		if typ.SearchEnabled {
+			searchEnabled = true
+			break
+		}
+	}
+
+	if searchEnabled {
+		code.Add(
+			jen.Comment("SearchHandler implements our interface requirements."),
+			jen.Line(),
+			jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("SearchHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+				jen.ID("args").Assign().ID("m").Dot("Called").Call(),
+				jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+			),
+			jen.Line(),
+		)
+	}
+
 	code.Add(
 		jen.Comment("ListHandler implements our interface requirements."),
 		jen.Line(),

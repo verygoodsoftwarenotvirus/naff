@@ -31,14 +31,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("Pagination represents a pagination request."),
 			jen.ID("Pagination").Struct(
-				jen.ID("Page").Uint64().Tag(map[string]string{"json": "page"}),
-				jen.ID("Limit").Uint64().Tag(map[string]string{"json": "limit"}),
-				jen.ID("TotalCount").Uint64().Tag(map[string]string{"json": "total_count"}),
+				jen.ID("Page").Uint64().Tag(jsonTag("page")),
+				jen.ID("Limit").Uint8().Tag(jsonTag("limit")),
 			),
 			jen.Line(),
 			jen.Comment("CountResponse is what we respond with when a user requests a count of data types."),
 			jen.ID("CountResponse").Struct(
-				jen.ID("Count").Uint64().Tag(map[string]string{"json": "count"}),
+				jen.ID("Count").Uint64().Tag(jsonTag("count")),
 			),
 		),
 		jen.Line(),
@@ -53,8 +52,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ErrorResponse represents a response we might send to the user in the event of an error."),
 		jen.Line(),
 		jen.Type().ID("ErrorResponse").Struct(
-			jen.ID("Message").String().Tag(map[string]string{"json": "message"}),
-			jen.ID("Code").ID("uint").Tag(map[string]string{"json": "code"}),
+			jen.ID("Message").String().Tag(jsonTag("message")),
+			jen.ID("Code").ID("uint").Tag(jsonTag("code")),
 		),
 		jen.Line(),
 	)

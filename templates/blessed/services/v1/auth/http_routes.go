@@ -189,7 +189,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random seccode."),
+		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
 			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(

@@ -93,9 +93,9 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 	//)
 
 	code.Add(
-		jen.Comment("GetOAuth2Clients is a mock function."),
+		jen.Comment("GetOAuth2ClientsForUser is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2Clients").Params(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientsForUser").Params(
 			constants.CtxParam(),
 			constants.UserIDParam(),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),

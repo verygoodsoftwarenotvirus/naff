@@ -174,7 +174,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.ID("TwoFactorSecret").MapAssign().EmptyString(),
 				),
 				jen.Line(),
-				jen.Comment("generate a two factor seccode."),
+				jen.Comment("generate a two factor secret."),
 				jen.List(jen.ID("input").Dot("TwoFactorSecret"), jen.Err()).Equals().ID("randString").Call(),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error generating TOTP secret")),
@@ -229,7 +229,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("buildQRCode builds a QR code for a given username and seccode."),
+		jen.Comment("buildQRCode builds a QR code for a given username and secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildQRCode").Params(constants.CtxParam(), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).String()).Params(jen.String()).Block(
 			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("buildQRCode")),
@@ -360,7 +360,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
 				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user"), jen.ID("user").Dot("ID")),
 				jen.Line(),
-				jen.Comment("set the two factor seccode."),
+				jen.Comment("set the two factor secret."),
 				jen.List(jen.ID("tfs"), jen.Err()).Assign().ID("randString").Call(),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered generating random TOTP string")),

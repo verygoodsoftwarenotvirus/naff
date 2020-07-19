@@ -20,6 +20,7 @@ func userDotGo(proj *models.Project) *jen.File {
 	code.Add(buildBuildFakeUserLoginInputFromUser(proj)...)
 	code.Add(buildBuildFakePasswordUpdateInput(proj)...)
 	code.Add(buildBuildFakeTOTPSecretRefreshInput(proj)...)
+	code.Add(buildBuildFakeTOTPSecretValidationInputForUser(proj)...)
 
 	return code
 }
@@ -40,7 +41,25 @@ func buildBuildFakeUser(proj *models.Project) []jen.Code {
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.Comment(`HashedPassword: ""`),
 					jen.Comment("Salt:           []byte(fake.Word())"),
-					jen.Comment(`TwoFactorSecret: ""`),
+					jen.ID("TwoFactorSecret").MapAssign().Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(
+						jen.Index().Byte().Call(jen.Qual(constants.FakeLibrary, "Password").Call(
+							jen.False(),
+							jen.True(),
+							jen.True(),
+							jen.False(),
+							jen.False(),
+							jen.Lit(32),
+						)),
+					),
+					jen.ID("TwoFactorSecretVerifiedOn").MapAssign().Func().Params(jen.ID("i").Uint64()).PointerTo().Uint64().SingleLineBlock(
+						jen.Return(jen.AddressOf().ID("i")),
+					).Call(
+						jen.Uint64().Call(
+							jen.Uint32().Call(
+								jen.Qual(constants.FakeLibrary, "Date").Call().Dot("Unix").Call(),
+							),
+						),
+					),
 					jen.ID("IsAdmin").MapAssign().False(),
 					jen.ID("CreatedOn").MapAssign().Add(utils.FakeUnixTimeFunc()),
 				),
@@ -71,7 +90,7 @@ func buildBuildDatabaseCreationResponse(proj *models.Project) []jen.Code {
 					jen.ID("PasswordLastChangedOn").MapAssign().ID("user").Dot("PasswordLastChangedOn"),
 					jen.ID("IsAdmin").MapAssign().ID("user").Dot("IsAdmin"),
 					jen.ID("CreatedOn").MapAssign().ID("user").Dot("CreatedOn"),
-					jen.ID("UpdatedOn").MapAssign().ID("user").Dot("UpdatedOn"),
+					jen.ID("LastUpdatedOn").MapAssign().ID("user").Dot("LastUpdatedOn"),
 					jen.ID("ArchivedOn").MapAssign().ID("user").Dot("ArchivedOn"),
 				),
 			),
@@ -100,7 +119,6 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
-						jen.ID("TotalCount").MapAssign().Lit(3),
 					),
 					jen.ID("Users").MapAssign().Index().Qual(proj.ModelsV1Package(), "User").Valuesln(
 						jen.PointerTo().ID("exampleUser1"),
@@ -249,6 +267,41 @@ func buildBuildFakeTOTPSecretRefreshInput(proj *models.Project) []jen.Code {
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
+				),
+			),
+		),
+	}
+
+	return lines
+}
+
+func buildBuildFakeTOTPSecretValidationInputForUser(proj *models.Project) []jen.Code {
+	funcName := "BuildFakeTOTPSecretValidationInputForUser"
+	typeName := "TOTPSecretVerificationInput"
+
+	lines := []jen.Code{
+		jen.Commentf("%s builds a faked %s for a given user", funcName, typeName),
+		jen.Line(),
+		jen.Func().ID(funcName).Params(
+			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+		).Params(
+			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+		).Block(
+			jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
+				jen.ID("user").Dot("TwoFactorSecret"),
+				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
+			),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.Qual("log", "Panicf").Call(
+					jen.Lit("error generating TOTP token for fake user: %v"),
+					jen.Err(),
+				),
+			),
+			jen.Line(),
+			jen.Return(
+				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+					jen.ID(constants.UserIDFieldName).MapAssign().ID("user").Dot("ID"),
+					jen.ID("TOTPToken").MapAssign().ID("token"),
 				),
 			),
 		),

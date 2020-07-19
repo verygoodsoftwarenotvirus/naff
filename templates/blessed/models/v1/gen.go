@@ -9,6 +9,9 @@ import (
 )
 
 func jsonTag(val string) map[string]string {
+	if val == "" {
+		val = "-"
+	}
 	return map[string]string{"json": val}
 }
 
@@ -26,7 +29,7 @@ func RenderPackage(proj *models.Project) error {
 		"models/v1/query_filter.go":        queryFilterDotGo(proj),
 		"models/v1/service_data_events.go": serviceDataEventsDotGo(proj),
 		"models/v1/user_test.go":           userTestDotGo(proj),
-		"models/v1/cookieauth.go":          cookieauthDotGo(proj),
+		"models/v1/auth.go":                authDotGo(proj),
 		"models/v1/doc.go":                 docDotGo(),
 	}
 

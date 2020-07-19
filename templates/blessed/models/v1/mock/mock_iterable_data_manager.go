@@ -18,7 +18,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	sn := n.Singular()
 
 	code.Add(
-		jen.Var().Underscore().ID("models").Dotf("%sDataManager", sn).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -31,8 +31,10 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 
 	code.Add(buildSomethingExists(proj, typ)...)
 	code.Add(buildGetSomething(proj, typ)...)
-	code.Add(buildGetAllSomethingsCount(typ)...)
+	code.Add(buildGetAllSomethingsCount(proj, typ)...)
+	code.Add(buildGetAllSomethings(proj, typ)...)
 	code.Add(buildGetListOfSomething(proj, typ)...)
+	code.Add(buildGetSomethingsWithIDs(proj, typ)...)
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
 	code.Add(buildArchiveSomething(proj, typ)...)
@@ -82,7 +84,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
+func buildGetAllSomethingsCount(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()
@@ -102,6 +104,29 @@ func buildGetAllSomethingsCount(typ models.DataType) []jen.Code {
 	return lines
 }
 
+func buildGetAllSomethings(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	pn := n.Plural()
+
+	lines := []jen.Code{
+		jen.Commentf("GetAll%s is a mock function.", pn),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%s", pn).Params(
+			constants.CtxParam(),
+			jen.ID("results").Chan().Index().Qual(proj.ModelsV1Package(), sn),
+		).Params(jen.Error()).Block(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("results")),
+			jen.Return().List(
+				jen.ID("args").Dot("Error").Call(jen.Zero()),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
@@ -113,11 +138,55 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function.", pn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().ID("models").Dotf("%sList", sn),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)),
 			jen.Error()).Block(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().ID("models").Dotf("%sList", sn)), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(
+				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
+					jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)),
+				),
+				jen.ID("args").Dot("Error").Call(jen.One()),
+			),
 		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	pn := n.Plural()
+
+	params := []jen.Code{
+		constants.CtxParam(),
+		constants.UserIDParam(),
+		jen.ID("limit").Uint8(),
+		jen.ID("ids").Index().Uint64(),
+	}
+	callArgs := []jen.Code{
+		constants.CtxVar(),
+		constants.UserIDVar(),
+		jen.ID("limit"),
+		jen.ID("ids"),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("Get%sWithIDs is a mock function.", pn),
+		jen.Line(),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sWithIDs", pn).
+			Params(params...).
+			Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).
+			Block(
+				jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
+				jen.Return().List(
+					jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
+						jen.Index().Qual(proj.ModelsV1Package(), sn),
+					),
+					jen.ID("args").Dot("Error").Call(jen.One()),
+				),
+			),
 		jen.Line(),
 	}
 

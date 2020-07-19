@@ -69,7 +69,6 @@ func buildBuildFakeWebhookList(proj *models.Project) []jen.Code {
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
-						jen.ID("TotalCount").MapAssign().Lit(3),
 					),
 					jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
 						jen.PointerTo().ID("exampleWebhook1"),
