@@ -23,6 +23,11 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	code.Add(buildAttachUint64ToSpan()...)
 	code.Add(buildAttachStringToSpan()...)
 	code.Add(buildAttachFilterToSpan(proj)...)
+
+	for _, typ := range proj.DataTypes {
+		code.Add(buildAttachSomethingIDToSpan(typ)...)
+	}
+
 	code.Add(buildAttachUserIDToSpan()...)
 	code.Add(buildAttachOAuth2ClientDatabaseIDToSpan()...)
 	code.Add(buildAttachOAuth2ClientIDToSpan()...)
