@@ -15,6 +15,7 @@ const (
 	FakeLibrary            = "github.com/brianvoe/gofakeit/v5"
 	TracingLibrary         = "go.opencensus.io/trace"
 	FlagParsingLibrary     = "github.com/spf13/pflag"
+	SessionManagerLibrary  = "github.com/alexedwards/scs/v2"
 
 	// UserIDVarName is what we normally call a user ID
 	UserIDVarName = "userID"

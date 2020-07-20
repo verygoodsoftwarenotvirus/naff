@@ -14,8 +14,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -48,10 +46,12 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
-				utils.RequireNotNil(jen.ID("cookie"), nil),
-				utils.RequireNoError(jen.Err(), nil),
-				jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("cookie")),
+				jen.List(jen.Underscore(), jen.ID(constants.RequestVarName)).Equals().ID("attachCookieToRequestForTest").Call(
+					jen.ID("t"),
+					jen.ID("s"),
+					jen.ID(constants.RequestVarName),
+					jen.ID(utils.BuildFakeVarName("User")),
+				),
 				jen.Line(),
 				jen.ID("h").Assign().ID("s").Dot("CookieAuthenticationMiddleware").Call(jen.ID("ms")),
 				jen.ID("h").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -82,12 +82,14 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
-				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
+				jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 				jen.Line(),
-				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
-				utils.RequireNotNil(jen.ID("cookie"), nil),
-				utils.RequireNoError(jen.Err(), nil),
-				jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("cookie")),
+				jen.List(jen.Underscore(), jen.ID(constants.RequestVarName)).Equals().ID("attachCookieToRequestForTest").Call(
+					jen.ID("t"),
+					jen.ID("s"),
+					jen.ID(constants.RequestVarName),
+					jen.ID(utils.BuildFakeVarName("User")),
+				),
 				jen.Line(),
 				jen.ID("ms").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("h").Assign().ID("s").Dot("CookieAuthenticationMiddleware").Call(jen.ID("ms")),
@@ -123,8 +125,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -255,9 +255,12 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
-				utils.RequireNoError(jen.Err(), nil),
-				jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("c")),
+				jen.List(jen.Underscore(), jen.ID(constants.RequestVarName)).Equals().ID("attachCookieToRequestForTest").Call(
+					jen.ID("t"),
+					jen.ID("s"),
+					jen.ID(constants.RequestVarName),
+					jen.ID(utils.BuildFakeVarName("User")),
+				),
 				jen.Line(),
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.True()).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 				jen.Line(),
@@ -269,8 +272,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
-				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call().Dot("UserDataManager"),
 				jen.ID("mockDB").Dot("On").Call(
@@ -291,7 +292,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				),
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
-				jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("c")),
+				jen.Line(),
+				jen.List(jen.Underscore(), jen.ID(constants.RequestVarName)).Equals().ID("attachCookieToRequestForTest").Call(
+					jen.ID("t"),
+					jen.ID("s"),
+					jen.ID(constants.RequestVarName),
+					jen.ID(utils.BuildFakeVarName("User")),
+				),
 				jen.Line(),
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.True()).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -386,9 +393,12 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				utils.RequireNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().ID("s").Dot("buildAuthCookie").Call(jen.ID(utils.BuildFakeVarName("User"))),
-				utils.RequireNoError(jen.Err(), nil),
-				jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("c")),
+				jen.List(jen.Underscore(), jen.ID(constants.RequestVarName)).Equals().ID("attachCookieToRequestForTest").Call(
+					jen.ID("t"),
+					jen.ID("s"),
+					jen.ID(constants.RequestVarName),
+					jen.ID(utils.BuildFakeVarName("User")),
+				),
 				jen.Line(),
 				jen.ID("h").Assign().AddressOf().ID("MockHTTPHandler").Values(),
 				jen.ID("s").Dot("AuthenticationMiddleware").Call(jen.True()).Call(jen.ID("h")).Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -478,8 +488,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
@@ -526,8 +534,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
@@ -649,8 +655,6 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
@@ -668,8 +672,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserKey"),
-						jen.ID(utils.BuildFakeVarName("User")),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
@@ -728,8 +732,8 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserKey"),
-						jen.ID(utils.BuildFakeVarName("User")),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),

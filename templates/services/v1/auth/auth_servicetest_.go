@@ -12,6 +12,8 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
+	code.ImportName("github.com/alexedwards/scs/v2/memstore", "memstore")
+
 	code.Add(
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
@@ -25,10 +27,11 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 			jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 			jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
-			jen.ID("userIDFetcher").Assign().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-				jen.Return().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
-			),
 			jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
+			jen.Line(),
+			jen.ID("sm").Assign().Qual(constants.SessionManagerLibrary, "New").Call(),
+			jen.Comment("this is currently the default, but in case that changes"),
+			jen.ID("sm").Dot("Store").Equals().Qual("github.com/alexedwards/scs/v2/memstore", "New").Call(),
 			jen.Line(),
 			jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
 				jen.ID(constants.LoggerVarName),
@@ -36,7 +39,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth"),
 				jen.ID("userDB"),
 				jen.ID("oauth"),
-				jen.ID("userIDFetcher"),
+				jen.ID("sm"),
 				jen.ID("ed"),
 			),
 			utils.RequireNoError(jen.Err(), nil),
@@ -48,7 +51,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
+			jen.Comment("T.Parallel() // NOTE: undo when data race is fixed"),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -60,10 +63,8 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 				jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
-				jen.ID("userIDFetcher").Assign().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return(jen.Qual(proj.FakeModelsPackage(), "BuildFakeUser")).Call().Dot("ID"),
-				),
 				jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
+				jen.ID("sm").Assign().Qual(constants.SessionManagerLibrary, "New").Call(),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -71,7 +72,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("auth"),
 					jen.ID("userDB"),
 					jen.ID("oauth"),
-					jen.ID("userIDFetcher"),
+					jen.ID("sm"),
 					jen.ID("ed"),
 				),
 				utils.AssertNotNil(jen.ID("service"), nil),
@@ -83,10 +84,8 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
 				jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
 				jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
-				jen.ID("userIDFetcher").Assign().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-					jen.Return(jen.Qual(proj.FakeModelsPackage(), "BuildFakeUser")).Call().Dot("ID"),
-				),
 				jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
+				jen.ID("sm").Assign().Qual(constants.SessionManagerLibrary, "New").Call(),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -94,7 +93,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("auth"),
 					jen.ID("userDB"),
 					jen.ID("oauth"),
-					jen.ID("userIDFetcher"),
+					jen.ID("sm"),
 					jen.ID("ed"),
 				),
 				utils.AssertNil(jen.ID("service"), nil),

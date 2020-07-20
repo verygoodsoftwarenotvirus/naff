@@ -22,7 +22,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.Comment("PasswordFormKey is the string we look for in request forms for password information."),
 			jen.ID("PasswordFormKey").Equals().Lit("password"),
 			jen.Comment("TOTPTokenFormKey is the string we look for in request forms for TOTP token information."),
-			jen.ID("TOTPTokenFormKey").Equals().Lit("totp_token"),
+			jen.ID("TOTPTokenFormKey").Equals().Lit("totpToken"),
 		),
 		jen.Line(),
 	)
@@ -36,7 +36,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("fetch the user from the request."),
-				jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("FetchUserFromRequest").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
+				jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("fetchUserFromCookie").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching user")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
@@ -46,9 +46,9 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.ID("user").DoesNotEqual().ID("nil")).Block(
 					jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
-							jen.Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "UserKey"), jen.ID("user")),
-							jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-							jen.ID("user").Dot("ID"),
+							jen.ID("ctx"),
+							jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+							jen.ID("user").Dot("ToSessionInfo").Call(),
 						),
 					),
 					jen.ID("next").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -118,9 +118,11 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Line(),
 					jen.Comment("elsewise, load the request with extra context."),
-					constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "UserKey"), jen.ID("user")),
-					constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "UserIDKey"), jen.ID("user").Dot("ID")),
-					constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "UserIsAdminKey"), jen.ID("user").Dot("IsAdmin")),
+					constants.CtxVar().Equals().Qual("context", "WithValue").Call(
+						constants.CtxVar(),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID("user").Dot("ToSessionInfo").Call(),
+					),
 					jen.Line(),
 					jen.ID("next").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName).Dot("WithContext").Call(constants.CtxVar())),
 				)),
@@ -138,15 +140,15 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.List(jen.ID("user"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
+				jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
 				jen.Line(),
-				jen.If(jen.Not().ID("ok").Or().ID("user").IsEqualTo().ID("nil")).Block(
+				jen.If(jen.Not().ID("ok").Or().ID("si").IsEqualTo().ID("nil")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),
 				),
 				jen.Line(),
-				jen.If(jen.Not().ID("user").Dot("IsAdmin")).Block(
+				jen.If(jen.Not().ID("si").Dot("UserIsAdmin")).Block(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("AdminMiddleware called by non-admin user")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
 					jen.Return(),

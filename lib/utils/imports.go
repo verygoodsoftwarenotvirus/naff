@@ -73,6 +73,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(constants.MockPkg, "mock")
 	file.ImportAlias(constants.FakeLibrary, "fake")
 	file.ImportName(constants.TracingLibrary, "trace")
+	file.ImportName(constants.SessionManagerLibrary, "scs")
 
 	file.ImportName("go.opencensus.io/stats", "stats")
 	file.ImportName("go.opencensus.io/stats/view", "view")
