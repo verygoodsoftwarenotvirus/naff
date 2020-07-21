@@ -458,6 +458,10 @@ func (g *Group) Callln(params ...Code) *Statement {
 
 // Callln renders a comma separated list enclosed by parenthesis. Use for function calls.
 func (s *Statement) Callln(params ...Code) *Statement {
+	if len(params) == 0 {
+		panic("Callln called with zero params, would generate invalid code!")
+	}
+
 	g := &Group{
 		close:     ",\n)",
 		items:     params,
