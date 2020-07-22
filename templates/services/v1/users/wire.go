@@ -8,7 +8,7 @@ import (
 )
 
 func wireDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("users")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 

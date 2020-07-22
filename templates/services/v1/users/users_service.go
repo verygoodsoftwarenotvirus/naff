@@ -8,7 +8,7 @@ import (
 )
 
 func usersServiceDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("users")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 
@@ -36,6 +36,13 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("Validate").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Bool(), jen.Error()),
 			),
 			jen.Line(),
+			jen.ID("secretGenerator").Interface(
+				jen.ID("GenerateTwoFactorSecret").Params().Params(jen.String(), jen.Error()),
+			),
+			jen.Line(),
+			jen.Comment("UserIDFetcher fetches usernames from requests."),
+			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
+			jen.Line(),
 			jen.Comment("Service handles our users."),
 			jen.ID("Service").Struct(
 				jen.ID("cookieSecret").Index().Byte(),
@@ -46,11 +53,10 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("userCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
+				jen.ID("secretGenerator").ID("secretGenerator"),
 				jen.ID("userCreationEnabled").Bool(),
 			),
 			jen.Line(),
-			jen.Comment("UserIDFetcher fetches usernames from requests."),
-			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 		),
 		jen.Line(),
 	)
@@ -88,6 +94,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),
 				jen.ID("userCounter").MapAssign().ID("counter"),
 				jen.ID("reporter").MapAssign().ID("reporter"),
+				jen.ID("secretGenerator").MapAssign().AddressOf().ID("standardSecretGenerator").Values(),
 				jen.ID("userCreationEnabled").MapAssign().ID("authSettings").Dot("EnableUserSignup"),
 			),
 			jen.Line(),

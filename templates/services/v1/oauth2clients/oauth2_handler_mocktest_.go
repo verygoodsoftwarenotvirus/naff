@@ -8,7 +8,7 @@ import (
 )
 
 func oauth2HandlerMockTestDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("oauth2clients")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 

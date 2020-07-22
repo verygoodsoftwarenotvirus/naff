@@ -8,7 +8,7 @@ import (
 )
 
 func webhooksServiceDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("webhooks")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 

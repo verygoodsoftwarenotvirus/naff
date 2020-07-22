@@ -6,6 +6,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const (
+	packageName = "frontend"
+)
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{

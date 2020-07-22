@@ -5,7 +5,7 @@ import (
 )
 
 func docDotGo() *jen.File {
-	code := jen.NewFile("auth")
+	code := jen.NewFile(packageName)
 
 	code.PackageComment(`Package auth implements a user authentication layer for a web server, issuing
 cookies, validating requests via middleware`)

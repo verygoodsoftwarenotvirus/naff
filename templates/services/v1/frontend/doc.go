@@ -5,7 +5,7 @@ import (
 )
 
 func docDotGo() *jen.File {
-	code := jen.NewFile("frontend")
+	code := jen.NewFile(packageName)
 
 	code.PackageComment("Package frontend implements a frontend, mostly-static file server\n")
 

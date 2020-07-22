@@ -5,7 +5,7 @@ import (
 )
 
 func docDotGo() *jen.File {
-	code := jen.NewFile("oauth2clients")
+	code := jen.NewFile(packageName)
 
 	code.PackageComment(`Package oauth2clients provides a series of HTTP handlers for managing
 OAuth2 clients in a compatible database.`)

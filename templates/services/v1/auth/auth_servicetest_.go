@@ -8,7 +8,7 @@ import (
 )
 
 func authServiceTestDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("auth")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 

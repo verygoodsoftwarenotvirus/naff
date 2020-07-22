@@ -8,7 +8,7 @@ import (
 )
 
 func usersServiceTestDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("users")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 
@@ -20,7 +20,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
-				jen.Lit("GetAllUserCount"),
+				jen.Lit("GetAllUsersCount"),
 				jen.Qual(constants.MockPkg, "Anything"),
 			).Dot("Return").Call(jen.ID("expectedUserCount"), jen.Nil()),
 			jen.Line(),

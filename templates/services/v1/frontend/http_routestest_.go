@@ -9,7 +9,7 @@ import (
 )
 
 func httpRoutesTestDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("frontend")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 
