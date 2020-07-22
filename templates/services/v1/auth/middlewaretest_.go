@@ -502,9 +502,9 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("expected").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Dot("Form").Equals().Map(jen.String()).Index().String().Valuesln(
-					jen.ID("UsernameFormKey").MapAssign().Values(jen.ID("expected").Dot("Username")),
-					jen.ID("PasswordFormKey").MapAssign().Values(jen.ID("expected").Dot("Password")),
-					jen.ID("TOTPTokenFormKey").MapAssign().Values(jen.ID("expected").Dot("TOTPToken")),
+					jen.ID("usernameFormKey").MapAssign().Values(jen.ID("expected").Dot("Username")),
+					jen.ID("passwordFormKey").MapAssign().Values(jen.ID("expected").Dot("Password")),
+					jen.ID("totpTokenFormKey").MapAssign().Values(jen.ID("expected").Dot("TOTPToken")),
 				),
 				jen.Line(),
 				jen.ID("actual").Assign().ID("parseLoginInputFromForm").Call(jen.ID(constants.RequestVarName)),
@@ -610,9 +610,9 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID("form").Assign().Qual("net/url", "Values").Valuesln(
-					jen.ID("UsernameFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("Username")),
-					jen.ID("PasswordFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("Password")),
-					jen.ID("TOTPTokenFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("TOTPToken")),
+					jen.ID("usernameFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("Username")),
+					jen.ID("passwordFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("Password")),
+					jen.ID("totpTokenFormKey").MapAssign().Values(jen.ID(utils.BuildFakeVarName("Input")).Dot("TOTPToken")),
 				),
 				jen.Line(),
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(

@@ -14,10 +14,10 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.Comment("CreateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
-			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_create_input"),
-			jen.Comment("UpdateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
-			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_update_input"),
+			jen.Comment("createMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
+			jen.ID("createMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_create_input"),
+			jen.Comment("updateMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
+			jen.ID("updateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_update_input"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("webhooks"),
 			jen.ID("counterDescription").String().Equals().Lit("the number of webhooks managed by the webhooks service"),

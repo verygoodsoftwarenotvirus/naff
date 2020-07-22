@@ -24,8 +24,8 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.Comment("CreationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data."),
-			jen.ID("CreationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
+			jen.Comment("creationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data."),
+			jen.ID("creationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("oauth2_clients"),
 			jen.ID("counterDescription").String().Equals().Lit("number of oauth2 clients managed by the oauth2 client service"),

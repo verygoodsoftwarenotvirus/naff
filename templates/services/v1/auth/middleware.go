@@ -14,15 +14,15 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.Comment("UserLoginInputMiddlewareCtxKey is the context key for login input."),
-			jen.ID("UserLoginInputMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_login_input"),
+			jen.Comment("userLoginInputMiddlewareCtxKey is the context key for login input."),
+			jen.ID("userLoginInputMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_login_input"),
 			jen.Line(),
-			jen.Comment("UsernameFormKey is the string we look for in request forms for username information."),
-			jen.ID("UsernameFormKey").Equals().Lit("username"),
-			jen.Comment("PasswordFormKey is the string we look for in request forms for password information."),
-			jen.ID("PasswordFormKey").Equals().Lit("password"),
-			jen.Comment("TOTPTokenFormKey is the string we look for in request forms for TOTP token information."),
-			jen.ID("TOTPTokenFormKey").Equals().Lit("totpToken"),
+			jen.Comment("usernameFormKey is the string we look for in request forms for username information."),
+			jen.ID("usernameFormKey").Equals().Lit("username"),
+			jen.Comment("passwordFormKey is the string we look for in request forms for password information."),
+			jen.ID("passwordFormKey").Equals().Lit("password"),
+			jen.Comment("totpTokenFormKey is the string we look for in request forms for TOTP token information."),
+			jen.ID("totpTokenFormKey").Equals().Lit("totpToken"),
 		),
 		jen.Line(),
 	)
@@ -166,9 +166,9 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")).Block(
 			jen.If(jen.Err().Assign().ID(constants.RequestVarName).Dot("ParseForm").Call(), jen.Err().IsEqualTo().ID("nil")).Block(
 				jen.ID("uli").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
-					jen.ID("Username").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("UsernameFormKey")),
-					jen.ID("Password").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("PasswordFormKey")),
-					jen.ID("TOTPToken").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("TOTPTokenFormKey")),
+					jen.ID("Username").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("usernameFormKey")),
+					jen.ID("Password").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("passwordFormKey")),
+					jen.ID("TOTPToken").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("totpTokenFormKey")),
 				),
 				jen.Line(),
 				jen.If(jen.ID("uli").Dot("Username").DoesNotEqual().EmptyString().And().ID("uli").Dot("Password").DoesNotEqual().EmptyString().And().ID("uli").Dot("TOTPToken").DoesNotEqual().EmptyString()).Block(
@@ -197,7 +197,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Line(),
-				constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.ID("UserLoginInputMiddlewareCtxKey"), jen.ID("x")),
+				constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.ID("userLoginInputMiddlewareCtxKey"), jen.ID("x")),
 				jen.ID("next").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName).Dot("WithContext").Call(constants.CtxVar())),
 			)),
 		),

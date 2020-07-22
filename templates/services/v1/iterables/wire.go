@@ -15,6 +15,7 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code)
 
 	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
 
 	code.Add(
 		jen.Var().Defs(
@@ -23,6 +24,13 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID(fmt.Sprintf("Provide%sService", typ.Name.Plural())),
 				jen.ID(fmt.Sprintf("Provide%sDataManager", sn)),
 				jen.ID(fmt.Sprintf("Provide%sDataServer", sn)),
+				func() jen.Code {
+					if typ.SearchEnabled {
+						return jen.IDf("Provide%sServiceSearchIndex", pn)
+					} else {
+						return jen.Null()
+					}
+				}(),
 			),
 		),
 		jen.Line(),

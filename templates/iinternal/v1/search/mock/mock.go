@@ -13,20 +13,20 @@ func mockDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.InternalSearchV1Package(), "IndexManager").Equals().Parens(jen.PointerTo().ID("MockIndexManager")).Parens(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalSearchV1Package(), "IndexManager").Equals().Parens(jen.PointerTo().ID("IndexManager")).Parens(jen.Nil()),
 		jen.Line(),
 	)
 
 	code.Add(
-		jen.Comment("MockIndexManager is a mock IndexManager"),
+		jen.Comment("IndexManager is a mock IndexManager"),
 		jen.Line(),
-		jen.Type().ID("MockIndexManager").Struct(
+		jen.Type().ID("IndexManager").Struct(
 			jen.Qual(constants.MockPkg, "Mock"),
 		),
 		jen.Line(),
 		jen.Comment("Index implements our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockIndexManager")).ID("Index").Params(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("IndexManager")).ID("Index").Params(
 			constants.CtxParam(),
 			jen.ID("id").Uint64(),
 			jen.ID("value").Interface(),
@@ -41,7 +41,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("Search implements our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockIndexManager")).ID("Search").Params(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("IndexManager")).ID("Search").Params(
 			constants.CtxParam(),
 			jen.ID("query").String(),
 			constants.UserIDParam(),
@@ -62,7 +62,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("Delete implements our interface"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockIndexManager")).ID("Delete").Params(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("IndexManager")).ID("Delete").Params(
 			constants.CtxParam(),
 			jen.ID("id").Uint64(),
 		).Error().Block(

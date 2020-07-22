@@ -26,6 +26,9 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(buildListHandlerFuncDecl(proj, typ)...)
+	if typ.SearchEnabled {
+		code.Add(buildSearchHandlerFuncDecl(proj, typ)...)
+	}
 	code.Add(buildCreateHandlerFuncDecl(proj, typ)...)
 	code.Add(buildExistenceHandlerFuncDecl(proj, typ)...)
 	code.Add(buildReadHandlerFuncDecl(proj, typ)...)
@@ -93,6 +96,76 @@ func buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj *models.Projec
 		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Litf("%s_id", typ.Name.RouteName()), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 		jen.Line(),
 	)
+
+	return lines
+}
+
+func buildSearchHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
+	uvn := typ.Name.UnexportedVarName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	pcn := typ.Name.PluralCommonName()
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+
+	const funcName = "SearchHandler"
+
+	block := []jen.Code{
+		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit(funcName)),
+		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+		jen.Line(),
+		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+		jen.Line(),
+		jen.Comment("we only parse the filter here because it will contain the limit"),
+		jen.ID(constants.FilterVarName).Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
+		jen.ID("query").Assign().ID(constants.RequestVarName).Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "SearchQueryKey")),
+		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("search_query"), jen.ID("query")),
+		jen.Line(),
+		jen.Comment("determine user ID."),
+		jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
+		jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
+		jen.Line(),
+		jen.List(jen.ID("relevantIDs"), jen.ID("searchErr")).Assign().ID("s").Dot("search").Dot("Search").Call(
+			constants.CtxVar(),
+			jen.ID("query"),
+			jen.ID("userID"),
+		),
+		jen.If(jen.ID("searchErr").DoesNotEqual().Nil()).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("searchErr"), jen.Lit("error encountered executing search query")),
+			jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
+			jen.Return(),
+		),
+		jen.Line(),
+		jen.Commentf("fetch %s from database.", pcn),
+		jen.List(jen.ID(puvn), jen.Err()).Assign().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dot(fmt.Sprintf("Get%sWithIDs", pn)).Call(
+			constants.CtxVar(),
+			jen.ID("userID"),
+			jen.ID(constants.FilterVarName).Dot("Limit"),
+			jen.ID("relevantIDs"),
+		),
+		jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.Comment("in the event no rows exist return an empty list."),
+			jen.ID(puvn).Equals().Index().Qual(proj.ModelsV1Package(), sn).Values(),
+		).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error encountered fetching %s", pcn)),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+			jen.Return(),
+		),
+		jen.Line(),
+		jen.Comment("encode our response and peace."),
+		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID(puvn)), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+		),
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("%s is our search route.", funcName),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID(funcName).Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
+		),
+		jen.Line(),
+	}
 
 	return lines
 }
@@ -231,7 +304,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 		jen.Comment("check request context for parsed input struct."),
-		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("CreateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
+		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("createMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
 		jen.If(jen.Not().ID("ok")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
@@ -264,6 +337,24 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 			jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Create")),
 		)),
+	)
+
+	if typ.SearchEnabled {
+		block = append(block,
+			jen.If(
+				jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(
+					constants.CtxVar(),
+					jen.ID("x").Dot("ID"),
+					jen.ID("x"),
+				),
+				jen.ID("searchIndexErr").DoesNotEqual().Nil(),
+			).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("searchIndexErr"), jen.Litf("adding %s to search index", scn)),
+			),
+		)
+	}
+
+	block = append(block,
 		jen.Line(),
 		jen.Comment("encode our response and peace."),
 		utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
@@ -397,7 +488,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	block = append(block,
 		jen.Line(),
 		jen.Comment("check for parsed input attached to request context."),
-		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("UpdateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
+		jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("updateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
 		jen.If(jen.Not().ID("ok")).Block(
 			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("no input attached to request")),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
@@ -438,6 +529,24 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 			jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 			jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Update")),
 		)),
+	)
+
+	if typ.SearchEnabled {
+		block = append(block,
+			jen.If(
+				jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(
+					constants.CtxVar(),
+					jen.ID("x").Dot("ID"),
+					jen.ID("x"),
+				),
+				jen.ID("searchIndexErr").DoesNotEqual().Nil(),
+			).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("searchIndexErr"), jen.Litf("updating %s in search index", scn)),
+			),
+		)
+	}
+
+	block = append(block,
 		jen.Line(),
 		jen.Comment("encode our response and peace."),
 		jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -463,7 +572,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	sn := typ.Name.Singular()
 
-	blockLines := []jen.Code{
+	block := []jen.Code{
 		jen.Var().Err().Error(),
 		jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
@@ -471,10 +580,10 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 		jen.Line(),
 	}
-	blockLines = append(blockLines, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, true, false, false)...)
+	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, true, false, false)...)
 	callArgs := typ.BuildDBClientArchiveMethodCallArgs(proj)
 
-	blockLines = append(blockLines,
+	block = append(block,
 		jen.Line(),
 		jen.Commentf("archive the %s in the database.", scn),
 		jen.Err().Equals().ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Dotf("Archive%s", sn).Call(callArgs...),
@@ -494,6 +603,23 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 			jen.ID("Data").MapAssign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(jen.ID("ID").MapAssign().ID(fmt.Sprintf("%sID", uvn))),
 			jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 		)),
+	)
+
+	if typ.SearchEnabled {
+		block = append(block,
+			jen.If(
+				jen.ID("indexDeleteErr").Assign().ID("s").Dot("search").Dot("Delete").Call(
+					constants.CtxVar(),
+					jen.IDf("%sID", uvn),
+				),
+				jen.ID("indexDeleteErr").DoesNotEqual().Nil(),
+			).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("indexDeleteErr"), jen.Litf("error removing %s from search index", scn)),
+			),
+		)
+	}
+
+	block = append(block,
 		jen.Line(),
 		jen.Comment("encode our response and peace."),
 		utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
@@ -503,7 +629,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.Commentf("ArchiveHandler returns a handler that archives %s.", scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(blockLines...),
+			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		),
 		jen.Line(),
 	}

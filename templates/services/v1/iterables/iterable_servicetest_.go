@@ -54,6 +54,12 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.ID("reporter").MapAssign().ID("nil"),
 	)
 
+	if typ.SearchEnabled {
+		serviceValues = append(serviceValues,
+			jen.ID("search").MapAssign().AddressOf().Qual(proj.InternalSearchV1Package("mock"), "IndexManager").Values(),
+		)
+	}
+
 	lines := []jen.Code{
 		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
 			jen.Return().AddressOf().ID("Service").Valuesln(serviceValues...),
@@ -62,13 +68,6 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	}
 
 	return lines
-}
-
-func relevantIDFetcherParam(typ models.DataType) jen.Code {
-	if typ.BelongsToUser || typ.BelongsToStruct != nil {
-		return jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero())
-	}
-	return nil
 }
 
 func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
@@ -97,6 +96,12 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.ID("ucp"),
 		jen.Nil(),
 	)
+
+	if typ.SearchEnabled {
+		provideServiceLines = append(provideServiceLines,
+			jen.AddressOf().Qual(proj.InternalSearchV1Package("mock"), "IndexManager").Values(),
+		)
+	}
 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(

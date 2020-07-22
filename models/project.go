@@ -329,7 +329,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 								if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
 									dt.RestrictedToUser = true
 								}
-								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) {
+								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) && dt.BelongsToUser && dt.BelongsToStruct == nil {
 									dt.SearchEnabled = true
 								}
 							}

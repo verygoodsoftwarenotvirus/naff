@@ -336,7 +336,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("userCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
 				jen.Line(),
 				jen.ID("s").Dot("userCreationEnabled").Equals().True(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -386,7 +386,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("userCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
 				jen.Line(),
 				jen.ID("s").Dot("userCreationEnabled").Equals().True(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -426,7 +426,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("userCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
 				jen.Line(),
 				jen.ID("s").Dot("userCreationEnabled").Equals().True(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -462,7 +462,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("userCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
 				jen.Line(),
 				jen.ID("s").Dot("userCreationEnabled").Equals().True(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -498,7 +498,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("userCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
 				jen.Line(),
 				jen.ID("s").Dot("userCreationEnabled").Equals().True(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -553,7 +553,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("UserCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("userCreationMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
 				jen.Line(),
 				jen.ID("s").Dot("userCreationEnabled").Equals().True(),
 				jen.ID("s").Dot("CreateHandler").Call().Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -704,7 +704,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretRefreshMiddlewareCtxKey"),
+						jen.ID("totpSecretRefreshMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -772,7 +772,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("totpSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.Line(),
@@ -791,7 +791,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("totpSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
@@ -845,7 +845,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretRefreshMiddlewareCtxKey"),
+						jen.ID("totpSecretRefreshMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -900,7 +900,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("totpSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
@@ -950,7 +950,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("TOTPSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("totpSecretRefreshMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
@@ -1020,7 +1020,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretVerificationMiddlewareCtxKey"),
+						jen.ID("totpSecretVerificationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -1081,7 +1081,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretVerificationMiddlewareCtxKey"),
+						jen.ID("totpSecretVerificationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -1117,7 +1117,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretVerificationMiddlewareCtxKey"),
+						jen.ID("totpSecretVerificationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -1152,7 +1152,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretVerificationMiddlewareCtxKey"),
+						jen.ID("totpSecretVerificationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -1184,7 +1184,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("TOTPSecretVerificationMiddlewareCtxKey"),
+						jen.ID("totpSecretVerificationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -1226,7 +1226,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("passwordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
@@ -1290,7 +1290,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("passwordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.Line(),
@@ -1309,7 +1309,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("passwordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
@@ -1360,7 +1360,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
-						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("PasswordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
+						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("passwordChangeMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
@@ -1420,7 +1420,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Callln(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("PasswordChangeMiddlewareCtxKey"),
+						jen.ID("passwordChangeMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),

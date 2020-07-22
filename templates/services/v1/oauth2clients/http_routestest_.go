@@ -288,7 +288,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("CreationMiddlewareCtxKey"),
+						jen.ID("creationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -338,7 +338,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("CreationMiddlewareCtxKey"),
+						jen.ID("creationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -393,7 +393,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("CreationMiddlewareCtxKey"),
+						jen.ID("creationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -449,7 +449,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("CreationMiddlewareCtxKey"),
+						jen.ID("creationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -505,7 +505,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("CreationMiddlewareCtxKey"),
+						jen.ID("creationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),
@@ -573,7 +573,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.ID("CreationMiddlewareCtxKey"),
+						jen.ID("creationMiddlewareCtxKey"),
 						jen.ID(utils.BuildFakeVarName("Input")),
 					),
 				),

@@ -31,6 +31,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "tracing"), "tracing")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search"), "search")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search", "bleve"), "bleve")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search", "mock"), "mocksearch")
 
 	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1", "client"), "dbclient")
 	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "mariadb"), "mariadb")

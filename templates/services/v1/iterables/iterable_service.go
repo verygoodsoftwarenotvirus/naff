@@ -22,10 +22,10 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.Commentf("CreateMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts.", cn),
-			jen.ID("CreateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
-			jen.Commentf("UpdateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts.", cn),
-			jen.ID("UpdateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
+			jen.Commentf("createMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts.", cn),
+			jen.ID("createMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
+			jen.Commentf("updateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts.", cn),
+			jen.ID("updateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
 			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
 			jen.ID("counterDescription").String().Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
@@ -42,13 +42,16 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Line(),
 	)
 
-	code.Add(buildServiceTypeDecl(proj, typ)...)
+	code.Add(buildServiceTypeDecls(proj, typ)...)
 	code.Add(buildProvideServiceFuncDecl(proj, typ)...)
+	if typ.SearchEnabled {
+		code.Add(buildProvideServiceSearchIndexFuncDecl(proj, typ)...)
+	}
 
 	return code
 }
 
-func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code {
+func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	cn := typ.Name.SingularCommonName()
 	pcn := typ.Name.PluralCommonName()
@@ -89,11 +92,22 @@ func buildServiceTypeDecl(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 
-	typeDefs := []jen.Code{
+	typeDefs := []jen.Code{}
+	if typ.SearchEnabled {
+		typeDefs = append(typeDefs,
+			jen.Comment("SearchIndex is a type alias for dependency injection's sake"),
+			jen.ID("SearchIndex").Qual(proj.InternalSearchV1Package(), "IndexManager"),
+		)
+		structFields = append(structFields,
+			jen.ID("search").ID("SearchIndex"),
+		)
+	}
+
+	typeDefs = append(typeDefs,
 		jen.Commentf("Service handles to-do list %s", pcn),
 		jen.ID("Service").Struct(structFields...),
 		jen.Line(),
-	}
+	)
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		typeDefs = append(typeDefs,
@@ -174,6 +188,15 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.ID("reporter").MapAssign().ID("reporter"),
 	)
 
+	if typ.SearchEnabled {
+		params = append(params,
+			jen.ID("searchIndexManager").ID("SearchIndex"),
+		)
+		serviceValues = append(serviceValues,
+			jen.ID("search").MapAssign().ID("searchIndexManager"),
+		)
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("Provide%sService builds a new %sService.", pn, pn),
 		jen.Line(),
@@ -188,6 +211,40 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
+	pn := typ.Name.Plural()
+	pcn := typ.Name.PluralCommonName()
+
+	lines := []jen.Code{
+		jen.Commentf("Provide%sServiceSearchIndex provides a search index for the service", pn),
+		jen.Line(),
+		jen.Func().IDf("Provide%sServiceSearchIndex", pn).Paramsln(
+			jen.ID("searchSettings").Qual(proj.InternalConfigV1Package(), "SearchSettings"),
+			jen.ID("indexProvider").Qual(proj.InternalSearchV1Package(), "IndexManagerProvider"),
+			jen.ID(constants.LoggerVarName).Qual(constants.LoggingPkg, "Logger"),
+		).Params(jen.ID("SearchIndex"), jen.Error()).Block(
+			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(
+				jen.Lit("index_path"),
+				jen.ID("searchSettings").Dotf("%sIndexPath", pn),
+			).Dot("Debug").Call(jen.Litf("setting up %s search index", pcn)),
+			jen.Line(),
+			jen.List(jen.ID("searchIndex"), jen.ID("indexInitErr")).Assign().ID("indexProvider").Call(
+				jen.ID("searchSettings").Dotf("%sIndexPath", pn),
+				jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sSearchIndexName", pn)),
+				jen.ID(constants.LoggerVarName),
+			),
+			jen.If(jen.ID("indexInitErr").DoesNotEqual().Nil()).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("indexInitErr"), jen.Litf("setting up %s search index", pcn)),
+				jen.Return(jen.Nil(), jen.ID("indexInitErr")),
+			),
+			jen.Line(),
+			jen.Return(jen.ID("searchIndex"), jen.Nil()),
+		),
 	}
 
 	return lines
