@@ -33,7 +33,10 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.Return().ID("u").Dot("String").Call(),
+			jen.ID("svcAddr").Assign().ID("u").Dot("String").Call(),
+			jen.Line(),
+			jen.Qual("log", "Printf").Call(jen.Lit("using target address: %q\n"), jen.ID("svcAddr")),
+			jen.Return().ID("svcAddr"),
 		),
 		jen.Line(),
 	)
@@ -95,14 +98,15 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		), jen.Error()).Block(
-			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Err()),
+			constants.CreateCtx(),
+			jen.List(jen.ID("tu"), jen.ID("parseErr")).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
+			jen.If(jen.ID("parseErr").DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.ID("parseErr")),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewSimpleClient").Call(constants.InlineCtx(), jen.ID("tu"), jen.ID("debug")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Err()),
+			jen.List(jen.ID("c"), jen.ID("clientInitErr")).Assign().Qual(proj.HTTPClientV1Package(), "NewSimpleClient").Call(constants.CtxVar(), jen.ID("tu"), jen.ID("debug")),
+			jen.If(jen.ID("clientInitErr").DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.ID("clientInitErr")),
 			),
 			jen.Line(),
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
@@ -113,11 +117,42 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.ID("Password").MapAssign().Qual(constants.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
 			),
 			jen.Line(),
-			jen.List(jen.ID("ucr"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(constants.InlineCtx(), jen.ID("in")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Err()),
+			jen.List(jen.ID("ucr"), jen.ID("userCreationErr")).Assign().ID("c").Dot("CreateUser").Call(constants.CtxVar(), jen.ID("in")),
+			jen.If(jen.ID("userCreationErr").DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.ID("userCreationErr")),
 			).Else().If(jen.ID("ucr").IsEqualTo().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), utils.Error("something happened")),
+			),
+			jen.Line(),
+			jen.List(jen.ID("token"), jen.ID("tokenErr")).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
+				jen.ID("ucr").Dot("TwoFactorSecret"),
+				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
+			),
+			jen.If(jen.ID("tokenErr").DoesNotEqual().Nil()).Block(
+				jen.Return(
+					jen.Nil(),
+					jen.Qual("fmt", "Errorf").Call(
+						jen.Lit("generating totp code: %w"),
+						jen.ID("tokenErr"),
+					),
+				),
+			),
+			jen.Line(),
+			jen.If(
+				jen.ID("validationErr").Assign().ID("c").Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("ucr").Dot("ID"),
+					jen.ID("token"),
+				),
+				jen.ID("validationErr").DoesNotEqual().Nil(),
+			).Block(
+				jen.Return(
+					jen.Nil(),
+					jen.Qual("fmt", "Errorf").Call(
+						jen.Lit("verifying totp code: %w"),
+						jen.ID("validationErr"),
+					),
+				),
 			),
 			jen.Line(),
 			jen.ID("u").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
@@ -128,7 +163,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 				jen.ID("TwoFactorSecret").MapAssign().ID("ucr").Dot("TwoFactorSecret"),
 				jen.ID("PasswordLastChangedOn").MapAssign().ID("ucr").Dot("PasswordLastChangedOn"),
 				jen.ID("CreatedOn").MapAssign().ID("ucr").Dot("CreatedOn"),
-				jen.ID("UpdatedOn").MapAssign().ID("ucr").Dot("UpdatedOn"),
+				jen.ID("LastUpdatedOn").MapAssign().ID("ucr").Dot("LastUpdatedOn"),
 				jen.ID("ArchivedOn").MapAssign().ID("ucr").Dot("ArchivedOn"),
 			),
 			jen.Line(),
@@ -171,7 +206,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 					{
 						"username": %q,
 						"password": %q,
-						"totp_token": %q
+						"totpToken": %q
 					}
 				`),
 						jen.ID("u").Dot("Username"),
@@ -207,6 +242,10 @@ func testutilDotGo(proj *models.Project) *jen.File {
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
+			jen.If(jen.ID("u").IsEqualTo().Nil()).Block(
+				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("user is nil"))),
+			),
+			jen.Line(),
 			jen.ID("firstOAuth2ClientURI").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("oauth2"), jen.Lit("client")),
 			jen.Line(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Callln(
@@ -223,9 +262,9 @@ func testutilDotGo(proj *models.Project) *jen.File {
 	{
 		"username": %q,
 		"password": %q,
-		"totp_token": %q,
+		"totpToken": %q,
 
-		"belongs_to_user": %d,
+		"belongsToUser": %d,
 		"scopes": ["*"]
 	}
 		`,

@@ -85,8 +85,8 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 						),
 						jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
 					),
-					jen.ID("Weight").MapAssign().Lit(100)), jen.Lit("GetOAuth2Clients").MapAssign().Valuesln(
-					jen.ID("Name").MapAssign().Lit("GetOAuth2Clients"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Weight").MapAssign().Lit(100)), jen.Lit("GetOAuth2ClientsForUser").MapAssign().Valuesln(
+					jen.ID("Name").MapAssign().Lit("GetOAuth2ClientsForUser"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
 						jen.Return().ID("c").Dot("BuildGetOAuth2ClientsRequest").Call(constants.InlineCtx(), jen.Nil()),
 					),
 					jen.ID("Weight").MapAssign().Lit(100))),
