@@ -55,8 +55,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -83,7 +83,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("requestingUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -93,9 +93,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -113,8 +113,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID("requestingUser").Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -131,9 +131,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -150,8 +150,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID("requestingUser").Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -168,9 +168,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")),
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -179,8 +179,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID("requestingUser").Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -199,9 +199,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
-					jen.ID("requestingUser").Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
@@ -218,8 +218,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID("requestingUser").Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -295,8 +295,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -345,8 +345,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -400,8 +400,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -456,8 +456,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -512,8 +512,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -580,8 +580,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -632,8 +632,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -667,8 +667,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -702,8 +702,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -745,8 +745,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -793,8 +793,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -828,8 +828,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -863,8 +863,8 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "UserIDKey"),
-						jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),

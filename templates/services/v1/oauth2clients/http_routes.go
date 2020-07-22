@@ -44,7 +44,10 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 		jen.Comment("fetchUserID grabs a userID out of the request context."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserID").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-			jen.If(jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")), jen.ID("ok")).Block(
+			jen.If(
+				jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+				jen.ID("ok").And().ID("si").DoesNotEqual().Nil(),
+			).Block(
 				jen.Return().ID("si").Dot("UserID"),
 			),
 			jen.Return().Zero(),

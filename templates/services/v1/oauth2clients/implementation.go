@@ -138,11 +138,11 @@ func implementationDotGo(proj *models.Project) *jen.File {
 			jen.Comment("check context for client."),
 			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.Not().ID("clientOk")).Block(
 				jen.Comment("check for user instead."),
-				jen.List(jen.ID("user"), jen.ID("userOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "UserKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")),
-				jen.If(jen.Not().ID("userOk")).Block(jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user attached to this request")),
+				jen.List(jen.ID("si"), jen.ID("userOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+				jen.If(jen.Not().ID("userOk").Or().ID("si").IsEqualTo().Nil()).Block(jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user attached to this request")),
 					jen.Return().List(jen.EmptyString(), utils.Error("user not found")),
 				),
-				jen.ID("uid").Equals().ID("user").Dot("ID"),
+				jen.ID("uid").Equals().ID("si").Dot("UserID"),
 			).Else().Block(
 				jen.ID("uid").Equals().ID("client").Dot(constants.UserOwnershipFieldName),
 			),

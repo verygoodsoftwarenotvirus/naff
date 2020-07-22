@@ -246,7 +246,11 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
-					jen.Qual("context", "WithValue").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual(proj.ModelsV1Package(), "UserKey"), jen.ID(utils.BuildFakeVarName("User"))),
+					jen.Qual("context", "WithValue").Call(
+						jen.ID(constants.RequestVarName).Dot("Context").Call(),
+						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
+					),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("UserAuthorizationHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
