@@ -80,7 +80,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 				jen.AddressOf().ID("scopes"), jen.AddressOf().ID("x").Dot("RedirectURI"),
 				jen.AddressOf().ID("x").Dot("ClientSecret"),
 				jen.AddressOf().ID("x").Dot("CreatedOn"),
-				jen.AddressOf().ID("x").Dot("UpdatedOn"),
+				jen.AddressOf().ID("x").Dot("LastUpdatedOn"),
 				jen.AddressOf().ID("x").Dot("ArchivedOn"),
 				jen.AddressOf().ID("x").Dot(constants.UserOwnershipFieldName),
 			),
@@ -618,7 +618,7 @@ func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *
 		}
 
 		if isPostgres {
-			out = append(out, jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("UpdatedOn")))
+			out = append(out, jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("LastUpdatedOn")))
 		} else if isSqlite || isMariaDB {
 			out = append(out,
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),

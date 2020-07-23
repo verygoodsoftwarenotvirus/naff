@@ -145,7 +145,7 @@ func buildScanFields(proj *models.Project, typ models.DataType) (scanFields []je
 
 	scanFields = append(scanFields,
 		jen.AddressOf().ID("x").Dot("CreatedOn"),
-		jen.AddressOf().ID("x").Dot("UpdatedOn"),
+		jen.AddressOf().ID("x").Dot("LastUpdatedOn"),
 		jen.AddressOf().ID("x").Dot("ArchivedOn"),
 	)
 
@@ -815,7 +815,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 				jen.ID("query"),
 				jen.ID("args").Spread(),
 			).Dot("Scan").Call(
-				jen.AddressOf().ID(updatedVarName).Dot("UpdatedOn"),
+				jen.AddressOf().ID(updatedVarName).Dot("LastUpdatedOn"),
 			),
 		)
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {

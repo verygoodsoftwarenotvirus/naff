@@ -76,7 +76,7 @@ func buildGeneralFields(varName string, typ models.DataType) []jen.Code {
 
 	fields = append(fields,
 		jen.ID(varName).Dot("CreatedOn"),
-		jen.ID(varName).Dot("UpdatedOn"),
+		jen.ID(varName).Dot("LastUpdatedOn"),
 		jen.ID(varName).Dot("ArchivedOn"),
 	)
 
@@ -99,7 +99,7 @@ func buildBadFields(varName string, typ models.DataType) []jen.Code {
 
 	fields = append(fields,
 		jen.ID(varName).Dot("CreatedOn"),
-		jen.ID(varName).Dot("UpdatedOn"),
+		jen.ID(varName).Dot("LastUpdatedOn"),
 	)
 
 	if typ.BelongsToStruct != nil {

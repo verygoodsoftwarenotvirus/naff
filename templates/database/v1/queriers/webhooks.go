@@ -22,6 +22,13 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.ID("topicsSeparator").Equals().RawString(`,`),
 			jen.Line(),
 			jen.ID("webhooksTableName").Equals().Lit("webhooks"),
+			jen.ID("webhooksTableNameColumn").Equals().Lit("name"),
+			jen.ID("webhooksTableContentTypeColumn").Equals().Lit("content_type"),
+			jen.ID("webhooksTableURLColumn").Equals().Lit("url"),
+			jen.ID("webhooksTableMethodColumn").Equals().Lit("method"),
+			jen.ID("webhooksTableEventsColumn").Equals().Lit("events"),
+			jen.ID("webhooksTableDataTypesColumn").Equals().Lit("data_types"),
+			jen.ID("webhooksTableTopicsColumn").Equals().Lit("topics"),
 			jen.ID("webhooksTableOwnershipColumn").Equals().Lit("belongs_to_user"),
 		),
 		jen.Line(),
@@ -31,16 +38,16 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Var().Defs(
 			jen.ID("webhooksTableColumns").Equals().Index().String().Valuesln(
 				utils.FormatString("%s.id", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.name", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.content_type", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.url", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.method", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.events", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.data_types", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.topics", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.created_on", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.updated_on", jen.ID("webhooksTableName")),
-				utils.FormatString("%s.archived_on", jen.ID("webhooksTableName")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableNameColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableContentTypeColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableURLColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableMethodColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableEventsColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableDataTypesColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableTopicsColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("createdOnColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("lastUpdatedOnColumn")),
+				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("archivedOnColumn")),
 				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("webhooksTableOwnershipColumn")),
 			),
 		),
@@ -76,10 +83,8 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("scanWebhook").Params(
 			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
-			jen.ID("includeCount").Bool(),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
-			jen.Uint64(),
 			jen.Error(),
 		).Block(
 			jen.Var().Defs(
@@ -102,13 +107,9 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 				jen.AddressOf().ID("dataTypesStr"),
 				jen.AddressOf().ID("topicsStr"),
 				jen.AddressOf().ID("x").Dot("CreatedOn"),
-				jen.AddressOf().ID("x").Dot("UpdatedOn"),
+				jen.AddressOf().ID("x").Dot("LastUpdatedOn"),
 				jen.AddressOf().ID("x").Dot("ArchivedOn"),
 				jen.AddressOf().ID("x").Dot(constants.UserOwnershipFieldName),
-			),
-			jen.Line(),
-			jen.If(jen.ID("includeCount")).Block(
-				utils.AppendItemsToList(jen.ID("targetVars"), jen.AddressOf().ID("count")),
 			),
 			jen.Line(),
 			jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -125,7 +126,7 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 				jen.ID("x").Dot("Topics").Equals().ID("topics"),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("x"), jen.ID("count"), jen.Nil()),
+			jen.Return().List(jen.ID("x"), jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -653,7 +654,7 @@ func buildUpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 		if isPostgres(dbvendor) {
 			return []jen.Code{
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateWebhookQuery").Call(jen.ID("input")),
-				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("UpdatedOn")),
+				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("LastUpdatedOn")),
 			}
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			return []jen.Code{

@@ -87,7 +87,7 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 					jen.Qual("strings", "Join").Call(jen.ID("w").Dot("DataTypes"), jen.ID("typesSeparator")),
 					jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Topics"), jen.ID("topicsSeparator")),
 					jen.ID("w").Dot("CreatedOn"),
-					jen.ID("w").Dot("UpdatedOn"),
+					jen.ID("w").Dot("LastUpdatedOn"),
 					jen.ID("w").Dot("ArchivedOn"),
 					jen.ID("w").Dot(constants.UserOwnershipFieldName),
 				),
@@ -121,7 +121,7 @@ func buildBuildErroneousMockRowFromWebhook(proj *models.Project, dbvendor wordsm
 				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("DataTypes"), jen.ID("typesSeparator")),
 				jen.Qual("strings", "Join").Call(jen.ID("w").Dot("Topics"), jen.ID("topicsSeparator")),
 				jen.ID("w").Dot("CreatedOn"),
-				jen.ID("w").Dot("UpdatedOn"),
+				jen.ID("w").Dot("LastUpdatedOn"),
 				jen.ID("w").Dot("ID"),
 			),
 			jen.Line(),
@@ -855,7 +855,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 			updateWebhookExpectFunc = "ExpectQuery"
 			updateWebhookReturnFunc = "WillReturnRows"
 			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(
-				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("UpdatedOn"),
+				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("LastUpdatedOn"),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			updateWebhookExpectFunc = "ExpectExec"
