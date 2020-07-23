@@ -100,22 +100,22 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 	//)
 
 	code.Add(
-		jen.Comment("GetOAuth2Clients gets a list of OAuth2 clients."),
+		jen.Comment("GetOAuth2ClientsForUser gets a list of OAuth2 clients."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2Clients").Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2ClientsForUser").Params(
 			constants.CtxParam(),
 			constants.UserIDParam(),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"), jen.Error()).Block(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetOAuth2Clients")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetOAuth2ClientsForUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachFilterToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.FilterVarName)),
 			jen.Line(),
-			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)).Dot("Debug").Call(jen.Lit("GetOAuth2Clients called")),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)).Dot("Debug").Call(jen.Lit("GetOAuth2ClientsForUser called")),
 			jen.Line(),
-			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2Clients").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
+			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
 		),
 		jen.Line(),
 	)
@@ -128,7 +128,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-				jen.Lit("client_id").MapAssign().ID("input").Dot("ClientID"),
+				jen.Lit("oauth2client_client_id").MapAssign().ID("input").Dot("ClientID"),
 				jen.Lit("belongs_to_user").MapAssign().ID("input").Dot(constants.UserOwnershipFieldName)),
 			),
 			jen.Line(),
@@ -138,7 +138,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("new oauth2 client created successfully")),
+			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("client_id"), jen.ID("client").Dot("ID")).Dot("Debug").Call(jen.Lit("new oauth2 client created successfully")),
 			jen.Line(),
 			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),

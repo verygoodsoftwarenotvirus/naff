@@ -46,7 +46,7 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 	code.Add(buildBuildGetUserByUsernameQuery(proj, dbvendor)...)
 	code.Add(buildGetUserByUsername(proj, dbvendor)...)
 	code.Add(buildBuildGetAllUsersCountQuery(proj, dbvendor)...)
-	code.Add(buildGetAllUserCount(proj, dbvendor)...)
+	code.Add(buildGetAllUsersCount(proj, dbvendor)...)
 	code.Add(buildBuildGetUsersQuery(proj, dbvendor)...)
 	code.Add(buildGetUsers(proj, dbvendor)...)
 	code.Add(buildBuildCreateUserQuery(proj, dbvendor)...)
@@ -275,11 +275,11 @@ func buildBuildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.Su
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("buildGetAllUserCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere"),
+		jen.Comment("buildGetAllUsersCountQuery returns a SQL query (and arguments) for retrieving the number of users who adhere"),
 		jen.Line(),
 		jen.Comment("to a given filter's criteria."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllUserCountQuery").Params().Params(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllUsersCountQuery").Params().Params(
 			jen.ID("query").String(),
 		).Block(
 			jen.Var().Err().Error(),
@@ -305,20 +305,20 @@ func buildBuildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.Su
 	return lines
 }
 
-func buildGetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildGetAllUsersCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	lines := []jen.Code{
-		jen.Comment("GetAllUserCount fetches a count of users from the database."),
+		jen.Comment("GetAllUsersCount fetches a count of users from the database."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllUserCount").Params(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllUsersCount").Params(
 			constants.CtxParam(),
 		).Params(
 			jen.ID("count").Uint64(),
 			jen.Err().Error(),
 		).Block(
-			jen.ID("query").Assign().ID(dbfl).Dot("buildGetAllUserCountQuery").Call(),
+			jen.ID("query").Assign().ID(dbfl).Dot("buildGetAllUsersCountQuery").Call(),
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(
 				constants.CtxVar(),
 				jen.ID("query"),

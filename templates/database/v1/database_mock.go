@@ -20,7 +20,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Var().Underscore().ID("Database").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
+		jen.Var().Underscore().ID("DataManager").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -80,7 +80,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("Migrate satisfies the Database interface."),
+		jen.Comment("Migrate satisfies the DataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Error").Call(jen.Zero()),
@@ -89,7 +89,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("IsReady satisfies the Database interface."),
+		jen.Comment("IsReady satisfies the DataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Bool").Call(jen.Zero()),

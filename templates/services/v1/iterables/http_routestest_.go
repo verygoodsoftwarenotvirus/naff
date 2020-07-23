@@ -711,14 +711,8 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
-	//scn := typ.Name.SingularCommonName()
+	scn := typ.Name.SingularCommonName()
 	uvn := typ.Name.UnexportedVarName()
-
-	//actualCallArgs := []jen.Code{
-	//	jen.Litf("Create%s", sn),
-	//	jen.Qual(constants.MockPkg, "Anything"),
-	//	jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sCreationInput", sn)),
-	//}
 
 	happyPathSubtest := []jen.Code{
 		jen.ID("s").Assign().ID("buildTestService").Call(),
@@ -1048,7 +1042,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	block = append(
 		block,
 		jen.ID("T").Dot("Run").Call(
-			jen.Lit("with error creating item"),
+			jen.Litf("with error creating %s", scn),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				creationErrSubtest...,
 			),

@@ -72,8 +72,8 @@ func databaseDotGo(proj *models.Project) *jen.File {
 			jen.Comment("ConnectionDetails is a string alias for dependency injection."),
 			jen.ID("ConnectionDetails").String(),
 			jen.Line(),
-			jen.Comment("Database describes anything that stores data for our services."),
-			jen.ID("Database").Interface(
+			jen.Comment("DataManager describes anything that stores data for our services."),
+			jen.ID("DataManager").Interface(
 				buildInterfaceLines()...,
 			),
 		),

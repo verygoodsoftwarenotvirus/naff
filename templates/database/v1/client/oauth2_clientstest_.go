@@ -16,7 +16,7 @@ func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 	code.Add(buildTestClient_GetOAuth2ClientByClientID(proj)...)
 	code.Add(buildTestClient_GetAllOAuth2ClientCount(proj)...)
 	//code.Add(buildTestClient_GetAllOAuth2Clients(proj)...)
-	code.Add(buildTestClient_GetOAuth2Clients(proj)...)
+	code.Add(buildTestClient_GetOAuth2ClientsForUser(proj)...)
 	code.Add(buildTestClient_CreateOAuth2Client(proj)...)
 	code.Add(buildTestClient_UpdateOAuth2Client(proj)...)
 	code.Add(buildTestClient_ArchiveOAuth2Client(proj)...)
@@ -271,9 +271,9 @@ func buildTestClient_GetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
 //	return lines
 //}
 
-func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
+func buildTestClient_GetOAuth2ClientsForUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetOAuth2Clients").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetOAuth2ClientsForUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -285,13 +285,13 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
@@ -309,13 +309,13 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.CreateNilQueryFilter(proj),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), jen.Nil()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
@@ -333,13 +333,13 @@ func buildTestClient_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
-					jen.Lit("GetOAuth2Clients"),
+					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),

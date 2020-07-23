@@ -44,6 +44,66 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
+		jen.Func().ID("TestClient_GetUserWithUnverifiedTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).Dot("Return").Call(
+					jen.ID(utils.BuildFakeVarName("User")),
+					jen.Nil(),
+				),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetUserWithUnverifiedTwoFactorSecret").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Func().ID("TestClient_VerifyUserTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("VerifyUserTwoFactorSecret"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).Dot("Return").Call(
+					jen.Nil(),
+				),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("VerifyUserTwoFactorSecret").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
 		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -71,7 +131,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestClient_GetAllUserCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetAllUsersCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -80,13 +140,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
-					jen.Lit("GetAllUserCount"),
+					jen.Lit("GetAllUsersCount"),
 					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("Count")), jen.Nil(),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllUserCount").Call(constants.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("GetAllUsersCount").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -195,6 +255,38 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Line(),
 				jen.Err().Assign().ID("c").Dot("UpdateUser").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User"))),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertExpectationsFor("mockDB"),
+			),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Func().ID("TestClient_UpdateUserPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Var().ID("expected").Error(),
+				jen.Line(),
+				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
+					jen.Lit("UpdateUserPassword"),
+					jen.Qual(constants.MockPkg, "Anything"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+				).Dot("Return").Call(
+					jen.ID("expected"),
+				),
+				jen.Line(),
+				jen.Err().Assign().ID("c").Dot("UpdateUserPassword").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+				),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),

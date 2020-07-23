@@ -52,8 +52,8 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	code.Add(buildTestDB_GetOAuth2Client(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetAllOAuth2ClientCountQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetAllOAuth2ClientCount(proj, dbvendor)...)
-	code.Add(buildTestDB_buildGetOAuth2ClientsQuery(proj, dbvendor)...)
-	code.Add(buildTestDB_GetOAuth2Clients(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetOAuth2ClientsForUserQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetOAuth2ClientsForUser(proj, dbvendor)...)
 	code.Add(buildTestDB_buildCreateOAuth2ClientQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_CreateOAuth2Client(proj, dbvendor)...)
 	code.Add(buildTestDB_buildUpdateOAuth2ClientQuery(proj, dbvendor)...)
@@ -638,7 +638,7 @@ func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmit
 	return lines
 }
 
-func buildTestDB_buildGetOAuth2ClientsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_buildGetOAuth2ClientsForUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
 		From(oauth2ClientsTableName).
@@ -662,10 +662,10 @@ func buildTestDB_buildGetOAuth2ClientsQuery(proj *models.Project, dbvendor words
 		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetOAuth2Clients", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(proj, dbvendor, "GetOAuth2ClientsForUser", qb, expectedArgs, callArgs, pql)
 }
 
-func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	tn := "OAuth2ClientList"
@@ -682,7 +682,7 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetOAuth2ClientsForUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -703,7 +703,7 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 					),
 				),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
@@ -722,7 +722,7 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
@@ -741,7 +741,7 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
 					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),
@@ -762,7 +762,7 @@ func buildTestDB_GetOAuth2Clients(proj *models.Project, dbvendor wordsmith.Super
 					jen.Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
 				)),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2Clients").Call(
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientsForUser").Call(
 					constants.CtxVar(),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.ID(constants.FilterVarName),

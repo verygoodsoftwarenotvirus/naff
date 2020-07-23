@@ -119,6 +119,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	switchCases := []jen.Code{}
 
 	for _, typ := range proj.DataTypes {
+		pn := typ.Name.Plural()
 		if typ.SearchEnabled {
 			searchTypeNames = append(searchTypeNames, fmt.Sprintf("'%s'", typ.Name.RouteName()))
 
@@ -126,7 +127,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Case(jen.Lit(typ.Name.RouteName())).Block(
 					jen.ID("outputChan").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), typ.Name.Singular())),
 					jen.If(
-						jen.ID("queryErr").Assign().ID("dbClient").Dot("GetAllItems").Call(
+						jen.ID("queryErr").Assign().ID("dbClient").Dotf("GetAll%s", pn).Call(
 							constants.CtxVar(),
 							jen.ID("outputChan"),
 						),

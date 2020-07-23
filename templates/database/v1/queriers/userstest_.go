@@ -47,8 +47,8 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	code.Add(buildTestDB_GetUsers(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetUserByUsernameQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetUserByUsername(proj, dbvendor)...)
-	code.Add(buildTestDB_buildGetAllUserCountQuery(proj, dbvendor)...)
-	code.Add(buildTestDB_GetAllUserCount(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllUsersCountQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllUsersCount(proj, dbvendor)...)
 	code.Add(buildTestDB_buildCreateUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_CreateUser(proj, dbvendor)...)
 	code.Add(buildTestDB_buildUpdateUserQuery(proj, dbvendor)...)
@@ -466,7 +466,7 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 	return lines
 }
 
-func buildTestDB_buildGetAllUserCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_buildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Select(fmt.Sprintf(countQuery, usersTableName)).
 		From(usersTableName).
@@ -477,10 +477,10 @@ func buildTestDB_buildGetAllUserCountQuery(proj *models.Project, dbvendor wordsm
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, "GetAllUserCount", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(proj, dbvendor, "GetAllUsersCount", qb, expectedArgs, callArgs, nil)
 }
 
-func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_GetAllUsersCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -492,7 +492,7 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllUserCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllUsersCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -505,7 +505,7 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID(utils.BuildFakeVarName("Count")))),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(constants.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUsersCount").Call(constants.CtxVar()),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("Count")), jen.ID("actual"), nil),
 				jen.Line(),
@@ -518,7 +518,7 @@ func buildTestDB_GetAllUserCount(proj *models.Project, dbvendor wordsmith.SuperP
 				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUserCount").Call(constants.CtxVar()),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllUsersCount").Call(constants.CtxVar()),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertZero(jen.ID("actual"), nil),
 				jen.Line(),

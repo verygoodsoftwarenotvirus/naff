@@ -13,6 +13,12 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
+		jen.Const().Defs(
+			jen.ID("defaultLimit").Equals().Uint8().Call(jen.Lit(20)),
+		),
+	)
+
+	code.Add(
 		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(

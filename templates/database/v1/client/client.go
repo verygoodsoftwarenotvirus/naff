@@ -78,7 +78,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 	funcName := "ProvideDatabaseClient"
 
 	lines := []jen.Code{
-		jen.Commentf("%s provides a new Database client.", funcName),
+		jen.Commentf("%s provides a new DataManager client.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Paramsln(
 			constants.CtxParam(),

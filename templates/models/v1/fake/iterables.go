@@ -178,17 +178,6 @@ func buildBuildFakeSomethingCreationInput(proj *models.Project, typ models.DataT
 	return lines
 }
 
-//
-//// BuildFakeItemCreationInputFromItem builds a faked ItemCreationInput from an item
-//func BuildFakeItemCreationInputFromItem(item *models.Item) *models.ItemCreationInput {
-//	return &models.ItemCreationInput{
-//		Name:          item.Name,
-//		Details:       item.Details,
-//		BelongsToUser: item.BelongsToUser,
-//	}
-//}
-//
-
 func buildBuildFakeSomethingCreationInputFromSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	uvn := typ.Name.UnexportedVarName()

@@ -129,9 +129,9 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.Comment("ItemsSearchIndexName is the name of the index used to search through items."),
+			jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
 			jen.Line(),
-			jen.ID("ItemsSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
+			jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
 		),
 		jen.Line(),
 	)

@@ -25,12 +25,9 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildSomethingExists(proj, typ)...)
 	code.Add(buildGetSomething(proj, typ)...)
 	code.Add(buildGetAllSomethingCount(proj, typ)...)
+	code.Add(buildGetAllSomething(proj, typ)...)
 	code.Add(buildGetListOfSomething(proj, typ)...)
-
-	//if typ.BelongsToStruct != nil {
-	//	code.Add(buildGetAllSomethingForSomethingElse(proj, typ)...)
-	//}
-
+	code.Add(buildGetListOfSomethingWithIDs(proj, typ)...)
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
 	code.Add(buildArchiveSomething(proj, typ)...)
@@ -159,6 +156,35 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 	}
 }
 
+func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	pn := n.Plural()
+	sn := n.Singular()
+	pcn := n.PluralCommonName()
+
+	return []jen.Code{
+		jen.Commentf("GetAll%s fetches a list of all %s in the database.", pn, pcn),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%s", pn).Params(
+			constants.CtxParam(),
+			jen.ID("results").Chan().Index().Qual(proj.ModelsV1Package(), sn),
+		).Params(
+			jen.Error(),
+		).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%s", pn)),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+			jen.Line(),
+			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Litf("GetAll%s called", pn)),
+			jen.Line(),
+			jen.Return().ID("c").Dot("querier").Dotf("GetAll%s", pn).Call(
+				constants.CtxVar(),
+				jen.ID("results"),
+			),
+		),
+		jen.Line(),
+	}
+}
+
 func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
@@ -195,6 +221,73 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Block(block...),
+		jen.Line(),
+	}
+}
+
+func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	uvn := n.UnexportedVarName()
+	pn := n.Plural()
+	pcn := n.PluralCommonName()
+
+	funcName := fmt.Sprintf("Get%sWithIDs", pn)
+	block := append(
+		[]jen.Code{utils.StartSpan(proj, true, funcName), jen.Line()},
+	)
+
+	if typ.BelongsToUser {
+		block = append(block,
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
+		)
+	}
+
+	logCall := jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(
+		jen.Map(jen.String()).Interface().Valuesln(
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.Lit("user_id").MapAssign().ID("userID")
+				}
+				return jen.Null()
+			}(),
+			jen.Lit("id_count").MapAssign().Len(jen.ID("ids")),
+		),
+	).Dot("Debug").Call(jen.Litf("Get%sWithIDs called", pn))
+	block = append(block, jen.Line(), logCall)
+
+	block = append(block,
+		jen.Line(),
+		jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().
+			ID("c").Dot("querier").Dotf("Get%sWithIDs", pn).Call(
+			constants.CtxVar(),
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID("userID")
+				}
+				return jen.Null()
+			}(),
+			jen.ID("limit"),
+			jen.ID("ids"),
+		),
+		jen.Line(),
+		jen.Return().List(jen.IDf("%sList", uvn), jen.Err()),
+	)
+
+	return []jen.Code{
+		jen.Commentf("Get%sWithIDs fetches %s from the database within a given set of IDs.", pn, pcn),
+		jen.Line(),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%sWithIDs", pn).Params(
+			constants.CtxParam(),
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID("userID").Uint64()
+				}
+				return jen.Null()
+			}(),
+			jen.ID("limit").Uint8(),
+			jen.ID("ids").Index().Uint64(),
+		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(block...),
 		jen.Line(),
 	}
 }
