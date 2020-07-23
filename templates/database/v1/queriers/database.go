@@ -304,5 +304,19 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		jen.Line(),
 	)
 
+	if isPostgres(dbvendor) {
+		code.Add(
+			jen.Func().ID("joinUint64s").Params(jen.ID("in").Index().Uint64()).Params(jen.String()).Block(
+				jen.ID("out").Assign().Index().String().Values(),
+				jen.Line(),
+				jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Block(
+					jen.ID("out").Equals().Append(jen.ID("out"), jen.Qual("strconv", "FormatUint").Call(jen.ID("x"), jen.Lit(10))),
+				),
+				jen.Line(),
+				jen.Return(jen.Qual("strings", "Join").Call(jen.ID("out"), jen.Lit(","))),
+			),
+		)
+	}
+
 	return code
 }
