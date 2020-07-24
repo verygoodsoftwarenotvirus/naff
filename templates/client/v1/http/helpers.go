@@ -86,7 +86,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("The error returned here should only ever be received in"),
 		jen.Line(),
-		jen.Comment("testing, and should never be encountered by an end-user."),
+		jen.Comment("testprojects, and should never be encountered by an end-user."),
 		jen.Line(),
 		jen.Func().ID("unmarshalBody").Params(
 			constants.CtxParam(),

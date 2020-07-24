@@ -16,8 +16,8 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Const().Defs(
 			jen.Comment("DevelopmentRunMode is the run mode for a development environment"),
 			jen.ID("DevelopmentRunMode").ID("runMode").Equals().Lit("development"),
-			jen.Comment("TestingRunMode is the run mode for a testing environment"),
-			jen.ID("TestingRunMode").ID("runMode").Equals().Lit("testing"),
+			jen.Comment("TestingRunMode is the run mode for a testprojects environment"),
+			jen.ID("TestingRunMode").ID("runMode").Equals().Lit("testprojects"),
 			jen.Comment("ProductionRunMode is the run mode for a production environment"),
 			jen.ID("ProductionRunMode").ID("runMode").Equals().Lit("production"),
 			jen.Line(),

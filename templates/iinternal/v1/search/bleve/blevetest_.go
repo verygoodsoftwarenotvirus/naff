@@ -38,7 +38,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestNewBleveIndexManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestNewBleveIndexManager").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("happy path",
@@ -76,7 +76,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
-					jen.Lit("testing"),
+					jen.Lit("testprojects"),
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -89,7 +89,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 
 func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBleveIndexManager_Index").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBleveIndexManager_Index").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleUserID").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
@@ -132,7 +132,7 @@ func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 
 func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBleveIndexManager_Search").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBleveIndexManager_Search").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleUserID").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
@@ -286,7 +286,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 
 func buildTestBleveIndexManager_Delete(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBleveIndexManager_Delete").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBleveIndexManager_Delete").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleUserID").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),

@@ -14,7 +14,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("attachCookieToRequestForTest").Params(
-			jen.ID("t").PointerTo().Qual("testing", "T"),
+			jen.ID("t").PointerTo().Qual("testprojects", "T"),
 			jen.ID("s").PointerTo().ID("Service"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -65,7 +65,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_DecodeCookieFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_DecodeCookieFromRequest").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -134,7 +134,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_WebsocketAuthFunction").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_WebsocketAuthFunction").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"with valid oauth2 client",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -149,7 +149,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("oacv"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -174,7 +174,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), constants.ObligatoryError()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("oacv"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -205,7 +205,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), constants.ObligatoryError()),
 				jen.ID("s").Dot("oauth2ClientsService").Equals().ID("oacv"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -219,14 +219,14 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_fetchUserFromCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_fetchUserFromCookie").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -259,7 +259,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"without cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -275,7 +275,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -306,7 +306,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_LoginHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_LoginHandler").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -335,7 +335,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("authenticator").Equals().ID("authr"),
 				jen.Line(),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -365,7 +365,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), utils.Error("arbitrary")),
 				jen.ID("s").Dot("userDB").Equals().ID("udb"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -403,7 +403,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), utils.Error("arbitrary")),
 				jen.ID("s").Dot("userDB").Equals().ID("udb"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -445,7 +445,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.False(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("authr"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -487,7 +487,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.True(), constants.ObligatoryError()),
 				jen.ID("s").Dot("authenticator").Equals().ID("authr"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -537,7 +537,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("authr"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -587,7 +587,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("authr"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -606,14 +606,14 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_LogoutHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_LogoutHandler").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -636,7 +636,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"without cookie",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -652,7 +652,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -678,7 +678,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_fetchLoginDataFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_fetchLoginDataFromRequest").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -694,7 +694,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDB").Equals().ID("udb"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -712,7 +712,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				"without login data attached to request",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -735,7 +735,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("userDB").Equals().ID("udb"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -761,7 +761,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDB").Equals().ID("udb"),
 				jen.Line(),
-				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testing"), jen.Nil()),
+				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.Lit("http://todo.verygoodsoftwarenotvirus.ru/testprojects"), jen.Nil()),
 				utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
@@ -776,7 +776,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_validateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_validateLogin").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -999,7 +999,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_StatusHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_StatusHandler").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"normal operation",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1123,7 +1123,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_CycleSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CycleSecretHandler").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"normal operation",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1168,7 +1168,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestService_buildCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_buildCookie").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),

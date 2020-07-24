@@ -13,17 +13,17 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(projRoot, binaryName string) []byte{
-		"environments/local/Dockerfile":                                           developmentDotDockerfile,
-		"environments/testing/dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
-		"environments/testing/dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
-		"environments/testing/dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
-		"environments/testing/dockerfiles/frontend-tests-server.Dockerfile":       frontendTestsServerDotDockerfile,
-		"environments/testing/dockerfiles/integration-tests.Dockerfile":           integrationTestsDotDockerfile,
-		"environments/testing/dockerfiles/load-tests.Dockerfile":                  loadTestsDotDockerfile,
+		"environments/local/Dockerfile":                                                developmentDotDockerfile,
+		"environments/testprojects/dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
+		"environments/testprojects/dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
+		"environments/testprojects/dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
+		"environments/testprojects/dockerfiles/frontend-tests-server.Dockerfile":       frontendTestsServerDotDockerfile,
+		"environments/testprojects/dockerfiles/integration-tests.Dockerfile":           integrationTestsDotDockerfile,
+		"environments/testprojects/dockerfiles/load-tests.Dockerfile":                  loadTestsDotDockerfile,
 	}
 
 	for _, db := range project.EnabledDatabases() {
-		files[fmt.Sprintf("environments/testing/dockerfiles/integration-server-%s.Dockerfile", db)] = buildIntegrationServerDotDockerfile(db)
+		files[fmt.Sprintf("environments/testprojects/dockerfiles/integration-server-%s.Dockerfile", db)] = buildIntegrationServerDotDockerfile(db)
 	}
 
 	for filename, file := range files {
@@ -182,7 +182,7 @@ RUN chown appuser /home/appuser
 WORKDIR /home/appuser
 USER appuser
 
-COPY environments/testing/config_files/integration-tests-%s.toml /etc/config.toml
+COPY environments/testprojects/config_files/integration-tests-%s.toml /etc/config.toml
 COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 
@@ -222,7 +222,7 @@ RUN chown appuser /home/appuser
 WORKDIR /home/appuser
 USER appuser
 
-COPY environments/testing/config_files/frontend-tests.toml /etc/config.toml
+COPY environments/testprojects/config_files/frontend-tests.toml /etc/config.toml
 COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 

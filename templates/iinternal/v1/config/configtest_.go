@@ -12,7 +12,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("actual").Assign().ID("randString").Call(jen.ID("randStringSize")),
@@ -23,7 +23,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestBuildConfig").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBuildConfig").Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("actual").Assign().ID("BuildConfig").Call(),
@@ -33,7 +33,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

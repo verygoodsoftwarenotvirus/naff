@@ -274,7 +274,7 @@ func buildQueryTest(
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_build%sQuery", dbn, queryName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_build%sQuery", dbn, queryName).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("happy path", block...),

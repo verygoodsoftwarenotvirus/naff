@@ -15,7 +15,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 	code.ImportName("github.com/alexedwards/scs/v2/memstore", "memstore")
 
 	code.Add(
-		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -48,7 +48,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("cfg").Assign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(

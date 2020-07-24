@@ -63,7 +63,7 @@ func Execute() {
 		Long:  `Generate jennifer code from a file with the command gen`,
 	}
 	cmdGen.Flags().StringVarP(&packageName, "package", "p", "", "Name of package")
-	cmdGen.Flags().BoolVarP(&genMain, "main", "m", false, "Generate main function that prints out the generated code when called -- used for testing.")
+	cmdGen.Flags().BoolVarP(&genMain, "main", "m", false, "Generate main function that prints out the generated code when called -- used for testprojects.")
 
 	cmdGen.Flags().BoolVarP(&formating, "formatted", "f", false, "Format the generated code EXPERIMENTAL")
 

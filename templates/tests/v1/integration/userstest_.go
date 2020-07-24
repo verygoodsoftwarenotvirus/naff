@@ -42,7 +42,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("buildDummyUser").Params(
 			constants.CtxParam(),
-			jen.ID("t").PointerTo().Qual("testing", "T"),
+			jen.ID("t").PointerTo().Qual("testprojects", "T"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
@@ -91,7 +91,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("checkUserCreationEquality").Params(
-			jen.ID("t").PointerTo().Qual("testing", "T"),
+			jen.ID("t").PointerTo().Qual("testprojects", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 			jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 		).Block(
@@ -113,7 +113,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("checkUserEquality").Params(
-			jen.ID("t").PointerTo().Qual("testing", "T"),
+			jen.ID("t").PointerTo().Qual("testprojects", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 			jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Block(
@@ -133,8 +133,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testprojects", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be creatable",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -157,7 +157,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that doesn't exist",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -222,7 +222,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),

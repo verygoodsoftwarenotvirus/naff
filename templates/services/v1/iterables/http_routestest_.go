@@ -289,7 +289,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_ListHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ListHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),
@@ -699,7 +699,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_SearchHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_SearchHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),
@@ -1021,7 +1021,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("happy path"),
-			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
 				happyPathSubtest...,
 			),
 		),
@@ -1032,7 +1032,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("without input attached"),
-			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
 				noInputSubtest...,
 			),
 		),
@@ -1043,7 +1043,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Litf("with error creating %s", scn),
-			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
 				creationErrSubtest...,
 			),
 		),
@@ -1054,7 +1054,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("with error encoding response"),
-			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
 				encodeErrSubtest...,
 			),
 		),
@@ -1062,7 +1062,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_CreateHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_CreateHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),
@@ -1245,7 +1245,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_ExistenceHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ExistenceHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),
@@ -1487,7 +1487,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_ReadHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ReadHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),
@@ -1899,7 +1899,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_UpdateHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_UpdateHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),
@@ -2230,7 +2230,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("Test%sService_ArchiveHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("Test%sService_ArchiveHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
 			block...,
 		),
 		jen.Line(),

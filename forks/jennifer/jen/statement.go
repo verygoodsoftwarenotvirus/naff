@@ -74,7 +74,7 @@ func (s *Statement) Render(writer io.Writer) error {
 	return s.RenderWithFile(writer, NewFile(""))
 }
 
-// GoString renders the Statement for testing. Any error will cause a panic.
+// GoString renders the Statement for testprojects. Any error will cause a panic.
 func (s *Statement) GoString() string {
 	buf := bytes.Buffer{}
 	if err := s.Render(&buf); err != nil {

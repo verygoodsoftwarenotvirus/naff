@@ -104,7 +104,7 @@ It's a good idea to run `+"`"+`make quicktest lintegration-tests`+"`"+` before c
 └── tests
     └── v1
         ├── frontend       // selenium webdriver tests in go
-        ├── integration    // using the built in go testing tool, the aforementioned client and server to test everybody working in harmony
+        ├── integration    // using the built in go testprojects tool, the aforementioned client and server to test everybody working in harmony
         ├── load           // load tests, run primarily in CI, but able to be run locally as well
         └── testutil       // some helper functions for these more involved tests only
 `+"```"+`

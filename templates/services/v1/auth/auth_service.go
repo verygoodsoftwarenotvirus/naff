@@ -22,7 +22,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Type().Defs(
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
-			jen.Comment("a regular structure with an interface for testing purposes."),
+			jen.Comment("a regular structure with an interface for testprojects purposes."),
 			jen.ID("OAuth2ClientValidator").Interface(
 				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
 			),

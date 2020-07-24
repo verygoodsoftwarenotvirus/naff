@@ -18,7 +18,7 @@ func mockUserDataServerDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("UserDataServer is a mocked models.UserDataServer for testing"),
+		jen.Comment("UserDataServer is a mocked models.UserDataServer for testprojects"),
 		jen.Line(),
 		jen.Type().ID("UserDataServer").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),

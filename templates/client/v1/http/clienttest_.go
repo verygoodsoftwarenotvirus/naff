@@ -113,7 +113,7 @@ func buildMustParseURL() []jen.Code {
 func buildBuildTestClient() []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildTestClient").Params(
-			jen.ID("t").PointerTo().Qual("testing", "T"),
+			jen.ID("t").PointerTo().Qual("testprojects", "T"),
 			jen.ID("ts").PointerTo().Qual("net/http/httptest", "Server"),
 		).Params(
 			jen.PointerTo().ID(v1),
@@ -142,7 +142,7 @@ func buildBuildTestClient() []jen.Code {
 
 func buildBuildTestClientWithInvalidURL() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(v1)).Block(
+		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Params(jen.PointerTo().ID(v1)).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("l").Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
