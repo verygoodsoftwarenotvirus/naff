@@ -27,7 +27,7 @@ var (
 		fmt.Sprintf("%s.data_types", webhooksTableName),
 		fmt.Sprintf("%s.topics", webhooksTableName),
 		fmt.Sprintf("%s.created_on", webhooksTableName),
-		fmt.Sprintf("%s.updated_on", webhooksTableName),
+		fmt.Sprintf("%s.last_updated_on", webhooksTableName),
 		fmt.Sprintf("%s.archived_on", webhooksTableName),
 		fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn),
 	}
@@ -68,12 +68,8 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Block(
-			jen.ID("includeCount").Assign().Len(jen.ID("webhooks")).GreaterThan().One(),
 			jen.ID("columns").Assign().ID("webhooksTableColumns"),
 			jen.Line(),
-			jen.If(jen.ID("includeCount")).Block(
-				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
-			),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For(jen.List(jen.Underscore(), jen.ID("w")).Assign().Range().ID("webhooks")).Block(
@@ -90,10 +86,6 @@ func buildBuildMockRowsFromWebhook(proj *models.Project, dbvendor wordsmith.Supe
 					jen.ID("w").Dot("LastUpdatedOn"),
 					jen.ID("w").Dot("ArchivedOn"),
 					jen.ID("w").Dot(constants.UserOwnershipFieldName),
-				),
-				jen.Line(),
-				jen.If(jen.ID("includeCount")).Block(
-					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("webhooks"))),
 				),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
@@ -151,7 +143,6 @@ func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.Line(),
 				jen.List(
 					jen.Underscore(),
-					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("mockRows")),
 				utils.AssertError(jen.Err(), nil),
@@ -167,7 +158,6 @@ func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(
-					jen.Underscore(),
 					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("mockRows")),
@@ -390,7 +380,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
@@ -399,7 +389,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.ID(utils.BuildFakeVarName("WebhookList")).Dot("Limit").Equals().Zero(),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
 					jen.ID("buildMockRowsFromWebhook").Callln(
 						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.Zero()),
 						jen.AddressOf().ID(utils.BuildFakeVarName("WebhookList")).Dot("Webhooks").Index(jen.One()),
@@ -417,7 +407,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 			utils.BuildSubTest(
 				"surfaces sql.ErrNoRows",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
@@ -431,7 +421,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 			utils.BuildSubTest(
 				"with error querying database",
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
@@ -446,7 +436,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetAllWebhooks").Call(constants.CtxVar()),
@@ -464,7 +454,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 
 func buildTestDB_buildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
-		Select(append(webhooksTableColumns, fmt.Sprintf(countQuery, webhooksTableName))...).
+		Select(webhooksTableColumns...).
 		From(webhooksTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn): whateverValue,
@@ -493,13 +483,13 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
-		Select(append(webhooksTableColumns, fmt.Sprintf(countQuery, webhooksTableName))...).
+		Select(webhooksTableColumns...).
 		From(webhooksTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.%s", webhooksTableName, webhooksTableOwnershipColumn): whateverValue,
 			fmt.Sprintf("%s.archived_on", webhooksTableName):                      nil,
 		}).
-		GroupBy(fmt.Sprintf("%s.id", webhooksTableName)).
+		OrderBy(fmt.Sprintf("%s.id", webhooksTableName)).
 		Limit(20).
 		ToSql()
 
@@ -508,7 +498,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
-			jen.ID("expectedListQuery").Assign().Lit(expectedQuery),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
@@ -516,7 +506,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
 					Dotln("WillReturnRows").Callln(
 					jen.ID("buildMockRowsFromWebhook").Callln(
@@ -542,7 +532,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
@@ -562,7 +552,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
@@ -582,7 +572,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook")))),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetWebhooks").Call(
@@ -794,14 +784,14 @@ func buildTestDB_buildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmit
 		Set("events", whateverValue).
 		Set("data_types", whateverValue).
 		Set("topics", whateverValue).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                         whateverValue,
 			webhooksTableOwnershipColumn: whateverValue,
 		})
 
 	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING updated_on")
+		qb = qb.Suffix("RETURNING last_updated_on")
 	}
 
 	expectedArgs := []jen.Code{
@@ -838,14 +828,14 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 		Set("events", whateverValue).
 		Set("data_types", whateverValue).
 		Set("topics", whateverValue).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                         whateverValue,
 			webhooksTableOwnershipColumn: whateverValue,
 		})
 
 	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING updated_on")
+		qb = qb.Suffix("RETURNING last_updated_on")
 	}
 	expectedQuery, _, _ := qb.ToSql()
 
@@ -854,7 +844,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 		if isPostgres(dbvendor) {
 			updateWebhookExpectFunc = "ExpectQuery"
 			updateWebhookReturnFunc = "WillReturnRows"
-			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("last_updated_on"))).Dot("AddRow").Call(
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("LastUpdatedOn"),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
@@ -927,7 +917,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 func buildTestDB_buildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Update(webhooksTableName).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                         whateverValue,
@@ -960,7 +950,7 @@ func buildTestDB_ArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPa
 
 	qb := queryBuilderForDatabase(dbvendor).
 		Update(webhooksTableName).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                         whateverValue,

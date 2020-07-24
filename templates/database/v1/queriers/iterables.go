@@ -122,7 +122,7 @@ func buildTableColumns(proj *models.Project, typ models.DataType) []jen.Code {
 
 	tableColumns = append(tableColumns,
 		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("created_on")),
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("updated_on")),
+		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("last_updated_on")),
 		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("archived_on")),
 	)
 
@@ -506,7 +506,7 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 	if len(whereValues) > 0 {
 		qbStmt = qbStmt.Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(whereValues...))
 	}
-	qbStmt = qbStmt.Dotln("GroupBy").Call(utils.FormatString("%s.id", jen.IDf("%sTableName", puvn)))
+	qbStmt = qbStmt.Dotln("OrderBy").Call(utils.FormatString("%s.id", jen.IDf("%sTableName", puvn)))
 
 	return []jen.Code{
 		jen.Comment(firstCommentLine),
@@ -775,11 +775,11 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 					}
 				}
 
-				x.Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+				x.Dotln("Set").Call(jen.Lit("last_updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...))
 
 				if strings.ToLower(dbvsn) == "postgres" {
-					x.Dotln("Suffix").Call(jen.Lit("RETURNING updated_on"))
+					x.Dotln("Suffix").Call(jen.Lit("RETURNING last_updated_on"))
 				}
 
 				x.Dotln("ToSql").Call()
@@ -870,7 +870,7 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 
 	_qs := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 		Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
-		Dotln("Set").Call(jen.Lit("updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+		Dotln("Set").Call(jen.Lit("last_updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 		Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 		Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...))
 

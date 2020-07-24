@@ -27,7 +27,7 @@ var (
 		fmt.Sprintf("%s.redirect_uri", oauth2ClientsTableName),
 		fmt.Sprintf("%s.client_secret", oauth2ClientsTableName),
 		fmt.Sprintf("%s.created_on", oauth2ClientsTableName),
-		fmt.Sprintf("%s.updated_on", oauth2ClientsTableName),
+		fmt.Sprintf("%s.last_updated_on", oauth2ClientsTableName),
 		fmt.Sprintf("%s.archived_on", oauth2ClientsTableName),
 		fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn),
 	}
@@ -50,7 +50,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	code.Add(buildTestDB_GetAllOAuth2ClientsForUser(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetOAuth2ClientQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetOAuth2Client(proj, dbvendor)...)
-	code.Add(buildTestDB_buildGetAllOAuth2ClientCountQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllOAuth2ClientsCountQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetAllOAuth2ClientCount(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetOAuth2ClientsForUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetOAuth2ClientsForUser(proj, dbvendor)...)
@@ -71,12 +71,8 @@ func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Block(
-			jen.ID("includeCount").Assign().Len(jen.ID("clients")).GreaterThan().One(),
 			jen.ID("columns").Assign().ID("oauth2ClientsTableColumns"),
 			jen.Line(),
-			jen.If(jen.ID("includeCount")).Block(
-				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
-			),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For(jen.List(jen.Underscore(), jen.ID("c")).Assign().Range().ID("clients")).Block(
@@ -91,10 +87,6 @@ func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith
 					jen.ID("c").Dot("LastUpdatedOn"),
 					jen.ID("c").Dot("ArchivedOn"),
 					jen.ID("c").Dot(constants.UserOwnershipFieldName),
-				),
-				jen.Line(),
-				jen.If(jen.ID("includeCount")).Block(
-					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("clients"))),
 				),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
@@ -150,7 +142,6 @@ func buildTestScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.Line(),
 				jen.List(
 					jen.Underscore(),
-					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("mockRows")),
 				utils.AssertError(jen.Err(), nil),
@@ -166,7 +157,6 @@ func buildTestScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(
-					jen.Underscore(),
 					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dot("scanOAuth2Clients").Call(jen.ID("mockRows")),
@@ -397,13 +387,13 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
-		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
+		Select(oauth2ClientsTableColumns...).
 		From(oauth2ClientsTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
 			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
 		}).
-		GroupBy(fmt.Sprintf("%s.id", oauth2ClientsTableName)).
+		OrderBy(fmt.Sprintf("%s.id", oauth2ClientsTableName)).
 		ToSql()
 
 	lines := []jen.Code{
@@ -585,7 +575,7 @@ func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperP
 	return lines
 }
 
-func buildTestDB_buildGetAllOAuth2ClientCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_buildGetAllOAuth2ClientsCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Select(fmt.Sprintf(countQuery, oauth2ClientsTableName)).
 		From(oauth2ClientsTableName).
@@ -598,10 +588,10 @@ func buildTestDB_buildGetAllOAuth2ClientCountQuery(proj *models.Project, dbvendo
 		callArgs     []jen.Code
 	)
 
-	return buildQueryTest(proj, dbvendor, "GetAllOAuth2ClientCount", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(proj, dbvendor, "GetAllOAuth2ClientsCount", qb, expectedArgs, callArgs, nil)
 }
 
-func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_GetAllOAuth2ClientCount(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
@@ -640,7 +630,7 @@ func buildTestDB_GetAllOAuth2ClientCount(proj *models.Project, dbvendor wordsmit
 
 func buildTestDB_buildGetOAuth2ClientsForUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
-		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
+		Select(oauth2ClientsTableColumns...).
 		From(oauth2ClientsTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
@@ -670,14 +660,14 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 	tn := "OAuth2ClientList"
 
-	expectedListQuery, _, _ := queryBuilderForDatabase(dbvendor).
-		Select(append(oauth2ClientsTableColumns, fmt.Sprintf(countQuery, oauth2ClientsTableName))...).
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(oauth2ClientsTableColumns...).
 		From(oauth2ClientsTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.%s", oauth2ClientsTableName, oauth2ClientsTableOwnershipColumn): whateverValue,
 			fmt.Sprintf("%s.archived_on", oauth2ClientsTableName):                           nil,
 		}).
-		GroupBy(fmt.Sprintf("%s.id", oauth2ClientsTableName)).
+		OrderBy(fmt.Sprintf("%s.id", oauth2ClientsTableName)).
 		Limit(20).
 		ToSql()
 
@@ -686,7 +676,7 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
-			jen.ID("expectedListQuery").Assign().Lit(expectedListQuery),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
@@ -695,7 +685,7 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 				utils.BuildFakeVar(proj, tn),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).Dot("WillReturnRows").Callln(
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WillReturnRows").Callln(
 					jen.ID("buildMockRowsFromOAuth2Client").Callln(
 						jen.AddressOf().ID(utils.BuildFakeVarName(tn)).Dot("Clients").Index(jen.Zero()),
 						jen.AddressOf().ID(utils.BuildFakeVarName(tn)).Dot("Clients").Index(jen.One()),
@@ -719,7 +709,7 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientsForUser").Call(
@@ -738,7 +728,7 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnError").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetOAuth2ClientsForUser").Call(
@@ -757,7 +747,7 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedListQuery"))).
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 					Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRowFromOAuth2Client").Call(
 					jen.Qual(proj.FakeModelsPackage(), "BuildFakeOAuth2Client").Call(),
 				)),
@@ -951,14 +941,14 @@ func buildTestDB_buildUpdateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		Set("client_secret", whateverValue).
 		Set("scopes", whateverValue).
 		Set("redirect_uri", whateverValue).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                              whateverValue,
 			oauth2ClientsTableOwnershipColumn: whateverValue,
 		})
 
 	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING updated_on")
+		qb = qb.Suffix("RETURNING last_updated_on")
 	}
 
 	expectedArgs := []jen.Code{
@@ -989,14 +979,14 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 		Set("client_secret", whateverValue).
 		Set("scopes", whateverValue).
 		Set("redirect_uri", whateverValue).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                              whateverValue,
 			oauth2ClientsTableOwnershipColumn: whateverValue,
 		})
 
 	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING updated_on")
+		qb = qb.Suffix("RETURNING last_updated_on")
 	}
 
 	expectedQuery, _, _ := qb.ToSql()
@@ -1008,7 +998,7 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 	if isPostgres(dbvendor) {
 		mockDBExpect = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(
-			jen.Index().String().Values(jen.Lit("updated_on")),
+			jen.Index().String().Values(jen.Lit("last_updated_on")),
 		).Dot("AddRow").Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		errFuncExpectMethod = "ExpectQuery"
 	} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
@@ -1059,7 +1049,7 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 func buildTestDB_buildArchiveOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Update(oauth2ClientsTableName).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id":                              whateverValue,
@@ -1098,7 +1088,7 @@ func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.Su
 		jen.Func().IDf("Test%s_ArchiveOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("expectedQuery").Assign().Litf("UPDATE oauth2_clients SET updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
+			jen.ID("expectedQuery").Assign().Litf("UPDATE oauth2_clients SET last_updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",
 				getTimeQuery(dbvendor),
 				getTimeQuery(dbvendor),
 				getIncIndex(dbvendor, 0),

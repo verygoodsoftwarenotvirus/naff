@@ -149,7 +149,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				"two_factor_secret" TEXT NOT NULL,
 				"is_admin" boolean NOT NULL DEFAULT 'false',
 				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"updated_on" BIGINT DEFAULT NULL,
+				"last_updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				UNIQUE ("username")
 			);`),
@@ -166,7 +166,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				"scopes" TEXT NOT NULL,
 				"implicit_allowed" boolean NOT NULL DEFAULT 'false',
 				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"updated_on" BIGINT DEFAULT NULL,
+				"last_updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				"belongs_to_user" BIGINT NOT NULL,
 				FOREIGN KEY("belongs_to_user") REFERENCES users(id)
@@ -185,7 +185,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				"data_types" TEXT NOT NULL,
 				"topics" TEXT NOT NULL,
 				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"updated_on" BIGINT DEFAULT NULL,
+				"last_updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				"belongs_to_user" BIGINT NOT NULL,
 				FOREIGN KEY("belongs_to_user") REFERENCES users(id)
@@ -217,7 +217,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 
 		scriptParts = append(scriptParts,
 			`				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())`,
-			`				"updated_on" BIGINT DEFAULT NULL`,
+			`				"last_updated_on" BIGINT DEFAULT NULL`,
 		)
 
 		if !typ.BelongsToUser && typ.BelongsToStruct == nil {
@@ -287,7 +287,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 				jen.Lit("    `two_factor_secret` VARCHAR(256) NOT NULL,"),
 				jen.Lit("    `is_admin` BOOLEAN NOT NULL DEFAULT false,"),
 				jen.Lit("    `created_on` BIGINT UNSIGNED,"),
-				jen.Lit("    `updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
+				jen.Lit("    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `archived_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    PRIMARY KEY (`id`),"),
 				jen.Lit("    UNIQUE (`username`)"),
@@ -318,7 +318,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 				jen.Lit("    `scopes` VARCHAR(4096) NOT NULL,"),
 				jen.Lit("    `implicit_allowed` BOOLEAN NOT NULL DEFAULT false,"),
 				jen.Lit("    `created_on` BIGINT UNSIGNED,"),
-				jen.Lit("    `updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
+				jen.Lit("    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `archived_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `belongs_to_user` BIGINT UNSIGNED NOT NULL,"),
 				jen.Lit("    PRIMARY KEY (`id`),"),
@@ -351,7 +351,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 				jen.Lit("    `data_types` VARCHAR(256) NOT NULL,"),
 				jen.Lit("    `topics` VARCHAR(256) NOT NULL,"),
 				jen.Lit("    `created_on` BIGINT UNSIGNED,"),
-				jen.Lit("    `updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
+				jen.Lit("    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `archived_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `belongs_to_user` BIGINT UNSIGNED NOT NULL,"),
 				jen.Lit("    PRIMARY KEY (`id`),"),
@@ -398,7 +398,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 
 		scriptParts = append(scriptParts,
 			jen.Lit("    `created_on` BIGINT UNSIGNED,"),
-			jen.Lit("    `updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
+			jen.Lit("    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
 			jen.Lit("    `archived_on` BIGINT UNSIGNED DEFAULT NULL,"),
 		)
 
@@ -470,7 +470,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 				"two_factor_secret" TEXT NOT NULL,
 				"is_admin" BOOLEAN NOT NULL DEFAULT 'false',
 				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-				"updated_on" INTEGER,
+				"last_updated_on" INTEGER,
 				"archived_on" INTEGER DEFAULT NULL,
 				CONSTRAINT username_unique UNIQUE (username)
 			);`),
@@ -487,7 +487,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 				"scopes" TEXT NOT NULL,
 				"implicit_allowed" BOOLEAN NOT NULL DEFAULT 'false',
 				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-				"updated_on" INTEGER,
+				"last_updated_on" INTEGER,
 				"archived_on" INTEGER DEFAULT NULL,
 				"belongs_to_user" INTEGER NOT NULL,
 				FOREIGN KEY(belongs_to_user) REFERENCES users(id)
@@ -506,7 +506,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 				"data_types" TEXT NOT NULL,
 				"topics" TEXT NOT NULL,
 				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-				"updated_on" INTEGER,
+				"last_updated_on" INTEGER,
 				"archived_on" INTEGER DEFAULT NULL,
 				"belongs_to_user" INTEGER NOT NULL,
 				FOREIGN KEY(belongs_to_user) REFERENCES users(id)
@@ -541,7 +541,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 
 		scriptParts = append(scriptParts,
 			`				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
-			`				"updated_on" INTEGER DEFAULT NULL,`,
+			`				"last_updated_on" INTEGER DEFAULT NULL,`,
 			`				"archived_on" INTEGER DEFAULT NULL,`,
 		)
 

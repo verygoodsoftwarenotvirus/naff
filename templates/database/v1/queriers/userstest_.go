@@ -28,7 +28,7 @@ var (
 		fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName),
 		fmt.Sprintf("%s.is_admin", usersTableName),
 		fmt.Sprintf("%s.created_on", usersTableName),
-		fmt.Sprintf("%s.updated_on", usersTableName),
+		fmt.Sprintf("%s.last_updated_on", usersTableName),
 		fmt.Sprintf("%s.archived_on", usersTableName),
 	}
 )
@@ -45,6 +45,8 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	code.Add(buildTestScanUsers(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetUser(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetUserWithUnverifiedTwoFactorSecretQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_GetUserWithUnverifiedTwoFactorSecret(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetUsersQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetUsers(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetUserByUsernameQuery(proj, dbvendor)...)
@@ -55,25 +57,25 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	code.Add(buildTestDB_CreateUser(proj, dbvendor)...)
 	code.Add(buildTestDB_buildUpdateUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_UpdateUser(proj, dbvendor)...)
+	code.Add(buildTestDB_buildUpdateUserPasswordQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_UpdateUserPassword(proj, dbvendor)...)
+	code.Add(buildTestDB_buildVerifyUserTwoFactorSecretQuery(proj, dbvendor)...)
+	code.Add(buildTestDB_VerifyUserTwoFactorSecret(proj, dbvendor)...)
 	code.Add(buildTestDB_buildArchiveUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_ArchiveUser(proj, dbvendor)...)
 
 	return code
 }
 
-func buildBuildMockRowsFromUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildMockRowsFromUser(proj *models.Project, _ wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildMockRowsFromUser").Params(
 			jen.ID("users").Spread().PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Block(
-			jen.ID("includeCount").Assign().Len(jen.ID("users")).GreaterThan().One(),
 			jen.ID("columns").Assign().ID("usersTableColumns"),
 			jen.Line(),
-			jen.If(jen.ID("includeCount")).Block(
-				utils.AppendItemsToList(jen.ID("columns"), jen.Lit("count")),
-			),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For(
@@ -83,16 +85,14 @@ func buildBuildMockRowsFromUser(proj *models.Project, dbvendor wordsmith.SuperPa
 					jen.ID("user").Dot("ID"),
 					jen.ID("user").Dot("Username"),
 					jen.ID("user").Dot("HashedPassword"),
+					jen.ID("user").Dot("RequiresPasswordChange"),
 					jen.ID("user").Dot("PasswordLastChangedOn"),
 					jen.ID("user").Dot("TwoFactorSecret"),
+					jen.ID("user").Dot("TwoFactorSecretVerifiedOn"),
 					jen.ID("user").Dot("IsAdmin"),
 					jen.ID("user").Dot("CreatedOn"),
 					jen.ID("user").Dot("LastUpdatedOn"),
 					jen.ID("user").Dot("ArchivedOn"),
-				),
-				jen.Line(),
-				jen.If(jen.ID("includeCount")).Block(
-					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID("users"))),
 				),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
@@ -114,8 +114,10 @@ func buildBuildErroneousMockRowFromUser(proj *models.Project, dbvendor wordsmith
 				jen.ID("user").Dot("ID"),
 				jen.ID("user").Dot("Username"),
 				jen.ID("user").Dot("HashedPassword"),
+				jen.ID("user").Dot("RequiresPasswordChange"),
 				jen.ID("user").Dot("PasswordLastChangedOn"),
 				jen.ID("user").Dot("TwoFactorSecret"),
+				jen.ID("user").Dot("TwoFactorSecretVerifiedOn"),
 				jen.ID("user").Dot("IsAdmin"),
 				jen.ID("user").Dot("CreatedOn"),
 				jen.ID("user").Dot("LastUpdatedOn"),
@@ -147,7 +149,6 @@ func buildTestScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 				jen.Line(),
 				jen.List(
 					jen.Underscore(),
-					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dot("scanUsers").Call(jen.ID("mockRows")),
 				utils.AssertError(jen.Err(), nil),
@@ -163,7 +164,6 @@ func buildTestScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(
-					jen.Underscore(),
 					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dot("scanUsers").Call(jen.ID("mockRows")),
@@ -181,7 +181,11 @@ func buildTestDB_buildGetUserQuery(proj *models.Project, dbvendor wordsmith.Supe
 		Select(usersTableColumns...).
 		From(usersTableName).
 		Where(squirrel.Eq{
-			fmt.Sprintf("%s.id", usersTableName): whateverValue,
+			fmt.Sprintf("%s.id", usersTableName):          whateverValue,
+			fmt.Sprintf("%s.archived_on", usersTableName): nil,
+		}).
+		Where(squirrel.NotEq{
+			fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName): nil,
 		})
 
 	expectedArgs := []jen.Code{
@@ -205,8 +209,13 @@ func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 		Select(usersTableColumns...).
 		From(usersTableName).
 		Where(squirrel.Eq{
-			fmt.Sprintf("%s.id", usersTableName): whateverValue,
-		}).ToSql()
+			fmt.Sprintf("%s.id", usersTableName):          whateverValue,
+			fmt.Sprintf("%s.archived_on", usersTableName): nil,
+		}).
+		Where(squirrel.NotEq{
+			fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName): nil,
+		}).
+		ToSql()
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
@@ -254,9 +263,92 @@ func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 	return lines
 }
 
+func buildTestDB_buildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Select(usersTableColumns...).
+		From(usersTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.id", usersTableName):                            whateverValue,
+			fmt.Sprintf("%s.archived_on", usersTableName):                   nil,
+			fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName): nil,
+		})
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "GetUserWithUnverifiedTwoFactorSecret", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_GetUserWithUnverifiedTwoFactorSecret(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(usersTableColumns...).
+		From(usersTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.id", usersTableName):                            whateverValue,
+			fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName): nil,
+			fmt.Sprintf("%s.archived_on", usersTableName):                   nil,
+		}).
+		ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_GetUserWithUnverifiedTwoFactorSecret", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("Salt").Equals().Nil(),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
+					Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromUser").Call(jen.ID(utils.BuildFakeVarName("User")))),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserWithUnverifiedTwoFactorSecret").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertNoError(jen.Err(), nil),
+				utils.AssertEqual(jen.ID(utils.BuildFakeVarName("User")), jen.ID("actual"), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+			jen.Line(),
+			utils.BuildSubTest(
+				"surfaces sql.ErrNoRows",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).
+					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("GetUserWithUnverifiedTwoFactorSecret").Call(constants.CtxVar(), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")),
+				utils.AssertError(jen.Err(), nil),
+				utils.AssertNil(jen.ID("actual"), nil),
+				utils.AssertEqual(jen.Qual("database/sql", "ErrNoRows"), jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func buildTestDB_buildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
-		Select(append(usersTableColumns, fmt.Sprintf(countQuery, usersTableName))...).
+		Select(usersTableColumns...).
 		From(usersTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.archived_on", usersTableName): nil,
@@ -281,12 +373,12 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
 	expectedQuery, _, _ := queryBuilderForDatabase(dbvendor).
-		Select(append(usersTableColumns, fmt.Sprintf(countQuery, usersTableName))...).
+		Select(usersTableColumns...).
 		From(usersTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.archived_on", usersTableName): nil,
 		}).
-		GroupBy(fmt.Sprintf("%s.id", usersTableName)).
+		OrderBy(fmt.Sprintf("%s.id", usersTableName)).
 		Limit(20).
 		ToSql()
 
@@ -379,7 +471,11 @@ func buildTestDB_buildGetUserByUsernameQuery(proj *models.Project, dbvendor word
 		Select(usersTableColumns...).
 		From(usersTableName).
 		Where(squirrel.Eq{
-			fmt.Sprintf("%s.username", usersTableName): whateverValue,
+			fmt.Sprintf("%s.username", usersTableName):    whateverValue,
+			fmt.Sprintf("%s.archived_on", usersTableName): nil,
+		}).
+		Where(squirrel.NotEq{
+			fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName): nil,
 		})
 
 	expectedArgs := []jen.Code{
@@ -403,8 +499,13 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 		Select(usersTableColumns...).
 		From(usersTableName).
 		Where(squirrel.Eq{
-			fmt.Sprintf("%s.username", usersTableName): whateverValue,
-		}).ToSql()
+			fmt.Sprintf("%s.username", usersTableName):    whateverValue,
+			fmt.Sprintf("%s.archived_on", usersTableName): nil,
+		}).
+		Where(squirrel.NotEq{
+			fmt.Sprintf("%s.two_factor_secret_verified_on", usersTableName): nil,
+		}).
+		ToSql()
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
@@ -605,6 +706,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
+			jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 			utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeUserDatabaseCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 			jen.Line(),
 			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
@@ -645,6 +747,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 						jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 						jen.Line(),
 						utils.BuildFakeVar(proj, "User"),
+						jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("Salt").Equals().Nil(),
 						utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeUserDatabaseCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 						jen.Line(),
@@ -713,6 +816,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 				utils.BuildFakeVarWithCustomName(proj, "expectedInput", "BuildFakeUserDatabaseCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID("mockDB").Dot(badPathExpectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
@@ -741,19 +845,21 @@ func buildTestDB_buildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.S
 		Set("username", whateverValue).
 		Set("hashed_password", whateverValue).
 		Set("two_factor_secret", whateverValue).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("two_factor_secret_verified_on", whateverValue).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id": whateverValue,
 		})
 
 	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING updated_on")
+		qb = qb.Suffix("RETURNING last_updated_on")
 	}
 
 	expectedArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
+		jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 	}
 	callArgs := []jen.Code{
@@ -775,13 +881,14 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		Set("username", whateverValue).
 		Set("hashed_password", whateverValue).
 		Set("two_factor_secret", whateverValue).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("two_factor_secret_verified_on", whateverValue).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id": whateverValue,
 		})
 
 	if isPostgres(dbvendor) {
-		qb = qb.Suffix("RETURNING updated_on")
+		qb = qb.Suffix("RETURNING last_updated_on")
 	}
 	expectedQuery, _, _ := qb.ToSql()
 
@@ -799,7 +906,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 
 	buildUpdateUserExampleRows := func() jen.Code {
 		if isPostgres(dbvendor) {
-			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("last_updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One())
 		}
@@ -822,6 +929,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot(updateUserReturnMethod).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
 				jen.Line(),
@@ -837,10 +945,159 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	return lines
 }
 
+func buildTestDB_buildUpdateUserPasswordQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(usersTableName).
+		Set("hashed_password", whateverValue).
+		Set("requires_password_change", false).
+		Set("password_last_changed_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id": whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING last_updated_on")
+	}
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+		jen.False(),
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+		jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "UpdateUserPassword", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_UpdateUserPassword(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(usersTableName).
+		Set("hashed_password", whateverValue).
+		Set("requires_password_change", false).
+		Set("password_last_changed_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id": whateverValue,
+		})
+
+	if isPostgres(dbvendor) {
+		qb = qb.Suffix("RETURNING last_updated_on")
+	}
+	expectedQuery, _, _ := qb.ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_UpdateUserPassword", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
+					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+					jen.False(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).Dot("WillReturnResult").Call(jen.Qual("database/sql/driver", "ResultNoRows")),
+				jen.Line(),
+				jen.Err().Assign().ID(dbfl).Dot("UpdateUserPassword").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestDB_buildVerifyUserTwoFactorSecretQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(usersTableName).
+		Set("two_factor_secret_verified_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id": whateverValue,
+		})
+
+	expectedArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	callArgs := []jen.Code{
+		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+	}
+	pql := []jen.Code{
+		utils.BuildFakeVar(proj, "User"),
+	}
+
+	return buildQueryTest(proj, dbvendor, "VerifyUserTwoFactorSecret", qb, expectedArgs, callArgs, pql)
+}
+
+func buildTestDB_VerifyUserTwoFactorSecret(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
+
+	qb := queryBuilderForDatabase(dbvendor).
+		Update(usersTableName).
+		Set("two_factor_secret_verified_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(squirrel.Eq{
+			"id": whateverValue,
+		})
+
+	expectedQuery, _, _ := qb.ToSql()
+
+	lines := []jen.Code{
+		jen.Func().IDf("Test%s_VerifyUserTwoFactorSecret", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTest(
+				"happy path",
+				utils.BuildFakeVar(proj, "User"),
+				jen.Line(),
+				jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+				jen.Line(),
+				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
+				jen.ID("mockDB").Dot("ExpectExec").Call(
+					jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
+					Dotln("WithArgs").Call(
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				).
+					Dotln("WillReturnResult").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.One(), jen.One())),
+				jen.Line(),
+				jen.Err().Assign().ID(dbfl).Dot("VerifyUserTwoFactorSecret").Call(
+					constants.CtxVar(),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
+				),
+				utils.AssertNoError(jen.Err(), nil),
+				jen.Line(),
+				utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func buildTestDB_buildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Update(usersTableName).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id": whateverValue,
@@ -869,7 +1126,6 @@ func buildTestDB_ArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalab
 
 	qb := queryBuilderForDatabase(dbvendor).
 		Update(usersTableName).
-		Set("updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(squirrel.Eq{
 			"id": whateverValue,

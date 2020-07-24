@@ -188,7 +188,15 @@ func convertArgsToCode(args []interface{}) (code []jen.Code) {
 	return
 }
 
-func buildQueryTest(proj *models.Project, dbvendor wordsmith.SuperPalabra, queryName string, queryBuilder sqlBuilder, expectedArgs, callArgs, preQueryLines []jen.Code) []jen.Code {
+func buildQueryTest(
+	_ *models.Project,
+	dbvendor wordsmith.SuperPalabra,
+	queryName string,
+	queryBuilder sqlBuilder,
+	expectedArgs,
+	callArgs,
+	preQueryLines []jen.Code,
+) []jen.Code {
 	const (
 		expectedQueryVarName = "expectedQuery"
 		expectedArgsVarName  = "expectedArgs"

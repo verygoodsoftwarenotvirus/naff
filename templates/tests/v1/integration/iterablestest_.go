@@ -58,7 +58,6 @@ func buildListArguments(proj *models.Project, varPrefix string, typ models.DataT
 		creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
 
 	}
-	//creationArgs = append(creationArgs, jen.IDf("%s%s", varPrefix, typ.Name.Singular()).Dot("ID"))
 
 	return creationArgs
 }
@@ -88,17 +87,22 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				utils.BuildSubTestWithoutContext("should be able to be read in a list", buildTestListing(proj, typ)...),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Searching"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
-					fmt.Sprintf("should be able to be search for %s", pcn),
-					buildTestSearching(proj, typ)...,
-				),
-				jen.Line(),
-				utils.BuildSubTestWithoutContext(
-					fmt.Sprintf("should only receive your own %s", pcn),
-					buildTestSearchingForOnlyYourOwnItems(proj, typ)...,
-				),
-			)),
+			func() jen.Code {
+				if typ.SearchEnabled {
+					return jen.ID("test").Dot("Run").Call(jen.Lit("Searching"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+						utils.BuildSubTestWithoutContext(
+							fmt.Sprintf("should be able to be search for %s", pcn),
+							buildTestSearching(proj, typ)...,
+						),
+						jen.Line(),
+						utils.BuildSubTestWithoutContext(
+							fmt.Sprintf("should only receive your own %s", pcn),
+							buildTestSearchingForOnlyYourOwnItems(proj, typ)...,
+						),
+					))
+				}
+				return jen.Null()
+			}(),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
