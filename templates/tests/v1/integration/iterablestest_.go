@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -70,6 +71,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
+	pcn := typ.Name.PluralCommonName()
 
 	code.Add(
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
@@ -84,6 +86,18 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext("should be able to be read in a list", buildTestListing(proj, typ)...),
+			)),
+			jen.Line(),
+			jen.ID("test").Dot("Run").Call(jen.Lit("Searching"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+				utils.BuildSubTestWithoutContext(
+					fmt.Sprintf("should be able to be search for %s", pcn),
+					buildTestSearching(proj, typ)...,
+				),
+				jen.Line(),
+				utils.BuildSubTestWithoutContext(
+					fmt.Sprintf("should only receive your own %s", pcn),
+					buildTestSearchingForOnlyYourOwnItems(proj, typ)...,
+				),
 			)),
 			jen.Line(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
@@ -580,6 +594,265 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Comment("Clean up."),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("actual").Dot(pn)).Block(
 			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
+			),
+			utils.AssertNoError(jen.Err(), nil),
+		),
+	)
+
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ, false)...)
+
+	return lines
+}
+
+func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+	pn := typ.Name.Plural()
+	pcn := typ.Name.PluralCommonName()
+
+	lines := []jen.Code{
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
+	}
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
+
+	creationArgs := append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))
+
+	var firstStringField wordsmith.SuperPalabra
+	for _, field := range typ.Fields {
+		if field.Type == "string" {
+			firstStringField = field.Name
+			break
+		}
+	}
+	searchArgs := []jen.Code{
+		constants.CtxVar(),
+		jen.ID(utils.BuildFakeVarName(sn)).Dot(firstStringField.Singular()),
+		jen.ID(utils.BuildFakeVarName("Limit")),
+	}
+
+	lines = append(lines,
+		jen.Commentf("Create %s.", pcn),
+		utils.BuildFakeVar(proj, sn),
+		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
+			jen.Commentf("Create %s.", scn),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", sn),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				jen.ID(utils.BuildFakeVarName(sn)),
+			),
+			jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s %d"),
+				jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()),
+				jen.ID("i"),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
+				creationArgs...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
+			jen.Line(),
+			utils.AppendItemsToList(jen.ID("expected"), jen.IDf("%s%s", createdVarPrefix, sn)),
+		),
+		jen.Line(),
+		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(20)),
+		jen.Line(),
+		jen.Commentf("Assert %s list equality.", scn),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Search%s", pn).Call(
+			searchArgs...,
+		),
+		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
+		jen.Qual(constants.AssertPkg, "True").Callln(
+			jen.ID("t"),
+			jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual")),
+			jen.Lit("expected results length %d to be <= %d"), jen.Len(jen.ID("expected")),
+			jen.Len(jen.ID("actual")),
+		),
+		jen.Line(),
+		jen.Comment("Clean up."),
+		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("expected")).Block(
+			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
+			),
+			utils.AssertNoError(jen.Err(), nil),
+		),
+	)
+
+	lines = append(lines, buildRequisiteCleanupCode(proj, typ, false)...)
+
+	return lines
+}
+
+func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	uvn := typ.Name.UnexportedVarName()
+	pn := typ.Name.Plural()
+	pcn := typ.Name.PluralCommonName()
+
+	lines := []jen.Code{
+		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
+	}
+	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
+
+	var firstStringField wordsmith.SuperPalabra
+	for _, field := range typ.Fields {
+		if field.Type == "string" {
+			firstStringField = field.Name
+			break
+		}
+	}
+	searchArgs := []jen.Code{
+		constants.CtxVar(),
+		jen.ID("query"),
+		jen.ID(utils.BuildFakeVarName("Limit")),
+	}
+
+	lines = append(lines,
+		jen.Comment("create user and oauth2 client A."),
+		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(
+			jen.ID("urlToUse"),
+			jen.ID("debug"),
+		),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Line(),
+		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(
+			jen.ID("urlToUse"),
+			jen.ID("userA"),
+		),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Line(),
+		jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+			constants.CtxVar(),
+			jen.ID("ca").Dot("ClientID"),
+			jen.ID("ca").Dot("ClientSecret"),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
+			jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("buildHTTPClient").Call(),
+			jen.ID("ca").Dot("Scopes"),
+			jen.True(),
+		),
+		jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
+		jen.Commentf("Create %s for user A.", pcn),
+		jen.IDf("example%sA", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.Var().ID("createdForA").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
+			jen.Commentf("Create %s.", scn),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInputA", sn),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				jen.IDf("example%sA", sn),
+			),
+			jen.IDf("example%sInputA", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s %d"),
+				jen.IDf("example%sInputA", sn).Dot(firstStringField.Singular()),
+				jen.ID("i"),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("clientA").Dotf("Create%s", sn).Call(
+				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInputA", sn))...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
+			jen.Line(),
+			utils.AppendItemsToList(jen.ID("createdForA"), jen.IDf("%s%s", createdVarPrefix, sn)),
+		),
+		jen.Line(),
+		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(20)),
+		jen.ID("query").Assign().IDf("example%sA", sn).Dot(firstStringField.Singular()),
+		jen.Line(),
+		jen.Comment("create user and oauth2 client B."),
+		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(
+			jen.ID("urlToUse"),
+			jen.ID("debug"),
+		),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Line(),
+		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(
+			jen.ID("urlToUse"),
+			jen.ID("userB"),
+		),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Line(),
+		jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+			constants.CtxVar(),
+			jen.ID("cb").Dot("ClientID"),
+			jen.ID("cb").Dot("ClientSecret"),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
+			jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("buildHTTPClient").Call(),
+			jen.ID("cb").Dot("Scopes"),
+			jen.True(),
+		),
+		jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientB"), jen.Err()),
+		jen.Commentf("Create %s for user B.", pcn),
+		jen.IDf("example%sB", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.IDf("example%sB", sn).Dot(firstStringField.Singular()).Equals().ID("reverse").Call(jen.IDf("example%sA", sn).Dot(firstStringField.Singular())),
+		jen.Var().ID("createdForB").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
+			jen.Commentf("Create %s.", scn),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInputB", sn),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				jen.IDf("example%sB", sn),
+			),
+			jen.IDf("example%sInputB", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s %d"),
+				jen.IDf("example%sInputB", sn).Dot(firstStringField.Singular()),
+				jen.ID("i"),
+			),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("clientB").Dotf("Create%s", sn).Call(
+				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInputB", sn))...,
+			),
+			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
+			jen.Line(),
+			utils.AppendItemsToList(jen.ID("createdForB"), jen.IDf("%s%s", createdVarPrefix, sn)),
+		),
+		jen.Line(),
+		jen.ID("expected").Assign().ID("createdForA"),
+		jen.Line(),
+		jen.Commentf("Assert %s list equality.", scn),
+		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("clientA").Dotf("Search%s", pn).Call(
+			searchArgs...,
+		),
+		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
+		jen.Qual(constants.AssertPkg, "True").Callln(
+			jen.ID("t"),
+			jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual")),
+			jen.Lit("expected results length %d to be <= %d"), jen.Len(jen.ID("expected")),
+			jen.Len(jen.ID("actual")),
+		),
+		jen.Line(),
+		jen.Comment("Clean up."),
+		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("createdForA")).Block(
+			jen.Err().Equals().ID("clientA").Dotf("Archive%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
+			),
+			utils.AssertNoError(jen.Err(), nil),
+		),
+		jen.Line(),
+		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("createdForB")).Block(
+			jen.Err().Equals().ID("clientB").Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 			),
 			utils.AssertNoError(jen.Err(), nil),

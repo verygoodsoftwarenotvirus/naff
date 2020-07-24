@@ -332,6 +332,18 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) && dt.BelongsToUser && dt.BelongsToStruct == nil {
 									dt.SearchEnabled = true
 								}
+								if dt.SearchEnabled {
+									containsString := false
+									for _, field := range dt.Fields {
+										if field.Type == "string" {
+											containsString = true
+											break
+										}
+									}
+									if !containsString {
+										log.Panicf("no string fields present in type with search enabled: %q", dt.Name.Singular())
+									}
+								}
 							}
 
 						}
