@@ -51,6 +51,7 @@ func userDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("UserDatabaseCreationInput is used by the user creation route to communicate with the database."),
 			jen.ID("UserDatabaseCreationInput").Struct(
+				jen.ID("Salt").Index().Byte().Tag(jsonTag("-")),
 				jen.ID("Username").String().Tag(jsonTag("-")),
 				jen.ID("HashedPassword").String().Tag(jsonTag("-")),
 				jen.ID("TwoFactorSecret").String().Tag(jsonTag("-")),

@@ -246,35 +246,6 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					utils.AssertNoError(jen.Err(), nil),
 				),
 			)),
-			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-				utils.BuildSubTestWithoutContext(
-					"should be able to be read in a list",
-					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
-					jen.Line(),
-					jen.Comment("Create users."),
-					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
-					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
-						jen.List(jen.ID("user"), jen.Underscore(), jen.ID("c")).Assign().ID("buildDummyUser").Call(
-							constants.CtxVar(),
-							jen.ID("t"),
-						),
-						utils.AssertNotNil(jen.ID("c"), nil),
-						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("user")),
-					),
-					jen.Line(),
-					jen.Comment("Assert user list equality."),
-					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUsers").Call(constants.CtxVar(), jen.Nil()),
-					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-					utils.AssertTrue(jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Users")), nil),
-					jen.Line(),
-					jen.Comment("Clean up."),
-					jen.For(jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("actual").Dot("Users")).Block(
-						jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID("user").Dot("ID")),
-						utils.AssertNoError(jen.Err(), nil),
-					),
-				),
-			)),
 		),
 		jen.Line(),
 	)

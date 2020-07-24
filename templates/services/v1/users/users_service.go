@@ -38,6 +38,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("secretGenerator").Interface(
 				jen.ID("GenerateTwoFactorSecret").Params().Params(jen.String(), jen.Error()),
+				jen.ID("GenerateSalt").Params().Params(jen.Index().Byte(), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("UserIDFetcher fetches usernames from requests."),
