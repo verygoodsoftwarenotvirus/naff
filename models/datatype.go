@@ -239,14 +239,15 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodConditionalClauses(pr
 	puvn := n.PluralUnexportedVarName()
 
 	whereValues := []jen.Code{
-		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.IDf("%sTableName", puvn)).MapAssign().IDf("%sID", uvn),
+		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("idColumn")).MapAssign().IDf("%sID", uvn),
 	}
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		whereValues = append(
 			whereValues,
 			jen.Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s.id"),
+				jen.Lit("%s.%s"),
 				jen.IDf("%sTableName", pt.Name.PluralUnexportedVarName()),
+				jen.ID("idColumn"),
 			).MapAssign().IDf("%sID", pt.Name.UnexportedVarName()),
 		)
 
@@ -305,35 +306,6 @@ func NewCodeWrapper(c jen.Code) Coder {
 func (c codeWrapper) Code() jen.Code {
 	return c.repr
 }
-
-/*
-
-	owners := proj.FindOwnerTypeChain(typ)
-	if typ.MultipleOwnersBelongingToUser(proj) || (typ.RestrictedToUserAtSomeLevel(proj) && !typ.RestrictedToUser) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
-	}
-
-	for _, pt := range owners {
-		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
-
-		if pt.BelongsToUser {
-			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
-		}
-		if pt.BelongsToStruct != nil {
-			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
-		}
-	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
-
-	if typ.BelongsToStruct != nil {
-		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
-	}
-	if typ.BelongsToUser && typ.MultipleOwnersBelongingToUser(proj) {
-		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
-	}
-
-*/
 
 func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj *Project) squirrel.Eq {
 	n := typ.Name

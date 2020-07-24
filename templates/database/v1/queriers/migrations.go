@@ -146,13 +146,27 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				"username" TEXT NOT NULL,
 				"hashed_password" TEXT NOT NULL,
 				"password_last_changed_on" integer,
+				"requires_password_change" boolean NOT NULL DEFAULT 'false',
 				"two_factor_secret" TEXT NOT NULL,
 				"is_admin" boolean NOT NULL DEFAULT 'false',
+				"two_factor_secret_verified_on" BIGINT DEFAULT NULL,
 				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
 				"last_updated_on" BIGINT DEFAULT NULL,
 				"archived_on" BIGINT DEFAULT NULL,
 				UNIQUE ("username")
 			);`),
+		},
+		{
+			description: "create sessions table for session manager",
+			script: jen.RawString(`
+			CREATE TABLE sessions (
+				token TEXT PRIMARY KEY,
+				data BYTEA NOT NULL,
+				expiry TIMESTAMPTZ NOT NULL
+			);
+
+			CREATE INDEX sessions_expiry_idx ON sessions (expiry);
+			`),
 		},
 		{
 			description: "create oauth2_clients table",
@@ -283,9 +297,11 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 				jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
 				jen.Lit("    `username` VARCHAR(150) NOT NULL,"),
 				jen.Lit("    `hashed_password` VARCHAR(100) NOT NULL,"),
+				jen.Lit("    `requires_password_change` BOOLEAN NOT NULL DEFAULT false,"),
 				jen.Lit("    `password_last_changed_on` INTEGER UNSIGNED,"),
 				jen.Lit("    `two_factor_secret` VARCHAR(256) NOT NULL,"),
 				jen.Lit("    `is_admin` BOOLEAN NOT NULL DEFAULT false,"),
+				jen.Lit("    `two_factor_secret_verified_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `created_on` BIGINT UNSIGNED,"),
 				jen.Lit("    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
 				jen.Lit("    `archived_on` BIGINT UNSIGNED DEFAULT NULL,"),
@@ -305,6 +321,20 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 				jen.Lit("  END IF;"),
 				jen.Lit("END;"),
 			), jen.Lit("\n")),
+		},
+		{
+			description: "create sessions table for session manager",
+			script: jen.Qual("strings", "Join").Call(jen.Index().String().Valuesln(
+				jen.Lit("CREATE TABLE sessions ("),
+				jen.Lit("`token` CHAR(43) PRIMARY KEY,"),
+				jen.Lit("`data` BLOB NOT NULL,"),
+				jen.Lit("`expiry` TIMESTAMP(6) NOT NULL"),
+				jen.Lit(");"),
+			), jen.Lit("\n")),
+		},
+		{
+			description: "create sessions table for session manager",
+			script:      jen.Lit("CREATE INDEX sessions_expiry_idx ON sessions (expiry);"),
 		},
 		{
 			description: "create oauth2_clients table",
@@ -467,13 +497,27 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 				"username" TEXT NOT NULL,
 				"hashed_password" TEXT NOT NULL,
 				"password_last_changed_on" INTEGER,
+				"requires_password_change" BOOLEAN NOT NULL DEFAULT 'false',
 				"two_factor_secret" TEXT NOT NULL,
 				"is_admin" BOOLEAN NOT NULL DEFAULT 'false',
+				"two_factor_secret_verified_on" INTEGER DEFAULT NULL,
 				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),
 				"last_updated_on" INTEGER,
 				"archived_on" INTEGER DEFAULT NULL,
 				CONSTRAINT username_unique UNIQUE (username)
 			);`),
+		},
+		{
+			description: "create sessions table for session manager",
+			script: jen.RawString(`
+			CREATE TABLE sessions (
+				token TEXT PRIMARY KEY,
+				data BLOB NOT NULL,
+				expiry REAL NOT NULL
+			);
+			
+			CREATE INDEX sessions_expiry_idx ON sessions(expiry);
+			`),
 		},
 		{
 			description: "create oauth2_clients table",

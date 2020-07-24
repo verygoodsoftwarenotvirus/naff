@@ -32,6 +32,12 @@ func buildIterableConstants(typ models.DataType) []jen.Code {
 		jen.IDf("%sTableName", puvn).Equals().Lit(prn),
 	}
 
+	for _, field := range typ.Fields {
+		consts = append(consts,
+			jen.IDf("%sTable%sColumn", puvn, field.Name.Singular()).Equals().Lit(field.Name.RouteName()),
+		)
+	}
+
 	if typ.BelongsToUser {
 		consts = append(consts, jen.IDf("%sUserOwnershipColumn", puvn).Equals().Lit("belongs_to_user"))
 	}
@@ -56,11 +62,12 @@ func buildIterableVariableDecs(proj *models.Project, typ models.DataType) []jen.
 		vars = append(
 			vars,
 			jen.IDf("%sOn%sJoinClause", puvn, ct.Name.Plural()).Equals().Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s ON %s.%s=%s.id"),
+				jen.Lit("%s ON %s.%s=%s.%s"),
 				jen.IDf("%sTableName", puvn),
 				jen.IDf("%sTableName", ct.Name.PluralUnexportedVarName()),
 				jen.IDf("%sTableOwnershipColumn", ct.Name.PluralUnexportedVarName()),
 				jen.IDf("%sTableName", puvn),
+				jen.ID("idColumn"),
 			),
 		)
 	}
@@ -85,21 +92,10 @@ func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 	code.Add(buildSomethingExistsFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
-	//code.Add(buildGetSomethingCountQueryFuncDecl(proj, dbvendor, typ)...)
-	//code.Add(buildGetSomethingCountFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
 	code.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
 	code.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
-
-	//if typ.BelongsToUser {
-	//	code.Add(buildGetAllSomethingForUserFuncDecl(proj, dbvendor, typ)...)
-	//}
-
-	//if typ.BelongsToStruct != nil {
-	//	code.Add(buildGetAllSomethingForSomethingElseFuncDecl(proj, dbvendor, typ)...)
-	//}
-
 	code.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
@@ -110,20 +106,20 @@ func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 	return code
 }
 
-func buildTableColumns(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTableColumns(_ *models.Project, typ models.DataType) []jen.Code {
 	puvn := typ.Name.PluralUnexportedVarName()
 	tableNameVar := fmt.Sprintf("%sTableName", puvn)
 
-	tableColumns := []jen.Code{utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("id"))}
+	tableColumns := []jen.Code{utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("idColumn"))}
 
 	for _, field := range typ.Fields {
-		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit(field.Name.RouteName())))
+		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sTable%sColumn", puvn, field.Name.Singular())))
 	}
 
 	tableColumns = append(tableColumns,
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("created_on")),
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("last_updated_on")),
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.Lit("archived_on")),
+		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("createdOnColumn")),
+		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("lastUpdatedOnColumn")),
+		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("archivedOnColumn")),
 	)
 
 	if typ.BelongsToUser {
@@ -136,7 +132,7 @@ func buildTableColumns(proj *models.Project, typ models.DataType) []jen.Code {
 	return tableColumns
 }
 
-func buildScanFields(proj *models.Project, typ models.DataType) (scanFields []jen.Code) {
+func buildScanFields(_ *models.Project, typ models.DataType) (scanFields []jen.Code) {
 	scanFields = []jen.Code{jen.AddressOf().ID("x").Dot("ID")}
 
 	for _, field := range typ.Fields {
@@ -171,32 +167,25 @@ func buildScanSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPa
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("scan%s", sn).Params(
 			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
-			jen.ID("includeCount").Bool(),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
-			jen.Uint64(),
 			jen.Error(),
 		).Block(
 			func() []jen.Code {
 				body := []jen.Code{
 					jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(),
-					jen.Var().ID("count").Uint64(),
 					jen.Line(),
 					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(proj, typ)...),
 					jen.Line(),
-					jen.If(jen.ID("includeCount")).Block(
-						jen.ID("targetVars").Equals().Append(jen.ID("targetVars"), jen.AddressOf().ID("count")),
-					),
-					jen.Line(),
 					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.Return().List(jen.Nil(), jen.Zero(), jen.Err()),
+						jen.Return().List(jen.Nil(), jen.Err()),
 					),
 					jen.Line(),
 				}
 
 				body = append(body,
 					jen.Line(),
-					jen.Return().List(jen.ID("x"), jen.ID("count"), jen.Nil()),
+					jen.Return().List(jen.ID("x"), jen.Nil()),
 				)
 
 				return body
@@ -220,36 +209,30 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.S
 			jen.ID("rows").Qual(proj.DatabaseV1Package(), "ResultIterator"),
 		).Params(
 			jen.Index().Qual(proj.ModelsV1Package(), sn),
-			jen.Uint64(),
 			jen.Error(),
 		).Block(
 			jen.Var().Defs(
 				jen.ID("list").Index().Qual(proj.ModelsV1Package(), sn),
-				jen.ID("count").Uint64(),
 			),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
-				jen.List(jen.ID("x"), jen.ID("c"), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("rows"), jen.True()),
+				jen.List(jen.ID("x"), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("rows")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.Return().List(jen.Nil(), jen.Zero(), jen.Err()),
-				),
-				jen.Line(),
-				jen.If(jen.ID("count").IsEqualTo().Zero()).Block(
-					jen.ID("count").Equals().ID("c"),
+					jen.Return().List(jen.Nil(), jen.Err()),
 				),
 				jen.Line(),
 				jen.ID("list").Equals().ID("append").Call(jen.ID("list"), jen.PointerTo().ID("x")),
 			),
 			jen.Line(),
 			jen.If(jen.Err().Assign().ID("rows").Dot("Err").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Zero(), jen.Err()),
+				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.If(jen.ID("closeErr").Assign().ID("rows").Dot("Close").Call(), jen.ID("closeErr").DoesNotEqual().ID("nil")).Block(
 				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Error").Call(jen.ID("closeErr"), jen.Lit("closing database rows")),
 			),
 			jen.Line(),
-			jen.Return().List(jen.ID("list"), jen.ID("count"), jen.Nil()),
+			jen.Return().List(jen.ID("list"), jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -280,7 +263,7 @@ func buildSomethingExistsQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	}
 
 	qbStmt := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
-		Dotln("Select").Call(utils.FormatString("%s.id", jen.IDf("%sTableName", puvn))).
+		Dotln("Select").Call(utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.ID("idColumn"))).
 		Dotln("Prefix").Call(jen.ID("existencePrefix")).
 		Dotln("From").Call(jen.IDf("%sTableName", puvn))
 
@@ -411,7 +394,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
-			jen.List(jen.ID(uvn), jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row"), jen.False()),
+			jen.List(jen.ID(uvn), jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row")),
 			jen.Return(jen.ID(uvn), jen.Err()),
 		),
 		jen.Line(),
@@ -506,7 +489,7 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 	if len(whereValues) > 0 {
 		qbStmt = qbStmt.Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(whereValues...))
 	}
-	qbStmt = qbStmt.Dotln("OrderBy").Call(utils.FormatString("%s.id", jen.IDf("%sTableName", puvn)))
+	qbStmt = qbStmt.Dotln("OrderBy").Call(utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.ID("idColumn")))
 
 	return []jen.Code{
 		jen.Comment(firstCommentLine),
@@ -557,7 +540,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Litf("querying database for %s", pcn))),
 			),
 			jen.Line(),
-			jen.List(jen.ID(puvn), jen.ID("count"), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
+			jen.List(jen.ID(puvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
