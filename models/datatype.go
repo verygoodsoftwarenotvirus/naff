@@ -336,9 +336,6 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 	}
-	//if typ.RestrictedToUserAtSomeLevel(proj) {
-	//	whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
-	//}
 
 	return whereValues
 }
@@ -389,15 +386,16 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodConditionalClauses(pro
 	puvn := n.PluralUnexportedVarName()
 
 	whereValues := []jen.Code{
-		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.IDf("%sTableName", typ.Name.PluralUnexportedVarName())).MapAssign().Nil(),
+		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", typ.Name.PluralUnexportedVarName()), jen.ID("archivedOnColumn")).MapAssign().Nil(),
 	}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		whereValues = append(
 			whereValues,
 			jen.Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s.id"),
+				jen.Lit("%s.%s"),
 				jen.IDf("%sTableName", pt.Name.PluralUnexportedVarName()),
+				jen.ID("idColumn"),
 			).MapAssign().IDf("%sID", pt.Name.UnexportedVarName()),
 		)
 

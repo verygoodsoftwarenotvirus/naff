@@ -392,9 +392,10 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", sn).Params(params...).
 			Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
-			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
-			jen.List(jen.ID(uvn), jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row")),
+			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.List(jen.ID(uvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row")),
+			jen.Line(),
 			jen.Return(jen.ID(uvn), jen.Err()),
 		),
 		jen.Line(),
@@ -427,7 +428,7 @@ func buildSomethingAllCountQueryDecls(dbvendor wordsmith.SuperPalabra, typ model
 					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 					Dotln("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-						utils.FormatString("%s.archived_on", jen.IDf("%sTableName", puvn)).MapAssign().ID("nil"),
+						utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.ID("archivedOnColumn")).MapAssign().ID("nil"),
 					)).
 					Dotln("ToSql").Call(),
 				jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
@@ -449,7 +450,11 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 		jen.Commentf("GetAll%sCount will fetch the count of %s from the database.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
-			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call()).Dot("Scan").Call(jen.AddressOf().ID("count")),
+			jen.ID("query").Assign().ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
+			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(
+				constants.CtxVar(),
+				jen.ID("query"),
+			).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
 		jen.Line(),
@@ -478,10 +483,7 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 
 	whereValues := typ.BuildDBQuerierListRetrievalQueryMethodConditionalClauses(proj)
 	qbStmt := jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
-		Dotln("Select").Call(jen.Append(
-		jen.IDf("%sTableColumns", puvn),
-		utils.FormatStringWithArg(jen.ID("countQuery"), jen.IDf("%sTableName", puvn)),
-	).Spread()).
+		Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Spread()).
 		Dotln("From").Call(jen.IDf("%sTableName", puvn))
 
 	qbStmt = typ.ModifyQueryBuildingStatementWithJoinClauses(proj, qbStmt)
@@ -549,7 +551,6 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID(constants.FilterVarName).Dot("Page"),
 					jen.ID("Limit").MapAssign().ID(constants.FilterVarName).Dot("Limit"),
-					jen.ID("TotalCount").MapAssign().ID("count"),
 				),
 				jen.IDf(pn).MapAssign().ID(puvn),
 			),
@@ -560,12 +561,12 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 	}
 }
 
-func determineCreationColumns(proj *models.Project, typ models.DataType) []jen.Code {
+func determineCreationColumns(_ *models.Project, typ models.DataType) []jen.Code {
 	puvn := typ.Name.PluralUnexportedVarName()
 	var creationColumns []jen.Code
 
 	for _, field := range typ.Fields {
-		creationColumns = append(creationColumns, jen.Lit(field.Name.RouteName()))
+		creationColumns = append(creationColumns, jen.IDf("%sTable%sColumn", puvn, field.Name.Singular()))
 	}
 
 	if typ.BelongsToStruct != nil {
@@ -578,7 +579,7 @@ func determineCreationColumns(proj *models.Project, typ models.DataType) []jen.C
 	return creationColumns
 }
 
-func determineCreationQueryValues(proj *models.Project, inputVarName string, typ models.DataType) []jen.Code {
+func determineCreationQueryValues(_ *models.Project, inputVarName string, typ models.DataType) []jen.Code {
 	var valuesColumns []jen.Code
 
 	for _, field := range typ.Fields {
@@ -609,7 +610,13 @@ func buildCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 		Dotln("Values").Callln(determineCreationQueryValues(proj, "input", typ)...)
 
 	if isPostgres(dbvendor) {
-		qb.Dotln("Suffix").Call(jen.Lit("RETURNING id, created_on"))
+		qb.Dotln("Suffix").Call(
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("RETURNING %s, %s"),
+				jen.ID("idColumn"),
+				jen.ID("createdOnColumn"),
+			),
+		)
 	}
 	qb.Dotln("ToSql").Call()
 
@@ -731,7 +738,7 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	params := typ.BuildDBQuerierUpdateQueryBuildingMethodParams(proj, inputVarName)
 
 	vals := []jen.Code{
-		jen.Lit("id").MapAssign().ID(inputVarName).Dot("ID"),
+		jen.ID("idColumn").MapAssign().ID(inputVarName).Dot("ID"),
 	}
 	if typ.BelongsToStruct != nil {
 		vals = append(vals, jen.IDf("%sTableOwnershipColumn", puvn).MapAssign().ID(inputVarName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
@@ -754,15 +761,20 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 
 				for _, field := range typ.Fields {
 					if field.ValidForUpdateInput {
-						x.Dotln("Set").Call(jen.Lit(field.Name.RouteName()), jen.ID(inputVarName).Dot(field.Name.Singular()))
+						x.Dotln("Set").Call(jen.IDf("%sTable%sColumn", puvn, field.Name.Singular()), jen.ID(inputVarName).Dot(field.Name.Singular()))
 					}
 				}
 
-				x.Dotln("Set").Call(jen.Lit("last_updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+				x.Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...))
 
 				if strings.ToLower(dbvsn) == "postgres" {
-					x.Dotln("Suffix").Call(jen.Lit("RETURNING last_updated_on"))
+					x.Dotln("Suffix").Call(
+						jen.Qual("fmt", "Sprintf").Call(
+							jen.Lit("RETURNING %s"),
+							jen.ID("lastUpdatedOnColumn"),
+						),
+					)
 				}
 
 				x.Dotln("ToSql").Call()
@@ -827,8 +839,8 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 
 	var comment string
 	vals := []jen.Code{
-		jen.Lit("id").MapAssign().IDf("%sID", uvn),
-		jen.Lit("archived_on").MapAssign().ID("nil"),
+		jen.ID("idColumn").MapAssign().IDf("%sID", uvn),
+		jen.ID("archivedOnColumn").MapAssign().ID("nil"),
 	}
 	paramsList := typ.BuildDBQuerierArchiveQueryMethodParams(proj)
 
@@ -853,12 +865,17 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 
 	_qs := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 		Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
-		Dotln("Set").Call(jen.Lit("last_updated_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
-		Dotln("Set").Call(jen.Lit("archived_on"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+		Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+		Dotln("Set").Call(jen.ID("archivedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
 		Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...))
 
 	if strings.ToLower(dbvsn) == "postgres" {
-		_qs.Dotln("Suffix").Call(jen.Lit("RETURNING archived_on"))
+		_qs.Dotln("Suffix").Call(
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("RETURNING %s"),
+				jen.ID("archivedOnColumn"),
+			),
+		)
 	}
 	_qs.Dotln("ToSql").Call()
 

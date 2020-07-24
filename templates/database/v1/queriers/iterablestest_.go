@@ -137,7 +137,7 @@ func buildPrefixedStringColumnsAsString(typ models.DataType) string {
 	return strings.Join(buildPrefixedStringColumns(typ), ", ")
 }
 
-func buildCreationStringColumnsAndArgs(proj *models.Project, typ models.DataType) (cols []string, args []jen.Code) {
+func buildCreationStringColumnsAndArgs(_ *models.Project, typ models.DataType) (cols []string, args []jen.Code) {
 	cols, args = []string{}, []jen.Code{}
 
 	for _, field := range typ.Fields {
@@ -200,30 +200,23 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 
 	n := typ.Name
 	sn := n.Singular()
+	pn := typ.Name.Plural()
 	puvn := n.PluralUnexportedVarName()
 
 	gFields := buildGeneralFields("x", typ)
 
 	code.Add(
-		jen.Func().IDf("buildMockRowsFrom%s", sn).Params(
+		jen.Func().IDf("buildMockRowsFrom%s", pn).Params(
 			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Block(
-			jen.ID("includeCount").Assign().Len(jen.ID(puvn)).GreaterThan().One(),
 			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
 			jen.Line(),
-			jen.If(jen.ID("includeCount")).Block(
-				jen.ID("columns").Equals().Append(jen.ID("columns"), jen.Lit("count")),
-			),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Block(
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
-				jen.Line(),
-				jen.If(jen.ID("includeCount")).Block(
-					utils.AppendItemsToList(jen.ID("rowValues"), jen.Len(jen.ID(puvn))),
-				),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
 			),
@@ -286,7 +279,6 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 				jen.Line(),
 				jen.List(
 					jen.Underscore(),
-					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dotf("scan%s", typ.Name.Plural()).Call(jen.ID("mockRows")),
 				utils.AssertError(jen.Err(), nil),
@@ -302,7 +294,6 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(
-					jen.Underscore(),
 					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dotf("scan%s", typ.Name.Plural()).Call(jen.ID("mockRows")),
@@ -448,6 +439,7 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbfl := dbvendor.LowercaseAbbreviation()
 	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
 	dbvsn := dbvendor.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -465,7 +457,7 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 
 		mockDBCall := jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WithArgs").Callln(mockDBCallArgs...).
-			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))))
+			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(jen.ID(utils.BuildFakeVarName(sn))))
 
 		lines = append(lines,
 			jen.Line(),
@@ -632,7 +624,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			expectQueryMock = expectQueryMock.Dotln("WithArgs").Callln(withArgs...)
 		}
 		expectQueryMock = expectQueryMock.Dotln("WillReturnRows").Callln(
-			jen.IDf("buildMockRowsFrom%s", sn).Callln(
+			jen.IDf("buildMockRowsFrom%s", pn).Callln(
 				jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Zero()),
 				jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.One()),
 				jen.AddressOf().ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Dot(pn).Index(jen.Lit(2)),
