@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
@@ -33,8 +35,12 @@ func init() {
 	projects[projectTodo].EnableDatabase(models.MariaDB)
 }
 
+const (
+	this = "gitlab.com/verygoodsoftwarenotvirus/naff"
+)
+
 func main() {
-	if err := os.RemoveAll(os.Getenv("GOPATH") + "src/gitlab.com/verygoodsoftwarenotvirus/naff/example_output"); err != nil {
+	if err := os.RemoveAll(filepath.Join(os.Getenv("GOPATH"), "src", this, "example_output")); err != nil {
 		log.Printf("error removing output dir: %v", err)
 	}
 
@@ -42,7 +48,7 @@ func main() {
 		chosenProject := projects[chosenProjectKey]
 
 		if outputDir := os.Getenv("OUTPUT_DIR"); outputDir != "" {
-			chosenProject.OutputPath = "gitlab.com/verygoodsoftwarenotvirus/naff/" + outputDir
+			chosenProject.OutputPath = filepath.Join(this, outputDir)
 		}
 
 		if err := project.RenderProject(chosenProject); err != nil {
