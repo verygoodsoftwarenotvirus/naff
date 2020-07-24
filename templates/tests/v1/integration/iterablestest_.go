@@ -948,7 +948,7 @@ func buildTestUpdatingShouldBeUpdatable(proj *models.Project, typ models.DataTyp
 		jen.Line(),
 		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual")),
-		utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+		utils.AssertNotNil(jen.ID("actual").Dot("LastUpdatedOn"), nil),
 		jen.Line(),
 		jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 		utils.AssertNoError(

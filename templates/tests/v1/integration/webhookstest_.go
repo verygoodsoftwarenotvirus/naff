@@ -200,7 +200,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 					jen.Line(),
 					jen.Comment("Assert webhook equality."),
 					jen.ID("checkWebhookEquality").Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName("Webhook")), jen.ID("actual")),
-					utils.AssertNotNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+					utils.AssertNotNil(jen.ID("actual").Dot("LastUpdatedOn"), nil),
 					jen.Line(),
 					jen.Comment("Clean up."),
 					jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("actual").Dot("ID")),

@@ -47,7 +47,8 @@ func initDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Equals().ID("initializeClient").Call(jen.ID("oa2Client")), // VARME
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Equals().ID("initializeClient").Call(jen.ID("oa2Client")),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("Debug").Equals().ID("urlToUse").IsEqualTo().EmptyString().Comment("change this for debug logs"),
 			jen.Line(),
 			jen.ID("fiftySpaces").Assign().Qual("strings", "Repeat").Call(jen.Lit("\n"), jen.Lit(50)),
 			jen.Qual("fmt", "Printf").Call(jen.Lit("%s\tRunning tests%s"), jen.ID("fiftySpaces"), jen.ID("fiftySpaces")),
@@ -57,12 +58,12 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("buildHTTPClient").Params().Params(jen.PointerTo().Qual("net/http", "Client")).Block(
-			jen.ID("httpc").Assign().AddressOf().Qual("net/http", "Client").Valuesln(
-				jen.ID("Transport").MapAssign().Qual("net/http", "DefaultTransport"),
-				jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
+			jen.Return(
+				jen.AddressOf().Qual("net/http", "Client").Valuesln(
+					jen.ID("Transport").MapAssign().Qual("net/http", "DefaultTransport"),
+					jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
+				),
 			),
-			jen.Line(),
-			jen.Return().ID("httpc"),
 		),
 		jen.Line(),
 	)

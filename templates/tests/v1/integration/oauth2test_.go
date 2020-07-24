@@ -73,7 +73,10 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 			jen.ID("_ctx").Assign().Add(constants.InlineCtx()),
 			jen.Line(),
 			jen.Comment("create user."),
-			jen.List(jen.ID("x"), jen.ID("y"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(jen.ID("test")),
+			jen.List(jen.ID("x"), jen.ID("y"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(
+				jen.ID("_ctx"),
+				jen.ID("test"),
+			),
 			jen.Qual(constants.AssertPkg, "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 			jen.Line(),
 			jen.ID("input").Assign().ID("buildDummyOAuth2ClientInput").Call(
@@ -167,7 +170,10 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("create user."),
-					jen.List(jen.ID("createdUser"), jen.ID("createdUserInput"), jen.Underscore()).Assign().ID("buildDummyUser").Call(jen.ID("test")),
+					jen.List(jen.ID("createdUser"), jen.ID("createdUserInput"), jen.Underscore()).Assign().ID("buildDummyUser").Call(
+						constants.CtxVar(),
+						jen.ID("test"),
+					),
 					jen.Qual(constants.AssertPkg, "NotNil").Call(jen.ID("test"), jen.ID("cookie")),
 					jen.Line(),
 					jen.ID("input").Assign().ID("buildDummyOAuth2ClientInput").Call(
@@ -180,8 +186,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 					jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 					jen.Line(),
 					jen.Comment("archive oauth2Client."),
-					jen.Err().Equals().ID("testClient").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")),
-					utils.AssertNoError(jen.Err(), nil),
+					utils.RequireNoError(jen.ID("testClient").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")), nil),
 					jen.Line(),
 					jen.List(jen.ID("c2"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
 						constants.CtxVar(),

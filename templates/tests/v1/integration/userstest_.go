@@ -40,13 +40,15 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("buildDummyUser").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(
+		jen.Func().ID("buildDummyUser").Params(
+			constants.CtxParam(),
+			jen.ID("t").PointerTo().Qual("testing", "T"),
+		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 			jen.PointerTo().Qual("net/http", "Cookie"),
 		).Block(
 			jen.ID("t").Dot("Helper").Call(),
-			constants.CreateCtx(),
 			jen.Line(),
 			jen.Comment("build user creation route input."),
 			jen.ID("userInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
@@ -54,13 +56,25 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				constants.CtxVar(),
 				jen.ID("userInput"),
 			),
-			utils.AssertNotNil(jen.ID("user"), nil),
+			utils.RequireNotNil(jen.ID("user"), nil),
 			utils.RequireNoError(jen.Err(), nil),
 			jen.Line(),
-			jen.If(jen.ID("user").IsEqualTo().ID("nil").Or().Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("t").Dot("FailNow").Call(),
+			jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
+				jen.ID("user").Dot("TwoFactorSecret"),
+				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 			),
+			utils.RequireNoError(jen.Err(), nil),
+			utils.RequireNoError(
+				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("VerifyTOTPSecret").Call(
+					constants.CtxVar(),
+					jen.ID("user").Dot("ID"),
+					jen.ID("token"),
+				),
+				nil,
+			),
+			jen.Line(),
 			jen.ID("cookie").Assign().ID("loginUser").Call(
+				constants.CtxVar(),
 				jen.ID("t"),
 				jen.ID("userInput").Dot("Username"),
 				jen.ID("userInput").Dot("Password"),
@@ -91,7 +105,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 			utils.AssertNotEmpty(jen.ID("actual").Dot("TwoFactorSecret"), nil),
 			utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil),
-			utils.AssertNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+			utils.AssertNil(jen.ID("actual").Dot("LastUpdatedOn"), nil),
 			utils.AssertNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		),
 		jen.Line(),
@@ -112,7 +126,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				nil,
 			),
 			utils.AssertNotZero(jen.ID("actual").Dot("CreatedOn"), nil),
-			utils.AssertNil(jen.ID("actual").Dot("UpdatedOn"), nil),
+			utils.AssertNil(jen.ID("actual").Dot("LastUpdatedOn"), nil),
 			utils.AssertNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		),
 		jen.Line(),
@@ -170,6 +184,21 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("premade"), jen.Err()),
 					utils.AssertNotEmpty(jen.ID("premade").Dot("TwoFactorSecret"), nil),
 					jen.Line(),
+					jen.List(jen.ID("secretVerificationToken"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
+						jen.ID("premade").Dot("TwoFactorSecret"),
+						jen.Qual("time", "Now").Call().Dot("UTC").Call(),
+					),
+					jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("secretVerificationToken"), jen.Err()),
+					jen.Line(),
+					utils.AssertNoError(
+						jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("VerifyTOTPSecret").Call(
+							constants.CtxVar(),
+							jen.ID("premade").Dot("ID"),
+							jen.ID("secretVerificationToken"),
+						),
+						nil,
+					),
+					jen.Line(),
 					jen.Comment("Fetch user."),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("GetUser").Call(
 						constants.CtxVar(),
@@ -226,7 +255,10 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 					jen.Comment("Create users."),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
-						jen.List(jen.ID("user"), jen.Underscore(), jen.ID("c")).Assign().ID("buildDummyUser").Call(jen.ID("t")),
+						jen.List(jen.ID("user"), jen.Underscore(), jen.ID("c")).Assign().ID("buildDummyUser").Call(
+							constants.CtxVar(),
+							jen.ID("t"),
+						),
 						utils.AssertNotNil(jen.ID("c"), nil),
 						jen.ID("expected").Equals().ID("append").Call(jen.ID("expected"), jen.ID("user")),
 					),
