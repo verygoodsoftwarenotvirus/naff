@@ -22,6 +22,7 @@ var (
 		fmt.Sprintf("%s.id", usersTableName),
 		fmt.Sprintf("%s.username", usersTableName),
 		fmt.Sprintf("%s.hashed_password", usersTableName),
+		fmt.Sprintf("%s.salt", usersTableName),
 		fmt.Sprintf("%s.requires_password_change", usersTableName),
 		fmt.Sprintf("%s.password_last_changed_on", usersTableName),
 		fmt.Sprintf("%s.two_factor_secret", usersTableName),
@@ -85,6 +86,7 @@ func buildBuildMockRowsFromUser(proj *models.Project, _ wordsmith.SuperPalabra) 
 					jen.ID("user").Dot("ID"),
 					jen.ID("user").Dot("Username"),
 					jen.ID("user").Dot("HashedPassword"),
+					jen.ID("user").Dot("Salt"),
 					jen.ID("user").Dot("RequiresPasswordChange"),
 					jen.ID("user").Dot("PasswordLastChangedOn"),
 					jen.ID("user").Dot("TwoFactorSecret"),
@@ -114,6 +116,7 @@ func buildBuildErroneousMockRowFromUser(proj *models.Project, dbvendor wordsmith
 				jen.ID("user").Dot("ID"),
 				jen.ID("user").Dot("Username"),
 				jen.ID("user").Dot("HashedPassword"),
+				jen.ID("user").Dot("Salt"),
 				jen.ID("user").Dot("RequiresPasswordChange"),
 				jen.ID("user").Dot("PasswordLastChangedOn"),
 				jen.ID("user").Dot("TwoFactorSecret"),
@@ -640,10 +643,12 @@ func buildTestDB_buildCreateUserQuery(proj *models.Project, dbvendor wordsmith.S
 		Columns(
 			"username",
 			"hashed_password",
+			"salt",
 			"two_factor_secret",
 			"is_admin",
 		).
 		Values(
+			whateverValue,
 			whateverValue,
 			whateverValue,
 			whateverValue,
@@ -657,6 +662,7 @@ func buildTestDB_buildCreateUserQuery(proj *models.Project, dbvendor wordsmith.S
 	expectedArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+		jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("IsAdmin"),
 	}
@@ -685,10 +691,12 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		Columns(
 			"username",
 			"hashed_password",
+			"salt",
 			"two_factor_secret",
 			"is_admin",
 		).
 		Values(
+			whateverValue,
 			whateverValue,
 			whateverValue,
 			whateverValue,
@@ -712,6 +720,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 				jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 				jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+				jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 				jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 				jen.False(),
 			).Dot("WillReturnError").Call(jen.AddressOf().Qual("github.com/lib/pq", "Error").Values(
@@ -775,6 +784,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 						jen.ID("mockDB").Dot(expectMethodName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 							jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 							jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+							jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 							jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 							jen.False(),
 						).Dot(returnMethodName).Call(jen.ID(utils.BuildFakeVarName("Rows"))),
@@ -822,6 +832,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.ID("mockDB").Dot(badPathExpectFuncName).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.False(),
 				).Dot("WillReturnError").Call(constants.ObligatoryError()),
@@ -844,6 +855,7 @@ func buildTestDB_buildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.S
 		Update(usersTableName).
 		Set("username", whateverValue).
 		Set("hashed_password", whateverValue).
+		Set("salt", whateverValue).
 		Set("two_factor_secret", whateverValue).
 		Set("two_factor_secret_verified_on", whateverValue).
 		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
@@ -858,6 +870,7 @@ func buildTestDB_buildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.S
 	expectedArgs := []jen.Code{
 		jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+		jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn"),
 		jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
@@ -880,6 +893,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		Update(usersTableName).
 		Set("username", whateverValue).
 		Set("hashed_password", whateverValue).
+		Set("salt", whateverValue).
 		Set("two_factor_secret", whateverValue).
 		Set("two_factor_secret_verified_on", whateverValue).
 		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
@@ -928,6 +942,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.ID("mockDB").Dot(updateUserExpectMethod).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Username"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
+					jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecret"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),

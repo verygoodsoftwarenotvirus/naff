@@ -20,11 +20,12 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 			jen.ID("usersTableName").Equals().Lit("users"),
 			jen.ID("usersTableUsernameColumn").Equals().Lit("username"),
 			jen.ID("usersTableHashedPasswordColumn").Equals().Lit("hashed_password"),
+			jen.ID("usersTableSaltColumn").Equals().Lit("salt"),
 			jen.ID("usersTableRequiresPasswordChangeColumn").Equals().Lit("requires_password_change"),
 			jen.ID("usersTablePasswordLastChangedOnColumn").Equals().Lit("password_last_changed_on"),
 			jen.ID("usersTableTwoFactorColumn").Equals().Lit("two_factor_secret"),
-			jen.ID("usersTableIsAdminColumn").Equals().Lit("is_admin"),
 			jen.ID("usersTableTwoFactorVerifiedOnColumn").Equals().Lit("two_factor_secret_verified_on"),
+			jen.ID("usersTableIsAdminColumn").Equals().Lit("is_admin"),
 		),
 		jen.Line(),
 	)
@@ -35,6 +36,7 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("idColumn")),
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("usersTableUsernameColumn")),
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("usersTableHashedPasswordColumn")),
+				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("usersTableSaltColumn")),
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("usersTableRequiresPasswordChangeColumn")),
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("usersTablePasswordLastChangedOnColumn")),
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("usersTableTwoFactorColumn")),
@@ -95,6 +97,7 @@ func buildScanUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.
 				jen.AddressOf().ID("x").Dot("ID"),
 				jen.AddressOf().ID("x").Dot("Username"),
 				jen.AddressOf().ID("x").Dot("HashedPassword"),
+				jen.AddressOf().ID("x").Dot("Salt"),
 				jen.AddressOf().ID("x").Dot("RequiresPasswordChange"),
 				jen.AddressOf().ID("x").Dot("PasswordLastChangedOn"),
 				jen.AddressOf().ID("x").Dot("TwoFactorSecret"),
@@ -489,12 +492,14 @@ func buildBuildCreateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 	cols := []jen.Code{
 		jen.ID("usersTableUsernameColumn"),
 		jen.ID("usersTableHashedPasswordColumn"),
+		jen.ID("usersTableSaltColumn"),
 		jen.ID("usersTableTwoFactorColumn"),
 		jen.ID("usersTableIsAdminColumn"),
 	}
 	vals := []jen.Code{
 		jen.ID("input").Dot("Username"),
 		jen.ID("input").Dot("HashedPassword"),
+		jen.ID("input").Dot("Salt"),
 		jen.ID("input").Dot("TwoFactorSecret"),
 		jen.False(),
 	}
@@ -614,6 +619,7 @@ func buildBuildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 			Dotln("Update").Call(jen.ID("usersTableName")).
 			Dotln("Set").Call(jen.ID("usersTableUsernameColumn"), jen.ID("input").Dot("Username")).
 			Dotln("Set").Call(jen.ID("usersTableHashedPasswordColumn"), jen.ID("input").Dot("HashedPassword")).
+			Dotln("Set").Call(jen.ID("usersTableSaltColumn"), jen.ID("input").Dot("Salt")).
 			Dotln("Set").Call(jen.ID("usersTableTwoFactorColumn"), jen.ID("input").Dot("TwoFactorSecret")).
 			Dotln("Set").Call(jen.ID("usersTableTwoFactorVerifiedOnColumn"), jen.ID("input").Dot("TwoFactorSecretVerifiedOn")).
 			Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
