@@ -36,6 +36,7 @@ type DataField struct {
 	DefaultValue          string
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
+	BelongsToEnumeration  wordsmith.SuperPalabra
 }
 
 func buildFakeVarName(typName string) string {

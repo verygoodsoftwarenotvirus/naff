@@ -15,36 +15,6 @@ const (
 	projectGamut      = "gamut"
 )
 
-func init() {
-	projects[projectGamut].EnableDatabase(models.Postgres)
-
-	projects[projectDiscussion].EnableDatabase(models.Postgres)
-
-	projects[projectTodo].EnableDatabase(models.Postgres)
-	projects[projectTodo].EnableDatabase(models.Sqlite)
-	projects[projectTodo].EnableDatabase(models.MariaDB)
-}
-
-func main() {
-	if err := os.RemoveAll(os.Getenv("GOPATH") + "src/gitlab.com/verygoodsoftwarenotvirus/naff/example_output"); err != nil {
-		log.Printf("error removing output dir: %v", err)
-	}
-
-	if chosenProjectKey := os.Getenv("PROJECT"); chosenProjectKey != "" {
-		chosenProject := projects[chosenProjectKey]
-
-		if outputDir := os.Getenv("OUTPUT_DIR"); outputDir != "" {
-			chosenProject.OutputPath = "gitlab.com/verygoodsoftwarenotvirus/naff/" + outputDir
-		}
-
-		if err := project.RenderProject(chosenProject); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		log.Fatal("no project selected")
-	}
-}
-
 var (
 	everyType = models.DataType{
 		Name:            wordsmith.FromSingularPascalCase("EveryType"),
@@ -317,7 +287,23 @@ var (
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToNobody: true,
+		},
+		{
+			Name: wordsmith.FromSingularPascalCase("PostReaction"),
+			Fields: []models.DataField{
+				{
+					Name:                  nil,
+					Type:                  "uint64",
+					Pointer:               false,
+					ValidForCreationInput: true,
+					ValidForUpdateInput:   true,
+					BelongsToEnumeration:  wordsmith.FromSingularPascalCase("ReactionIcon"),
+				},
+			},
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Post"),
+			BelongsToUser:    true,
+			RestrictedToUser: false,
 		},
 		{
 			Name: wordsmith.FromSingularPascalCase("Notification"),
@@ -432,3 +418,33 @@ var (
 		projectGamut:      gamut,
 	}
 )
+
+func init() {
+	projects[projectGamut].EnableDatabase(models.Postgres)
+
+	projects[projectDiscussion].EnableDatabase(models.Postgres)
+
+	projects[projectTodo].EnableDatabase(models.Postgres)
+	projects[projectTodo].EnableDatabase(models.Sqlite)
+	projects[projectTodo].EnableDatabase(models.MariaDB)
+}
+
+func main() {
+	if err := os.RemoveAll(os.Getenv("GOPATH") + "src/gitlab.com/verygoodsoftwarenotvirus/naff/example_output"); err != nil {
+		log.Printf("error removing output dir: %v", err)
+	}
+
+	if chosenProjectKey := os.Getenv("PROJECT"); chosenProjectKey != "" {
+		chosenProject := projects[chosenProjectKey]
+
+		if outputDir := os.Getenv("OUTPUT_DIR"); outputDir != "" {
+			chosenProject.OutputPath = "gitlab.com/verygoodsoftwarenotvirus/naff/" + outputDir
+		}
+
+		if err := project.RenderProject(chosenProject); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Fatal("no project selected")
+	}
+}
