@@ -161,9 +161,7 @@ func buildSearchHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	lines := []jen.Code{
 		jen.Commentf("%s is our search route.", funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID(funcName).Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID(funcName).Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 
@@ -215,9 +213,7 @@ func buildListHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	lines := []jen.Code{
 		jen.Comment("ListHandler is our list route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 
@@ -366,9 +362,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	lines := []jen.Code{
 		jen.Commentf("CreateHandler is our %s creation route.", scn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 
@@ -413,9 +407,7 @@ func buildExistenceHandlerFuncDecl(proj *models.Project, typ models.DataType) []
 	lines := []jen.Code{
 		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise.", scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ExistenceHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ExistenceHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 
@@ -462,9 +454,7 @@ func buildReadHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen.C
 	lines := []jen.Code{
 		jen.Commentf("ReadHandler returns a GET handler that returns %s.", scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 
@@ -557,9 +547,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 	lines := []jen.Code{
 		jen.Commentf("UpdateHandler returns a handler that updates %s.", scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 
@@ -628,9 +616,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("ArchiveHandler returns a handler that archives %s.", scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
-		),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(block...),
 		jen.Line(),
 	}
 

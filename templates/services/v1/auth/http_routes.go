@@ -137,109 +137,107 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("LoginHandler is our login route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LoginHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LoginHandler")),
-				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-				jen.Line(),
-				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.Line(),
-				jen.List(jen.ID("loginData"), jen.ID("errRes")).Assign().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.If(jen.ID("errRes").DoesNotEqual().ID("nil").Or().ID("loginData").IsEqualTo().Nil()).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
-					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
-					jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("errRes")), jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
-					),
-					jen.Return(),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LoginHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LoginHandler")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.Line(),
+			jen.List(jen.ID("loginData"), jen.ID("errRes")).Assign().ID("s").Dot("fetchLoginDataFromRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.If(jen.ID("errRes").DoesNotEqual().ID("nil").Or().ID("loginData").IsEqualTo().Nil()).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("errRes"), jen.Lit("error encountered fetching login data from request")),
+				utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("errRes")), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 				),
-				jen.Line(),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("ID")),
-				jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("Username")),
-				jen.Line(),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user"), jen.ID("loginData").Dot("user").Dot("ID")),
-				jen.List(jen.ID("loginValid"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(constants.CtxVar(), jen.PointerTo().ID("loginData")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered validating login")),
-					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
-					jen.Return(),
-				),
-				jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("valid"), jen.ID("loginValid")),
-				jen.Line(),
-				jen.If(jen.Not().ID("loginValid")).Block(
-					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("login was invalid")),
-					utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
-					jen.Return(),
-				),
-				jen.Line(),
-				jen.Var().ID("sessionErr").Error(),
-				jen.List(jen.ID(constants.ContextVarName), jen.ID("sessionErr")).Equals().ID("s").Dot("sessionManager").Dot("Load").Call(
-					jen.ID(constants.ContextVarName),
-					jen.EmptyString(),
-				),
-				jen.If(jen.ID("sessionErr").DoesNotEqual().Nil()).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(
-						jen.ID("sessionErr"),
-						jen.Lit("error loading token"),
-					),
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-						jen.Qual("net/http", "StatusInternalServerError"),
-					),
-					jen.Return(),
-				),
-				jen.Line(),
-				jen.If(
-					jen.ID("renewTokenErr").Assign().ID("s").Dot("sessionManager").Dot("RenewToken").Call(jen.ID(constants.ContextVarName)),
-					jen.ID("renewTokenErr").DoesNotEqual().Nil(),
-				).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(
-						jen.Err(),
-						jen.Lit("error encountered renewing token"),
-					),
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-						jen.Qual("net/http", "StatusInternalServerError"),
-					),
-					jen.Return(),
-				),
-				jen.ID("s").Dot("sessionManager").Dot("Put").Call(
-					constants.CtxVar(),
-					jen.ID("sessionInfoKey"),
-					jen.ID("loginData").Dot("user").Dot("ToSessionInfo").Call(),
-				),
-				jen.Line(),
-				jen.List(
-					jen.ID("token"),
-					jen.ID("expiry"),
-					jen.Err(),
-				).Assign().ID("s").Dot("sessionManager").Dot("Commit").Call(
-					constants.CtxVar(),
-				),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(
-						jen.Err(),
-						jen.Lit("error encountered writing to session store"),
-					),
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-						jen.Qual("net/http", "StatusInternalServerError"),
-					),
-					jen.Return(),
-				),
-				jen.Line(),
-				jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildCookie").Call(jen.ID("token"), jen.ID("expiry")),
-				jen.If(jen.Err().DoesNotEqual().Nil()).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(
-						jen.Err(),
-						jen.Lit("error encountered building cookie"),
-					),
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-						jen.Qual("net/http", "StatusInternalServerError"),
-					),
-					jen.Return(),
-				),
-				jen.Line(),
-				jen.Qual("net/http", "SetCookie").Call(jen.ID(constants.ResponseVarName), jen.ID("cookie")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
+				jen.Return(),
 			),
+			jen.Line(),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("ID")),
+			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("Username")),
+			jen.Line(),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user"), jen.ID("loginData").Dot("user").Dot("ID")),
+			jen.List(jen.ID("loginValid"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(constants.CtxVar(), jen.PointerTo().ID("loginData")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered validating login")),
+				utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
+				jen.Return(),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("valid"), jen.ID("loginValid")),
+			jen.Line(),
+			jen.If(jen.Not().ID("loginValid")).Block(
+				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("login was invalid")),
+				utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
+				jen.Return(),
+			),
+			jen.Line(),
+			jen.Var().ID("sessionErr").Error(),
+			jen.List(jen.ID(constants.ContextVarName), jen.ID("sessionErr")).Equals().ID("s").Dot("sessionManager").Dot("Load").Call(
+				jen.ID(constants.ContextVarName),
+				jen.EmptyString(),
+			),
+			jen.If(jen.ID("sessionErr").DoesNotEqual().Nil()).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(
+					jen.ID("sessionErr"),
+					jen.Lit("error loading token"),
+				),
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+					jen.Qual("net/http", "StatusInternalServerError"),
+				),
+				jen.Return(),
+			),
+			jen.Line(),
+			jen.If(
+				jen.ID("renewTokenErr").Assign().ID("s").Dot("sessionManager").Dot("RenewToken").Call(jen.ID(constants.ContextVarName)),
+				jen.ID("renewTokenErr").DoesNotEqual().Nil(),
+			).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(
+					jen.Err(),
+					jen.Lit("error encountered renewing token"),
+				),
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+					jen.Qual("net/http", "StatusInternalServerError"),
+				),
+				jen.Return(),
+			),
+			jen.ID("s").Dot("sessionManager").Dot("Put").Call(
+				constants.CtxVar(),
+				jen.ID("sessionInfoKey"),
+				jen.ID("loginData").Dot("user").Dot("ToSessionInfo").Call(),
+			),
+			jen.Line(),
+			jen.List(
+				jen.ID("token"),
+				jen.ID("expiry"),
+				jen.Err(),
+			).Assign().ID("s").Dot("sessionManager").Dot("Commit").Call(
+				constants.CtxVar(),
+			),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(
+					jen.Err(),
+					jen.Lit("error encountered writing to session store"),
+				),
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+					jen.Qual("net/http", "StatusInternalServerError"),
+				),
+				jen.Return(),
+			),
+			jen.Line(),
+			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("s").Dot("buildCookie").Call(jen.ID("token"), jen.ID("expiry")),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(
+					jen.Err(),
+					jen.Lit("error encountered building cookie"),
+				),
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+					jen.Qual("net/http", "StatusInternalServerError"),
+				),
+				jen.Return(),
+			),
+			jen.Line(),
+			jen.Qual("net/http", "SetCookie").Call(jen.ID(constants.ResponseVarName), jen.ID("cookie")),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 		),
 		jen.Line(),
 	)
@@ -247,71 +245,69 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("LogoutHandler is our logout route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LogoutHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LogoutHandler")),
-				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-				jen.Line(),
-				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.Line(),
-				jen.List(constants.CtxVar(), jen.ID("sessionErr")).Assign().ID("s").Dot("sessionManager").Dot("Load").Call(
-					constants.CtxVar(),
-					jen.EmptyString(),
-				),
-				jen.If(jen.ID("sessionErr").DoesNotEqual().Nil()).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(
-						jen.ID("sessionErr"),
-						jen.Lit("error loading token"),
-					),
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-						jen.Qual("net/http", "StatusInternalServerError"),
-					),
-					jen.Return(),
-				),
-				jen.Line(),
-				jen.If(
-					jen.Err().Assign().ID("s").Dot("sessionManager").Dot("Clear").Call(constants.CtxVar()),
-					jen.Err().DoesNotEqual().Nil(),
-				).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(
-						jen.Err(),
-						jen.Lit("clearing user session"),
-					),
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-						jen.Qual("net/http", "StatusInternalServerError"),
-					),
-					jen.Return(),
-				),
-				jen.Line(),
-				jen.If(
-					jen.List(jen.ID("cookie"), jen.ID("cookieRetrievalErr")).Assign().ID(constants.RequestVarName).Dot("Cookie").Call(jen.ID("CookieName")),
-					jen.ID("cookieRetrievalErr").IsEqualTo().Nil().And().ID("cookie").DoesNotEqual().Nil(),
-				).Block(
-					jen.If(
-						jen.List(jen.ID("c"), jen.ID("cookieBuildingErr")).Assign().ID("s").Dot("buildCookie").Call(
-							jen.Lit("deleted"),
-							jen.Qual("time", "Time").Values(),
-						),
-						jen.ID("cookieBuildingErr").IsEqualTo().Nil().And().ID("c").DoesNotEqual().Nil(),
-					).Block(
-						jen.ID("c").Dot("MaxAge").Equals().Lit(-1),
-						jen.Qual("net/http", "SetCookie").Call(jen.ID(constants.ResponseVarName), jen.ID("c")),
-					).Else().Block(
-						jen.ID(constants.LoggerVarName).Dot("Error").Call(
-							jen.ID("cookieBuildingErr"),
-							jen.Lit("error encountered building cookie"),
-						),
-						jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
-							jen.Qual("net/http", "StatusInternalServerError"),
-						),
-						jen.Return(),
-					),
-				).Else().Block(
-					jen.ID(constants.LoggerVarName).Dot("WithError").Call(jen.ID("cookieRetrievalErr")).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),
-				),
-				jen.Line(),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusOK"),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LogoutHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LogoutHandler")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.Line(),
+			jen.List(constants.CtxVar(), jen.ID("sessionErr")).Assign().ID("s").Dot("sessionManager").Dot("Load").Call(
+				constants.CtxVar(),
+				jen.EmptyString(),
 			),
+			jen.If(jen.ID("sessionErr").DoesNotEqual().Nil()).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(
+					jen.ID("sessionErr"),
+					jen.Lit("error loading token"),
+				),
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+					jen.Qual("net/http", "StatusInternalServerError"),
+				),
+				jen.Return(),
+			),
+			jen.Line(),
+			jen.If(
+				jen.Err().Assign().ID("s").Dot("sessionManager").Dot("Clear").Call(constants.CtxVar()),
+				jen.Err().DoesNotEqual().Nil(),
+			).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(
+					jen.Err(),
+					jen.Lit("clearing user session"),
+				),
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+					jen.Qual("net/http", "StatusInternalServerError"),
+				),
+				jen.Return(),
+			),
+			jen.Line(),
+			jen.If(
+				jen.List(jen.ID("cookie"), jen.ID("cookieRetrievalErr")).Assign().ID(constants.RequestVarName).Dot("Cookie").Call(jen.ID("CookieName")),
+				jen.ID("cookieRetrievalErr").IsEqualTo().Nil().And().ID("cookie").DoesNotEqual().Nil(),
+			).Block(
+				jen.If(
+					jen.List(jen.ID("c"), jen.ID("cookieBuildingErr")).Assign().ID("s").Dot("buildCookie").Call(
+						jen.Lit("deleted"),
+						jen.Qual("time", "Time").Values(),
+					),
+					jen.ID("cookieBuildingErr").IsEqualTo().Nil().And().ID("c").DoesNotEqual().Nil(),
+				).Block(
+					jen.ID("c").Dot("MaxAge").Equals().Lit(-1),
+					jen.Qual("net/http", "SetCookie").Call(jen.ID(constants.ResponseVarName), jen.ID("c")),
+				).Else().Block(
+					jen.ID(constants.LoggerVarName).Dot("Error").Call(
+						jen.ID("cookieBuildingErr"),
+						jen.Lit("error encountered building cookie"),
+					),
+					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(
+						jen.Qual("net/http", "StatusInternalServerError"),
+					),
+					jen.Return(),
+				),
+			).Else().Block(
+				jen.ID(constants.LoggerVarName).Dot("WithError").Call(jen.ID("cookieRetrievalErr")).Dot("Debug").Call(jen.Lit("logout was called, no cookie was found")),
+			),
+			jen.Line(),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusOK"),
 		),
 		jen.Line(),
 	)
@@ -319,40 +315,38 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("StatusHandler returns the user info for the user making the request."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("StatusHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("StatusHandler")),
-				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-				jen.Line(),
-				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.Line(),
-				jen.Var().ID("sr").PointerTo().Qual(proj.ModelsV1Package(), "StatusResponse"),
-				jen.List(jen.ID("userInfo"), jen.Err()).Assign().ID("s").Dot("fetchUserFromCookie").Call(
-					constants.CtxVar(),
-					jen.ID(constants.RequestVarName),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("StatusHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("StatusHandler")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.Line(),
+			jen.Var().ID("sr").PointerTo().Qual(proj.ModelsV1Package(), "StatusResponse"),
+			jen.List(jen.ID("userInfo"), jen.Err()).Assign().ID("s").Dot("fetchUserFromCookie").Call(
+				constants.CtxVar(),
+				jen.ID(constants.RequestVarName),
+			),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
+				jen.ID("sr").Equals().AddressOf().Qual(proj.ModelsV1Package(), "StatusResponse").Valuesln(
+					jen.ID("Authenticated").MapAssign().False(),
+					jen.ID("IsAdmin").MapAssign().False(),
 				),
-				jen.If(jen.Err().DoesNotEqual().Nil()).Block(
-					jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
-					jen.ID("sr").Equals().AddressOf().Qual(proj.ModelsV1Package(), "StatusResponse").Valuesln(
-						jen.ID("Authenticated").MapAssign().False(),
-						jen.ID("IsAdmin").MapAssign().False(),
-					),
-				).Else().Block(
-					jen.ID("sr").Equals().AddressOf().Qual(proj.ModelsV1Package(), "StatusResponse").Valuesln(
-						jen.ID("Authenticated").MapAssign().True(),
-						jen.ID("IsAdmin").MapAssign().ID("userInfo").Dot("IsAdmin"),
-					),
+			).Else().Block(
+				jen.ID("sr").Equals().AddressOf().Qual(proj.ModelsV1Package(), "StatusResponse").Valuesln(
+					jen.ID("Authenticated").MapAssign().True(),
+					jen.ID("IsAdmin").MapAssign().ID("userInfo").Dot("IsAdmin"),
 				),
-				jen.Line(),
-				jen.If(
-					jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(
-						jen.ID(constants.ResponseVarName),
-						jen.ID("sr"),
-					),
-					jen.Err().DoesNotEqual().Nil(),
-				).Block(
-					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+			),
+			jen.Line(),
+			jen.If(
+				jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(
+					jen.ID(constants.ResponseVarName),
+					jen.ID("sr"),
 				),
+				jen.Err().DoesNotEqual().Nil(),
+			).Block(
+				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 			),
 		),
 	)
@@ -360,21 +354,19 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random secret."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CycleSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
-				jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
-				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-				jen.Line(),
-				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("cycling cookie secret!")),
-				jen.Line(),
-				jen.ID("s").Dot("cookieManager").Equals().Qual("github.com/gorilla/securecookie", "New").Callln(
-					jen.Qual("github.com/gorilla/securecookie", "GenerateRandomKey").Call(jen.Lit(64)),
-					jen.Index().Byte().Call(jen.ID("s").Dot("config").Dot("CookieSecret")),
-				),
-				jen.Line(),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CycleSecretHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
+			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
+			jen.Line(),
+			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+			jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("cycling cookie secret!")),
+			jen.Line(),
+			jen.ID("s").Dot("cookieManager").Equals().Qual("github.com/gorilla/securecookie", "New").Callln(
+				jen.Qual("github.com/gorilla/securecookie", "GenerateRandomKey").Call(jen.Lit(64)),
+				jen.Index().Byte().Call(jen.ID("s").Dot("config").Dot("CookieSecret")),
 			),
+			jen.Line(),
+			utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
 		),
 		jen.Line(),
 	)

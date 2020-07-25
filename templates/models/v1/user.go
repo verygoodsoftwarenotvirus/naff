@@ -115,13 +115,34 @@ func userDotGo(proj *models.Project) *jen.File {
 				jen.ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.Line(),
-				jen.ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("NewTOTPSecretHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("TOTPSecretVerificationHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("UpdatePasswordHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
+				jen.ID("ListHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("CreateHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ReadHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("NewTOTPSecretHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("TOTPSecretVerificationHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("UpdatePasswordHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ArchiveHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
 			),
 		),
 		jen.Line(),

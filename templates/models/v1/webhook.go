@@ -76,11 +76,26 @@ func webhookDotGo(proj *models.Project) *jen.File {
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.Line(),
-				jen.ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
+				jen.ID("ListHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("CreateHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ReadHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("UpdateHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ArchiveHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
 			),
 		),
 		jen.Line(),

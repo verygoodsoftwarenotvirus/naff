@@ -47,9 +47,11 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ListHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ListHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -57,9 +59,11 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("CreateHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreateHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -67,9 +71,11 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ReadHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ReadHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -77,9 +83,11 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("UpdateHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -87,9 +95,11 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ArchiveHandler implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ArchiveHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)

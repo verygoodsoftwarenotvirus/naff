@@ -73,11 +73,23 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("OAuth2ClientDataServer describes a structure capable of serving traffic related to oauth2 clients."),
 			jen.ID("OAuth2ClientDataServer").Interface(
-				jen.ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
-				jen.ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
+				jen.ID("ListHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("CreateHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ReadHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
 				jen.Comment("There is deliberately no update function."),
-				jen.ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")),
+				jen.ID("ArchiveHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
 				jen.Line(),
 				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),

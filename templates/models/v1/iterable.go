@@ -125,8 +125,6 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	pcn := n.PluralCommonName()
 	prn := n.PluralRouteName()
 
-	hf := jen.Qual("net/http", "HandlerFunc")
-
 	code.Add(
 		jen.Const().Defs(
 			jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
@@ -163,16 +161,37 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Line(),
 				func() jen.Code {
 					if typ.SearchEnabled {
-						return jen.ID("SearchHandler").Params().Params(hf)
+						return jen.ID("SearchHandler").Params(
+							jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+							jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+						)
 					}
 					return jen.Null()
 				}(),
-				jen.ID("ListHandler").Params().Params(hf),
-				jen.ID("CreateHandler").Params().Params(hf),
-				jen.ID("ExistenceHandler").Params().Params(hf),
-				jen.ID("ReadHandler").Params().Params(hf),
-				jen.ID("UpdateHandler").Params().Params(hf),
-				jen.ID("ArchiveHandler").Params().Params(hf),
+				jen.ID("ListHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("CreateHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ExistenceHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ReadHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("UpdateHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
+				jen.ID("ArchiveHandler").Params(
+					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+				),
 			),
 		),
 		jen.Line(),

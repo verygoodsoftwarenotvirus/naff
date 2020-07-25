@@ -27,9 +27,11 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ListHandler is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ListHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ListHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -37,9 +39,11 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("CreateHandler is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreateHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreateHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -47,9 +51,11 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ReadHandler is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ReadHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ReadHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)
@@ -57,9 +63,11 @@ func mockOauth2ClientDataServerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ArchiveHandler is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ArchiveHandler").Params().Params(jen.Qual("net/http", "HandlerFunc")).Block(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
-			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "HandlerFunc")),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ArchiveHandler").Params(
+			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+		).Params().Block(
+			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
 	)

@@ -33,18 +33,6 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	code.Add(buildTestService_StaticDir(proj)...)
 
 	code.Add(
-		jen.Func().ID("TestService_Routes").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			utils.BuildSubTestWithoutContext(
-				"obligatory",
-				utils.AssertNotNil(jen.Parens(jen.AddressOf().ID("Service").Values()).Dot("Routes").Call(), nil),
-			),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
 		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),

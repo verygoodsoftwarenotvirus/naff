@@ -107,17 +107,17 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 			jen.IDf("%sRouter", "v1").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),
 				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Block(
-					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler")),
 					jen.IDf("%sRouter", puvn).Dot("Route").Call(jen.IDf("%sRouteParam", uvn), jen.Func().Params(jen.IDf("single%sRouter", sn).Qual(routingLibrary, "Router")).Block(
-						jen.IDf("single%sRouter", sn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
-						jen.IDf("single%sRouter", sn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler").Call()),
-						jen.IDf("single%sRouter", sn).Dot("Delete").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler").Call()),
-						jen.IDf("single%sRouter", sn).Dot("Head").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
+						jen.IDf("single%sRouter", sn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler")),
+						jen.IDf("single%sRouter", sn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler")),
+						jen.IDf("single%sRouter", sn).Dot("Delete").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler")),
+						jen.IDf("single%sRouter", sn).Dot("Head").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler")),
 					)),
-					jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler").Call()),
+					jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler")),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("searchRoot"), jen.ID("s").Dotf("%sService", puvn).Dot("SearchHandler").Call())
+							return jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("searchRoot"), jen.ID("s").Dotf("%sService", puvn).Dot("SearchHandler"))
 						}
 						return jen.Null()
 					}(),
@@ -157,12 +157,12 @@ func buildIterableAPIRoutesBlock(proj *models.Project, doneMap map[string]bool, 
 		)
 	} else {
 		lines = append(lines,
-			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler").Call()),
-			jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler").Call()),
-			jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler").Call()),
-			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler").Call()),
-			jen.IDf("%sRouter", puvn).Dot("Delete").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler").Call()),
-			jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler").Call()),
+			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler")),
+			jen.IDf("%sRouter", puvn).Dot("Get").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler")),
+			jen.IDf("%sRouter", puvn).Dot("Head").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler")),
+			jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler")),
+			jen.IDf("%sRouter", puvn).Dot("Delete").Call(singleRouteVar, jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler")),
+			jen.IDf("%sRouter", puvn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler")),
 		)
 	}
 
@@ -229,53 +229,49 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			jen.ID("router").Dot("Get").Call(jen.Lit("/*"), jen.ID("staticFileServer")),
 		),
 		jen.Line(),
-		jen.For(jen.List(jen.ID("route"), jen.ID("handler")).Assign().Range().ID("s").Dot("frontendService").Dot("Routes").Call()).Block(
-			jen.ID("router").Dot("Get").Call(jen.ID("route"), jen.ID("handler")),
-		),
-		jen.Line(),
 		jen.ID("router").Dot("With").Callln(
 			jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True()),
 			jen.ID("s").Dot("authService").Dot("AdminMiddleware"),
 		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual(routingLibrary, "Router")).Block(
-			jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler").Call()),
+			jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler")),
 		)),
 		jen.Line(),
 		jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual(routingLibrary, "Router")).Block(
-			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler").Call()),
-			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler").Call()),
+			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler")),
+			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler")),
 			jen.Line(),
 			jen.ID("userIDPattern").Assign().Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
 			jen.Line(),
-			jen.ID("userRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("ListHandler").Call()),
+			jen.ID("userRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("ListHandler")),
 			jen.ID("userRouter").Dot("With").Call(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 			).Dot("Get").Call(
 				jen.Lit("/status"),
-				jen.ID("s").Dot("authService").Dot("StatusHandler").Call(),
+				jen.ID("s").Dot("authService").Dot("StatusHandler"),
 			),
-			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("CreateHandler").Call()),
-			jen.ID("userRouter").Dot("Get").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ReadHandler").Call()),
-			jen.ID("userRouter").Dot("Delete").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ArchiveHandler").Call()),
+			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("usersService").Dot("UserInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("CreateHandler")),
+			jen.ID("userRouter").Dot("Get").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ReadHandler")),
+			jen.ID("userRouter").Dot("Delete").Call(jen.ID("userIDPattern"), jen.ID("s").Dot("usersService").Dot("ArchiveHandler")),
 			jen.Line(),
 			jen.ID("userRouter").Dot("With").Callln(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 				jen.ID("s").Dot("usersService").Dot("TOTPSecretRefreshInputMiddleware"),
-			).Dot("Post").Call(jen.Lit("/totp_secret/new"), jen.ID("s").Dot("usersService").Dot("NewTOTPSecretHandler").Call()),
+			).Dot("Post").Call(jen.Lit("/totp_secret/new"), jen.ID("s").Dot("usersService").Dot("NewTOTPSecretHandler")),
 			jen.Line(),
 			jen.ID("userRouter").Dot("With").Callln(
 				jen.ID("s").Dot("usersService").Dot("TOTPSecretVerificationInputMiddleware"),
-			).Dot("Post").Call(jen.Lit("/totp_secret/verify"), jen.ID("s").Dot("usersService").Dot("TOTPSecretVerificationHandler").Call()),
+			).Dot("Post").Call(jen.Lit("/totp_secret/verify"), jen.ID("s").Dot("usersService").Dot("TOTPSecretVerificationHandler")),
 			jen.ID("userRouter").Dot("With").Callln(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 				jen.ID("s").Dot("usersService").Dot("PasswordUpdateInputMiddleware"),
-			).Dot("Put").Call(jen.Lit("/password/new"), jen.ID("s").Dot("usersService").Dot("UpdatePasswordHandler").Call()),
+			).Dot("Put").Call(jen.Lit("/password/new"), jen.ID("s").Dot("usersService").Dot("UpdatePasswordHandler")),
 		)),
 		jen.Line(),
 		jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual(routingLibrary, "Router")).Block(
 			jen.ID("oauth2Router").Dot("With").Callln(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 				jen.ID("s").Dot("oauth2ClientsService").Dot("CreationInputMiddleware"),
-			).Dot("Post").Call(jen.Lit("/client"), jen.ID("s").Dot("oauth2ClientsService").Dot("CreateHandler").Call()),
+			).Dot("Post").Call(jen.Lit("/client"), jen.ID("s").Dot("oauth2ClientsService").Dot("CreateHandler")),
 			jen.Line(),
 			jen.ID("oauth2Router").Dot("With").Call(jen.ID("s").Dot("oauth2ClientsService").Dot("OAuth2ClientInfoMiddleware")).
 				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -315,11 +311,11 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual(routingLibrary, "Router")).Block(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
-			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler").Call()),
-			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler").Call()),
-			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("UpdateHandler").Call()),
-			jen.ID("webhookRouter").Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ArchiveHandler").Call()),
-			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("ListHandler").Call()),
+			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler")),
+			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler")),
+			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("UpdateHandler")),
+			jen.ID("webhookRouter").Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ArchiveHandler")),
+			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("ListHandler")),
 		)),
 	)
 
@@ -333,9 +329,9 @@ func buildOAuth2ClientsAPIRoutes(proj *models.Project) []jen.Code {
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token."),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),
-			jen.ID("clientRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ReadHandler").Call()),
-			jen.ID("clientRouter").Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ArchiveHandler").Call()),
-			jen.ID("clientRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("oauth2ClientsService").Dot("ListHandler").Call()),
+			jen.ID("clientRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ReadHandler")),
+			jen.ID("clientRouter").Dot("Delete").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ArchiveHandler")),
+			jen.ID("clientRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("oauth2ClientsService").Dot("ListHandler")),
 		)),
 	}
 }

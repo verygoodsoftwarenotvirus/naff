@@ -13,20 +13,6 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Comment("Routes returns a map of route to HandlerFunc for the parent router to set."),
-		jen.Line(),
-		jen.Comment("this keeps routing logic in the frontend service and not in the server itself."),
-		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("Routes").Params().Params(jen.Map(jen.String()).Qual("net/http", "HandlerFunc")).Block(
-			jen.Return().Map(jen.String()).Qual("net/http", "HandlerFunc").Valuesln(
-				jen.Comment(`"/login":    s.LoginPage`),
-				jen.Comment(`"/register": s.RegistrationPage`),
-			),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").String()).Params(jen.PointerTo().Qual("github.com/spf13/afero", "HttpFs"), jen.Error()).Block(jen.Var().ID("afs").Qual("github.com/spf13/afero", "Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
 			jen.ID("afs").Equals().Qual("github.com/spf13/afero", "NewMemMapFs").Call(),
 			jen.List(jen.ID("files"), jen.Err()).Assign().Qual("io/ioutil", "ReadDir").Call(jen.ID("fileDir")),
