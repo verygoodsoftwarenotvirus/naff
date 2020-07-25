@@ -21,6 +21,7 @@ type DataType struct {
 	BelongsToUser    bool
 	BelongsToNobody  bool
 	RestrictedToUser bool
+	SearchEnabled    bool
 	BelongsToStruct  wordsmith.SuperPalabra
 	Fields           []DataField
 }
@@ -35,6 +36,7 @@ type DataField struct {
 	DefaultValue          string
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
+	BelongsToEnumeration  wordsmith.SuperPalabra
 }
 
 func buildFakeVarName(typName string) string {
@@ -238,14 +240,15 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodConditionalClauses(pr
 	puvn := n.PluralUnexportedVarName()
 
 	whereValues := []jen.Code{
-		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.id"), jen.IDf("%sTableName", puvn)).MapAssign().IDf("%sID", uvn),
+		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("idColumn")).MapAssign().IDf("%sID", uvn),
 	}
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		whereValues = append(
 			whereValues,
 			jen.Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s.id"),
+				jen.Lit("%s.%s"),
 				jen.IDf("%sTableName", pt.Name.PluralUnexportedVarName()),
+				jen.ID("idColumn"),
 			).MapAssign().IDf("%sID", pt.Name.UnexportedVarName()),
 		)
 
@@ -305,35 +308,6 @@ func (c codeWrapper) Code() jen.Code {
 	return c.repr
 }
 
-/*
-
-	owners := proj.FindOwnerTypeChain(typ)
-	if typ.MultipleOwnersBelongingToUser(proj) || (typ.RestrictedToUserAtSomeLevel(proj) && !typ.RestrictedToUser) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call())
-	}
-
-	for _, pt := range owners {
-		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
-
-		if pt.BelongsToUser {
-			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
-		}
-		if pt.BelongsToStruct != nil {
-			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
-		}
-	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
-
-	if typ.BelongsToStruct != nil {
-		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
-	}
-	if typ.BelongsToUser && typ.MultipleOwnersBelongingToUser(proj) {
-		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
-	}
-
-*/
-
 func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(proj *Project) squirrel.Eq {
 	n := typ.Name
 	sn := n.Singular()
@@ -363,9 +337,6 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
 	}
-	//if typ.RestrictedToUserAtSomeLevel(proj) {
-	//	whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
-	//}
 
 	return whereValues
 }
@@ -416,15 +387,16 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodConditionalClauses(pro
 	puvn := n.PluralUnexportedVarName()
 
 	whereValues := []jen.Code{
-		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.archived_on"), jen.IDf("%sTableName", typ.Name.PluralUnexportedVarName())).MapAssign().Nil(),
+		jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", typ.Name.PluralUnexportedVarName()), jen.ID("archivedOnColumn")).MapAssign().Nil(),
 	}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
 		whereValues = append(
 			whereValues,
 			jen.Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s.id"),
+				jen.Lit("%s.%s"),
 				jen.IDf("%sTableName", pt.Name.PluralUnexportedVarName()),
+				jen.ID("idColumn"),
 			).MapAssign().IDf("%sID", pt.Name.UnexportedVarName()),
 		)
 
@@ -1283,6 +1255,12 @@ func (typ DataType) BuildFormatStringForHTTPClientListMethodTest(proj *Project) 
 		modelRoute += fmt.Sprintf("%s/", pt.Name.PluralRouteName()) + "%d/"
 	}
 	modelRoute += fmt.Sprintf("%s", typ.Name.PluralRouteName())
+
+	return modelRoute
+}
+
+func (typ DataType) BuildFormatStringForHTTPClientSearchMethodTest(proj *Project) (path string) {
+	modelRoute := "/" + filepath.Join("api", "v1", typ.Name.PluralRouteName(), "search")
 
 	return modelRoute
 }

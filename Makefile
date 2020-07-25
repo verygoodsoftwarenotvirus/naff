@@ -88,10 +88,6 @@ install-tojen:
 format:
 	for file in `find $(PWD) -name '*.go'`; do $(GO_FORMAT) $$file; done
 
-.PHONY: compare
-compare: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
-
 .PHONY: docker_image
 docker_image:
 	docker build --tag naff:latest --file Dockerfile .

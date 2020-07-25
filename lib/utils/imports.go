@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,17 +14,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-const (
-	CoreOAuth2Pkg  = "golang.org/x/oauth2"
-	LoggingPkg     = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	NoopLoggingPkg = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	AssertPkg      = "github.com/stretchr/testify/assert"
-	MustAssertPkg  = "github.com/stretchr/testify/require"
-	MockPkg        = "github.com/stretchr/testify/mock"
-	FakeLibrary    = "github.com/brianvoe/gofakeit/v5"
-	TracingLibrary = "go.opencensus.io/trace"
-)
-
 func AddImports(proj *models.Project, file *jen.File) {
 	pkgRoot := proj.OutputPath
 
@@ -32,18 +22,21 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1"), "database")
 
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "auth"), "auth")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "auth/mock"), "mockauth")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "auth", "mock"), "mockauth")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "config"), "config")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "encoding"), "encoding")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "encoding/mock"), "mockencoding")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "encoding", "mock"), "mockencoding")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "metrics"), "metrics")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "metrics/mock"), "mockmetrics")
+	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "metrics", "mock"), "mockmetrics")
 	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "tracing"), "tracing")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search"), "search")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search", "bleve"), "bleve")
+	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search", "mock"), "mocksearch")
 
 	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1", "client"), "dbclient")
-	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/mariadb"), "mariadb")
-	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/postgres"), "postgres")
-	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers/sqlite"), "sqlite")
+	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "mariadb"), "mariadb")
+	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "postgres"), "postgres")
+	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "sqlite"), "sqlite")
 
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1"), "models")
 	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "mock"), "mockmodels")
@@ -72,15 +65,16 @@ func AddImports(proj *models.Project, file *jen.File) {
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 
-	file.ImportName(CoreOAuth2Pkg, "oauth2")
-	file.ImportName(LoggingPkg, "logging")
-	file.ImportName(NoopLoggingPkg, "noop")
-	file.ImportName("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "zerolog")
-	file.ImportName(AssertPkg, "assert")
-	file.ImportName(MustAssertPkg, "require")
-	file.ImportName(MockPkg, "mock")
-	file.ImportAlias(FakeLibrary, "fake")
-	file.ImportName(TracingLibrary, "trace")
+	file.ImportName(constants.CoreOAuth2Pkg, "oauth2")
+	file.ImportName(constants.LoggingPkg, "logging")
+	file.ImportName(constants.NoopLoggingPkg, "noop")
+	file.ImportName(filepath.Join(constants.LoggingPkg, "zerolog"), "zerolog")
+	file.ImportName(constants.AssertPkg, "assert")
+	file.ImportName(constants.MustAssertPkg, "require")
+	file.ImportName(constants.MockPkg, "mock")
+	file.ImportAlias(constants.FakeLibrary, "fake")
+	file.ImportName(constants.TracingLibrary, "trace")
+	file.ImportName(constants.SessionManagerLibrary, "scs")
 
 	file.ImportName("go.opencensus.io/stats", "stats")
 	file.ImportName("go.opencensus.io/stats/view", "view")
@@ -139,6 +133,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 		"go.opencensus.io":                             "opencensus",
 		"golang.org/x/crypto":                          "crypto",
 		"go.opencensus.io/plugin/ochttp":               "ochttp",
+		"github.com/spf13/pflag":                       "flag",
 		"github.com/pquerna/otp/totp":                  "totp",
 		"golang.org/x/oauth2/clientcredentials":        "clientcredentials",
 	})

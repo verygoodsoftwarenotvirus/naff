@@ -108,6 +108,17 @@ func (p *Project) ParseModels() error {
 	return nil
 }
 
+// SearchEnabled returns true if any of the datatypes have SearchEnabled
+func (p *Project) SearchEnabled() bool {
+	for _, typ := range p.DataTypes {
+		if typ.BelongsToUser {
+			return true
+		}
+	}
+
+	return false
+}
+
 // FindOwnerTypeChain returns the owner chain of a given object from highest ancestor to lowest
 // so if C belongs to B belongs to A, then calling `FindOwnerTypeChain` for C would yield [A, B]
 func (p *Project) FindOwnerTypeChain(typ DataType) []DataType {
@@ -297,13 +308,14 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 									if strings.ToLower(properOwnerParts[0]) != "user" && strings.ToLower(properOwnerParts[1]) != "user" {
 										panic("too many owners, a type may only be owned by another type and a user!")
 									}
+									// we can't get here without this being true
+									alsoBelongsToUser = true
 
 									if strings.ToLower(properOwnerParts[0]) == "user" {
 										properOwner = properOwnerParts[1]
 									} else if strings.ToLower(properOwnerParts[1]) == "user" {
 										properOwner = properOwnerParts[0]
 									}
-									alsoBelongsToUser = true
 								}
 
 								if properOwner == "__nobody__" {
@@ -313,9 +325,27 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 									dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
 									dt.BelongsToUser = alsoBelongsToUser
 								}
-							} else if tagWithoutBackticks == `restricted_to_user:"true"` {
-								dt.RestrictedToUser = true
+							} else {
+								if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
+									dt.RestrictedToUser = true
+								}
+								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) && dt.BelongsToUser && dt.BelongsToStruct == nil {
+									dt.SearchEnabled = true
+								}
+								if dt.SearchEnabled {
+									containsString := false
+									for _, field := range dt.Fields {
+										if field.Type == "string" {
+											containsString = true
+											break
+										}
+									}
+									if !containsString {
+										log.Panicf("no string fields present in type with search enabled: %q", dt.Name.Singular())
+									}
+								}
 							}
+
 						}
 					} else {
 						var tag string

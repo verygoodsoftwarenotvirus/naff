@@ -46,6 +46,10 @@ func (p *Project) InternalTracingV1Package(parts ...string) string {
 	return p.InternalV1Package(append([]string{"tracing"}, parts...)...)
 }
 
+func (p *Project) InternalSearchV1Package(parts ...string) string {
+	return p.InternalV1Package(append([]string{"search"}, parts...)...)
+}
+
 func (p *Project) ServiceV1Package(parts ...string) string {
 	return p.RelativePath(append([]string{"services", "v1"}, parts...)...)
 }

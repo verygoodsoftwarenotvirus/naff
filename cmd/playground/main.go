@@ -1,11 +1,15 @@
 package main
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"log"
+	"os/exec"
 )
 
 func main() {
-	s := wordsmith.FromSingularPascalCase("Postgres")
+	gofmtLocation, err := exec.Command("which", "gofmt").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	println(s.LowercaseAbbreviation())
+	log.Println(string(gofmtLocation))
 }

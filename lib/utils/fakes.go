@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 )
 
 // FakeSeedFunc builds a consistent fake library seed init function
@@ -14,7 +15,7 @@ func FakeSeedFunc() jen.Code {
 
 // InlineFakeSeedFunc builds a consistent fake library seed init function
 func InlineFakeSeedFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call())
+	return jen.Qual(constants.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call())
 }
 
 func FakeFuncForType(typ string, isPointer bool) func() jen.Code {
@@ -101,99 +102,99 @@ func ValuePointerWrapper(typ string, c jen.Code) func() jen.Code {
 }
 
 func FakeStringFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "Word").Call()
+	return jen.Qual(constants.FakeLibrary, "Word").Call()
 }
 
 func FakeContentTypeFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "FileMimeType").Call()
+	return jen.Qual(constants.FakeLibrary, "FileMimeType").Call()
 }
 
 func FakeUUIDFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "UUID").Call()
+	return jen.Qual(constants.FakeLibrary, "UUID").Call()
 }
 
 func FakeURLFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "URL").Call()
+	return jen.Qual(constants.FakeLibrary, "URL").Call()
 }
 
 func FakeHTTPMethodFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "HTTPMethod").Call()
+	return jen.Qual(constants.FakeLibrary, "HTTPMethod").Call()
 }
 
 func FakeBoolFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "Bool").Call()
+	return jen.Qual(constants.FakeLibrary, "Bool").Call()
 }
 
 func FakeIntFunc() jen.Code {
-	return jen.Int().Call(jen.Qual(FakeLibrary, "Int32").Call())
+	return jen.Int().Call(jen.Qual(constants.FakeLibrary, "Int32").Call())
 }
 
 func FakeInt8Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Int8").Call()
+	return jen.Qual(constants.FakeLibrary, "Int8").Call()
 }
 
 func FakeInt16Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Int16").Call()
+	return jen.Qual(constants.FakeLibrary, "Int16").Call()
 }
 
 func FakeInt32Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Int32").Call()
+	return jen.Qual(constants.FakeLibrary, "Int32").Call()
 }
 
 func FakeInt64Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Int64").Call()
+	return jen.Qual(constants.FakeLibrary, "Int64").Call()
 }
 
 func FakeInt64WhichIsReallyAnInt32Func() jen.Code {
-	return jen.Int64().Call(jen.Qual(FakeLibrary, "Int32").Call())
+	return jen.Int64().Call(jen.Qual(constants.FakeLibrary, "Int32").Call())
 }
 
 func FakeUintFunc() jen.Code {
-	return jen.Uint().Call(jen.Qual(FakeLibrary, "Uint32").Call())
+	return jen.Uint().Call(jen.Qual(constants.FakeLibrary, "Uint32").Call())
 }
 
 func FakeUint8Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Uint8").Call()
+	return jen.Qual(constants.FakeLibrary, "Uint8").Call()
 }
 
 func FakeUint16Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Uint16").Call()
+	return jen.Qual(constants.FakeLibrary, "Uint16").Call()
 }
 
 func FakeUint32Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Uint32").Call()
+	return jen.Qual(constants.FakeLibrary, "Uint32").Call()
 }
 
 func FakeUint64WhichIsActuallyAUint32Func() jen.Code {
-	return jen.Uint64().Call(jen.Qual(FakeLibrary, "Uint32").Call())
+	return jen.Uint64().Call(jen.Qual(constants.FakeLibrary, "Uint32").Call())
 }
 
 func FakeUint64Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Uint64").Call()
+	return jen.Qual(constants.FakeLibrary, "Uint64").Call()
 }
 
 func FakeFloat32Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Float32").Call()
+	return jen.Qual(constants.FakeLibrary, "Float32").Call()
 }
 
 func FakeFloat64WhichIsActuallyAFloat32Func() jen.Code {
-	return jen.Float64().Call(jen.Qual(FakeLibrary, "Float32").Call())
+	return jen.Float64().Call(jen.Qual(constants.FakeLibrary, "Float32").Call())
 }
 
 func FakeFloat64Func() jen.Code {
-	return jen.Qual(FakeLibrary, "Float64").Call()
+	return jen.Qual(constants.FakeLibrary, "Float64").Call()
 }
 
 func FakeUsernameFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "Username").Call()
+	return jen.Qual(constants.FakeLibrary, "Username").Call()
 }
 
 func FakeUnixTimeFunc() jen.Code {
-	return jen.Uint64().Call(jen.Uint32().Call(jen.Qual(FakeLibrary, "Date").Call().Dot("Unix").Call()))
+	return jen.Uint64().Call(jen.Uint32().Call(jen.Qual(constants.FakeLibrary, "Date").Call().Dot("Unix").Call()))
 }
 
 func FakePasswordFunc() jen.Code {
-	return jen.Qual(FakeLibrary, "Password").Call(
+	return jen.Qual(constants.FakeLibrary, "Password").Call(
 		jen.True(),
 		jen.True(),
 		jen.True(),

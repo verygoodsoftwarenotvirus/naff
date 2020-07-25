@@ -192,3 +192,12 @@ type FriendPhoto struct {
 ```
 
 This will make it so that the generated code will only return a given user's data to that user.
+
+
+## development
+
+To compare the output of this repo with the source repository, [Meld](https://meldmerge.org/) is used. You can install it on most good operating systems, and even Windows.
+
+To make comparisons less noisy, you can/should use the following regex query as Meld text filters:
+
+    \t+(\w+\s)?"gitlab\.com\/verygoodsoftwarenotvirus\/(naff\/example_output|todo)

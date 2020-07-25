@@ -25,10 +25,11 @@ require (
 	github.com/dave/jennifer v1.3.0
 	github.com/emicklei/hazana v1.6.1
 	github.com/gertd/go-pluralize v0.1.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0
 	github.com/go-lintpack/lintpack v0.5.2 // indirect
-	github.com/go-sql-driver/mysql v1.4.1 // indirect
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golangci/golangci-lint v1.25.0 // indirect
 	github.com/golangci/maligned v0.0.0-20180506175553-b1d89398deca // indirect
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect
@@ -49,7 +50,7 @@ require (
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/kisielk/gotool v1.0.0 // indirect
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-sqlite3 v1.11.0 // indirect
+	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/moul/http2curl v1.0.0
 	github.com/phogolabs/parcello v0.8.1 // indirect
@@ -65,11 +66,11 @@ require (
 	github.com/uber/jaeger-client-go v2.22.1+incompatible // indirect
 	gitlab.com/verygoodsoftwarenotvirus/logging v1.0.2
 	gitlab.com/verygoodsoftwarenotvirus/newsman v0.0.0-20190528023929-c49dc073f989
-	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1
+	gitlab.com/verygoodsoftwarenotvirus/todo v0.0.0-20191014052256-b072a0a5a6f1 // indirect
 	go.opencensus.io v0.22.0
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e // indirect
+	golang.org/x/tools v0.0.0-20200717024301-6ddee64345a6 // indirect
 	gopkg.in/AlecAivazis/survey.v1 v1.8.5
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/ini.v1 v1.52.0 // indirect

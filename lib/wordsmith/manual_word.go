@@ -78,7 +78,3 @@ func (mw *ManualWord) PluralCommonName() string {
 func (mw *ManualWord) SingularCommonNameWithPrefix() string {
 	return mw.SingularCommonNameWithPrefixStr
 }
-
-func (mw *ManualWord) PluralCommonNameWithPrefix() string {
-	return mw.PluralCommonNameWithPrefixStr
-}
