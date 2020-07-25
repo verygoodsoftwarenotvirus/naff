@@ -11,6 +11,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const (
+	squirrelPkg = "github.com/Masterminds/squirrel"
+)
+
 func isPostgres(dbvendor wordsmith.SuperPalabra) bool {
 	return dbvendor.Singular() == "Postgres"
 }
@@ -94,8 +98,12 @@ func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ m
 	code.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
 	code.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
+	code.Add(buildGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetAllOfSomethingFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingWithIDsFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
@@ -110,23 +118,23 @@ func buildTableColumns(_ *models.Project, typ models.DataType) []jen.Code {
 	puvn := typ.Name.PluralUnexportedVarName()
 	tableNameVar := fmt.Sprintf("%sTableName", puvn)
 
-	tableColumns := []jen.Code{utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("idColumn"))}
+	tableColumns := []jen.Code{utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.ID("idColumn"))}
 
 	for _, field := range typ.Fields {
-		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sTable%sColumn", puvn, field.Name.Singular())))
+		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.IDf("%sTable%sColumn", puvn, field.Name.Singular())))
 	}
 
 	tableColumns = append(tableColumns,
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("createdOnColumn")),
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("lastUpdatedOnColumn")),
-		utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.ID("archivedOnColumn")),
+		utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.ID("createdOnColumn")),
+		utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.ID("lastUpdatedOnColumn")),
+		utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.ID("archivedOnColumn")),
 	)
 
 	if typ.BelongsToUser {
-		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sUserOwnershipColumn", puvn)))
+		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.IDf("%sUserOwnershipColumn", puvn)))
 	}
 	if typ.BelongsToStruct != nil {
-		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.IDf(tableNameVar), jen.IDf("%sTableOwnershipColumn", puvn)))
+		tableColumns = append(tableColumns, utils.FormatString("%s.%s", jen.ID(tableNameVar), jen.IDf("%sTableOwnershipColumn", puvn)))
 	}
 
 	return tableColumns
@@ -270,7 +278,7 @@ func buildSomethingExistsQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	qbStmt = typ.ModifyQueryBuildingStatementWithJoinClauses(proj, qbStmt)
 
 	qbStmt = qbStmt.Dotln("Suffix").Call(jen.ID("existenceSuffix")).
-		Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(whereValues...)).
+		Dotln("Where").Call(jen.Qual(squirrelPkg, "Eq").Valuesln(whereValues...)).
 		Dot("ToSql").Call()
 
 	return []jen.Code{
@@ -352,7 +360,7 @@ func buildGetSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 
 	qbStmt = typ.ModifyQueryBuildingStatementWithJoinClauses(proj, qbStmt)
 
-	qbStmt = qbStmt.Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(whereValues...)).
+	qbStmt = qbStmt.Dotln("Where").Call(jen.Qual(squirrelPkg, "Eq").Valuesln(whereValues...)).
 		Dotln("ToSql").Call()
 
 	return []jen.Code{
@@ -381,7 +389,6 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
 
 	params := typ.BuildDBQuerierRetrievalQueryMethodParams(proj)
 	buildQueryParams := typ.BuildDBQuerierRetrievalQueryBuildingArgs(proj)
@@ -394,9 +401,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
 			jen.Line(),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-			jen.List(jen.ID(uvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row")),
-			jen.Line(),
-			jen.Return(jen.ID(uvn), jen.Err()),
+			jen.Return(jen.ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row"))),
 		),
 		jen.Line(),
 	}
@@ -427,7 +432,7 @@ func buildSomethingAllCountQueryDecls(dbvendor wordsmith.SuperPalabra, typ model
 					Dotln("Select").Call(utils.FormatStringWithArg(jen.ID("countQuery"), jen.IDf("%sTableName", puvn))).
 					Dotln("From").Call(jen.IDf("%sTableName", puvn)).
 					Dotln("Where").Call(
-					jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
+					jen.Qual(squirrelPkg, "Eq").Valuesln(
 						utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.ID("archivedOnColumn")).MapAssign().ID("nil"),
 					)).
 					Dotln("ToSql").Call(),
@@ -450,12 +455,105 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 		jen.Commentf("GetAll%sCount will fetch the count of %s from the database.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
-			jen.ID("query").Assign().ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(
 				constants.CtxVar(),
-				jen.ID("query"),
+				jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
 			).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
+		),
+		jen.Line(),
+	}
+}
+
+func buildGetBatchOfSomethingQueryFuncDecl(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+	dbvsn := dbvendor.Singular()
+	pn := typ.Name.Plural()
+	sn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	return []jen.Code{
+		jen.Commentf("buildGetBatchOf%sQuery returns a query that fetches every %s in the database within a bucketed range.", sn, scn),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGetBatchOf%sQuery", pn).Params(
+			jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64(),
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Assign().ID(dbfl).Dot("sqlBuilder").
+				Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Spread()).
+				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
+				Dotln("Where").Call(
+				jen.Qual(squirrelPkg, "Gt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("idColumn")).MapAssign().ID("beginID"),
+				)).
+				Dotln("Where").Call(
+				jen.Qual(squirrelPkg, "Lt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("idColumn")).MapAssign().ID("endID"),
+				)).Dotln("ToSql").Call(),
+			jen.Line(),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
+			jen.Line(),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Line(),
+	}
+}
+
+func buildGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	dbvsn := dbvendor.Singular()
+	scn := typ.Name.SingularCommonName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	return []jen.Code{
+		jen.Commentf("GetAll%s fetches every %s from the database and writes them to a channel. This method primarily exists", pn, scn),
+		jen.Line(),
+		jen.Comment("to aid in administrative data tasks."),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%s", pn).Params(
+			constants.CtxParam(),
+			jen.ID("resultChannel").Chan().Index().Qual(proj.ModelsV1Package(), sn),
+		).Params(jen.Error()).Block(
+			jen.List(jen.ID("count"), jen.Err()).Assign().ID(dbfl).Dotf("GetAll%sCount", pn).Call(constants.CtxVar()),
+			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.Return(jen.Err()),
+			),
+			jen.Line(),
+			jen.For(
+				jen.ID("beginID").Assign().Uint64().Call(jen.One()),
+				jen.ID("beginID").LessThanOrEqual().ID("count"),
+				jen.ID("beginID").PlusEquals().ID("defaultBucketSize"),
+			).Block(
+				jen.ID("endID").Assign().ID("beginID").Plus().ID("defaultBucketSize"),
+				jen.Go().Func().Params(jen.List(jen.ID("begin"), jen.ID("end")).Uint64()).Block(
+					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGetBatchOf%sQuery", pn).Call(jen.ID("begin"), jen.ID("end")),
+					jen.ID(constants.LoggerVarName).Assign().ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+						jen.Lit("query").MapAssign().ID("query"),
+						jen.Lit("begin").MapAssign().ID("begin"),
+						jen.Lit("end").MapAssign().ID("end"),
+					)),
+					jen.Line(),
+					jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("Query").Call(jen.ID("query"), jen.ID("args").Spread()),
+					jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+						jen.Return(),
+					).Else().If(jen.Err().DoesNotEqual().Nil()).Block(
+						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("querying for database rows")),
+						jen.Return(),
+					),
+					jen.Line(),
+					jen.List(jen.ID(puvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
+					jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("scanning database rows")),
+						jen.Return(),
+					),
+					jen.Line(),
+					jen.ID("resultChannel").ReceiveFromChannel().ID(puvn),
+				).Call(jen.ID("beginID"), jen.ID("endID")),
+			),
+			jen.Line(),
+			jen.Return(jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -489,7 +587,7 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 	qbStmt = typ.ModifyQueryBuildingStatementWithJoinClauses(proj, qbStmt)
 
 	if len(whereValues) > 0 {
-		qbStmt = qbStmt.Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(whereValues...))
+		qbStmt = qbStmt.Dotln("Where").Call(jen.Qual(squirrelPkg, "Eq").Valuesln(whereValues...))
 	}
 	qbStmt = qbStmt.Dotln("OrderBy").Call(utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.ID("idColumn")))
 
@@ -552,10 +650,215 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 					jen.ID("Page").MapAssign().ID(constants.FilterVarName).Dot("Page"),
 					jen.ID("Limit").MapAssign().ID(constants.FilterVarName).Dot("Limit"),
 				),
-				jen.IDf(pn).MapAssign().ID(puvn),
+				jen.ID(pn).MapAssign().ID(puvn),
 			),
 			jen.Line(),
 			jen.Return().List(jen.ID("list"), jen.Nil()),
+		),
+		jen.Line(),
+	}
+}
+
+func buildGetListOfSomethingWithIDsQueryFuncDecl(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+	dbvsn := dbvendor.Singular()
+	pn := typ.Name.Plural()
+	puvn := typ.Name.PluralUnexportedVarName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	var firstCommentLine string
+	if typ.BelongsToUser && typ.RestrictedToUser {
+		firstCommentLine = fmt.Sprintf("buildGet%sWithIDsQuery builds a SQL query selecting %s that belong to a given user,", pn, puvn)
+	} else if typ.BelongsToStruct != nil {
+		firstCommentLine = fmt.Sprintf("buildGet%sWithIDsQuery builds a SQL query selecting %s that belong to a given %s,", pn, puvn, typ.BelongsToStruct.SingularCommonName())
+	} else {
+		firstCommentLine = fmt.Sprintf("buildGet%sWithIDsQuery builds a SQL query selecting %s", pn, puvn)
+	}
+
+	var queryBuilderStmt jen.Code
+	if isPostgres(dbvendor) {
+		queryBuilderStmt = jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
+			Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Spread()).
+			Dotln("FromSelect").Call(jen.ID("subqueryBuilder"), jen.IDf("%sTableName", puvn)).
+			Dotln("Where").Call(
+			jen.Qual(squirrelPkg, "Eq").Valuesln(
+				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("archivedOnColumn")).MapAssign().Nil(),
+				func() jen.Code {
+					if typ.BelongsToUser {
+						return jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID")
+					}
+					return jen.Null()
+				}(),
+			))
+	} else if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+		queryBuilderStmt = jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
+			Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Spread()).
+			Dotln("From").Call(jen.IDf("%sTableName", puvn)).
+			Dotln("Where").Call(
+			jen.Qual(squirrelPkg, "Eq").Valuesln(
+				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("idColumn")).MapAssign().ID("ids"),
+				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.ID("archivedOnColumn")).MapAssign().Nil(),
+				func() jen.Code {
+					if typ.BelongsToUser {
+						return jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID")
+					}
+					return jen.Null()
+				}(),
+			)).
+			Dotln("OrderBy").Call(
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("CASE %s.%s %s"),
+				jen.IDf("%sTableName", puvn),
+				jen.ID("idColumn"),
+				jen.ID("whenThenStatement"),
+			)).
+			Dotln("Limit").Call(jen.Uint64().Call(jen.ID("limit")))
+	}
+
+	return []jen.Code{
+		jen.Comment(firstCommentLine),
+		jen.Line(),
+		jen.Comment("and have IDs that exist within a given set of IDs. Returns both the query and the relevant"),
+		jen.Line(),
+		jen.Comment("args to pass to the query executor. This function is primarily intended for use with a search"),
+		jen.Line(),
+		jen.Comment("index, which would provide a slice of string IDs to query against. This function accepts a"),
+		jen.Line(),
+		jen.Comment("slice of uint64s instead of a slice of strings in order to ensure all the provided strings"),
+		jen.Line(),
+		jen.Comment("are valid database IDs, because there's no way in squirrel to escape them in the unnest join,"),
+		jen.Line(),
+		jen.Comment("and if we accept strings we could leave ourselves vulnerable to SQL injection attacks."),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGet%sWithIDsQuery", pn).Params(
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID("userID").Uint64()
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Uint64()
+				}
+				return jen.Null()
+			}(),
+			jen.ID("limit").Uint8(),
+			jen.ID("ids").Index().Uint64(),
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+			jen.Var().Err().Error(),
+			jen.Line(),
+			func() jen.Code {
+				if isPostgres(dbvendor) {
+					return jen.ID("subqueryBuilder").Assign().ID(dbfl).Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Spread()).
+						Dotln("From").Call(jen.IDf("%sTableName", puvn)).
+						Dotln("Join").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("unnest('{%s}'::int[])"), jen.ID("joinUint64s").Call(jen.ID("ids")))).
+						Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d"), jen.ID("limit")))
+				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return jen.Var().ID("whenThenStatement").String()
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return jen.Line()
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return jen.For(jen.List(jen.ID("i"), jen.ID("id")).Assign().Range().ID("ids")).Block(
+						jen.If(jen.ID("i").DoesNotEqual().Zero()).Block(
+							jen.ID("whenThenStatement").PlusEquals().Lit(" "),
+						),
+						jen.ID("whenThenStatement").PlusEquals().Qual("fmt", "Sprintf").Call(
+							jen.Lit("WHEN %d THEN %d"),
+							jen.ID("id"),
+							jen.ID("i"),
+						),
+					)
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return jen.ID("whenThenStatement").PlusEquals().Lit(" END")
+				}
+				return jen.Null()
+			}(),
+			queryBuilderStmt,
+			jen.Line(),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
+			jen.Line(),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Line(),
+	}
+}
+
+func buildGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	dbvsn := dbvendor.Singular()
+	pcn := typ.Name.PluralCommonName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	return []jen.Code{
+		jen.Commentf("Get%sWithIDs fetches a list of %s from the database that exist within a given set of IDs.", pn, pcn),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%sWithIDs", pn).Params(
+			constants.CtxParam(),
+			func() jen.Code {
+				if typ.BelongsToUser {
+					return jen.ID("userID").Uint64()
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Uint64()
+				}
+				return jen.Null()
+			}(),
+			jen.ID("limit").Uint8(),
+			jen.ID("ids").Index().Uint64(),
+		).Params(
+			jen.Index().Qual(proj.ModelsV1Package(), sn),
+			jen.Error(),
+		).Block(
+			jen.If(jen.ID("limit").IsEqualTo().Zero()).Block(
+				jen.ID("limit").Equals().Uint8().Call(jen.Qual(proj.ModelsV1Package(), "DefaultLimit")),
+			),
+			jen.Line(),
+			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
+				func() jen.Code {
+					if typ.BelongsToUser {
+						return jen.ID("userID")
+					}
+					return jen.Null()
+				}(),
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+					}
+					return jen.Null()
+				}(),
+				jen.ID("limit"),
+				jen.ID("ids"),
+			),
+			jen.Line(),
+			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Litf("querying database for %s", pcn))),
+			),
+			jen.Line(),
+			jen.List(jen.ID(puvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
+			),
+			jen.Line(),
+			jen.Return().List(jen.ID(puvn), jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -765,8 +1068,8 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 					}
 				}
 
-				x.Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
-					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...))
+				x.Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual(squirrelPkg, "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+					Dotln("Where").Call(jen.Qual(squirrelPkg, "Eq").Valuesln(vals...))
 
 				if strings.ToLower(dbvsn) == "postgres" {
 					x.Dotln("Suffix").Call(
@@ -865,9 +1168,9 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 
 	_qs := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 		Dotln("Update").Call(jen.IDf("%sTableName", puvn)).
-		Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
-		Dotln("Set").Call(jen.ID("archivedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
-		Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(vals...))
+		Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual(squirrelPkg, "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+		Dotln("Set").Call(jen.ID("archivedOnColumn"), jen.Qual(squirrelPkg, "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+		Dotln("Where").Call(jen.Qual(squirrelPkg, "Eq").Valuesln(vals...))
 
 	if strings.ToLower(dbvsn) == "postgres" {
 		_qs.Dotln("Suffix").Call(

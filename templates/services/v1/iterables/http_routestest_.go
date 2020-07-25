@@ -2145,7 +2145,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			return jen.Null()
 		}(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-			jen.Return(jen.IDf(utils.BuildFakeVarName(sn)).Dot("ID")),
+			jen.Return(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
 		),
 		jen.Line(), jen.Line(),
 	)
@@ -2193,7 +2193,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			return jen.Null()
 		}(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
-			jen.Return(jen.IDf(utils.BuildFakeVarName(sn)).Dot("ID")),
+			jen.Return(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
 		),
 		jen.Line(), jen.Line(),
 	)
