@@ -101,3 +101,6 @@ ensure-goimports:
 ifndef $(shell command -v goimports 2> /dev/null)
 	$(shell GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports)
 endif
+
+generate_tests:
+	 gotests -template_dir development/gotests_templates -all -w # fill this out

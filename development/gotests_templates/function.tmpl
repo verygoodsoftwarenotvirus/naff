@@ -1,0 +1,24 @@
+{{define "function"}}
+{{- $f := .}}
+
+func {{.TestName}}(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+        t.Parallel()
+
+        out := jen.NewFile("main")
+        out.Add({{with .Receiver}}{{if not .IsStruct}}tt.{{end}}{{Receiver .}}.{{end}}{{.Name}}({{range $i, $el := .Parameters}}{{if $i}}, {{end}}{{if not .IsWriter}}tt.args.{{end}}{{Param .}}{{if .Type.IsVariadic}}...{{end}}{{end}})...)
+
+        var b bytes.Buffer
+        require.NoError(t, out.Render(&b))
+
+        expected := `
+
+`
+        actual := "\n" + b.String()
+
+        assert.Equal(t, actual, expected, "expected and actual output do not match")
+	})
+}
+{{end}}
