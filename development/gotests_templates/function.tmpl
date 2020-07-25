@@ -8,7 +8,7 @@ func {{.TestName}}(T *testing.T) {
         t.Parallel()
 
         out := jen.NewFile("main")
-        out.Add({{with .Receiver}}{{if not .IsStruct}}tt.{{end}}{{Receiver .}}.{{end}}{{.Name}}({{range $i, $el := .Parameters}}{{if $i}}, {{end}}{{if not .IsWriter}}tt.args.{{end}}{{Param .}}{{if .Type.IsVariadic}}...{{end}}{{end}})...)
+        out.Add({{with .Receiver}}{{if not .IsStruct}}tt.{{end}}{{Receiver .}}.{{end}}{{.Name}}({{range $i, $el := .Parameters}}{{if $i}}, {{end}}{{if not .IsWriter}}{{end}}{{Param .}}{{if .Type.IsVariadic}}...{{end}}{{end}})...)
 
         var b bytes.Buffer
         require.NoError(t, out.Render(&b))

@@ -24,3 +24,21 @@ template_tests:
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/templates/...
+
+models_tests:
+  stage: quality
+  image: golang:stretch
+  variables:
+    GOPATH: "/go"
+  script:
+    - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/models/...
+
+lib_tests:
+  stage: quality
+  image: golang:stretch
+  variables:
+    GOPATH: "/go"
+  script:
+    - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/lib/...

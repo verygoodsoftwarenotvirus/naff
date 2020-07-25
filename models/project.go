@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -34,11 +33,25 @@ const (
 	Sqlite   validDatabase = "sqlite"
 )
 
-type validDatabase string
-
 type depWrapper struct {
 	dependency string
 }
+
+type validDatabase string
+
+var (
+	validDatabaseMap = map[validDatabase]struct{}{
+		Postgres: {},
+		Sqlite:   {},
+		MariaDB:  {},
+	}
+
+	nameToValidDBMap = map[string]validDatabase{
+		string(Postgres): Postgres,
+		string(Sqlite):   Sqlite,
+		string(MariaDB):  MariaDB,
+	}
+)
 
 func (dw depWrapper) ID() int {
 	x := fnv.New32a()
@@ -80,6 +93,10 @@ func (p *Project) Validate() {
 			log.Panicf("no fields defined for type %q!", dt.Name.Singular())
 		}
 	}
+
+	if p.containsCyclicOwnerships() {
+		log.Panic("error: cyclic ownership detected")
+	}
 }
 
 func (p *Project) ParseModels() error {
@@ -92,16 +109,11 @@ func (p *Project) ParseModels() error {
 
 	for _, pkg := range packages {
 		dts, imps, err := parseModels(p.OutputPath, pkg.Files)
-		p.DataTypes = append(p.DataTypes, dts...)
 		if err != nil {
 			return fmt.Errorf("attempting to read package %s: %w", pkg.Name, err)
 		}
-		p.Validate() // trust by verify
-
-		if p.containsCyclicOwnerships() {
-			return errors.New("error: cyclic ownership detected")
-		}
-
+		p.DataTypes = append(p.DataTypes, dts...)
+		p.Validate() // trust but verify
 		p.iterableServicesImports = append(p.iterableServicesImports, imps...)
 	}
 
@@ -111,7 +123,7 @@ func (p *Project) ParseModels() error {
 // SearchEnabled returns true if any of the datatypes have SearchEnabled
 func (p *Project) SearchEnabled() bool {
 	for _, typ := range p.DataTypes {
-		if typ.BelongsToUser {
+		if typ.SearchEnabled {
 			return true
 		}
 	}
@@ -180,20 +192,6 @@ func (p *Project) FindDependentsOfType(parentType DataType) []DataType {
 
 	return dependents
 }
-
-var (
-	validDatabaseMap = map[validDatabase]struct{}{
-		Postgres: {},
-		Sqlite:   {},
-		MariaDB:  {},
-	}
-
-	nameToValidDBMap = map[string]validDatabase{
-		string(Postgres): Postgres,
-		string(Sqlite):   Sqlite,
-		string(MariaDB):  MariaDB,
-	}
-)
 
 func (p *Project) ensureNoNilFields() {
 	if p.enabledDatabases == nil {
