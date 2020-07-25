@@ -12,21 +12,40 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(jen.Const().Defs(
-		jen.ID("userAgentHeader").Equals().Lit("User-Agent"),
-		jen.ID("userAgent").Equals().Lit("TODO Service Client"),
-	),
-		jen.Line(),
-	)
-	code.Add(jen.Line())
+	code.Add(buildRoundtripperConstDecls()...)
+	code.Add(buildDefaultRoundTripper()...)
+	code.Add(buildNewDefaultRoundTripper()...)
+	code.Add(buildRoundTrip()...)
+	code.Add(buildBuildDefaultTransport()...)
 
-	code.Add(jen.Type().ID("defaultRoundTripper").Struct(
-		jen.ID("baseTransport").PointerTo().Qual("net/http", "Transport"),
-	),
-		jen.Line(),
-	)
+	return code
+}
 
-	code.Add(
+func buildRoundtripperConstDecls() []jen.Code {
+	lines := []jen.Code{
+		jen.Const().Defs(
+			jen.ID("userAgentHeader").Equals().Lit("User-Agent"),
+			jen.ID("userAgent").Equals().Lit("TODO Service Client"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildDefaultRoundTripper() []jen.Code {
+	lines := []jen.Code{
+		jen.Type().ID("defaultRoundTripper").Struct(
+			jen.ID("baseTransport").PointerTo().Qual("net/http", "Transport"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildNewDefaultRoundTripper() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("newDefaultRoundTripper constructs a new http.RoundTripper."),
 		jen.Line(),
 		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.PointerTo().ID("defaultRoundTripper")).Block(
@@ -37,10 +56,13 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
-	code.Add(jen.Line())
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildRoundTrip() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("RoundTrip implements the http.RoundTripper interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("t").PointerTo().ID("defaultRoundTripper")).ID("RoundTrip").Params(
@@ -57,10 +79,14 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 				jen.ID(constants.RequestVarName),
 			),
 		),
-	)
-	code.Add(jen.Line())
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBuildDefaultTransport() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("buildDefaultTransport constructs a new http.Transport."),
 		jen.Line(),
 		jen.Func().ID("buildDefaultTransport").Params().Params(jen.PointerTo().Qual("net/http", "Transport")).Block(
@@ -78,8 +104,8 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 				jen.ID("IdleConnTimeout").MapAssign().Lit(3).Times().ID("defaultTimeout"),
 			),
 		),
-	)
-	code.Add(jen.Line())
+		jen.Line(),
+	}
 
-	return code
+	return lines
 }

@@ -322,6 +322,7 @@ func buildTestV1Client_BuildSearchSomethingRequest(proj *models.Project, typ mod
 		typ.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(proj),
 		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
+		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),

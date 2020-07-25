@@ -12,9 +12,18 @@ func helpersDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(jen.Line())
+	code.Add(buildArgIsNotPointer()...)
+	code.Add(buildArgIsNotNil()...)
+	code.Add(buildArgIsNotPointerOrNil()...)
+	code.Add(buildUnmarshalBody(proj)...)
+	code.Add(buildCreateBodyFromStruct()...)
 
-	code.Add(
+	return code
+}
+
+func buildArgIsNotPointer() []jen.Code {
+	lines := []jen.Code{
+		jen.Line(),
 		jen.Comment("argIsNotPointer checks an argument and returns whether or not it is a pointer."),
 		jen.Line(),
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
@@ -33,9 +42,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 				jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildArgIsNotNil() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("argIsNotNil checks an argument and returns whether or not it is nil."),
 		jen.Line(),
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
@@ -52,9 +65,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 				jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildArgIsNotPointerOrNil() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("argIsNotPointerOrNil does what it says on the tin. This function"),
 		jen.Line(),
 		jen.Comment("is primarily useful for detecting if a destination value is valid"),
@@ -75,9 +92,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUnmarshalBody(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("unmarshalBody takes an HTTP response and JSON decodes its"),
 		jen.Line(),
 		jen.Comment("body into a destination value. `dest` must be a non-nil"),
@@ -141,9 +162,13 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCreateBodyFromStruct() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("createBodyFromStruct takes any value in and returns an io.Reader"),
 		jen.Line(),
 		jen.Comment("for placement within http.NewRequest's last argument."),
@@ -171,7 +196,7 @@ func helpersDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

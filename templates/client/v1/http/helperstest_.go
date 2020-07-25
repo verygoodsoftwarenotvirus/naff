@@ -12,14 +12,30 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildHelperTestingType()...)
+	code.Add(buildTestArgIsNotPointerOrNil()...)
+	code.Add(buildTestArgIsNotPointer()...)
+	code.Add(buildTestArgIsNotNil()...)
+	code.Add(buildTestUnmarshalBody(proj)...)
+	code.Add(buildHelperTestBreakableStruct()...)
+	code.Add(buildTestCreateBodyFromStruct()...)
+
+	return code
+}
+
+func buildHelperTestingType() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().ID("testingType").Struct(
 			jen.ID("Name").String().Tag(map[string]string{"json": "name"}),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestArgIsNotPointerOrNil() []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("ArgIsNotPointerOrNil").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -57,9 +73,13 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestArgIsNotPointer() []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("ArgIsNotPointer").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -118,9 +138,13 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestArgIsNotNil() []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("ArgIsNotNil").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -179,9 +203,13 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestUnmarshalBody(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("UnmarshalBody").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -352,18 +380,26 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildHelperTestBreakableStruct() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().ID("testBreakableStruct").Struct(
 			jen.ID("Thing").Qual("encoding/json", "Number").Tag(map[string]string{
 				"json": "thing",
 			}),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestCreateBodyFromStruct() []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("CreateBodyFromStruct").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -424,7 +460,7 @@ func helpersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

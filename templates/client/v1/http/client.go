@@ -16,47 +16,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
-	code.Add(jen.Line())
 
-	// consts
-	code.Add(
-		jen.Const().Defs(
-			jen.ID("defaultTimeout").Equals().Lit(30).Times().Qual("time", "Second"),
-			jen.ID("clientName").Equals().Lit("v1_client"),
-		),
-	)
-
-	// vars
-	code.Add(
-		jen.Var().Defs(
-			jen.Comment("ErrNotFound is a handy error to return when we receive a 404 response."),
-			jen.ID("ErrNotFound").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not found"), jen.Qual("net/http", "StatusNotFound")),
-			jen.Line(),
-			jen.Comment("ErrUnauthorized is a handy error to return when we receive a 401 response."),
-			jen.ID("ErrUnauthorized").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not authorized"), jen.Qual("net/http", "StatusUnauthorized")),
-			jen.Line(),
-			jen.Comment("ErrInvalidTOTPToken is an error for when our TOTP validation request goes awry."),
-			jen.ID("ErrInvalidTOTPToken").Equals().Qual("errors", "New").Call(jen.Lit("invalid TOTP token")),
-		),
-		jen.Line(),
-	)
-
-	// types
-	code.Add(
-		jen.Commentf("%s is a client for interacting with v1 of our HTTP API.", v1),
-		jen.Line(),
-		jen.Type().ID(v1).Struct(
-			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
-			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
-			constants.LoggerParam(),
-			jen.ID("Debug").Bool(),
-			jen.ID("URL").PointerTo().Qual("net/url", "URL"),
-			jen.ID("Scopes").Index().String(),
-			jen.ID("tokenSource").Qual("golang.org/x/oauth2", "TokenSource"),
-		),
-		jen.Line(),
-	)
-
+	code.Add(buildClientConstDecls()...)
+	code.Add(buildClientVarDecls()...)
+	code.Add(buildClientTypeDecls()...)
 	code.Add(buildAuthenticatedClient()...)
 	code.Add(buildPlainClient()...)
 	code.Add(buildTokenSource()...)
@@ -79,6 +42,50 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(buildExecuteUnauthenticatedDataRequest(proj)...)
 
 	return code
+}
+
+func buildClientConstDecls() []jen.Code {
+	return []jen.Code{
+		jen.Line(),
+		jen.Const().Defs(
+			jen.ID("defaultTimeout").Equals().Lit(30).Times().Qual("time", "Second"),
+			jen.ID("clientName").Equals().Lit("v1_client"),
+		),
+		jen.Line(),
+	}
+}
+
+func buildClientVarDecls() []jen.Code {
+	return []jen.Code{
+		jen.Var().Defs(
+			jen.Comment("ErrNotFound is a handy error to return when we receive a 404 response."),
+			jen.ID("ErrNotFound").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not found"), jen.Qual("net/http", "StatusNotFound")),
+			jen.Line(),
+			jen.Comment("ErrUnauthorized is a handy error to return when we receive a 401 response."),
+			jen.ID("ErrUnauthorized").Equals().Qual("fmt", "Errorf").Call(jen.Lit("%d: not authorized"), jen.Qual("net/http", "StatusUnauthorized")),
+			jen.Line(),
+			jen.Comment("ErrInvalidTOTPToken is an error for when our TOTP validation request goes awry."),
+			jen.ID("ErrInvalidTOTPToken").Equals().Qual("errors", "New").Call(jen.Lit("invalid TOTP token")),
+		),
+		jen.Line(),
+	}
+}
+
+func buildClientTypeDecls() []jen.Code {
+	return []jen.Code{
+		jen.Commentf("%s is a client for interacting with v1 of our HTTP API.", v1),
+		jen.Line(),
+		jen.Type().ID(v1).Struct(
+			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
+			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
+			constants.LoggerParam(),
+			jen.ID("Debug").Bool(),
+			jen.ID("URL").PointerTo().Qual("net/url", "URL"),
+			jen.ID("Scopes").Index().String(),
+			jen.ID("tokenSource").Qual("golang.org/x/oauth2", "TokenSource"),
+		),
+		jen.Line(),
+	}
 }
 
 func buildAuthenticatedClient() []jen.Code {

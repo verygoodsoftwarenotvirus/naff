@@ -12,7 +12,24 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestV1ClientBuildGetUserRequest(proj)...)
+	code.Add(buildTestV1ClientGetUser(proj)...)
+	code.Add(buildTestV1ClientBuildGetUsersRequest()...)
+	code.Add(buildTestV1ClientGetUsers(proj)...)
+	code.Add(buildTestV1ClientBuildCreateUserRequest(proj)...)
+	code.Add(buildTestV1ClientCreateUser(proj)...)
+	code.Add(buildTestV1ClientBuildArchiveUserRequest(proj)...)
+	code.Add(buildTestV1ClientArchiveUser(proj)...)
+	code.Add(buildTestV1ClientBuildLoginRequest(proj)...)
+	code.Add(buildTestV1ClientLogin(proj)...)
+	code.Add(buildTestV1ClientBuildValidateTOTPSecretRequest(proj)...)
+	code.Add(buildTestV1ClientValidateTOTPSecret(proj)...)
+
+	return code
+}
+
+func buildTestV1ClientBuildGetUserRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildGetUserRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -58,9 +75,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientGetUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_GetUser").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -127,9 +148,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildGetUsersRequest() []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildGetUsersRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -165,9 +190,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientGetUsers(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_GetUsers").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -229,9 +258,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildCreateUserRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildCreateUserRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -268,17 +301,23 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientCreateUser(proj *models.Project) []jen.Code {
+	fmp := proj.FakeModelsPackage()
+
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_CreateUser").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
-				jen.ID("expected").Assign().Qual(proj.FakeModelsPackage(), "BuildDatabaseCreationResponse").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserCreationInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID("expected").Assign().Qual(fmp, "BuildDatabaseCreationResponse").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -320,7 +359,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with invalid client URL",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserCreationInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dot("CreateUser").Call(
@@ -333,9 +372,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildArchiveUserRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildArchiveUserRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -381,9 +424,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientArchiveUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_ArchiveUser").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -424,9 +471,15 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildLoginRequest(proj *models.Project) []jen.Code {
+	fmp := proj.FakeModelsPackage()
+
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildLoginRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -436,7 +489,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(
 					constants.CtxVar(),
@@ -462,9 +515,15 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientLogin(proj *models.Project) []jen.Code {
+	fmp := proj.FakeModelsPackage()
+
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_Login").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -473,7 +532,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -521,7 +580,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with invalid client URL",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Line(),
@@ -536,7 +595,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with timeout",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -577,7 +636,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.BuildSubTest(
 				"with missing cookie",
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
+				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(fmp, "BuildFakeUserLoginInputFromUser").Call(jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -612,9 +671,15 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildValidateTOTPSecretRequest(proj *models.Project) []jen.Code {
+	fmp := proj.FakeModelsPackage()
+
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildValidateTOTPSecretRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -623,8 +688,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 				jen.ID("c").Assign().ID("buildTestClient").Call(jen.ID("t"), jen.ID("ts")),
 				jen.Line(),
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.ID("exampleUser").Assign().Qual(fmp, "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(fmp, "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				jen.List(jen.ID("req"), jen.Err()).Assign().ID("c").Dot("BuildVerifyTOTPSecretRequest").Call(
 					constants.CtxVar(),
@@ -637,9 +702,15 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientValidateTOTPSecret(proj *models.Project) []jen.Code {
+	fmp := proj.FakeModelsPackage()
+
+	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_ValidateTOTPSecret").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -647,8 +718,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.ID("exampleUser").Assign().Qual(fmp, "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(fmp, "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -676,8 +747,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			), jen.Line(),
 			utils.BuildSubTest(
 				"with bad request response",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.ID("exampleUser").Assign().Qual(fmp, "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(fmp, "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -707,8 +778,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with otherwise invalid status code response",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.ID("exampleUser").Assign().Qual(fmp, "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(fmp, "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -737,8 +808,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with invalid client URL",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.ID("exampleUser").Assign().Qual(fmp, "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(fmp, "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Line(),
@@ -752,8 +823,8 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			utils.BuildSubTest(
 				"with timeout",
-				jen.ID("exampleUser").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
-				jen.ID("exampleInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
+				jen.ID("exampleUser").Assign().Qual(fmp, "BuildFakeUser").Call(),
+				jen.ID("exampleInput").Assign().Qual(fmp, "BuildFakeTOTPSecretValidationInputForUser").Call(jen.ID("exampleUser")),
 				jen.Line(),
 				utils.BuildTestServer(
 					"ts",
@@ -784,7 +855,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

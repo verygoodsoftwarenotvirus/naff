@@ -14,11 +14,9 @@ import (
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
-
 	utils.AddImports(proj, code)
 	code.Add(jen.Const().Defs(
-		jen.ID(basePath).Equals().Lit(typ.Name.PluralRouteName())),
+		jen.IDf("%sBasePath", typ.Name.PluralUnexportedVarName()).Equals().Lit(typ.Name.PluralRouteName())),
 	)
 
 	code.Add(buildBuildSomethingExistsRequest(proj, typ)...)
