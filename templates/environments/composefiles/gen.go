@@ -52,15 +52,15 @@ func GetDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]string{
-		"environments/local/docker-compose.yaml":                                              developmentDotYaml(project.Name),
-		"environments/testprojects/compose_files/frontend-tests.yaml":                         frontendTestsDotYAML(project.Name),
-		"environments/testprojects/compose_files/integration_tests/integration-coverage.yaml": integrationCoverageDotYAML(project.Name),
+		"environments/local/docker-compose.yaml":                                         developmentDotYaml(project.Name),
+		"environments/testing/compose_files/frontend-tests.yaml":                         frontendTestsDotYAML(project.Name),
+		"environments/testing/compose_files/integration_tests/integration-coverage.yaml": integrationCoverageDotYAML(project.Name),
 	}
 
 	for _, db := range project.EnabledDatabases() {
 		_ = db
-		files[fmt.Sprintf("environments/testprojects/compose_files/integration_tests/integration-tests-%s.yaml", db)] = integrationTestsDotYAML(project.Name, GetDatabasePalabra(db))
-		files[fmt.Sprintf("environments/testprojects/compose_files/load_tests/load-tests-%s.yaml", db)] = loadTestsDotYAML(project.Name, GetDatabasePalabra(db))
+		files[fmt.Sprintf("environments/testing/compose_files/integration_tests/integration-tests-%s.yaml", db)] = integrationTestsDotYAML(project.Name, GetDatabasePalabra(db))
+		files[fmt.Sprintf("environments/testing/compose_files/load_tests/load-tests-%s.yaml", db)] = loadTestsDotYAML(project.Name, GetDatabasePalabra(db))
 	}
 
 	for filename, file := range files {
@@ -288,7 +288,7 @@ services:
             - database
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-server-postgres.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
     test:
         environment:
             TARGET_ADDRESS: 'http://%s-server:8888'
@@ -296,7 +296,7 @@ services:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'postgres_integration_tests'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	case "mariadb", "maria_db":
@@ -323,7 +323,7 @@ services:
             - database
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-server-mariadb.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
     test:
         environment:
             TARGET_ADDRESS: 'http://%s-server:8888'
@@ -331,7 +331,7 @@ services:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'mariadb_integration_tests'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	case "sqlite":
@@ -344,7 +344,7 @@ services:
             - 80:8888
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-server-sqlite.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
     test:
         environment:
             TARGET_ADDRESS: 'http://%s-server:8888'
@@ -352,7 +352,7 @@ services:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'sqlite_integration_tests'
 `, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	}
@@ -383,7 +383,7 @@ services:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/load-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
     %s-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
@@ -393,7 +393,7 @@ services:
             - database
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-server-postgres.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	case "mariadb", "maria_db":
 		return fmt.Sprintf(`version: '3.3'
@@ -417,7 +417,7 @@ services:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/load-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
     %s-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
@@ -427,7 +427,7 @@ services:
             - database
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-server-mariadb.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	case "sqlite":
 		return fmt.Sprintf(`version: '3.3'
@@ -439,7 +439,7 @@ services:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/load-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
     %s-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
@@ -447,7 +447,7 @@ services:
             - 80:8888
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-server-sqlite.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
 `, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	}
 
@@ -508,14 +508,14 @@ services:
             - %s-server
         build:
             context: '../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/frontend-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/frontend-tests.Dockerfile'
         depends_on:
             - firefox
             - chrome
     %s-server:
         build:
             context: '../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/frontend-tests-server.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/frontend-tests-server.Dockerfile'
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
         ports:
@@ -540,12 +540,12 @@ services:
             - source: '../../../../artifacts/'
               target: '/home/'
               type: 'bind'
-            - source: '../../../../environments/testprojects/config_files/coverage.toml'
+            - source: '../../../../environments/testing/config_files/coverage.toml'
               target: '/etc/config.toml'
               type: 'bind'
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-coverage-server.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-coverage-server.Dockerfile'
     database:
         image: postgres:latest
         environment:
@@ -568,6 +568,6 @@ services:
             - coverage-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testprojects/dockerfiles/integration-tests.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
 `, projectName.RouteName())
 }

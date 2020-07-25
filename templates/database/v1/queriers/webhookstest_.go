@@ -130,7 +130,7 @@ func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_ScanWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_ScanWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -208,7 +208,7 @@ func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -310,7 +310,7 @@ func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.Su
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllWebhooksCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -377,7 +377,7 @@ func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPa
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -494,7 +494,7 @@ func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalab
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetWebhooks", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -690,7 +690,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_CreateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -856,7 +856,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -964,7 +964,7 @@ func buildTestDB_ArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPa
 	expectedQuery, _, _ := qb.ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_ArchiveWebhook", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

@@ -13,16 +13,16 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(project *models.Project) []byte{
-		"environments/local/prometheus/config.yaml":              prometheusLocalConfigDotYAML,
-		"environments/local/grafana/dashboards/main.json":        dashboardDotJSON,
-		"environments/local/grafana/dashboards.yaml":             grafanaLocalProvisioningDashboardsAllDotYAML,
-		"environments/local/grafana/datasources.yaml":            grafanaLocalProvisioningDataSourcesAllDotYAML,
-		"environments/local/grafana/grafana.ini":                 grafanaDotIni,
-		"environments/testprojects/prometheus/config.yaml":       prometheusLocalConfigDotYAML,
-		"environments/testprojects/grafana/dashboards/main.json": dashboardDotJSON,
-		"environments/testprojects/grafana/dashboards.yaml":      grafanaLocalProvisioningDashboardsAllDotYAML,
-		"environments/testprojects/grafana/datasources.yaml":     grafanaLocalProvisioningDataSourcesAllDotYAML,
-		"environments/testprojects/grafana/grafana.ini":          grafanaDotIni,
+		"environments/local/prometheus/config.yaml":         prometheusLocalConfigDotYAML,
+		"environments/local/grafana/dashboards/main.json":   dashboardDotJSON,
+		"environments/local/grafana/dashboards.yaml":        grafanaLocalProvisioningDashboardsAllDotYAML,
+		"environments/local/grafana/datasources.yaml":       grafanaLocalProvisioningDataSourcesAllDotYAML,
+		"environments/local/grafana/grafana.ini":            grafanaDotIni,
+		"environments/testing/prometheus/config.yaml":       prometheusLocalConfigDotYAML,
+		"environments/testing/grafana/dashboards/main.json": dashboardDotJSON,
+		"environments/testing/grafana/dashboards.yaml":      grafanaLocalProvisioningDashboardsAllDotYAML,
+		"environments/testing/grafana/datasources.yaml":     grafanaLocalProvisioningDataSourcesAllDotYAML,
+		"environments/testing/grafana/grafana.ini":          grafanaDotIni,
 	}
 
 	for filename, file := range files {

@@ -18,7 +18,7 @@ func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("OAuth2ClientDataManager is a mocked models.OAuth2ClientDataManager for testprojects"),
+		jen.Comment("OAuth2ClientDataManager is a mocked models.OAuth2ClientDataManager for testing"),
 		jen.Line(),
 		jen.Type().ID("OAuth2ClientDataManager").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),

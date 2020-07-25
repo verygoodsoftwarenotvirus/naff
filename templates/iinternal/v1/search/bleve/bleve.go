@@ -21,9 +21,9 @@ func bleveDotGo(proj *models.Project) *jen.File {
 			jen.ID("base").Equals().Lit(10),
 			jen.ID("bitSize").Equals().Lit(64),
 			jen.Line(),
-			jen.Comment("testingSearchIndexName is an index name that is only valid for testprojects's sake."),
+			jen.Comment("testingSearchIndexName is an index name that is only valid for testing's sake."),
 			jen.Line(),
-			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit("testprojects"),
+			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit("testing"),
 		),
 	)
 

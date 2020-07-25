@@ -234,7 +234,7 @@ func (f *File) register(path string) string {
 	return unique
 }
 
-// GoString renders the File for testprojects. Any error will cause a panic.
+// GoString renders the File for testing. Any error will cause a panic.
 func (f *File) GoString() string {
 	buf := &bytes.Buffer{}
 	if err := f.Render(buf); err != nil {

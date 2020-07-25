@@ -16,7 +16,7 @@ func coverageTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 	code.Add(
-		jen.Func().ID("TestRunMain").Params(jen.Underscore().PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestRunMain").Params(jen.Underscore().PointerTo().Qual("testing", "T")).Block(
 			jen.Comment("This test is built specifically to capture the coverage that the integration"),
 			jen.Comment("tests exhibit. We run the main function (i.e. a production server)"),
 			jen.Comment("on an independent goroutine and sleep for long enough that the integration"),

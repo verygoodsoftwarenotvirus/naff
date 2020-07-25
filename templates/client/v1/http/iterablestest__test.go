@@ -38,13 +38,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildGetChildRequest(T *testprojects.T) {
+func TestV1Client_BuildGetChildRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		expectedMethod := http.MethodGet
 		ts := httptest.NewTLSServer(nil)
@@ -99,13 +99,13 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"strings"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_GetChild(T *testprojects.T) {
+func TestV1Client_GetChild(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{ID: 1}
 		parent := &v1.Parent{
@@ -170,13 +170,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildGetChildrenRequest(T *testprojects.T) {
+func TestV1Client_BuildGetChildrenRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -234,13 +234,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_GetChildren(T *testprojects.T) {
+func TestV1Client_GetChildren(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -311,13 +311,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildCreateChildRequest(T *testprojects.T) {
+func TestV1Client_BuildCreateChildRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -410,13 +410,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_CreateChild(T *testprojects.T) {
+func TestV1Client_CreateChild(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -490,13 +490,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildUpdateChildRequest(T *testprojects.T) {
+func TestV1Client_BuildUpdateChildRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -550,13 +550,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildUpdateParentRequest(T *testprojects.T) {
+func TestV1Client_BuildUpdateParentRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -606,13 +606,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildUpdateGrandparentRequest(T *testprojects.T) {
+func TestV1Client_BuildUpdateGrandparentRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -663,13 +663,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_UpdateChild(T *testprojects.T) {
+func TestV1Client_UpdateChild(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,
@@ -733,13 +733,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_BuildArchiveChildRequest(T *testprojects.T) {
+func TestV1Client_BuildArchiveChildRequest(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		expectedMethod := http.MethodDelete
 		ts := httptest.NewTLSServer(nil)
@@ -800,13 +800,13 @@ import (
 	v1 "models/v1"
 	"net/http"
 	"net/http/httptest"
-	"testprojects"
+	"testing"
 )
 
-func TestV1Client_ArchiveChild(T *testprojects.T) {
+func TestV1Client_ArchiveChild(T *testing.T) {
 	T.Parallel()
 
-	T.Run("happy path", func(t *testprojects.T) {
+	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 		grandparent := &v1.Grandparent{
 			ID: 1,

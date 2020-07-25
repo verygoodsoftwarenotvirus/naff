@@ -12,7 +12,7 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Func().ID("TestHoldOnForever").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestHoldOnForever").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.If(jen.Qual("os", "Getenv").Call(jen.Lit("WAIT_FOR_COVERAGE")).IsEqualTo().Lit("yes")).Block(
@@ -24,7 +24,7 @@ func metaTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("checkValueAndError").Params(jen.ID("t").PointerTo().Qual("testprojects", "T"), jen.ID("i").Interface(), jen.Err().Error()).Block(
+		jen.Func().ID("checkValueAndError").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("i").Interface(), jen.Err().Error()).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.RequireNoError(jen.Err(), nil),

@@ -18,7 +18,7 @@ func mockReadCloserTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("ReadCloser is a mock io.ReadCloser for testprojects purposes."),
+		jen.Comment("ReadCloser is a mock io.ReadCloser for testing purposes."),
 		jen.Line(),
 		jen.Type().ID("ReadCloser").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),

@@ -129,7 +129,7 @@ func buildTestScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPa
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_ScanOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_ScanOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -206,7 +206,7 @@ func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsm
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetOAuth2ClientByClientID", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetOAuth2ClientByClientID", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -305,7 +305,7 @@ func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.Su
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllOAuth2Clients", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -397,7 +397,7 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllOAuth2ClientsForUser", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllOAuth2ClientsForUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -517,7 +517,7 @@ func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperP
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -603,7 +603,7 @@ func buildTestDB_GetAllOAuth2ClientCount(_ *models.Project, dbvendor wordsmith.S
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllOAuth2ClientCount", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllOAuth2ClientCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -672,7 +672,7 @@ func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmit
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetOAuth2ClientsForUser", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_GetOAuth2ClientsForUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -899,7 +899,7 @@ func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 	expectedQuery, _, _ := qb.ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_CreateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_CreateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -1008,7 +1008,7 @@ func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.Sup
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_UpdateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -1085,7 +1085,7 @@ func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.Su
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_ArchiveOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().IDf("Test%s_ArchiveOAuth2Client", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Litf("UPDATE oauth2_clients SET last_updated_on = %s, archived_on = %s WHERE belongs_to_user = %s AND id = %s%s",

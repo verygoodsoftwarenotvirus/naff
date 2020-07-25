@@ -132,7 +132,7 @@ func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Cod
 	insts = append(insts, testInstructions...)
 
 	return jen.ID(T).Dot("Run").Call(
-		jen.Lit(name), jen.Func().Params(jen.ID(t).PointerTo().Qual("testprojects", T)).Block(insts...),
+		jen.Lit(name), jen.Func().Params(jen.ID(t).PointerTo().Qual("testing", T)).Block(insts...),
 	)
 }
 
@@ -150,7 +150,7 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 
 // OuterTestFunc does
 func OuterTestFunc(subjectName string) *jen.Statement {
-	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).PointerTo().Qual("testprojects", T))
+	return jen.Func().ID(fmt.Sprintf("Test%s", subjectName)).Params(jen.ID(T).PointerTo().Qual("testing", T))
 }
 
 // QueryFilterParam does

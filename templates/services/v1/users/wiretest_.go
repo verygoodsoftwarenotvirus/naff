@@ -13,10 +13,10 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 
 	// if proj.EnableNewsman {
 	code.Add(
-		jen.Func().ID("TestProvideUserDataManager").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestProvideUserDataManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.AssertNotNil(jen.ID("ProvideUserDataManager").Call(
 					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				), nil),
@@ -27,10 +27,10 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 	// }
 
 	code.Add(
-		jen.Func().ID("TestProvideUserDataServer").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestProvideUserDataServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.AssertNotNil(jen.ID("ProvideUserDataServer").Call(jen.ID("buildTestService").Call(jen.ID("t"))), nil),
 			)),
 		),

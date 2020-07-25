@@ -18,7 +18,7 @@ func mockWebhookDataManagerDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("WebhookDataManager is a mocked models.WebhookDataManager for testprojects"),
+		jen.Comment("WebhookDataManager is a mocked models.WebhookDataManager for testing"),
 		jen.Line(),
 		jen.Type().ID("WebhookDataManager").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),

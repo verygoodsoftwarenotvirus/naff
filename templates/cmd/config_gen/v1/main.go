@@ -25,23 +25,23 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Var().Defs(
 			jen.ID("files").Equals().Map(jen.String()).ID("configFunc").Valuesln(
 				jen.Lit("environments/local/config.toml").MapAssign().ID("developmentConfig"),
-				jen.Lit("environments/testprojects/config_files/frontend-tests.toml").MapAssign().ID("frontendTestsConfig"),
-				jen.Lit("environments/testprojects/config_files/coverage.toml").MapAssign().ID("coverageConfig"),
+				jen.Lit("environments/testing/config_files/frontend-tests.toml").MapAssign().ID("frontendTestsConfig"),
+				jen.Lit("environments/testing/config_files/coverage.toml").MapAssign().ID("coverageConfig"),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Postgres) {
-						return jen.Lit("environments/testprojects/config_files/integration-tests-postgres.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("postgres"), jen.ID("postgresDBConnDetails"))
+						return jen.Lit("environments/testing/config_files/integration-tests-postgres.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("postgres"), jen.ID("postgresDBConnDetails"))
 					}
 					return jen.Null()
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Sqlite) {
-						return jen.Lit("environments/testprojects/config_files/integration-tests-sqlite.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("sqlite"), jen.Lit("/tmp/db"))
+						return jen.Lit("environments/testing/config_files/integration-tests-sqlite.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("sqlite"), jen.Lit("/tmp/db"))
 					}
 					return jen.Null()
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
-						return jen.Lit("environments/testprojects/config_files/integration-tests-mariadb.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo"))
+						return jen.Lit("environments/testing/config_files/integration-tests-mariadb.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo"))
 					}
 					return jen.Null()
 				}(),
@@ -103,7 +103,7 @@ func determineConstants(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Comment("run modes"),
 		jen.ID("developmentEnv").Equals().Lit("development"),
-		jen.ID("testingEnv").Equals().Lit("testprojects"),
+		jen.ID("testingEnv").Equals().Lit("testing"),
 		jen.Line(),
 		jen.Comment("database providers"),
 	)

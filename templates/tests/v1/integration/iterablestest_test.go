@@ -65,10 +65,10 @@ import (
 	gofakeit "github.com/brianvoe/gofakeit"
 	require "github.com/stretchr/testify/require"
 	v1 "models/v1"
-	"testprojects"
+	"testing"
 )
 
-func buildDummyChild(t *testprojects.T, ctx context.Context) *v1.Child {
+func buildDummyChild(t *testing.T, ctx context.Context) *v1.Child {
 	t.Helper()
 
 	// Create grandparent
@@ -121,10 +121,10 @@ import (
 	gofakeit "github.com/brianvoe/gofakeit"
 	require "github.com/stretchr/testify/require"
 	v1 "models/v1"
-	"testprojects"
+	"testing"
 )
 
-func buildDummyParent(t *testprojects.T, ctx context.Context) *v1.Parent {
+func buildDummyParent(t *testing.T, ctx context.Context) *v1.Parent {
 	t.Helper()
 
 	// Create grandparent
@@ -167,10 +167,10 @@ import (
 	gofakeit "github.com/brianvoe/gofakeit"
 	require "github.com/stretchr/testify/require"
 	v1 "models/v1"
-	"testprojects"
+	"testing"
 )
 
-func buildDummyGrandparent(t *testprojects.T, ctx context.Context) *v1.Grandparent {
+func buildDummyGrandparent(t *testing.T, ctx context.Context) *v1.Grandparent {
 	t.Helper()
 
 	x := &v1.GrandparentCreationInput{

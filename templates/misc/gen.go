@@ -122,9 +122,9 @@ func gitlabCIDotYAML(project *models.Project) []byte {
 
 	f := fmt.Sprintf(`stages:
   - quality
-  - frontend-testprojects
-  - integration-testprojects
-  - load-testprojects
+  - frontend-testing
+  - integration-testing
+  - load-testing
   - publish
 
 before_script:
@@ -184,7 +184,7 @@ build-frontend:
     - npm run build
 
 integration-tests-postgres:
-  stage: integration-testprojects
+  stage: integration-testing
   image: docker:latest
   services:
     - docker:dind
@@ -197,7 +197,7 @@ integration-tests-postgres:
     - make integration-tests-postgres
 
 integration-tests-mariadb:
-  stage: integration-testprojects
+  stage: integration-testing
   image: docker:latest
   services:
     - docker:dind
@@ -210,7 +210,7 @@ integration-tests-mariadb:
     - make integration-tests-mariadb
 
 integration-tests-sqlite:
-  stage: integration-testprojects
+  stage: integration-testing
   image: docker:latest
   services:
     - docker:dind
@@ -223,7 +223,7 @@ integration-tests-sqlite:
     - make integration-tests-sqlite
 
 frontend-selenium-tests:
-  stage: integration-testprojects
+  stage: integration-testing
   image: docker:latest
   services:
     - docker:dind
@@ -237,7 +237,7 @@ frontend-selenium-tests:
 
 # load tests
 load-tests-postgres:
-  stage: load-testprojects
+  stage: load-testing
   image: docker:latest
   services:
     - docker:dind
@@ -253,7 +253,7 @@ load-tests-postgres:
     - schedules
 
 load-tests-mariadb:
-  stage: load-testprojects
+  stage: load-testing
   image: docker:latest
   services:
     - docker:dind
@@ -269,7 +269,7 @@ load-tests-mariadb:
     - schedules
 
 load-tests-sqlite:
-  stage: load-testprojects
+  stage: load-testing
   image: docker:latest
   services:
     - docker:dind
@@ -287,7 +287,7 @@ load-tests-sqlite:
 # daily load tests
 
 daily-load-tests-postgres:on-schedule:
-  stage: load-testprojects
+  stage: load-testing
   image: docker:latest
   services:
     - docker:dind
@@ -303,7 +303,7 @@ daily-load-tests-postgres:on-schedule:
     - schedules
 
 daily-load-tests-mariadb:on-schedule:
-  stage: load-testprojects
+  stage: load-testing
   image: docker:latest
   services:
     - docker:dind
@@ -319,7 +319,7 @@ daily-load-tests-mariadb:on-schedule:
     - schedules
 
 daily-load-tests-sqlite:on-schedule:
-  stage: load-testprojects
+  stage: load-testing
   image: docker:latest
   services:
     - docker:dind
@@ -391,7 +391,7 @@ run:
   # If invoked with -mod=readonly, the go command is disallowed from the implicit
   # automatic updating of go.mod described above. Instead, it fails when any changes
   # to go.mod are needed. This setting is most useful to check that go.mod does
-  # not need updates, such as in a continuous integration and testprojects system.
+  # not need updates, such as in a continuous integration and testing system.
   # If invoked with -mod=vendor, the go command assumes that the vendor
   # directory holds the correct copies of dependencies and ignores
   # the dependency descriptions in go.mod.

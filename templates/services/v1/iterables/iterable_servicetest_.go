@@ -104,7 +104,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 
 	lines := []jen.Code{
-		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

@@ -26,7 +26,7 @@ func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_GetOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -84,7 +84,7 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 
 func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetOAuth2ClientByClientID").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_GetOAuth2ClientByClientID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -138,7 +138,7 @@ func buildTestClient_GetOAuth2ClientByClientID(proj *models.Project) []jen.Code 
 
 func buildTestClient_GetOAuth2ClientCount(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetOAuth2ClientCount").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_GetOAuth2ClientCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -218,7 +218,7 @@ func buildTestClient_GetOAuth2ClientCount(proj *models.Project) []jen.Code {
 
 func buildTestClient_GetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetAllOAuth2ClientCount").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_GetAllOAuth2ClientCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -249,7 +249,7 @@ func buildTestClient_GetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
 
 //func buildTestClient_GetAllOAuth2Clients(proj *models.Project) []jen.Code {
 //	lines := []jen.Code{
-//		jen.Func().ID("TestClient_GetAllOAuth2Clients").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+//		jen.Func().ID("TestClient_GetAllOAuth2Clients").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 //			jen.ID("T").Dot("Parallel").Call(),
 //			jen.Line(),
 //			utils.BuildSubTest(
@@ -273,7 +273,7 @@ func buildTestClient_GetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
 
 func buildTestClient_GetOAuth2ClientsForUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetOAuth2ClientsForUser").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_GetOAuth2ClientsForUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -358,7 +358,7 @@ func buildTestClient_GetOAuth2ClientsForUser(proj *models.Project) []jen.Code {
 
 func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_CreateOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_CreateOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -413,7 +413,7 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 
 func buildTestClient_UpdateOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_UpdateOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_UpdateOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -443,7 +443,7 @@ func buildTestClient_UpdateOAuth2Client(proj *models.Project) []jen.Code {
 
 func buildTestClient_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_ArchiveOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestClient_ArchiveOAuth2Client").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

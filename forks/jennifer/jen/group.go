@@ -135,7 +135,7 @@ func (g *Group) Render(writer io.Writer) error {
 	return g.RenderWithFile(writer, NewFile(""))
 }
 
-// GoString renders the Group for testprojects. Any error will cause a panic.
+// GoString renders the Group for testing. Any error will cause a panic.
 func (g *Group) GoString() string {
 	buf := bytes.Buffer{}
 	if err := g.Render(&buf); err != nil {

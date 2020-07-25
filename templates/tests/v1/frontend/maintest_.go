@@ -12,7 +12,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("t").PointerTo().Qual("testprojects", "T"), jen.ID("tp").ID("testProvider")).Block(
+		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
 			jen.For(jen.List(jen.Underscore(), jen.ID("bn")).Assign().Range().Index().String().Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
 				jen.ID("browserName").Assign().ID("bn"),
 				jen.ID("caps").Assign().Qual("github.com/tebeka/selenium", "Capabilities").Values(jen.Lit("browserName").MapAssign().ID("browserName")),
@@ -29,14 +29,14 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Type().ID("testProvider").Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")),
+		jen.Type().ID("testProvider").Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")),
 		jen.Line(),
 	)
 
 	code.Add(
-		jen.Func().ID("TestLoginPage").Params(jen.ID("T").PointerTo().Qual("testprojects", "T")).Block(
-			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
-				jen.Return().Func().Params(jen.ID("t").PointerTo().Qual("testprojects", "T")).Block(
+		jen.Func().ID("TestLoginPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+				jen.Return().Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 					jen.Comment("Navigate to the login page."),
 					utils.RequireNoError(jen.ID("driver").Dot("Get").Call(jen.ID("urlToUse").Plus().Lit("/login")), nil),
 					jen.Line(),
