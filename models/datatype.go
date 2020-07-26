@@ -204,7 +204,9 @@ func (typ DataType) buildJoinClause(fromTableName, onTableName, fkColumnName str
 	if typ.BelongsToStruct != nil {
 		return fmt.Sprintf("%s ON %s.%s=%s.id", fromTableName, onTableName, fmt.Sprintf("belongs_to_%s", fkColumnName), fromTableName)
 	}
-	panic("AAAAA")
+
+	panic("buildJoinClause called on struct that doesn't belong to anything!")
+	return ""
 }
 
 func (typ DataType) ModifyQueryBuilderWithJoinClauses(proj *Project, qb squirrel.SelectBuilder) squirrel.SelectBuilder {

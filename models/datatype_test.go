@@ -2,45 +2,14 @@ package models
 
 import (
 	"bytes"
-	"github.com/Masterminds/squirrel"
-	"github.com/stretchr/testify/require"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"testing"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/stretchr/testify/assert"
 )
-
-func buildObligatorySuperPalabra() wordsmith.SuperPalabra {
-	return wordsmith.FromSingularPascalCase("Thing")
-}
-
-func renderFunctionParamsToString(t *testing.T, params []jen.Code) string {
-	t.Helper()
-
-	f := jen.NewFile("main")
-	f.Add(jen.Func().ID("example").Params(params...).Block())
-	b := bytes.NewBufferString("\n")
-	require.NoError(t, f.Render(b))
-
-	return b.String()
-}
-
-func renderCallArgsToString(t *testing.T, args []jen.Code) string {
-	t.Helper()
-
-	b := bytes.NewBufferString("\n")
-	f := jen.NewFile("main")
-	f.Add(
-		jen.Func().ID("main").Params().Body(
-			jen.ID("exampleFunction").Call(args...),
-		),
-	)
-	require.NoError(t, f.Render(b))
-
-	return b.String()
-}
 
 func Test_buildFakeVarName(T *testing.T) {
 	T.Parallel()
@@ -142,27 +111,11 @@ func TestDataType_OwnedByAUserAtSomeLevel(T *testing.T) {
 	T.Run("with multi-level ownership", func(t *testing.T) {
 		t.Parallel()
 
-		dtA := DataType{
-			Name:          wordsmith.FromSingularPascalCase("A"),
-			BelongsToUser: true,
-		}
-		dtB := DataType{
-			Name:            wordsmith.FromSingularPascalCase("B"),
-			BelongsToStruct: wordsmith.FromSingularPascalCase("A"),
-		}
-		dtC := DataType{
-			Name:            wordsmith.FromSingularPascalCase("C"),
-			BelongsToStruct: wordsmith.FromSingularPascalCase("B"),
-		}
 		p := &Project{
-			DataTypes: []DataType{
-				dtA,
-				dtB,
-				dtC,
-			},
+			DataTypes: buildOwnershipChain("A", "B", "C"),
 		}
 
-		assert.True(t, dtC.OwnedByAUserAtSomeLevel(p))
+		assert.True(t, p.DataTypes[len(p.DataTypes)-1].OwnedByAUserAtSomeLevel(p))
 	})
 }
 
@@ -252,7 +205,7 @@ func TestDataType_buildGetSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -274,11 +227,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_buildArchiveSomethingParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -300,11 +253,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildInterfaceDefinitionExistenceMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -326,11 +279,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildInterfaceDefinitionRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -352,11 +305,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildInterfaceDefinitionArchiveMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -378,11 +331,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildDBClientArchiveMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -404,11 +357,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildDBClientRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -430,11 +383,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildDBClientExistenceMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -456,11 +409,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildDBQuerierArchiveMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -482,11 +435,11 @@ func example(ctx context.Context, thingID uint64) {}
 func TestDataType_BuildDBQuerierArchiveQueryMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -503,27 +456,23 @@ func example(thingID uint64) {}
 	})
 }
 
-// tests pass up to here
-
 func TestDataType_BuildDBQuerierRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
 		expected := `
 package main
 
-import (
-	"context"
-)
+import ()
 
-func example() {}
+func example(thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierRetrievalMethodParams(p))
 
@@ -534,11 +483,11 @@ func example() {}
 func TestDataType_BuildDBQuerierRetrievalQueryMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -549,7 +498,7 @@ import (
 	"context"
 )
 
-func example() {}
+func example(ctx context.Context, thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierRetrievalQueryMethodParams(p))
 
@@ -560,22 +509,20 @@ func example() {}
 func TestDataType_BuildDBQuerierExistenceQueryMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
 		expected := `
 package main
 
-import (
-	"context"
-)
+import ()
 
-func example() {}
+func example(thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierExistenceQueryMethodParams(p))
 
@@ -589,13 +536,24 @@ func TestDataType_ModifyQueryBuildingStatementWithJoinClauses(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing", "EvenStillAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.ModifyQueryBuildingStatementWithJoinClauses(p, jen.Null())
+		result := p.DataTypes[len(p.DataTypes)-1].ModifyQueryBuildingStatementWithJoinClauses(p, jen.ID("something"))
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	something.
+		Join(yetAnotherThingsOnEvenStillAnotherThingsJoinClause).
+		Join(anotherThingsOnYetAnotherThingsJoinClause).
+		Join(thingsOnAnotherThingsJoinClause)
+}
+`
+		actual := renderIndependentStatementToString(t, result)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -608,15 +566,34 @@ func TestDataType_buildJoinClause(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name:            wordsmith.FromSingularPascalCase("Thing"),
+			BelongsToStruct: wordsmith.FromSingularPascalCase("SomethingElse"),
 		}
 
-		expected := ""
+		expected := "table1 ON table2.belongs_to_table3=table1.id"
 		actual := dt.buildJoinClause("table1", "table2", "table3")
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("panics on non-ownership", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur!")
+			}
+		}()
+
+		dt.buildJoinClause("table1", "table2", "table3")
+	})
 }
+
+// tests up to here work
 
 func TestDataType_ModifyQueryBuilderWithJoinClauses(T *testing.T) {
 	T.Parallel()
@@ -625,7 +602,7 @@ func TestDataType_ModifyQueryBuilderWithJoinClauses(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -647,7 +624,7 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodConditionalClauses(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -665,7 +642,7 @@ func TestDataType_BuildDBQuerierExistenceQueryMethodConditionalClauses(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -683,7 +660,7 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(T 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -701,7 +678,7 @@ func TestDataType_BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -719,7 +696,7 @@ func TestDataType_BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -737,7 +714,7 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -755,7 +732,7 @@ func TestDataType_BuildDBQuerierRetrievalQueryMethodConditionalClauses(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -773,7 +750,7 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodConditionalClauses(T *te
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -787,11 +764,11 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodConditionalClauses(T *te
 func TestDataType_BuildDBQuerierExistenceMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -817,7 +794,7 @@ func TestDataType_buildGetSomethingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -835,7 +812,7 @@ func TestDataType_buildArchiveSomethingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -852,7 +829,7 @@ func TestDataType_BuildDBClientExistenceMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -876,7 +853,7 @@ func TestDataType_BuildDBClientRetrievalMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -900,7 +877,7 @@ func TestDataType_BuildDBClientArchiveMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -917,7 +894,7 @@ func TestDataType_BuildDBQuerierExistenceQueryBuildingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -935,7 +912,7 @@ func TestDataType_BuildDBQuerierRetrievalQueryBuildingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -953,7 +930,7 @@ func TestDataType_BuildDBQuerierArchiveQueryBuildingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -970,7 +947,7 @@ func TestDataType_BuildInterfaceDefinitionExistenceMethodCallArgs(T *testing.T) 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -994,7 +971,7 @@ func TestDataType_BuildInterfaceDefinitionRetrievalMethodCallArgs(T *testing.T) 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1012,7 +989,7 @@ func TestDataType_BuildInterfaceDefinitionArchiveMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		expected := `
@@ -1035,7 +1012,7 @@ func TestDataType_buildGetSomethingArgsWithExampleVariables(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1053,7 +1030,7 @@ func TestDataType_BuildHTTPClientRetrievalTestCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1078,7 +1055,7 @@ func TestDataType_buildSingleInstanceQueryTestCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1102,7 +1079,7 @@ func TestDataType_buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1120,7 +1097,7 @@ func TestDataType_BuildArgsForDBQuerierExistenceMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1138,7 +1115,7 @@ func TestDataType_BuildArgsForDBQuerierRetrievalMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1156,7 +1133,7 @@ func TestDataType_BuildArgsForServiceRouteExistenceCheck(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1174,7 +1151,7 @@ func TestDataType_buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1192,7 +1169,7 @@ func TestDataType_BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1216,7 +1193,7 @@ func TestDataType_BuildDBQuerierRetrievalQueryTestCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1240,7 +1217,7 @@ func TestDataType_BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1258,7 +1235,7 @@ func TestDataType_BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(T *tes
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1276,7 +1253,7 @@ func TestDataType_BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1294,7 +1271,7 @@ func TestDataType_BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1312,7 +1289,7 @@ func TestDataType_BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1330,7 +1307,7 @@ func TestDataType_BuildDBQuerierUpdateSomethingTestPrerequisiteVariables(T *test
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1348,7 +1325,7 @@ func TestDataType_BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(T *tes
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1366,7 +1343,7 @@ func TestDataType_BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(T 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1384,7 +1361,7 @@ func TestDataType_BuildGetSomethingLogValues(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1402,7 +1379,7 @@ func TestDataType_BuildGetListOfSomethingLogValues(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1416,11 +1393,11 @@ func TestDataType_BuildGetListOfSomethingLogValues(T *testing.T) {
 func TestDataType_buildGetListOfSomethingParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("while being models package", func(t *testing.T) {
+	T.Run("simple being models package", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1434,7 +1411,7 @@ func TestDataType_buildGetListOfSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1448,11 +1425,11 @@ func TestDataType_buildGetListOfSomethingParams(T *testing.T) {
 func TestDataType_BuildMockDataManagerListRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1474,11 +1451,11 @@ func example() {}
 func TestDataType_BuildInterfaceDefinitionListRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1500,11 +1477,11 @@ func example() {}
 func TestDataType_BuildDBClientListRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1526,11 +1503,11 @@ func example() {}
 func TestDataType_BuildDBQuerierListRetrievalMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1552,11 +1529,11 @@ func example() {}
 func TestDataType_BuildDBQuerierListRetrievalQueryBuildingMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1578,11 +1555,11 @@ func example() {}
 func TestDataType_buildCreateSomethingParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("while being models package", func(t *testing.T) {
+	T.Run("simple being models package", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1596,7 +1573,7 @@ func TestDataType_buildCreateSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1610,11 +1587,11 @@ func TestDataType_buildCreateSomethingParams(T *testing.T) {
 func TestDataType_BuildMockInterfaceDefinitionCreationMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1636,11 +1613,11 @@ func example() {}
 func TestDataType_BuildInterfaceDefinitionCreationMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1662,11 +1639,11 @@ func example() {}
 func TestDataType_BuildDBClientCreationMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1688,11 +1665,11 @@ func example() {}
 func TestDataType_BuildDBQuerierCreationMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1714,11 +1691,11 @@ func example() {}
 func TestDataType_BuildDBQuerierCreationQueryBuildingMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("while being models package", func(t *testing.T) {
+	T.Run("simple being models package", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1732,7 +1709,7 @@ func TestDataType_BuildDBQuerierCreationQueryBuildingMethodParams(T *testing.T) 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1750,7 +1727,7 @@ func TestDataType_buildCreateSomethingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1767,7 +1744,7 @@ func TestDataType_BuildMockInterfaceDefinitionCreationMethodCallArgs(T *testing.
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1784,7 +1761,7 @@ func TestDataType_BuildDBQuerierCreationMethodQueryBuildingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1801,7 +1778,7 @@ func TestDataType_BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1819,7 +1796,7 @@ func TestDataType_BuildArgsForDBQuerierTestOfUpdateQueryBuilder(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1836,7 +1813,7 @@ func TestDataType_BuildArgsForDBQuerierTestOfArchiveQueryBuilder(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1853,7 +1830,7 @@ func TestDataType_BuildArgsForDBQuerierTestOfUpdateMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1870,7 +1847,7 @@ func TestDataType_BuildDBQuerierCreationMethodArgsToUseFromMethodTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1887,7 +1864,7 @@ func TestDataType_BuildArgsToUseForDBQuerierCreationQueryBuildingTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1904,7 +1881,7 @@ func TestDataType_BuildDBClientCreationMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -1917,11 +1894,11 @@ func TestDataType_BuildDBClientCreationMethodCallArgs(T *testing.T) {
 func TestDataType_buildUpdateSomethingParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("while being models package", func(t *testing.T) {
+	T.Run("simple being models package", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1935,7 +1912,7 @@ func TestDataType_buildUpdateSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1949,11 +1926,11 @@ func TestDataType_buildUpdateSomethingParams(T *testing.T) {
 func TestDataType_BuildDBClientUpdateMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1967,11 +1944,11 @@ func TestDataType_BuildDBClientUpdateMethodParams(T *testing.T) {
 func TestDataType_BuildDBQuerierUpdateMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -1985,11 +1962,11 @@ func TestDataType_BuildDBQuerierUpdateMethodParams(T *testing.T) {
 func TestDataType_BuildDBQuerierUpdateQueryBuildingMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2003,11 +1980,11 @@ func TestDataType_BuildDBQuerierUpdateQueryBuildingMethodParams(T *testing.T) {
 func TestDataType_BuildInterfaceDefinitionUpdateMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2021,11 +1998,11 @@ func TestDataType_BuildInterfaceDefinitionUpdateMethodParams(T *testing.T) {
 func TestDataType_BuildMockDataManagerUpdateMethodParams(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2043,7 +2020,7 @@ func TestDataType_buildUpdateSomethingArgsWithExampleVars(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2061,7 +2038,7 @@ func TestDataType_buildUpdateSomethingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -2078,7 +2055,7 @@ func TestDataType_BuildDBClientUpdateMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -2095,7 +2072,7 @@ func TestDataType_BuildDBQuerierUpdateMethodArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -2112,7 +2089,7 @@ func TestDataType_BuildMockDataManagerUpdateMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -2129,7 +2106,7 @@ func TestDataType_buildGetListOfSomethingArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2147,7 +2124,7 @@ func TestDataType_BuildDBClientListRetrievalMethodCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2171,7 +2148,7 @@ func TestDataType_BuildDBQuerierListRetrievalMethodArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2189,7 +2166,7 @@ func TestDataType_BuildMockDataManagerListRetrievalMethodCallArgs(T *testing.T) 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2214,7 +2191,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWithOwnerStruct(T *testi
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2232,7 +2209,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2250,7 +2227,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTe
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2268,7 +2245,7 @@ func TestDataType_BuildDependentObjectsForDBQueriersExistenceMethodTest(T *testi
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2286,7 +2263,7 @@ func TestDataType_BuildDependentObjectsForDBQueriersCreationMethodTest(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2304,7 +2281,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWhereEachStructIsImporta
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2322,7 +2299,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreI
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2340,7 +2317,7 @@ func TestDataType_BuildHTTPClientRetrievalMethodTestDependentObjects(T *testing.
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2358,7 +2335,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTes
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2376,7 +2353,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodT
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2394,7 +2371,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientExistenceMethodTest(T *testi
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2412,7 +2389,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodT
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2430,7 +2407,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientRetrievalMethodTest(T *testi
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2448,7 +2425,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientArchiveMethodTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2466,7 +2443,7 @@ func TestDataType_buildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2484,7 +2461,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2502,7 +2479,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMet
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2520,7 +2497,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsForUpdateFunction(T *tes
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2538,7 +2515,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientUpdateMethodTest(T *testing.
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2556,7 +2533,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2574,7 +2551,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientCreationMethodTest(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2592,7 +2569,7 @@ func TestDataType_BuildFormatStringForHTTPClientExistenceMethodTest(T *testing.T
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2610,7 +2587,7 @@ func TestDataType_BuildFormatStringForHTTPClientRetrievalMethodTest(T *testing.T
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2628,7 +2605,7 @@ func TestDataType_BuildFormatStringForHTTPClientUpdateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2646,7 +2623,7 @@ func TestDataType_BuildFormatStringForHTTPClientArchiveMethodTest(T *testing.T) 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2664,7 +2641,7 @@ func TestDataType_BuildFormatStringForHTTPClientListMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2682,7 +2659,7 @@ func TestDataType_BuildFormatStringForHTTPClientSearchMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -2699,7 +2676,7 @@ func TestDataType_BuildFormatStringForHTTPClientCreateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2717,7 +2694,7 @@ func TestDataType_BuildFormatCallArgsForHTTPClientRetrievalMethodTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2735,7 +2712,7 @@ func TestDataType_BuildFormatCallArgsForHTTPClientExistenceMethodTest(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2753,7 +2730,7 @@ func TestDataType_BuildFormatCallArgsForHTTPClientListMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2771,7 +2748,7 @@ func TestDataType_BuildFormatCallArgsForHTTPClientCreationMethodTest(T *testing.
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2789,7 +2766,7 @@ func TestDataType_BuildFormatCallArgsForHTTPClientUpdateTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2807,7 +2784,7 @@ func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethod(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2825,7 +2802,7 @@ func TestDataType_BuildParamsForHTTPClientExistenceRequestBuildingMethod(T *test
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2843,7 +2820,7 @@ func TestDataType_BuildParamsForHTTPClientExistenceMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2861,7 +2838,7 @@ func TestDataType_BuildArgsForHTTPClientCreateRequestBuildingMethod(T *testing.T
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2879,7 +2856,7 @@ func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuildingMethod(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2897,7 +2874,7 @@ func TestDataType_BuildParamsForHTTPClientRetrievalRequestBuildingMethod(T *test
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2915,7 +2892,7 @@ func TestDataType_BuildParamsForHTTPClientRetrievalMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2929,7 +2906,7 @@ func TestDataType_BuildParamsForHTTPClientRetrievalMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2947,7 +2924,7 @@ func TestDataType_BuildParamsForHTTPClientCreateRequestBuildingMethod(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2965,7 +2942,7 @@ func TestDataType_BuildParamsForHTTPClientCreateMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -2983,7 +2960,7 @@ func TestDataType_BuildParamsForHTTPClientUpdateRequestBuildingMethod(T *testing
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3001,7 +2978,7 @@ func TestDataType_BuildArgsForHTTPClientUpdateRequestBuildingMethod(T *testing.T
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3019,7 +2996,7 @@ func TestDataType_BuildParamsForHTTPClientUpdateMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3037,7 +3014,7 @@ func TestDataType_BuildParamsForHTTPClientArchiveRequestBuildingMethod(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3055,7 +3032,7 @@ func TestDataType_BuildArgsForHTTPClientArchiveRequestBuildingMethod(T *testing.
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3073,7 +3050,7 @@ func TestDataType_BuildParamsForHTTPClientArchiveMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3091,7 +3068,7 @@ func TestDataType_buildParamsForMethodThatHandlesAnInstanceWithStructs(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3109,7 +3086,7 @@ func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(T *te
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3127,7 +3104,7 @@ func TestDataType_BuildArgsForHTTPClientExistenceMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3145,7 +3122,7 @@ func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(T *tes
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3163,7 +3140,7 @@ func TestDataType_BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(T *test
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3181,7 +3158,7 @@ func TestDataType_BuildArgsForHTTPClientArchiveMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3199,7 +3176,7 @@ func TestDataType_BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3217,7 +3194,7 @@ func TestDataType_BuildArgsForHTTPClientMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3235,7 +3212,7 @@ func TestDataType_BuildHTTPClientCreationRequestBuildingMethodArgsForTest(T *tes
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3253,7 +3230,7 @@ func TestDataType_BuildHTTPClientCreationMethodArgsForTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3271,7 +3248,7 @@ func TestDataType_BuildArgsForHTTPClientListRequestMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3289,7 +3266,7 @@ func TestDataType_BuildParamsForHTTPClientListRequestMethod(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3307,7 +3284,7 @@ func TestDataType_BuildParamsForHTTPClientMethodThatFetchesAList(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3325,7 +3302,7 @@ func TestDataType_BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTe
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3343,7 +3320,7 @@ func TestDataType_BuildCallArgsForHTTPClientListRetrievalMethodTest(T *testing.T
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3361,7 +3338,7 @@ func TestDataType_BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3379,7 +3356,7 @@ func TestDataType_BuildCallArgsForHTTPClientUpdateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3397,7 +3374,7 @@ func TestDataType_buildRequisiteFakeVarDecs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3411,7 +3388,7 @@ func TestDataType_buildRequisiteFakeVarDecs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3429,7 +3406,7 @@ func TestDataType_buildRequisiteFakeVarDecForModifierFuncs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3443,7 +3420,7 @@ func TestDataType_buildRequisiteFakeVarDecForModifierFuncs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3461,7 +3438,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientExistenceMethodTest(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3479,7 +3456,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(T *testin
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3497,7 +3474,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientCreateMethodTest(T *testing.T
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3515,7 +3492,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientArchiveMethodTest(T *testing.
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3533,7 +3510,7 @@ func TestDataType_BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(T *te
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3551,7 +3528,7 @@ func TestDataType_buildRequisiteFakeVarDecsForListFunction(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3569,7 +3546,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(T *te
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3587,7 +3564,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3601,7 +3578,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3619,7 +3596,7 @@ func TestDataType_buildRequisiteFakeVarCallArgsForCreation(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3637,7 +3614,7 @@ func TestDataType_buildRequisiteFakeVarCallArgs(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3661,7 +3638,7 @@ func TestDataType_buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3679,7 +3656,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(T 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3697,7 +3674,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(T *test
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3715,7 +3692,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(T *te
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3733,7 +3710,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(T *te
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3751,7 +3728,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -3768,7 +3745,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(T 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3786,7 +3763,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(T 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3804,7 +3781,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(T *t
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -3821,7 +3798,7 @@ func TestDataType_BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(T *
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3839,7 +3816,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodT
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3857,7 +3834,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(T 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -3874,7 +3851,7 @@ func TestDataType_BuildCallArgsForDBClientCreationMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
@@ -3891,7 +3868,7 @@ func TestDataType_BuildCallArgsForDBClientListRetrievalMethodTest(T *testing.T) 
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3909,7 +3886,7 @@ func TestDataType_BuildRequisiteVarsForDBClientUpdateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 		p := buildExampleTodoListProject()
 
@@ -3927,7 +3904,7 @@ func TestDataType_BuildCallArgsForDBClientUpdateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: buildObligatorySuperPalabra(),
+			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
 		var expected []jen.Code
