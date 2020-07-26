@@ -1682,7 +1682,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 		qb = qb.Suffix("RETURNING id, created_on")
 	}
 	pql := typ.BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(proj)
-	callArgs := typ.BuildArgsToUseForDBQuerierCreationQueryBuildingTest(proj)
+	callArgs := typ.BuildArgsToUseForDBQuerierCreationQueryBuildingTest()
 
 	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Create%s", sn), qb, expectedArgs, callArgs, pql)
 }
@@ -1698,7 +1698,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 	)
 
 	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(proj, typ)
-	callArgs := typ.BuildDBQuerierCreationMethodArgsToUseFromMethodTest(proj)
+	callArgs := typ.BuildDBQuerierCreationMethodArgsToUseFromMethodTest()
 
 	valueArgs := []interface{}{}
 	for range expectedArgs {
@@ -1917,7 +1917,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	sn := typ.Name.Singular()
 
 	qb, expectedArgs := buildTestBuildUpdateSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
-	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateQueryBuilder(proj)
+	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateQueryBuilder()
 	pql := typ.BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(proj)
 
 	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Update%s", sn), qb, expectedArgs, callArgs, pql)
@@ -1931,7 +1931,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 		log.Fatalf("error running buildTestDBUpdateSomethingFuncDecl: %v", err)
 	}
 
-	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateMethod(proj)
+	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateMethod()
 
 	buildFirstSubTest := func(typ models.DataType) []jen.Code {
 		var (
@@ -2080,7 +2080,7 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 
 	qb, expectedArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
 	pql := typ.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(proj)
-	callArgs := typ.BuildArgsForDBQuerierTestOfArchiveQueryBuilder(proj)
+	callArgs := typ.BuildArgsForDBQuerierTestOfArchiveQueryBuilder()
 
 	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Archive%s", sn), qb, expectedArgs, callArgs, pql)
 }
@@ -2091,7 +2091,7 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 	sn := typ.Name.Singular()
 
 	qb, dbQueryExpectationArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
-	actualCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(proj)
+	actualCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest()
 
 	dbQuery, _, _ := qb.ToSql()
 

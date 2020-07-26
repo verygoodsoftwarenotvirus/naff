@@ -44,42 +44,34 @@ func buildFakeVarName(typName string) string {
 	return fmt.Sprintf("example%s", typName)
 }
 
-// CtxParam is a shorthand for a context param
+// ctxParam is a shorthand for a context param
 func ctxParam() jen.Code {
 	return ctxVar().Qual("context", "Context")
 }
 
-// CtxParam is a shorthand for a context param
+// ctxParam is a shorthand for a context param
 func ctxVar() *jen.Statement {
 	return jen.ID("ctx")
 }
 
 func (typ DataType) OwnedByAUserAtSomeLevel(proj *Project) bool {
-	if typ.BelongsToUser {
-		return true
-	}
-
 	for _, o := range proj.FindOwnerTypeChain(typ) {
 		if o.BelongsToUser {
 			return true
 		}
 	}
 
-	return false
+	return typ.BelongsToUser
 }
 
 func (typ DataType) RestrictedToUserAtSomeLevel(proj *Project) bool {
-	if typ.BelongsToUser && typ.RestrictedToUser {
-		return true
-	}
-
 	for _, o := range proj.FindOwnerTypeChain(typ) {
 		if o.BelongsToUser && o.RestrictedToUser {
 			return true
 		}
 	}
 
-	return false
+	return typ.BelongsToUser && typ.RestrictedToUser
 }
 
 func (typ DataType) MultipleOwnersBelongingToUser(proj *Project) bool {
@@ -454,7 +446,7 @@ func (typ DataType) buildGetSomethingArgs(proj *Project) []jen.Code {
 	return params
 }
 
-func (typ DataType) buildArchiveSomethingArgs(proj *Project) []jen.Code {
+func (typ DataType) buildArchiveSomethingArgs() []jen.Code {
 	params := []jen.Code{ctxVar()}
 	uvn := typ.Name.UnexportedVarName()
 
@@ -478,8 +470,8 @@ func (typ DataType) BuildDBClientRetrievalMethodCallArgs(proj *Project) []jen.Co
 	return typ.buildGetSomethingArgs(proj)
 }
 
-func (typ DataType) BuildDBClientArchiveMethodCallArgs(proj *Project) []jen.Code {
-	return typ.buildArchiveSomethingArgs(proj)
+func (typ DataType) BuildDBClientArchiveMethodCallArgs() []jen.Code {
+	return typ.buildArchiveSomethingArgs()
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryBuildingArgs(proj *Project) []jen.Code {
@@ -494,8 +486,8 @@ func (typ DataType) BuildDBQuerierRetrievalQueryBuildingArgs(proj *Project) []je
 	return params[1:]
 }
 
-func (typ DataType) BuildDBQuerierArchiveQueryBuildingArgs(proj *Project) []jen.Code {
-	params := typ.buildArchiveSomethingArgs(proj)
+func (typ DataType) BuildDBQuerierArchiveQueryBuildingArgs() []jen.Code {
+	params := typ.buildArchiveSomethingArgs()
 
 	return params[1:]
 }
@@ -508,8 +500,8 @@ func (typ DataType) BuildInterfaceDefinitionRetrievalMethodCallArgs(proj *Projec
 	return typ.buildGetSomethingArgs(proj)
 }
 
-func (typ DataType) BuildInterfaceDefinitionArchiveMethodCallArgs(proj *Project) []jen.Code {
-	return typ.buildArchiveSomethingArgs(proj)
+func (typ DataType) BuildInterfaceDefinitionArchiveMethodCallArgs() []jen.Code {
+	return typ.buildArchiveSomethingArgs()
 }
 
 func (typ DataType) buildGetSomethingArgsWithExampleVariables(proj *Project, includeCtx bool) []jen.Code {
@@ -825,18 +817,18 @@ func (typ DataType) BuildDBQuerierCreationQueryBuildingMethodParams(proj *Projec
 	return params
 }
 
-func (typ DataType) buildCreateSomethingArgs(proj *Project) []jen.Code {
+func (typ DataType) buildCreateSomethingArgs() []jen.Code {
 	params := []jen.Code{ctxVar(), jen.ID(creationObjectVarName)}
 
 	return params
 }
 
-func (typ DataType) BuildMockInterfaceDefinitionCreationMethodCallArgs(proj *Project) []jen.Code {
-	return typ.buildCreateSomethingArgs(proj)
+func (typ DataType) BuildMockInterfaceDefinitionCreationMethodCallArgs() []jen.Code {
+	return typ.buildCreateSomethingArgs()
 }
 
-func (typ DataType) BuildDBQuerierCreationMethodQueryBuildingArgs(proj *Project) []jen.Code {
-	params := typ.buildCreateSomethingArgs(proj)
+func (typ DataType) BuildDBQuerierCreationMethodQueryBuildingArgs() []jen.Code {
+	params := typ.buildCreateSomethingArgs()
 
 	return params[1:]
 }
@@ -860,13 +852,13 @@ func (typ DataType) BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj *P
 	return params
 }
 
-func (typ DataType) BuildArgsForDBQuerierTestOfUpdateQueryBuilder(proj *Project) []jen.Code {
+func (typ DataType) BuildArgsForDBQuerierTestOfUpdateQueryBuilder() []jen.Code {
 	params := []jen.Code{jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return params
 }
 
-func (typ DataType) BuildArgsForDBQuerierTestOfArchiveQueryBuilder(proj *Project) []jen.Code {
+func (typ DataType) BuildArgsForDBQuerierTestOfArchiveQueryBuilder() []jen.Code {
 	args := []jen.Code{}
 
 	if typ.BelongsToStruct != nil {
@@ -882,26 +874,26 @@ func (typ DataType) BuildArgsForDBQuerierTestOfArchiveQueryBuilder(proj *Project
 	return args
 }
 
-func (typ DataType) BuildArgsForDBQuerierTestOfUpdateMethod(proj *Project) []jen.Code {
+func (typ DataType) BuildArgsForDBQuerierTestOfUpdateMethod() []jen.Code {
 	params := []jen.Code{ctxVar(), jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return params
 }
 
-func (typ DataType) BuildDBQuerierCreationMethodArgsToUseFromMethodTest(proj *Project) []jen.Code {
+func (typ DataType) BuildDBQuerierCreationMethodArgsToUseFromMethodTest() []jen.Code {
 	params := []jen.Code{ctxVar(), jen.ID(buildFakeVarName("Input"))}
 
 	return params
 }
 
-func (typ DataType) BuildArgsToUseForDBQuerierCreationQueryBuildingTest(proj *Project) []jen.Code {
+func (typ DataType) BuildArgsToUseForDBQuerierCreationQueryBuildingTest() []jen.Code {
 	params := []jen.Code{jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return params
 }
 
-func (typ DataType) BuildDBClientCreationMethodCallArgs(proj *Project) []jen.Code {
-	return typ.buildCreateSomethingArgs(proj)
+func (typ DataType) BuildDBClientCreationMethodCallArgs() []jen.Code {
+	return typ.buildCreateSomethingArgs()
 }
 
 func (typ DataType) buildUpdateSomethingParams(proj *Project, updatedVarName string, isModelsPackage bool) []jen.Code {
@@ -959,24 +951,24 @@ func (typ DataType) buildUpdateSomethingArgsWithExampleVars(proj *Project, updat
 	return params
 }
 
-func (typ DataType) buildUpdateSomethingArgs(proj *Project, updatedVarName string) []jen.Code {
+func (typ DataType) buildUpdateSomethingArgs(updatedVarName string) []jen.Code {
 	params := []jen.Code{ctxVar(), jen.ID(updatedVarName)}
 
 	return params
 }
 
-func (typ DataType) BuildDBClientUpdateMethodCallArgs(proj *Project, updatedVarName string) []jen.Code {
-	return typ.buildUpdateSomethingArgs(proj, updatedVarName)
+func (typ DataType) BuildDBClientUpdateMethodCallArgs(updatedVarName string) []jen.Code {
+	return typ.buildUpdateSomethingArgs(updatedVarName)
 }
 
-func (typ DataType) BuildDBQuerierUpdateMethodArgs(proj *Project, updatedVarName string) []jen.Code {
-	params := typ.buildUpdateSomethingArgs(proj, updatedVarName)
+func (typ DataType) BuildDBQuerierUpdateMethodArgs(updatedVarName string) []jen.Code {
+	params := typ.buildUpdateSomethingArgs(updatedVarName)
 
 	return params[1:]
 }
 
-func (typ DataType) BuildMockDataManagerUpdateMethodCallArgs(proj *Project, updatedVarName string) []jen.Code {
-	return typ.buildUpdateSomethingArgs(proj, updatedVarName)
+func (typ DataType) BuildMockDataManagerUpdateMethodCallArgs(updatedVarName string) []jen.Code {
+	return typ.buildUpdateSomethingArgs(updatedVarName)
 }
 
 func (typ DataType) buildGetListOfSomethingArgs(proj *Project) []jen.Code {
@@ -1259,7 +1251,7 @@ func (typ DataType) BuildFormatStringForHTTPClientListMethodTest(proj *Project) 
 	return modelRoute
 }
 
-func (typ DataType) BuildFormatStringForHTTPClientSearchMethodTest(proj *Project) (path string) {
+func (typ DataType) BuildFormatStringForHTTPClientSearchMethodTest() (path string) {
 	modelRoute := "/" + filepath.Join("api", "v1", typ.Name.PluralRouteName(), "search")
 
 	return modelRoute
@@ -2161,7 +2153,7 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMetho
 	return lines
 }
 
-func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(proj *Project) []jen.Code {
+func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest() []jen.Code {
 	lines := []jen.Code{constants.CtxVar()}
 
 	sn := typ.Name.Singular()
@@ -2179,7 +2171,7 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(
 	return lines
 }
 
-func (typ DataType) BuildCallArgsForDBClientCreationMethodTest(proj *Project) []jen.Code {
+func (typ DataType) BuildCallArgsForDBClientCreationMethodTest() []jen.Code {
 	lines := []jen.Code{constants.CtxVar()}
 
 	const (
@@ -2229,7 +2221,7 @@ func (typ DataType) BuildRequisiteVarsForDBClientUpdateMethodTest(proj *Project)
 
 	return lines
 }
-func (typ DataType) BuildCallArgsForDBClientUpdateMethodTest(proj *Project) []jen.Code {
+func (typ DataType) BuildCallArgsForDBClientUpdateMethodTest() []jen.Code {
 	lines := []jen.Code{jen.ID(buildFakeVarName(typ.Name.Singular()))}
 
 	return lines

@@ -359,7 +359,7 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 	tp := typ.Name.Plural()   // title plural
 	ts := typ.Name.Singular() // title singular
 
-	modelListRoute := typ.BuildFormatStringForHTTPClientSearchMethodTest(proj)
+	modelListRoute := typ.BuildFormatStringForHTTPClientSearchMethodTest()
 
 	structDecls := typ.BuildDependentObjectsForHTTPClientListRetrievalTest(proj)
 	happyPathSubtestLines := append(

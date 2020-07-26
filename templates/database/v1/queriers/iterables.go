@@ -960,7 +960,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	)
 
 	params := typ.BuildDBQuerierCreationMethodParams(proj)
-	queryBuildingArgs := typ.BuildDBQuerierCreationMethodQueryBuildingArgs(proj)
+	queryBuildingArgs := typ.BuildDBQuerierCreationMethodQueryBuildingArgs()
 	queryBuildingArgs = queryBuildingArgs[:len(queryBuildingArgs)-1]
 	queryBuildingArgs = append(queryBuildingArgs, jen.ID("x"))
 
@@ -1101,7 +1101,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 
 	const updatedVarName = "input"
 
-	args := typ.BuildDBQuerierUpdateMethodArgs(proj, updatedVarName)
+	args := typ.BuildDBQuerierUpdateMethodArgs(updatedVarName)
 	block := []jen.Code{
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(args...),
 	}
@@ -1210,7 +1210,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Supe
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
 	params := typ.BuildDBQuerierArchiveMethodParams(proj)
-	queryBuildingArgs := typ.BuildDBQuerierArchiveQueryBuildingArgs(proj)
+	queryBuildingArgs := typ.BuildDBQuerierArchiveQueryBuildingArgs()
 
 	return []jen.Code{
 		jen.Commentf("Archive%s marks %s as archived in the database.", sn, scnwp),

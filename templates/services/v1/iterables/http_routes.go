@@ -569,7 +569,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.Line(),
 	}
 	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, true, false, false)...)
-	callArgs := typ.BuildDBClientArchiveMethodCallArgs(proj)
+	callArgs := typ.BuildDBClientArchiveMethodCallArgs()
 
 	block = append(block,
 		jen.Line(),

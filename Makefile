@@ -35,20 +35,9 @@ revendor: vendor-clean vendor
 
 ## tests
 
-.PHONY: test
-test: test-models test-wordsmith test-templates
-
-.PHONY: test-wordsmith
-test-wordsmith:
-	go test -race -cover -v $(THIS_PKG)/lib/wordsmith/
-
-.PHONY: test-models
-test-models:
-	go test -race -cover -v $(THIS_PKG)/models/
-
-.PHONY: test-templates
-test-templates:
-	go test -race -cover -v $(THIS_PKG)/templates/...
+.PHONY: quicktest
+quicktest:
+	go test -race -failfast `go list gitlab.com/verygoodsoftwarenotvirus/naff/... | grep -Ev '(cmd|testprojects|example_models|example_output|forks)'`
 
 .PHONY: install
 install:

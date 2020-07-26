@@ -198,7 +198,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	sn := n.Singular()
 
 	params := typ.BuildMockInterfaceDefinitionCreationMethodParams(proj)
-	args := typ.BuildMockInterfaceDefinitionCreationMethodCallArgs(proj)
+	args := typ.BuildMockInterfaceDefinitionCreationMethodCallArgs()
 
 	lines := []jen.Code{
 		jen.Commentf("Create%s is a mock function.", sn),
@@ -223,7 +223,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	sn := n.Singular()
 
 	params := typ.BuildMockDataManagerUpdateMethodParams(proj, "updated")
-	args := typ.BuildMockDataManagerUpdateMethodCallArgs(proj, "updated")
+	args := typ.BuildMockDataManagerUpdateMethodCallArgs("updated")
 
 	lines := []jen.Code{
 		jen.Commentf("Update%s is a mock function.", sn),
@@ -246,7 +246,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	sn := n.Singular()
 
 	params := typ.BuildInterfaceDefinitionArchiveMethodParams(proj)
-	callArgs := typ.BuildInterfaceDefinitionArchiveMethodCallArgs(proj)
+	callArgs := typ.BuildInterfaceDefinitionArchiveMethodCallArgs()
 
 	lines := []jen.Code{
 		jen.Commentf("Archive%s is a mock function.", sn),

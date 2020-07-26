@@ -12,6 +12,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func buildExampleTodoListProject() *Project {
+	return &Project{
+		DataTypes: []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Item"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Details"),
+						Type:                  "string",
+						DefaultValue:          "''",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToUser:    true,
+				RestrictedToUser: true,
+				SearchEnabled:    true,
+			},
+		},
+	}
+}
+
 func TestProject_Validate(T *testing.T) {
 	T.Parallel()
 
@@ -53,33 +83,7 @@ func TestProject_Validate(T *testing.T) {
 	T.Run("with no databases", func(t *testing.T) {
 		t.Parallel()
 
-		p := &Project{
-			DataTypes: []DataType{
-				{
-					Name: wordsmith.FromSingularPascalCase("Item"),
-					Fields: []DataField{
-						{
-							Name:                  wordsmith.FromSingularPascalCase("Name"),
-							Type:                  "string",
-							Pointer:               false,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						},
-						{
-							Name:                  wordsmith.FromSingularPascalCase("Details"),
-							Type:                  "string",
-							DefaultValue:          "''",
-							Pointer:               false,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						},
-					},
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    true,
-				},
-			},
-		}
+		p := buildExampleTodoListProject()
 
 		defer func() {
 			if r := recover(); r == nil {
@@ -194,34 +198,8 @@ func TestProject_SearchEnabled(T *testing.T) {
 	T.Run("expecting true", func(t *testing.T) {
 		t.Parallel()
 
-		p := &Project{
-			enabledDatabases: validDatabaseMap,
-			DataTypes: []DataType{
-				{
-					Name: wordsmith.FromSingularPascalCase("Item"),
-					Fields: []DataField{
-						{
-							Name:                  wordsmith.FromSingularPascalCase("Name"),
-							Type:                  "string",
-							Pointer:               false,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						},
-						{
-							Name:                  wordsmith.FromSingularPascalCase("Details"),
-							Type:                  "string",
-							DefaultValue:          "''",
-							Pointer:               false,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						},
-					},
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    true,
-				},
-			},
-		}
+		p := buildExampleTodoListProject()
+		p.DataTypes[0].SearchEnabled = true
 
 		assert.True(t, p.SearchEnabled())
 	})
@@ -229,34 +207,8 @@ func TestProject_SearchEnabled(T *testing.T) {
 	T.Run("expecting false", func(t *testing.T) {
 		t.Parallel()
 
-		p := &Project{
-			enabledDatabases: validDatabaseMap,
-			DataTypes: []DataType{
-				{
-					Name: wordsmith.FromSingularPascalCase("Item"),
-					Fields: []DataField{
-						{
-							Name:                  wordsmith.FromSingularPascalCase("Name"),
-							Type:                  "string",
-							Pointer:               false,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						},
-						{
-							Name:                  wordsmith.FromSingularPascalCase("Details"),
-							Type:                  "string",
-							DefaultValue:          "''",
-							Pointer:               false,
-							ValidForCreationInput: true,
-							ValidForUpdateInput:   true,
-						},
-					},
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    false,
-				},
-			},
-		}
+		p := buildExampleTodoListProject()
+		p.DataTypes[0].SearchEnabled = false
 
 		assert.False(t, p.SearchEnabled())
 	})
