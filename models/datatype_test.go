@@ -115,7 +115,7 @@ func TestDataType_OwnedByAUserAtSomeLevel(T *testing.T) {
 			DataTypes: buildOwnershipChain("A", "B", "C"),
 		}
 
-		assert.True(t, p.DataTypes[len(p.DataTypes)-1].OwnedByAUserAtSomeLevel(p))
+		assert.True(t, p.lastDataType().OwnedByAUserAtSomeLevel(p))
 	})
 }
 
@@ -539,7 +539,7 @@ func TestDataType_ModifyQueryBuildingStatementWithJoinClauses(T *testing.T) {
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing", "EvenStillAnotherThing")
 
-		result := p.DataTypes[len(p.DataTypes)-1].ModifyQueryBuildingStatementWithJoinClauses(p, jen.ID("something"))
+		result := p.lastDataType().ModifyQueryBuildingStatementWithJoinClauses(p, jen.ID("something"))
 
 		expected := `
 package main
@@ -601,16 +601,14 @@ func TestDataType_ModifyQueryBuilderWithJoinClauses(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		s := squirrel.Select("fart")
+		s := squirrel.Select("*").From("fart")
 
-		result := dt.ModifyQueryBuilderWithJoinClauses(p, s)
+		result := p.lastDataType().ModifyQueryBuilderWithJoinClauses(p, s)
 
-		expected := ""
+		expected := "SELECT * FROM fart JOIN another_things ON yet_another_things.belongs_to_another_thing=another_things.id JOIN things ON another_things.belongs_to_thing=things.id"
 		actual, _, _ := result.ToSql()
 
 		assert.Equal(t, expected, actual)

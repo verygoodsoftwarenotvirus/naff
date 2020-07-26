@@ -79,6 +79,11 @@ type Project struct {
 	enabledDatabases map[validDatabase]struct{}
 }
 
+// lastDataType is a helper method for tests
+func (p *Project) lastDataType() DataType {
+	return p.DataTypes[len(p.DataTypes)-1]
+}
+
 func (p *Project) Validate() {
 	if len(p.EnabledDatabases()) == 0 {
 		log.Panic("no databases enabled!")
