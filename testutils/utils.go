@@ -70,3 +70,18 @@ func BuildOwnershipChain(names ...string) (out []models.DataType) {
 
 	return
 }
+
+func RenderIndependentStatementToString(t *testing.T, result *jen.Statement) string {
+	t.Helper()
+
+	f := jen.NewFile("main")
+	f.Add(
+		jen.Func().ID("main").Params().Body(
+			result,
+		),
+	)
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, f.Render(b))
+
+	return b.String()
+}

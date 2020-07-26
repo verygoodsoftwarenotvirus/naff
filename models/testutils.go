@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// NOTE: this file should basically be identical to the one in the root testutils folder
+
 func renderFunctionParamsToString(t *testing.T, params []jen.Code) string {
 	t.Helper()
 
