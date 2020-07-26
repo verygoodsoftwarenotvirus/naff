@@ -550,6 +550,124 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 	})
 }
 
+func TestProject_ensureNoNilFields(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		assert.Nil(t, p.enabledDatabases)
+		p.ensureNoNilFields()
+		assert.NotNil(t, p.enabledDatabases)
+	})
+}
+
+func TestProject_EnableDatabase(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		assert.False(t, p.DatabaseIsEnabled(Postgres))
+		p.EnableDatabase(Postgres)
+		assert.True(t, p.DatabaseIsEnabled(Postgres))
+	})
+
+	T.Run("with invalid database", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("function didn't panic as expected")
+			}
+		}()
+
+		p.EnableDatabase("fart")
+	})
+}
+
+func TestProject_DisableDatabase(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		p.EnableDatabase(Postgres)
+		assert.True(t, p.DatabaseIsEnabled(Postgres))
+
+		p.DisableDatabase(Postgres)
+		assert.False(t, p.DatabaseIsEnabled(Postgres))
+	})
+
+	T.Run("with invalid database", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("function didn't panic as expected")
+			}
+		}()
+
+		p.DisableDatabase("fart")
+	})
+}
+
+func TestProject_DatabaseIsEnabled(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		assert.False(t, p.DatabaseIsEnabled(Postgres))
+		p.EnableDatabase(Postgres)
+		assert.True(t, p.DatabaseIsEnabled(Postgres))
+	})
+
+	T.Run("with invalid database", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("function didn't panic as expected")
+			}
+		}()
+
+		p.DatabaseIsEnabled("fart")
+	})
+}
+
+func TestProject_EnabledDatabases(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := &Project{
+			enabledDatabases: validDatabaseMap,
+		}
+
+		actual := p.EnabledDatabases()
+
+		for k := range validDatabaseMap {
+			assert.Contains(t, actual, string(k))
+		}
+	})
+}
+
 func TestParseModels(T *testing.T) {
 	T.Parallel()
 
@@ -605,6 +723,32 @@ type Item struct{
 
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 		assert.Equal(t, expectedImports, actualImports)
+	})
+
+	T.Run("panics with uintptr type in wrong place", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Item struct{
+	Name string
+	Details uintptr
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("didn't panic as expected")
+			}
+		}()
+
+		_, _, _ = parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
 	})
 
 	T.Run("ignores invalid declarations", func(t *testing.T) {
@@ -927,6 +1071,82 @@ type Item struct{
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 	})
 
+	T.Run("with meta field indicating belonging to too many owners", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Owner struct {
+	FirstName string
+}
+
+type Loaner struct {
+	FirstName string
+}
+
+type Groaner struct {
+	FirstName string
+}
+
+type Item struct{
+	Name string
+	Details string
+
+	_META_ uintptr ` + "`" + `belongs_to:"Owner,Loaner,Groaner"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		_, _, _ = parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+	})
+
+	T.Run("with meta field indicating belonging to two owners, but no user", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Owner struct {
+	FirstName string
+}
+
+type Loaner struct {
+	FirstName string
+}
+
+type Item struct{
+	Name string
+	Details string
+
+	_META_ uintptr ` + "`" + `belongs_to:"Owner,Loaner"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		_, _, _ = parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+	})
+
 	T.Run("with meta field indicating belonging to another object and a user, restricted to that user", func(t *testing.T) {
 		exampleOutputPath := "things/stuff"
 		exampleCode := `
@@ -940,7 +1160,7 @@ type Item struct{
 	Name string
 	Details string
 
-	_META_ uintptr ` + "`" + `belongs_to:"Owner,User" restricted_to_user:"true"` + "`" + `
+	_META_ uintptr ` + "`" + `belongs_to:"User,Owner" restricted_to_user:"true"` + "`" + `
 }
 `
 		fset := token.NewFileSet()
@@ -1143,6 +1363,34 @@ type Item struct{
 		assert.Equal(t, expectedDataTypes, actualDataTypes)
 		assert.Equal(t, expectedImports, actualImports)
 	})
+
+	T.Run("with search enabled, but no string field", func(t *testing.T) {
+		exampleOutputPath := "things/stuff"
+		exampleCode := `
+package whatever
+
+type Item struct{
+	Name uint64
+	Details uint64
+
+	_META_ uintptr ` + "`" + `search_enabled:"true"` + "`" + `
+}
+`
+		fset := token.NewFileSet()
+		f, err := parser.ParseFile(fset, "", exampleCode, parser.AllErrors)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		_, _, _ = parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
+	})
 }
 
 func TestProject_containsCyclicOwnerships(T *testing.T) {
@@ -1236,5 +1484,47 @@ func TestProject_FindOwnerTypeChain(T *testing.T) {
 		actual := proj.FindOwnerTypeChain(cherry)
 
 		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestGetTypeForTypeName(T *testing.T) {
+	T.Parallel()
+
+	T.Run("non-nil expectations", func(t *testing.T) {
+		t.Parallel()
+
+		expectedToNotReturnNil := []string{
+			"bool",
+			"int",
+			"int8",
+			"int16",
+			"int32",
+			"int64",
+			"uint",
+			"uint8",
+			"uint16",
+			"uint32",
+			"uint64",
+			"uintptr",
+			"float32",
+			"float64",
+			"string",
+		}
+
+		for _, input := range expectedToNotReturnNil {
+			assert.NotNil(t, GetTypeForTypeName(input))
+		}
+	})
+
+	T.Run("with expected panic", func(t *testing.T) {
+		t.Parallel()
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		GetTypeForTypeName("fart")
 	})
 }

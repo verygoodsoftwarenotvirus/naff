@@ -203,7 +203,7 @@ func (p *Project) EnableDatabase(database validDatabase) {
 	p.ensureNoNilFields()
 
 	if _, ok := validDatabaseMap[database]; !ok {
-		log.Fatalf("unknown database: %q", database)
+		log.Panicf("unknown database: %q", database)
 	}
 
 	if _, ok := p.enabledDatabases[database]; !ok {
@@ -215,7 +215,7 @@ func (p *Project) DisableDatabase(database validDatabase) {
 	p.ensureNoNilFields()
 
 	if _, ok := validDatabaseMap[database]; !ok {
-		log.Fatalf("unknown database: %q", database)
+		log.Panicf("unknown database: %q", database)
 	}
 
 	if _, ok := p.enabledDatabases[database]; ok {
@@ -225,6 +225,10 @@ func (p *Project) DisableDatabase(database validDatabase) {
 
 func (p *Project) DatabaseIsEnabled(database validDatabase) bool {
 	p.ensureNoNilFields()
+
+	if _, ok := validDatabaseMap[database]; !ok {
+		log.Panicf("unknown database: %q", database)
+	}
 
 	_, present := p.enabledDatabases[database]
 
@@ -276,7 +280,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 					df.UnderlyingType = GetTypeForTypeName(df.Type)
 
 					if fieldName != metaFieldName && df.Type == "uintptr" {
-						log.Panic("invalid type!")
+						panic("invalid type!")
 					}
 
 					// check if this is the meta flag
@@ -438,6 +442,45 @@ func (p *Project) containsCyclicOwnerships() bool {
 	return len(cycles) != 0
 }
 
+// GetTypeForTypeName blah
+func GetTypeForTypeName(name string) types.Type {
+	switch strings.ToLower(name) {
+	case "bool":
+		return types.Typ[types.Bool]
+	case "int":
+		return types.Typ[types.Int]
+	case "int8":
+		return types.Typ[types.Int8]
+	case "int16":
+		return types.Typ[types.Int16]
+	case "int32":
+		return types.Typ[types.Int32]
+	case "int64":
+		return types.Typ[types.Int64]
+	case "uint":
+		return types.Typ[types.Uint]
+	case "uint8":
+		return types.Typ[types.Uint8]
+	case "uint16":
+		return types.Typ[types.Uint16]
+	case "uint32":
+		return types.Typ[types.Uint32]
+	case "uint64":
+		return types.Typ[types.Uint64]
+	case "uintptr":
+		return types.Typ[types.Uintptr]
+	case "float32":
+		return types.Typ[types.Float32]
+	case "float64":
+		return types.Typ[types.Float64]
+	case "string":
+		return types.Typ[types.String]
+	default:
+		log.Panicf("invalid type: %q", name)
+		return nil
+	}
+}
+
 type projectSurvey struct {
 	Name             string `survey:"name"`
 	OutputRepository string `survey:"outputRepository"`
@@ -530,43 +573,4 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 	}
 
 	return proj, nil
-}
-
-// GetTypeForTypeName blah
-func GetTypeForTypeName(name string) types.Type {
-	switch strings.ToLower(name) {
-	case "bool":
-		return types.Typ[types.Bool]
-	case "int":
-		return types.Typ[types.Int]
-	case "int8":
-		return types.Typ[types.Int8]
-	case "int16":
-		return types.Typ[types.Int16]
-	case "int32":
-		return types.Typ[types.Int32]
-	case "int64":
-		return types.Typ[types.Int64]
-	case "uint":
-		return types.Typ[types.Uint]
-	case "uint8":
-		return types.Typ[types.Uint8]
-	case "uint16":
-		return types.Typ[types.Uint16]
-	case "uint32":
-		return types.Typ[types.Uint32]
-	case "uint64":
-		return types.Typ[types.Uint64]
-	case "uintptr":
-		return types.Typ[types.Uintptr]
-	case "float32":
-		return types.Typ[types.Float32]
-	case "float64":
-		return types.Typ[types.Float64]
-	case "string":
-		return types.Typ[types.String]
-	default:
-		log.Panicf("invalid type: %q", name)
-		return nil
-	}
 }

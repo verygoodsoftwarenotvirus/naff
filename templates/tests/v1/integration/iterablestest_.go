@@ -722,13 +722,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 
 	lines = append(lines,
 		jen.Comment("create user and oauth2 client A."),
-		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(
+		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(
+		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userA"),
 		),
@@ -779,13 +779,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		jen.ID("query").Assign().IDf("example%sA", sn).Dot(firstStringField.Singular()),
 		jen.Line(),
 		jen.Comment("create user and oauth2 client B."),
-		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(
+		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(
+		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userB"),
 		),

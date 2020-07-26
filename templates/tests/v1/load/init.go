@@ -23,18 +23,18 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("init").Params().Block(
-			jen.ID("urlToUse").Equals().Qual(proj.TestutilV1Package(), "DetermineServiceURL").Call(),
+			jen.ID("urlToUse").Equals().Qual(proj.TestUtilV1Package(), "DetermineServiceURL").Call(),
 			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.Qual(proj.TestutilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(proj.TestUtilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
-			jen.List(jen.ID("u"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+			jen.List(jen.ID("u"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("oa2Client"), jen.Err()).Equals().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
+			jen.List(jen.ID("oa2Client"), jen.Err()).Equals().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("u")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),

@@ -74,6 +74,6 @@ func (p *Project) ServiceV1WebhooksPackage(parts ...string) string {
 	return p.ServiceV1Package(append([]string{"webhooks"}, parts...)...)
 }
 
-func (p *Project) TestutilV1Package(parts ...string) string {
+func (p *Project) TestUtilV1Package(parts ...string) string {
 	return p.RelativePath(append([]string{"tests", "v1", "testutil"}, parts...)...)
 }
