@@ -114,6 +114,7 @@ func TestDataType_OwnedByAUserAtSomeLevel(T *testing.T) {
 		p := &Project{
 			DataTypes: buildOwnershipChain("A", "B", "C"),
 		}
+		p.DataTypes[0].BelongsToUser = true
 
 		assert.True(t, p.lastDataType().OwnedByAUserAtSomeLevel(p))
 	})
@@ -593,8 +594,6 @@ func TestDataType_buildJoinClause(T *testing.T) {
 	})
 }
 
-// tests up to here work
-
 func TestDataType_ModifyQueryBuilderWithJoinClauses(T *testing.T) {
 	T.Parallel()
 
@@ -609,7 +608,8 @@ func TestDataType_ModifyQueryBuilderWithJoinClauses(T *testing.T) {
 		result := p.lastDataType().ModifyQueryBuilderWithJoinClauses(p, s)
 
 		expected := "SELECT * FROM fart JOIN another_things ON yet_another_things.belongs_to_another_thing=another_things.id JOIN things ON another_things.belongs_to_thing=things.id"
-		actual, _, _ := result.ToSql()
+		actual, _, err := result.ToSql()
+		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -626,8 +626,22 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodConditionalClauses(T *t
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+		result := dt.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", thingsTableName, idColumn): thingID,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, result)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -644,8 +658,22 @@ func TestDataType_BuildDBQuerierExistenceQueryMethodConditionalClauses(T *testin
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierExistenceQueryMethodConditionalClauses(p)
+		result := dt.BuildDBQuerierExistenceQueryMethodConditionalClauses(p)
+
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", thingsTableName, idColumn): thingID,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, result)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -662,8 +690,12 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(T 
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
+		results := dt.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
+		qb := squirrel.Select("*").From("farts").Where(results)
+
+		expected := "SELECT * FROM farts WHERE things.id = ?"
+		actual, _, err := qb.ToSql()
+		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -680,8 +712,12 @@ func TestDataType_BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(T *
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(p)
+		results := dt.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(p)
+		qb := squirrel.Select("*").From("farts").Where(results)
+
+		expected := "SELECT * FROM farts WHERE things.id = ?"
+		actual, _, err := qb.ToSql()
+		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -698,8 +734,12 @@ func TestDataType_BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(T *
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(p)
+		results := dt.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(p)
+		qb := squirrel.Select("*").From("farts").Where(results)
+
+		expected := "SELECT * FROM farts WHERE things.id = ?"
+		actual, _, err := qb.ToSql()
+		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -716,8 +756,12 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p)
+		results := dt.BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p)
+		qb := squirrel.Select("*").From("farts").Where(results)
+
+		expected := "SELECT * FROM farts WHERE things.archived_on IS NULL"
+		actual, _, err := qb.ToSql()
+		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -734,8 +778,20 @@ func TestDataType_BuildDBQuerierRetrievalQueryMethodConditionalClauses(T *testin
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierRetrievalQueryMethodConditionalClauses(p)
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", thingsTableName, idColumn): thingID,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, dt.BuildDBQuerierRetrievalQueryMethodConditionalClauses(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -752,8 +808,20 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodConditionalClauses(T *te
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p)
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", thingsTableName, archivedOnColumn): nil,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, dt.BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -777,7 +845,7 @@ import (
 	"context"
 )
 
-func example() {}
+func example(ctx context.Context, thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierExistenceMethodParams(p))
 
@@ -796,8 +864,16 @@ func TestDataType_buildGetSomethingArgs(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildGetSomethingArgs(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildGetSomethingArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -813,8 +889,16 @@ func TestDataType_buildArchiveSomethingArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.buildArchiveSomethingArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildArchiveSomethingArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -837,10 +921,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(ctx, thingID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildDBClientExistenceMethodCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildDBClientExistenceMethodCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -861,10 +947,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(ctx, thingID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildDBClientRetrievalMethodCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildDBClientRetrievalMethodCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -878,8 +966,16 @@ func TestDataType_BuildDBClientArchiveMethodCallArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBClientArchiveMethodCallArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBClientArchiveMethodCallArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -896,8 +992,16 @@ func TestDataType_BuildDBQuerierExistenceQueryBuildingArgs(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierExistenceQueryBuildingArgs(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierExistenceQueryBuildingArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -914,8 +1018,16 @@ func TestDataType_BuildDBQuerierRetrievalQueryBuildingArgs(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierRetrievalQueryBuildingArgs(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierRetrievalQueryBuildingArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -931,8 +1043,16 @@ func TestDataType_BuildDBQuerierArchiveQueryBuildingArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierArchiveQueryBuildingArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierArchiveQueryBuildingArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -955,10 +1075,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(ctx, thingID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildInterfaceDefinitionExistenceMethodCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildInterfaceDefinitionExistenceMethodCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -973,8 +1095,16 @@ func TestDataType_BuildInterfaceDefinitionRetrievalMethodCallArgs(T *testing.T) 
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildInterfaceDefinitionRetrievalMethodCallArgs(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildInterfaceDefinitionRetrievalMethodCallArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -999,14 +1129,16 @@ func main() {
 	exampleFunction(ctx, thingID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildInterfaceDefinitionArchiveMethodCallArgs()))
+		actual := renderCallArgsToString(t, dt.BuildInterfaceDefinitionArchiveMethodCallArgs())
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
 func TestDataType_buildGetSomethingArgsWithExampleVariables(T *testing.T) {
 	T.Parallel()
 
-	T.Run("obligatory", func(t *testing.T) {
+	T.Run("while including context", func(t *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
@@ -1014,8 +1146,38 @@ func TestDataType_buildGetSomethingArgsWithExampleVariables(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildGetSomethingArgsWithExampleVariables(p, true)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildGetSomethingArgsWithExampleVariables(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("without including context", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildGetSomethingArgsWithExampleVariables(p, false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1038,11 +1200,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(ctx, exampleThing.ID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildHTTPClientRetrievalTestCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildHTTPClientRetrievalTestCallArgs(p))
 
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -1063,10 +1226,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(exampleThing.ID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.buildSingleInstanceQueryTestCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.buildSingleInstanceQueryTestCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -1081,8 +1246,16 @@ func TestDataType_buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(T *t
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1099,8 +1272,16 @@ func TestDataType_BuildArgsForDBQuerierExistenceMethodTest(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForDBQuerierExistenceMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1117,8 +1298,16 @@ func TestDataType_BuildArgsForDBQuerierRetrievalMethodTest(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForDBQuerierRetrievalMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1135,8 +1324,16 @@ func TestDataType_BuildArgsForServiceRouteExistenceCheck(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForServiceRouteExistenceCheck(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForServiceRouteExistenceCheck(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1153,8 +1350,16 @@ func TestDataType_buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(T *testing
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1177,10 +1382,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(exampleThing.ID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -1201,10 +1408,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(exampleThing.ID)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildDBQuerierRetrievalQueryTestCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierRetrievalQueryTestCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -1219,8 +1428,18 @@ func TestDataType_BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(T *
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1237,8 +1456,18 @@ func TestDataType_BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(T *tes
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1255,8 +1484,18 @@ func TestDataType_BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	filter := fake.BuildFleshedOutQueryFilter()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1273,8 +1512,18 @@ func TestDataType_BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(T *
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1291,8 +1540,18 @@ func TestDataType_BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(T *
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1309,8 +1568,18 @@ func TestDataType_BuildDBQuerierUpdateSomethingTestPrerequisiteVariables(T *test
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierUpdateSomethingTestPrerequisiteVariables(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierUpdateSomethingTestPrerequisiteVariables(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1327,8 +1596,18 @@ func TestDataType_BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(T *tes
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1345,8 +1624,18 @@ func TestDataType_BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(T 
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1363,8 +1652,18 @@ func TestDataType_BuildGetSomethingLogValues(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildGetSomethingLogValues(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	map[string]interface{}{
+		"thing_id": thingID,
+	}
+}
+`
+		actual := renderIndependentStatementToString(t, dt.BuildGetSomethingLogValues(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1376,13 +1675,22 @@ func TestDataType_BuildGetListOfSomethingLogValues(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildGetListOfSomethingLogValues(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	map[string]interface{}{
+		"thing_id":         thingID,
+		"another_thing_id": anotherThingID,
+	}
+}
+`
+		actual := renderIndependentStatementToString(t, p.lastDataType().BuildGetListOfSomethingLogValues(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1399,8 +1707,16 @@ func TestDataType_buildGetListOfSomethingParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildGetListOfSomethingParams(p, true)
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, filter *QueryFilter) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildGetListOfSomethingParams(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1413,8 +1729,17 @@ func TestDataType_buildGetListOfSomethingParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildGetListOfSomethingParams(p, false)
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, filter *v1.QueryFilter) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildGetListOfSomethingParams(p, false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1436,9 +1761,10 @@ package main
 
 import (
 	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(ctx context.Context, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildMockDataManagerListRetrievalMethodParams(p))
 
@@ -1464,7 +1790,7 @@ import (
 	"context"
 )
 
-func example() {}
+func example(ctx context.Context, filter *QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildInterfaceDefinitionListRetrievalMethodParams(p))
 
@@ -1488,9 +1814,10 @@ package main
 
 import (
 	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(ctx context.Context, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBClientListRetrievalMethodParams(p))
 
@@ -1514,9 +1841,10 @@ package main
 
 import (
 	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(ctx context.Context, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierListRetrievalMethodParams(p))
 
@@ -1539,10 +1867,10 @@ func TestDataType_BuildDBQuerierListRetrievalQueryBuildingMethodParams(T *testin
 package main
 
 import (
-	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierListRetrievalQueryBuildingMethodParams(p))
 
@@ -1561,8 +1889,16 @@ func TestDataType_buildCreateSomethingParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildCreateSomethingParams(p, true)
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, input *ThingCreationInput) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildCreateSomethingParams(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1575,8 +1911,17 @@ func TestDataType_buildCreateSomethingParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildCreateSomethingParams(p, false)
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildCreateSomethingParams(p, false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1598,9 +1943,10 @@ package main
 
 import (
 	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildMockInterfaceDefinitionCreationMethodParams(p))
 
@@ -1626,7 +1972,7 @@ import (
 	"context"
 )
 
-func example() {}
+func example(ctx context.Context, input *ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildInterfaceDefinitionCreationMethodParams(p))
 
@@ -1650,9 +1996,10 @@ package main
 
 import (
 	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBClientCreationMethodParams(p))
 
@@ -1676,9 +2023,10 @@ package main
 
 import (
 	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example() {}
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierCreationMethodParams(p))
 
@@ -1697,8 +2045,16 @@ func TestDataType_BuildDBQuerierCreationQueryBuildingMethodParams(T *testing.T) 
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierCreationQueryBuildingMethodParams(p, true)
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, input *Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierCreationQueryBuildingMethodParams(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1711,8 +2067,17 @@ func TestDataType_BuildDBQuerierCreationQueryBuildingMethodParams(T *testing.T) 
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierCreationQueryBuildingMethodParams(p, false)
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, input *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierCreationQueryBuildingMethodParams(p, false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1728,8 +2093,16 @@ func TestDataType_buildCreateSomethingArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.buildCreateSomethingArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, input)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildCreateSomethingArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1745,8 +2118,16 @@ func TestDataType_BuildMockInterfaceDefinitionCreationMethodCallArgs(T *testing.
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildMockInterfaceDefinitionCreationMethodCallArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, input)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildMockInterfaceDefinitionCreationMethodCallArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1762,8 +2143,16 @@ func TestDataType_BuildDBQuerierCreationMethodQueryBuildingArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierCreationMethodQueryBuildingArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(input)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierCreationMethodQueryBuildingArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1780,8 +2169,16 @@ func TestDataType_BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(T *testin
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1797,8 +2194,16 @@ func TestDataType_BuildArgsForDBQuerierTestOfUpdateQueryBuilder(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForDBQuerierTestOfUpdateQueryBuilder()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierTestOfUpdateQueryBuilder())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1814,8 +2219,16 @@ func TestDataType_BuildArgsForDBQuerierTestOfArchiveQueryBuilder(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForDBQuerierTestOfArchiveQueryBuilder()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierTestOfArchiveQueryBuilder())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1831,8 +2244,16 @@ func TestDataType_BuildArgsForDBQuerierTestOfUpdateMethod(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildArgsForDBQuerierTestOfUpdateMethod()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierTestOfUpdateMethod())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1848,8 +2269,16 @@ func TestDataType_BuildDBQuerierCreationMethodArgsToUseFromMethodTest(T *testing
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierCreationMethodArgsToUseFromMethodTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleInput)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierCreationMethodArgsToUseFromMethodTest())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1865,8 +2294,16 @@ func TestDataType_BuildArgsToUseForDBQuerierCreationQueryBuildingTest(T *testing
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildArgsToUseForDBQuerierCreationQueryBuildingTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsToUseForDBQuerierCreationQueryBuildingTest())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1882,8 +2319,16 @@ func TestDataType_BuildDBClientCreationMethodCallArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBClientCreationMethodCallArgs()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, input)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBClientCreationMethodCallArgs())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1900,8 +2345,16 @@ func TestDataType_buildUpdateSomethingParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildUpdateSomethingParams(p, "updated", true)
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, updated *Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildUpdateSomethingParams(p, "updated", true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1914,8 +2367,17 @@ func TestDataType_buildUpdateSomethingParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildUpdateSomethingParams(p, "updated", false)
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, updated *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildUpdateSomethingParams(p, "updated", false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1932,8 +2394,17 @@ func TestDataType_BuildDBClientUpdateMethodParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBClientUpdateMethodParams(p, "updated")
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, updated *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildDBClientUpdateMethodParams(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1950,8 +2421,17 @@ func TestDataType_BuildDBQuerierUpdateMethodParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierUpdateMethodParams(p, "updated")
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, updated *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierUpdateMethodParams(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1968,8 +2448,16 @@ func TestDataType_BuildDBQuerierUpdateQueryBuildingMethodParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierUpdateQueryBuildingMethodParams(p, "updated")
+		expected := `
+package main
+
+import (
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(updated *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierUpdateQueryBuildingMethodParams(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1986,8 +2474,16 @@ func TestDataType_BuildInterfaceDefinitionUpdateMethodParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildInterfaceDefinitionUpdateMethodParams(p, "updated")
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, updated *Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildInterfaceDefinitionUpdateMethodParams(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2004,8 +2500,17 @@ func TestDataType_BuildMockDataManagerUpdateMethodParams(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildMockDataManagerUpdateMethodParams(p, "updated")
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, updated *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildMockDataManagerUpdateMethodParams(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2022,8 +2527,16 @@ func TestDataType_buildUpdateSomethingArgsWithExampleVars(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildUpdateSomethingArgsWithExampleVars(p, "updated")
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, updated)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildUpdateSomethingArgsWithExampleVars(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2039,8 +2552,16 @@ func TestDataType_buildUpdateSomethingArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.buildUpdateSomethingArgs("updated")
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, updated)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildUpdateSomethingArgs("updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2056,8 +2577,16 @@ func TestDataType_BuildDBClientUpdateMethodCallArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBClientUpdateMethodCallArgs("updated")
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, updated)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBClientUpdateMethodCallArgs("updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2073,8 +2602,16 @@ func TestDataType_BuildDBQuerierUpdateMethodArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierUpdateMethodArgs("updated")
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(updated)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierUpdateMethodArgs("updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2090,8 +2627,16 @@ func TestDataType_BuildMockDataManagerUpdateMethodCallArgs(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildMockDataManagerUpdateMethodCallArgs("updated")
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, updated)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildMockDataManagerUpdateMethodCallArgs("updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2108,8 +2653,16 @@ func TestDataType_buildGetListOfSomethingArgs(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildGetListOfSomethingArgs(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildGetListOfSomethingArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2132,10 +2685,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(ctx, filter)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildDBClientListRetrievalMethodCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildDBClientListRetrievalMethodCallArgs(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -2150,8 +2705,16 @@ func TestDataType_BuildDBQuerierListRetrievalMethodArgs(T *testing.T) {
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDBQuerierListRetrievalMethodArgs(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierListRetrievalMethodArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2174,11 +2737,12 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(ctx, filter)
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.BuildMockDataManagerListRetrievalMethodCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildMockDataManagerListRetrievalMethodCallArgs(p))
 
+		assert.Equal(t, expected, actual)
 	})
 }
 
@@ -2193,8 +2757,18 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWithOwnerStruct(T *testi
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildVarDeclarationsOfDependentStructsWithOwnerStruct(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildVarDeclarationsOfDependentStructsWithOwnerStruct(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2211,8 +2785,18 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2229,8 +2813,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTe
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2247,8 +2841,18 @@ func TestDataType_BuildDependentObjectsForDBQueriersExistenceMethodTest(T *testi
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForDBQueriersExistenceMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForDBQueriersExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2265,8 +2869,19 @@ func TestDataType_BuildDependentObjectsForDBQueriersCreationMethodTest(T *testin
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForDBQueriersCreationMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleInput := fake.BuildFakeThingCreationInputFromThing(exampleThing)
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForDBQueriersCreationMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2283,8 +2898,18 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWhereEachStructIsImporta
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildVarDeclarationsOfDependentStructsWhereEachStructIsImportant(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildVarDeclarationsOfDependentStructsWhereEachStructIsImportant(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2301,8 +2926,18 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreI
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2319,8 +2954,18 @@ func TestDataType_BuildHTTPClientRetrievalMethodTestDependentObjects(T *testing.
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildHTTPClientRetrievalMethodTestDependentObjects(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildHTTPClientRetrievalMethodTestDependentObjects(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2337,8 +2982,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTes
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2355,8 +3010,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodT
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2373,8 +3038,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientExistenceMethodTest(T *testi
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientExistenceMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2391,8 +3066,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodT
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2409,8 +3094,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientRetrievalMethodTest(T *testi
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientRetrievalMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2427,8 +3122,18 @@ func TestDataType_BuildDependentObjectsForHTTPClientArchiveMethodTest(T *testing
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientArchiveMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildDependentObjectsForHTTPClientArchiveMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2440,13 +3145,22 @@ func TestDataType_buildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.buildDependentObjectsForHTTPClientListRetrievalTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildDependentObjectsForHTTPClientListRetrievalTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2458,13 +3172,22 @@ func TestDataType_BuildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientListRetrievalTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientListRetrievalTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2476,13 +3199,22 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMet
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2494,13 +3226,22 @@ func TestDataType_buildVarDeclarationsOfDependentStructsForUpdateFunction(T *tes
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.buildVarDeclarationsOfDependentStructsForUpdateFunction(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsForUpdateFunction(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2512,13 +3253,22 @@ func TestDataType_BuildDependentObjectsForHTTPClientUpdateMethodTest(T *testing.
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientUpdateMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2530,13 +3280,22 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2548,13 +3307,24 @@ func TestDataType_BuildDependentObjectsForHTTPClientCreationMethodTest(T *testin
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildDependentObjectsForHTTPClientCreationMethodTest(p)
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientCreationMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2566,13 +3336,11 @@ func TestDataType_BuildFormatStringForHTTPClientExistenceMethodTest(T *testing.T
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientExistenceMethodTest(p)
+		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientExistenceMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2584,13 +3352,11 @@ func TestDataType_BuildFormatStringForHTTPClientRetrievalMethodTest(T *testing.T
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientRetrievalMethodTest(p)
+		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientRetrievalMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2602,13 +3368,11 @@ func TestDataType_BuildFormatStringForHTTPClientUpdateMethodTest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientUpdateMethodTest(p)
+		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientUpdateMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2620,13 +3384,11 @@ func TestDataType_BuildFormatStringForHTTPClientArchiveMethodTest(T *testing.T) 
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientArchiveMethodTest(p)
+		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientArchiveMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2638,13 +3400,11 @@ func TestDataType_BuildFormatStringForHTTPClientListMethodTest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientListMethodTest(p)
+		expected := "/api/v1/things/%d/another_things/%d/yet_another_things"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientListMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2656,12 +3416,11 @@ func TestDataType_BuildFormatStringForHTTPClientSearchMethodTest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientSearchMethodTest()
+		expected := "/api/v1/yet_another_things/search"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientSearchMethodTest()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2673,13 +3432,11 @@ func TestDataType_BuildFormatStringForHTTPClientCreateMethodTest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildFormatStringForHTTPClientCreateMethodTest(p)
+		expected := "/api/v1/things/%d/another_things/%d/yet_another_things"
+		actual := p.lastDataType().BuildFormatStringForHTTPClientCreateMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2696,8 +3453,16 @@ func TestDataType_BuildFormatCallArgsForHTTPClientRetrievalMethodTest(T *testing
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2714,898 +3479,22 @@ func TestDataType_BuildFormatCallArgsForHTTPClientExistenceMethodTest(T *testing
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildFormatCallArgsForHTTPClientExistenceMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
 }
 
 func TestDataType_BuildFormatCallArgsForHTTPClientListMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildFormatCallArgsForHTTPClientListMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildFormatCallArgsForHTTPClientCreationMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildFormatCallArgsForHTTPClientCreationMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildFormatCallArgsForHTTPClientUpdateTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildFormatCallArgsForHTTPClientUpdateTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientExistenceRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientExistenceRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientExistenceRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientExistenceMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientExistenceMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientCreateRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientCreateRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientRetrievalRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientRetrievalRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientRetrievalMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("as call", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientRetrievalMethod(p, true)
-
-		assert.Equal(t, expected, actual)
-	})
-
-	T.Run("not as call", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientRetrievalMethod(p, false)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientCreateRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientCreateRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientCreateMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientCreateMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientUpdateRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientUpdateRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientUpdateRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientUpdateRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientUpdateMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientUpdateMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientArchiveRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientArchiveRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientArchiveRequestBuildingMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientArchiveRequestBuildingMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientArchiveMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientArchiveMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_buildParamsForMethodThatHandlesAnInstanceWithStructs(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildParamsForMethodThatHandlesAnInstanceWithStructs(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientExistenceMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientExistenceMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientArchiveMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientArchiveMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildHTTPClientCreationRequestBuildingMethodArgsForTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildHTTPClientCreationRequestBuildingMethodArgsForTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildHTTPClientCreationMethodArgsForTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildHTTPClientCreationMethodArgsForTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildArgsForHTTPClientListRequestMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildArgsForHTTPClientListRequestMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientListRequestMethod(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientListRequestMethod(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildParamsForHTTPClientMethodThatFetchesAList(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildParamsForHTTPClientMethodThatFetchesAList(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildCallArgsForHTTPClientListRetrievalMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForHTTPClientListRetrievalMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildCallArgsForHTTPClientUpdateMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForHTTPClientUpdateMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_buildRequisiteFakeVarDecs(T *testing.T) {
-	T.Parallel()
-
-	T.Run("creating context", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarDecs(p, true)
-
-		assert.Equal(t, expected, actual)
-	})
-
-	T.Run("without creating context", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarDecs(p, false)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_buildRequisiteFakeVarDecForModifierFuncs(T *testing.T) {
-	T.Parallel()
-
-	T.Run("creating context", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarDecForModifierFuncs(p, true)
-
-		assert.Equal(t, expected, actual)
-	})
-
-	T.Run("without creating context", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarDecForModifierFuncs(p, false)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarsForDBClientExistenceMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBClientExistenceMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarsForDBClientCreateMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBClientCreateMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarsForDBClientArchiveMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_buildRequisiteFakeVarDecsForListFunction(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarDecsForListFunction(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(T *testing.T) {
-	T.Parallel()
-
-	T.Run("with filter", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true)
-
-		assert.Equal(t, expected, actual)
-	})
-
-	T.Run("without filter", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, false)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_buildRequisiteFakeVarCallArgsForCreation(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
-		p := buildExampleTodoListProject()
-
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarCallArgsForCreation(p)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestDataType_buildRequisiteFakeVarCallArgs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
@@ -3625,11 +3514,13 @@ func main() {
 	exampleFunction()
 }
 `
-		assert.Equal(t, expected, renderCallArgsToString(t, dt.buildRequisiteFakeVarCallArgs(p)))
+		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientListMethodTest(p))
+
+		assert.Equal(t, expected, actual)
 	})
 }
 
-func TestDataType_buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(T *testing.T) {
+func TestDataType_BuildFormatCallArgsForHTTPClientCreationMethodTest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
@@ -3640,8 +3531,1340 @@ func TestDataType_buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(T *
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction()
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientCreationMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildFormatCallArgsForHTTPClientUpdateTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientUpdateTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientExistenceRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientExistenceRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientExistenceRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientExistenceMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientExistenceMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientCreateRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, input)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientCreateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientRetrievalRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientRetrievalRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientRetrievalMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("as call", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func example(ctx, thingID) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientRetrievalMethod(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("not as call", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientRetrievalMethod(p, false))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientCreateRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientCreateMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientCreateMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientUpdateRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, thing *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientUpdateRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientUpdateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientUpdateMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, thing *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientUpdateMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientArchiveRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientArchiveRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientArchiveRequestBuildingMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientArchiveRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientArchiveMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientArchiveMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildParamsForMethodThatHandlesAnInstanceWithStructs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func example(ctx, exampleThing.ID) {}
+`
+		actual := renderFunctionParamsToString(t, dt.buildParamsForMethodThatHandlesAnInstanceWithStructs(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientExistenceRequestBuildingMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientExistenceMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientExistenceMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientRetrievalRequestBuilderMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientArchiveRequestBuildingMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientArchiveMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientArchiveMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientArchiveMethodTestURLFormatCall(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildHTTPClientCreationRequestBuildingMethodArgsForTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleInput)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildHTTPClientCreationRequestBuildingMethodArgsForTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildHTTPClientCreationMethodArgsForTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleInput)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildHTTPClientCreationMethodArgsForTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildArgsForHTTPClientListRequestMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientListRequestMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientListRequestMethod(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, filter *v1.QueryFilter) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientListRequestMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildParamsForHTTPClientMethodThatFetchesAList(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, filter *v1.QueryFilter) {}
+`
+		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientMethodThatFetchesAList(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildCallArgsForHTTPClientListRetrievalMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildCallArgsForHTTPClientListRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildCallArgsForHTTPClientUpdateMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildCallArgsForHTTPClientUpdateMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildRequisiteFakeVarDecs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("creating context", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildRequisiteFakeVarDecs(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("without creating context", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildRequisiteFakeVarDecs(p, false))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildRequisiteFakeVarDecForModifierFuncs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("creating context", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildRequisiteFakeVarDecForModifierFuncs(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("without creating context", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.buildRequisiteFakeVarDecForModifierFuncs(p, false))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarsForDBClientExistenceMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildRequisiteFakeVarsForDBClientExistenceMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarsForDBClientCreateMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildRequisiteFakeVarsForDBClientCreateMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarsForDBClientArchiveMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	var expected error
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		p := buildExampleTodoListProject()
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, dt.BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildRequisiteFakeVarDecsForListFunction(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecsForListFunction(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(T *testing.T) {
+	T.Parallel()
+
+	T.Run("with filter", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	filter := fake.BuildFleshedOutQueryFilter()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("without filter", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, false))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildRequisiteFakeVarCallArgsForCreation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleThing.ID
+	exampleAnotherThing.ID
+	exampleYetAnotherThing.ID
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildRequisiteFakeVarCallArgs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3653,13 +4876,19 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(T 
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3671,13 +4900,19 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(T *test
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3689,13 +4924,19 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(T *te
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3707,13 +4948,19 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(T *te
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3729,8 +4976,16 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest(T *t
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3742,13 +4997,19 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(T 
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3760,13 +5021,19 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(T 
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3782,8 +5049,16 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest(T *t
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3795,13 +5070,19 @@ func TestDataType_BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(T *
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3818,8 +5099,16 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodT
 		}
 		p := buildExampleTodoListProject()
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3835,8 +5124,16 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(T 
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3852,8 +5149,16 @@ func TestDataType_BuildCallArgsForDBClientCreationMethodTest(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForDBClientCreationMethodTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleInput)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildCallArgsForDBClientCreationMethodTest())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3865,13 +5170,19 @@ func TestDataType_BuildCallArgsForDBClientListRetrievalMethodTest(T *testing.T) 
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForDBClientListRetrievalMethodTest(p)
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3883,13 +5194,26 @@ func TestDataType_BuildRequisiteVarsForDBClientUpdateMethodTest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
-		var expected []jen.Code
-		actual := dt.BuildRequisiteVarsForDBClientUpdateMethodTest(p)
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+	var expected error
+
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteVarsForDBClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3905,8 +5229,16 @@ func TestDataType_BuildCallArgsForDBClientUpdateMethodTest(T *testing.T) {
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
 
-		var expected []jen.Code
-		actual := dt.BuildCallArgsForDBClientUpdateMethodTest()
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildCallArgsForDBClientUpdateMethodTest())
 
 		assert.Equal(t, expected, actual)
 	})

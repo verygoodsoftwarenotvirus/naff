@@ -14,6 +14,7 @@ import (
 
 func buildExampleTodoListProject() *Project {
 	return &Project{
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/example",
 		DataTypes: []DataType{
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),

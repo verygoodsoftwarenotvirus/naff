@@ -74,13 +74,45 @@ func buildOwnershipChain(names ...string) (out []DataType) {
 	return
 }
 
-func renderIndependentStatementToString(t *testing.T, result *jen.Statement) string {
+func renderIndependentStatementToString(t *testing.T, result jen.Code) string {
 	t.Helper()
 
 	f := jen.NewFile("main")
 	f.Add(
 		jen.Func().ID("main").Params().Body(
 			result,
+		),
+	)
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, f.Render(b))
+
+	return b.String()
+}
+
+func renderMapEntriesWithStringKeysToString(t *testing.T, values []jen.Code) string {
+	t.Helper()
+
+	f := jen.NewFile("main")
+	f.Add(
+		jen.Func().ID("main").Params().Body(
+			jen.ID("exampleMap").Assign().Map(jen.String()).Interface().Valuesln(
+				values...,
+			),
+		),
+	)
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, f.Render(b))
+
+	return b.String()
+}
+
+func renderVariableDeclarationsToString(t *testing.T, vars []jen.Code) string {
+	t.Helper()
+
+	f := jen.NewFile("main")
+	f.Add(
+		jen.Func().ID("main").Params().Body(
+			vars...,
 		),
 	)
 	b := bytes.NewBufferString("\n")
