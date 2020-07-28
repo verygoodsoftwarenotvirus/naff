@@ -24,7 +24,6 @@ const (
 	metaFieldName = "_META_"
 
 	belongsTo    = "belongs_to"
-	restricted   = "restricted_to_user"
 	notCreatable = "!creatable"
 	notEditable  = "!editable"
 
@@ -564,7 +563,9 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 	if strings.HasSuffix(targetDestination, "verygoodsoftwarenotvirus") {
 		log.Fatal("I don't think you actually want to do that.")
 	} else {
-		os.RemoveAll(targetDestination)
+		if err := os.RemoveAll(targetDestination); err != nil {
+			log.Printf("error removing target folder: %v", err)
+		}
 	}
 
 	proj := &Project{

@@ -205,10 +205,10 @@ func TestDataType_buildGetSomethingParams(T *testing.T) {
 	T.Run("simple", func(t *testing.T) {
 		t.Parallel()
 
-		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
-		}
 		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes[0].BelongsToUser = true
+		p.DataTypes[0].RestrictedToUser = true
 
 		expected := `
 package main
@@ -217,9 +217,9 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID, userID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, dt.buildGetSomethingParams(p))
+		actual := renderFunctionParamsToString(t, p.lastDataType().buildGetSomethingParams(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -232,9 +232,11 @@ func TestDataType_buildArchiveSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			Name: wordsmith.FromSingularPascalCase("Thing"),
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
+			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToUser:    true,
+			RestrictedToUser: true,
 		}
-		p := buildExampleTodoListProject()
 
 		expected := `
 package main
@@ -243,9 +245,9 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, userID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, dt.buildArchiveSomethingParams(p))
+		actual := renderFunctionParamsToString(t, dt.buildArchiveSomethingParams())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -312,7 +314,6 @@ func TestDataType_BuildInterfaceDefinitionArchiveMethodParams(T *testing.T) {
 		dt := DataType{
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
-		p := buildExampleTodoListProject()
 
 		expected := `
 package main
@@ -323,7 +324,7 @@ import (
 
 func example(ctx context.Context, thingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, dt.BuildInterfaceDefinitionArchiveMethodParams(p))
+		actual := renderFunctionParamsToString(t, dt.BuildInterfaceDefinitionArchiveMethodParams())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -338,7 +339,6 @@ func TestDataType_BuildDBClientArchiveMethodParams(T *testing.T) {
 		dt := DataType{
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
-		p := buildExampleTodoListProject()
 
 		expected := `
 package main
@@ -349,7 +349,7 @@ import (
 
 func example(ctx context.Context, thingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, dt.BuildDBClientArchiveMethodParams(p))
+		actual := renderFunctionParamsToString(t, dt.BuildDBClientArchiveMethodParams())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -416,7 +416,6 @@ func TestDataType_BuildDBQuerierArchiveMethodParams(T *testing.T) {
 		dt := DataType{
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
-		p := buildExampleTodoListProject()
 
 		expected := `
 package main
@@ -427,7 +426,7 @@ import (
 
 func example(ctx context.Context, thingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierArchiveMethodParams(p))
+		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierArchiveMethodParams())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -442,7 +441,6 @@ func TestDataType_BuildDBQuerierArchiveQueryMethodParams(T *testing.T) {
 		dt := DataType{
 			Name: wordsmith.FromSingularPascalCase("Thing"),
 		}
-		p := buildExampleTodoListProject()
 
 		expected := `
 package main
@@ -451,7 +449,7 @@ import ()
 
 func example(thingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierArchiveQueryMethodParams(p))
+		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierArchiveQueryMethodParams())
 
 		assert.Equal(t, expected, actual)
 	})
@@ -645,6 +643,43 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownerships", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		result := p.lastDataType().buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, idColumn):                             yetAnotherThingID,
+		fmt.Sprintf("%s.%s", thingsTableName, idColumn):                                       thingID,
+		fmt.Sprintf("%s.%s", thingsTableName, thingsUserOwnershipColumn):                      userID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, idColumn):                                anotherThingID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, anotherThingsUserOwnershipColumn):        userID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, anotherThingsTableOwnershipColumn):       thingID,
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, yetAnotherThingsTableOwnershipColumn): anotherThingID,
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, yetAnotherThingsUserOwnershipColumn):  userID,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, result)
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildDBQuerierExistenceQueryMethodConditionalClauses(T *testing.T) {
@@ -694,6 +729,26 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(T 
 		qb := squirrel.Select("*").From("farts").Where(results)
 
 		expected := "SELECT * FROM farts WHERE things.id = ?"
+		actual, _, err := qb.ToSql()
+		assert.NoError(t, err)
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownerships", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		results := p.lastDataType().buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
+		qb := squirrel.Select("*").From("farts").Where(results)
+
+		expected := "SELECT * FROM farts WHERE another_things.belongs_to_thing = ? AND another_things.belongs_to_user = ? AND another_things.id = ? AND things.belongs_to_user = ? AND things.id = ? AND yet_another_things.belongs_to_another_thing = ? AND yet_another_things.belongs_to_user = ? AND yet_another_things.id = ?"
 		actual, _, err := qb.ToSql()
 		assert.NoError(t, err)
 
@@ -765,6 +820,26 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownerships", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		results := p.lastDataType().BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p)
+		qb := squirrel.Select("*").From("farts").Where(results)
+
+		expected := "SELECT * FROM farts WHERE another_things.belongs_to_thing = ? AND another_things.belongs_to_user = ? AND another_things.id = ? AND things.belongs_to_user = ? AND things.id = ? AND yet_another_things.archived_on IS NULL AND yet_another_things.belongs_to_another_thing = ? AND yet_another_things.belongs_to_user = ?"
+		actual, _, err := qb.ToSql()
+		assert.NoError(t, err)
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildDBQuerierRetrievalQueryMethodConditionalClauses(T *testing.T) {
@@ -795,6 +870,41 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownerships", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, idColumn):                             yetAnotherThingID,
+		fmt.Sprintf("%s.%s", thingsTableName, idColumn):                                       thingID,
+		fmt.Sprintf("%s.%s", thingsTableName, thingsUserOwnershipColumn):                      userID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, idColumn):                                anotherThingID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, anotherThingsUserOwnershipColumn):        userID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, anotherThingsTableOwnershipColumn):       thingID,
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, yetAnotherThingsTableOwnershipColumn): anotherThingID,
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, yetAnotherThingsUserOwnershipColumn):  userID,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, p.lastDataType().BuildDBQuerierRetrievalQueryMethodConditionalClauses(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildDBQuerierListRetrievalQueryMethodConditionalClauses(T *testing.T) {
@@ -822,6 +932,41 @@ func main() {
 }
 `
 		actual := renderMapEntriesWithStringKeysToString(t, dt.BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownerships", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	exampleMap := map[string]interface{}{
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, archivedOnColumn):                     nil,
+		fmt.Sprintf("%s.%s", thingsTableName, idColumn):                                       thingID,
+		fmt.Sprintf("%s.%s", thingsTableName, thingsUserOwnershipColumn):                      userID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, idColumn):                                anotherThingID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, anotherThingsUserOwnershipColumn):        userID,
+		fmt.Sprintf("%s.%s", anotherThingsTableName, anotherThingsTableOwnershipColumn):       thingID,
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, yetAnotherThingsTableOwnershipColumn): anotherThingID,
+		fmt.Sprintf("%s.%s", yetAnotherThingsTableName, yetAnotherThingsUserOwnershipColumn):  userID,
+	}
+}
+`
+		actual := renderMapEntriesWithStringKeysToString(t, p.lastDataType().BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -877,6 +1022,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownerships", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID, userID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildGetSomethingArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildArchiveSomethingArgs(T *testing.T) {
@@ -896,6 +1065,29 @@ import ()
 
 func main() {
 	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, dt.buildArchiveSomethingArgs())
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with ownership", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
+			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToUser:   true,
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID, anotherThingID, userID)
 }
 `
 		actual := renderCallArgsToString(t, dt.buildArchiveSomethingArgs())
@@ -1181,6 +1373,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildGetSomethingArgsWithExampleVariables(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildHTTPClientRetrievalTestCallArgs(T *testing.T) {
@@ -1233,6 +1449,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToUser)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildSingleInstanceQueryTestCallArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(T *testing.T) {
@@ -1256,6 +1496,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1337,6 +1601,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID, userID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForServiceRouteExistenceCheck(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(T *testing.T) {
@@ -1360,6 +1648,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1496,6 +1808,38 @@ func main() {
 }
 `
 		actual := renderVariableDeclarationsToString(t, dt.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleUser := fake.BuildFakeUser()
+	exampleThing := fake.BuildFakeThing()
+	exampleThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	filter := fake.BuildFleshedOutQueryFilter()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1667,6 +2011,35 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	map[string]interface{}{
+		"thing_id":             thingID,
+		"another_thing_id":     anotherThingID,
+		"yet_another_thing_id": yetAnotherThingID,
+		"user_id":              userID,
+	}
+}
+`
+		actual := renderIndependentStatementToString(t, p.lastDataType().BuildGetSomethingLogValues(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildGetListOfSomethingLogValues(T *testing.T) {
@@ -1687,6 +2060,34 @@ func main() {
 	map[string]interface{}{
 		"thing_id":         thingID,
 		"another_thing_id": anotherThingID,
+	}
+}
+`
+		actual := renderIndependentStatementToString(t, p.lastDataType().BuildGetListOfSomethingLogValues(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	map[string]interface{}{
+		"thing_id":         thingID,
+		"another_thing_id": anotherThingID,
+		"user_id":          userID,
 	}
 }
 `
@@ -1741,6 +2142,30 @@ func example(ctx context.Context, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.buildGetListOfSomethingParams(p, false))
 
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID, anotherThingID, userID uint64, filter *QueryFilter) {}
+`
+
+		actual := renderFunctionParamsToString(t, p.lastDataType().buildGetListOfSomethingParams(p, true))
 		assert.Equal(t, expected, actual)
 	})
 }
@@ -2182,6 +2607,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID, filter)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildArgsForDBQuerierTestOfUpdateQueryBuilder(T *testing.T) {
@@ -2209,6 +2658,8 @@ func main() {
 	})
 }
 
+// everything below this line
+
 func TestDataType_BuildArgsForDBQuerierTestOfArchiveQueryBuilder(T *testing.T) {
 	T.Parallel()
 
@@ -2217,6 +2668,28 @@ func TestDataType_BuildArgsForDBQuerierTestOfArchiveQueryBuilder(T *testing.T) {
 
 		dt := DataType{
 			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierTestOfArchiveQueryBuilder())
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
+			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
 		}
 
 		expected := `
@@ -2381,6 +2854,21 @@ func example(ctx context.Context, updated *v1.Thing) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("panics with empty input", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		renderFunctionParamsToString(t, p.lastDataType().buildUpdateSomethingParams(p, "", true))
+	})
+
 }
 
 func TestDataType_BuildDBClientUpdateMethodParams(T *testing.T) {
@@ -2540,6 +3028,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, updated)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildUpdateSomethingArgsWithExampleVars(p, "updated"))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildUpdateSomethingArgs(T *testing.T) {
@@ -2666,6 +3178,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildGetListOfSomethingArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildDBClientListRetrievalMethodCallArgs(T *testing.T) {
@@ -2772,6 +3308,32 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWithOwnerStruct(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(T *testing.T) {
@@ -2797,6 +3359,32 @@ func main() {
 }
 `
 		actual := renderVariableDeclarationsToString(t, dt.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2913,6 +3501,32 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWhereEachStructIsImportant(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(T *testing.T) {
@@ -2938,6 +3552,32 @@ func main() {
 }
 `
 		actual := renderVariableDeclarationsToString(t, dt.buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3466,6 +4106,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildFormatCallArgsForHTTPClientExistenceMethodTest(T *testing.T) {
@@ -3489,6 +4153,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientExistenceMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3518,6 +4206,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction()
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientListMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildFormatCallArgsForHTTPClientCreationMethodTest(T *testing.T) {
@@ -3541,6 +4253,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildFormatCallArgsForHTTPClientCreationMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction()
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientCreationMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3570,6 +4306,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientUpdateTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildArgsForHTTPClientExistenceRequestBuildingMethod(T *testing.T) {
@@ -3593,6 +4353,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientExistenceRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientExistenceRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3622,6 +4406,30 @@ func example(ctx context.Context, thingID uint64) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientExistenceRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientExistenceMethod(T *testing.T) {
@@ -3645,6 +4453,30 @@ import (
 func example(ctx context.Context, thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientExistenceMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientExistenceMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3674,6 +4506,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, input)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientCreateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildArgsForHTTPClientRetrievalRequestBuildingMethod(T *testing.T) {
@@ -3700,6 +4556,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientRetrievalRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientRetrievalRequestBuildingMethod(T *testing.T) {
@@ -3723,6 +4603,30 @@ import (
 func example(ctx context.Context, thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3772,6 +4676,52 @@ func example(ctx context.Context, thingID uint64) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("as call with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func example(ctx, thingID) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalMethod(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("not as call with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalMethod(p, false))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientCreateRequestBuildingMethod(T *testing.T) {
@@ -3796,6 +4746,31 @@ import (
 func example(ctx context.Context, input *v1.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3826,6 +4801,31 @@ func example(ctx context.Context, input *v1.ThingCreationInput) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, input *v1.ThingCreationInput) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientCreateMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientUpdateRequestBuildingMethod(T *testing.T) {
@@ -3853,6 +4853,31 @@ func example(ctx context.Context, thing *v1.Thing) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, thing *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildArgsForHTTPClientUpdateRequestBuildingMethod(T *testing.T) {
@@ -3876,6 +4901,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientUpdateRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thing)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientUpdateRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3906,6 +4955,31 @@ func example(ctx context.Context, thing *v1.Thing) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, thing *v1.Thing) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientUpdateMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientArchiveRequestBuildingMethod(T *testing.T) {
@@ -3929,6 +5003,30 @@ import (
 func example(ctx context.Context, thingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientArchiveRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientArchiveRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3958,6 +5056,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, thingID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientArchiveRequestBuildingMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientArchiveMethod(T *testing.T) {
@@ -3984,6 +5106,30 @@ func example(ctx context.Context, thingID uint64) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+)
+
+func example(ctx context.Context, thingID uint64) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientArchiveMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildParamsForMethodThatHandlesAnInstanceWithStructs(T *testing.T) {
@@ -4005,6 +5151,28 @@ import ()
 func example(ctx, exampleThing.ID) {}
 `
 		actual := renderFunctionParamsToString(t, dt.buildParamsForMethodThatHandlesAnInstanceWithStructs(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func example(ctx, exampleThing.ID) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().buildParamsForMethodThatHandlesAnInstanceWithStructs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4216,6 +5384,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleInput)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildHTTPClientCreationRequestBuildingMethodArgsForTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildHTTPClientCreationMethodArgsForTest(T *testing.T) {
@@ -4242,6 +5434,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleInput)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildHTTPClientCreationMethodArgsForTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildArgsForHTTPClientListRequestMethod(T *testing.T) {
@@ -4265,6 +5481,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildArgsForHTTPClientListRequestMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientListRequestMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4295,6 +5535,31 @@ func example(ctx context.Context, filter *v1.QueryFilter) {}
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, filter *v1.QueryFilter) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientListRequestMethod(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildParamsForHTTPClientMethodThatFetchesAList(T *testing.T) {
@@ -4319,6 +5584,31 @@ import (
 func example(ctx context.Context, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientMethodThatFetchesAList(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+)
+
+func example(ctx context.Context, filter *v1.QueryFilter) {}
+`
+		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientMethodThatFetchesAList(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4348,6 +5638,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildCallArgsForHTTPClientListRetrievalMethodTest(T *testing.T) {
@@ -4371,6 +5685,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildCallArgsForHTTPClientListRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4400,6 +5738,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildCallArgsForHTTPClientUpdateMethodTest(T *testing.T) {
@@ -4423,6 +5785,30 @@ func main() {
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildCallArgsForHTTPClientUpdateMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4481,6 +5867,35 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecs(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildRequisiteFakeVarDecForModifierFuncs(T *testing.T) {
@@ -4533,6 +5948,35 @@ func main() {
 }
 `
 		actual := renderVariableDeclarationsToString(t, dt.buildRequisiteFakeVarDecForModifierFuncs(p, false))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecForModifierFuncs(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4626,6 +6070,35 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientCreateMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildRequisiteFakeVarsForDBClientArchiveMethodTest(T *testing.T) {
@@ -4659,6 +6132,37 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+
+	var expected error
+
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(T *testing.T) {
@@ -4687,6 +6191,32 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildRequisiteFakeVarDecsForListFunction(T *testing.T) {
@@ -4697,6 +6227,33 @@ func TestDataType_buildRequisiteFakeVarDecsForListFunction(T *testing.T) {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecsForListFunction(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
 
 		expected := `
 package main
@@ -4794,6 +6351,35 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	filter := fake.BuildFleshedOutQueryFilter()
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildRequisiteFakeVarCallArgsForCreation(T *testing.T) {
@@ -4820,12 +6406,82 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleThing.ID
+	exampleAnotherThing.ID
+	exampleYetAnotherThing.ID
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_buildRequisiteFakeVarCallArgs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("type restricted to user", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("belonging to type restricted to user", func(t *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
@@ -5062,12 +6718,54 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
+			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest())
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with user restriction", func(t *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
@@ -5112,6 +6810,30 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, filter)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(T *testing.T) {
@@ -5122,6 +6844,28 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest(T 
 
 		dt := DataType{
 			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(ctx, exampleThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest())
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
+			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
 		}
 
 		expected := `
@@ -5186,6 +6930,26 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with user restriction", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildRequisiteVarsForDBClientUpdateMethodTest(T *testing.T) {
@@ -5196,6 +6960,37 @@ func TestDataType_BuildRequisiteVarsForDBClientUpdateMethodTest(T *testing.T) {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := `
+package main
+
+import (
+	"context"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+)
+
+func main() {
+	ctx := context.Background()
+	var expected error
+
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+
+}
+`
+		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteVarsForDBClientUpdateMethodTest(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range p.DataTypes {
+			p.DataTypes[i].BelongsToUser = true
+			p.DataTypes[i].RestrictedToUser = true
+		}
 
 		expected := `
 package main
