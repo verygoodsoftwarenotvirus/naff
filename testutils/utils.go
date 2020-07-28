@@ -1,12 +1,14 @@
-package testutils
+package models
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/require"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+
+	"github.com/stretchr/testify/require"
 )
 
 func RenderFunctionParamsToString(t *testing.T, params []jen.Code) string {
@@ -35,7 +37,7 @@ func RenderCallArgsToString(t *testing.T, args []jen.Code) string {
 	return b.String()
 }
 
-// BuildOwnershipChain takes a series of names and returns a slice of datatypes with ownership between them.
+// buildOwnershipChain takes a series of names and returns a slice of datatypes with ownership between them.
 // So for instance, if you provided `Forum`, `Subforum`, and `Post` as input, the output would be:
 // 		[]DataType{
 //			{
@@ -71,13 +73,45 @@ func BuildOwnershipChain(names ...string) (out []models.DataType) {
 	return
 }
 
-func RenderIndependentStatementToString(t *testing.T, result *jen.Statement) string {
+func RenderIndependentStatementToString(t *testing.T, result jen.Code) string {
 	t.Helper()
 
 	f := jen.NewFile("main")
 	f.Add(
 		jen.Func().ID("main").Params().Body(
 			result,
+		),
+	)
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, f.Render(b))
+
+	return b.String()
+}
+
+func RenderMapEntriesWithStringKeysToString(t *testing.T, values []jen.Code) string {
+	t.Helper()
+
+	f := jen.NewFile("main")
+	f.Add(
+		jen.Func().ID("main").Params().Body(
+			jen.ID("exampleMap").Assign().Map(jen.String()).Interface().Valuesln(
+				values...,
+			),
+		),
+	)
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, f.Render(b))
+
+	return b.String()
+}
+
+func RenderVariableDeclarationsToString(t *testing.T, vars []jen.Code) string {
+	t.Helper()
+
+	f := jen.NewFile("main")
+	f.Add(
+		jen.Func().ID("main").Params().Body(
+			vars...,
 		),
 	)
 	b := bytes.NewBufferString("\n")

@@ -2658,8 +2658,6 @@ func main() {
 	})
 }
 
-// everything below this line
-
 func TestDataType_BuildArgsForDBQuerierTestOfArchiveQueryBuilder(T *testing.T) {
 	T.Parallel()
 
@@ -2690,6 +2688,7 @@ func main() {
 		dt := DataType{
 			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
 			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToUser:   true,
 		}
 
 		expected := `
@@ -2698,7 +2697,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildArgsForDBQuerierTestOfArchiveQueryBuilder())
@@ -3045,7 +3044,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, updated)
+	exampleFunction(ctx, Thing.ID, updated)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().buildUpdateSomethingArgsWithExampleVars(p, "updated"))
@@ -3195,7 +3194,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, filter)
+	exampleFunction(ctx, thingID, anotherThingID, userID, filter)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().buildGetListOfSomethingArgs(p))
@@ -3328,6 +3327,8 @@ import (
 
 func main() {
 	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWithOwnerStruct(p))
@@ -3381,7 +3382,15 @@ import (
 )
 
 func main() {
+	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
+	exampleThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
@@ -3521,6 +3530,10 @@ import (
 
 func main() {
 	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWhereEachStructIsImportant(p))
@@ -3575,6 +3588,8 @@ import (
 
 func main() {
 	exampleThing := fake.BuildFakeThing()
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p))
@@ -4123,7 +4138,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientRetrievalMethodTest(p))
@@ -4173,7 +4188,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientExistenceMethodTest(p))
@@ -4223,7 +4238,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientListMethodTest(p))
@@ -4273,7 +4288,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction()
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientCreationMethodTest(p))
@@ -4323,7 +4338,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID)
+	exampleFunction(exampleThing.ID, exampleYetAnotherThing.BelongsToAnotherThing, exampleYetAnotherThing.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientUpdateTest(p))
@@ -4373,7 +4388,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, thingID)
+	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientExistenceRequestBuildingMethod(p))
@@ -4424,7 +4439,7 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientExistenceRequestBuildingMethod(p))
 
@@ -4474,7 +4489,7 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientExistenceMethod(p))
 
@@ -4523,7 +4538,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, input)
+	exampleFunction(ctx, thingID, input)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientCreateRequestBuildingMethod(p))
@@ -4573,7 +4588,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, thingID)
+	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientRetrievalRequestBuildingMethod(p))
@@ -4624,7 +4639,7 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p))
 
@@ -4692,7 +4707,7 @@ package main
 
 import ()
 
-func example(ctx, thingID) {}
+func example(ctx, thingID, anotherThingID, yetAnotherThingID) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalMethod(p, true))
 
@@ -4716,7 +4731,7 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalMethod(p, false))
 
@@ -4768,7 +4783,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, thingID uint64, input *v1.YetAnotherThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
 
@@ -4820,7 +4835,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, thingID uint64, input *v1.YetAnotherThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientCreateMethod(p))
 
@@ -4872,7 +4887,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example(ctx context.Context, thing *v1.Thing) {}
+func example(ctx context.Context, thingID uint64, yetAnotherThing *v1.YetAnotherThing) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
 
@@ -4921,7 +4936,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, thing)
+	exampleFunction(ctx, thingID, yetAnotherThing)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientUpdateRequestBuildingMethod(p))
@@ -4974,7 +4989,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example(ctx context.Context, thing *v1.Thing) {}
+func example(ctx context.Context, thingID uint64, yetAnotherThing *v1.YetAnotherThing) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientUpdateMethod(p))
 
@@ -5024,7 +5039,7 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientArchiveRequestBuildingMethod(p))
 
@@ -5073,7 +5088,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, thingID)
+	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientArchiveRequestBuildingMethod(p))
@@ -5124,7 +5139,7 @@ import (
 	"context"
 )
 
-func example(ctx context.Context, thingID uint64) {}
+func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientArchiveMethod(p))
 
@@ -5170,7 +5185,7 @@ package main
 
 import ()
 
-func example(ctx, exampleThing.ID) {}
+func example(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().buildParamsForMethodThatHandlesAnInstanceWithStructs(p))
 
@@ -5401,7 +5416,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, exampleInput)
+	exampleFunction(ctx, exampleThing.ID, exampleInput)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildHTTPClientCreationRequestBuildingMethodArgsForTest(p))
@@ -5451,7 +5466,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, exampleInput)
+	exampleFunction(ctx, exampleThing.ID, exampleInput)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildHTTPClientCreationMethodArgsForTest(p))
@@ -5501,7 +5516,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, filter)
+	exampleFunction(ctx, thingID, anotherThingID, filter)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientListRequestMethod(p))
@@ -5554,7 +5569,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, thingID, anotherThingID uint64, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientListRequestMethod(p))
 
@@ -5606,7 +5621,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, thingID, anotherThingID uint64, filter *v1.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientMethodThatFetchesAList(p))
 
@@ -5655,7 +5670,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, filter)
+	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(p))
@@ -5705,7 +5720,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, filter)
+	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientListRetrievalMethodTest(p))
@@ -5755,7 +5770,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, exampleThing)
+	exampleFunction(ctx, exampleThing.ID, exampleYetAnotherThing)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(p))
@@ -5805,7 +5820,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, exampleThing)
+	exampleFunction(ctx, exampleThing.ID, exampleYetAnotherThing)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientUpdateMethodTest(p))
@@ -5889,7 +5904,15 @@ import (
 func main() {
 	ctx := context.Background()
 
+	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
+	exampleThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecs(p, true))
@@ -5973,7 +5996,10 @@ import (
 func main() {
 	ctx := context.Background()
 
-	exampleThing := fake.BuildFakeThing()
+	exampleUser := fake.BuildFakeUser()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecForModifierFuncs(p, true))
@@ -6092,7 +6118,9 @@ import (
 func main() {
 	ctx := context.Background()
 
-	exampleThing := fake.BuildFakeThing()
+	exampleUser := fake.BuildFakeUser()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientCreateMethodTest(p))
@@ -6156,7 +6184,9 @@ func main() {
 
 	var expected error
 
-	exampleThing := fake.BuildFakeThing()
+	exampleUser := fake.BuildFakeUser()
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p))
@@ -6211,6 +6241,13 @@ import (
 
 func main() {
 	exampleThing := fake.BuildFakeThing()
+	exampleThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p))
@@ -6225,22 +6262,19 @@ func TestDataType_buildRequisiteFakeVarDecsForListFunction(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
+		dt := DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
 
-import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
-)
+import ()
 
-func main() {
-	exampleThing := fake.BuildFakeThing()
-	exampleAnotherThing := fake.BuildFakeAnotherThing()
-}
+func main() {}
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecsForListFunction(p))
+		actual := renderVariableDeclarationsToString(t, dt.buildRequisiteFakeVarDecsForListFunction(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6251,8 +6285,10 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			if i != len(p.DataTypes)-1 {
+				p.DataTypes[i].BelongsToUser = true
+				p.DataTypes[i].RestrictedToUser = true
+			}
 		}
 
 		expected := `
@@ -6263,6 +6299,7 @@ import (
 )
 
 func main() {
+	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 }
@@ -6371,7 +6408,9 @@ import (
 
 func main() {
 	exampleThing := fake.BuildFakeThing()
+	exampleThing.BelongsToUser = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToUser = exampleUser.ID
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
 	filter := fake.BuildFleshedOutQueryFilter()
 }
@@ -6426,6 +6465,7 @@ func main() {
 	exampleThing.ID
 	exampleAnotherThing.ID
 	exampleYetAnotherThing.ID
+	exampleYetAnotherThing.BelongsToUser
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
@@ -6473,7 +6513,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToUser)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
@@ -6486,6 +6526,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes[0].BelongsToUser = true
+		p.DataTypes[0].RestrictedToUser = true
 
 		expected := `
 package main
@@ -6493,7 +6535,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
@@ -6518,6 +6560,28 @@ import ()
 
 func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
+
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with user restriction", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleTodoListProject()
+		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes[0].BelongsToUser = true
+		p.DataTypes[0].RestrictedToUser = true
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
@@ -6645,6 +6709,29 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with multiple ownership", func(t *testing.T) {
+		t.Parallel()
+
+		dt := DataType{
+			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
+			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToUser:   true,
+		}
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForServiceArchiveHandlerTest())
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(T *testing.T) {
@@ -6725,6 +6812,7 @@ func main() {
 		dt := DataType{
 			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
 			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToUser:   true,
 		}
 
 		expected := `
@@ -6733,7 +6821,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID)
+	exampleFunction(exampleAnotherThing.BelongsToThing, exampleAnotherThing.ID, exampleAnotherThing.BelongsToUser)
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest())
@@ -6770,6 +6858,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes[2].BelongsToUser = true
+		p.DataTypes[2].RestrictedToUser = true
 
 		expected := `
 package main
@@ -6777,7 +6867,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
@@ -6827,7 +6917,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, filter)
+	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID, filter)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(p))
@@ -6866,6 +6956,7 @@ func main() {
 		dt := DataType{
 			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
 			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToUser:   true,
 		}
 
 		expected := `
@@ -6874,7 +6965,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(ctx, exampleThing.ID)
+	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest())
@@ -6936,6 +7027,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes[0].RestrictedToUser = true
+		p.DataTypes[0].BelongsToUser = true
 
 		expected := `
 package main
@@ -6943,7 +7036,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
 }
 `
 		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
@@ -7004,7 +7097,9 @@ func main() {
 	ctx := context.Background()
 	var expected error
 
+	exampleUser := fake.BuildFakeUser()
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 
 }
 `
