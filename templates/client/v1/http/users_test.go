@@ -1,10 +1,10 @@
 package client
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
@@ -18,7 +18,7 @@ func Test_usersDotGo(T *testing.T) {
 		x := usersDotGo(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x)
+		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -34,7 +34,7 @@ func Test_buildBuildGetUserRequest(T *testing.T) {
 		x := buildBuildGetUserRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -50,7 +50,7 @@ func Test_buildGetUser(T *testing.T) {
 		x := buildGetUser(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -66,7 +66,7 @@ func Test_buildBuildGetUsersRequest(T *testing.T) {
 		x := buildBuildGetUsersRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -82,7 +82,7 @@ func Test_buildGetUsers(T *testing.T) {
 		x := buildGetUsers(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -98,7 +98,7 @@ func Test_buildBuildCreateUserRequest(T *testing.T) {
 		x := buildBuildCreateUserRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -114,7 +114,7 @@ func Test_buildCreateUser(T *testing.T) {
 		x := buildCreateUser(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -130,7 +130,7 @@ func Test_buildBuildArchiveUserRequest(T *testing.T) {
 		x := buildBuildArchiveUserRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -146,7 +146,7 @@ func Test_buildArchiveUser(T *testing.T) {
 		x := buildArchiveUser(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -162,7 +162,7 @@ func Test_buildBuildLoginRequest(T *testing.T) {
 		x := buildBuildLoginRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -178,7 +178,7 @@ func Test_buildLogin(T *testing.T) {
 		x := buildLogin(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -194,7 +194,7 @@ func Test_buildBuildVerifyTOTPSecretRequest(T *testing.T) {
 		x := buildBuildVerifyTOTPSecretRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -210,7 +210,7 @@ func Test_buildVerifyTOTPSecret(T *testing.T) {
 		x := buildVerifyTOTPSecret(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

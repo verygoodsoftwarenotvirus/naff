@@ -1,10 +1,10 @@
 package client
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
@@ -18,7 +18,7 @@ func Test_helpersTestDotGo(T *testing.T) {
 		x := helpersTestDotGo(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x)
+		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -33,7 +33,7 @@ func Test_buildHelperTestingType(T *testing.T) {
 		x := buildHelperTestingType()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -48,7 +48,7 @@ func Test_buildTestArgIsNotPointerOrNil(T *testing.T) {
 		x := buildTestArgIsNotPointerOrNil()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -63,7 +63,7 @@ func Test_buildTestArgIsNotPointer(T *testing.T) {
 		x := buildTestArgIsNotPointer()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -78,7 +78,7 @@ func Test_buildTestArgIsNotNil(T *testing.T) {
 		x := buildTestArgIsNotNil()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -94,7 +94,7 @@ func Test_buildTestUnmarshalBody(T *testing.T) {
 		x := buildTestUnmarshalBody(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -109,7 +109,7 @@ func Test_buildHelperTestBreakableStruct(T *testing.T) {
 		x := buildHelperTestBreakableStruct()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -124,7 +124,7 @@ func Test_buildTestCreateBodyFromStruct(T *testing.T) {
 		x := buildTestCreateBodyFromStruct()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

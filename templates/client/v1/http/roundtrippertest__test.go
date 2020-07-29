@@ -1,10 +1,10 @@
 package client
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
@@ -18,7 +18,7 @@ func Test_roundtripperTestDotGo(T *testing.T) {
 		x := roundtripperTestDotGo(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x)
+		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -33,7 +33,7 @@ func Test_buildTestBuildDefaultTransport(T *testing.T) {
 		x := buildTestBuildDefaultTransport()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -48,7 +48,7 @@ func Test_buildTestDefaultRoundTripperRoundTrip(T *testing.T) {
 		x := buildTestDefaultRoundTripperRoundTrip()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -63,7 +63,7 @@ func Test_buildTestNewDefaultRoundTripper(T *testing.T) {
 		x := buildTestNewDefaultRoundTripper()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

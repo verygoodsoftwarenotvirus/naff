@@ -1,10 +1,10 @@
 package client
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
@@ -18,7 +18,7 @@ func Test_webhooksDotGo(T *testing.T) {
 		x := webhooksDotGo(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x)
+		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -34,7 +34,7 @@ func Test_buildBuildGetWebhookRequest(T *testing.T) {
 		x := buildBuildGetWebhookRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -50,7 +50,7 @@ func Test_buildGetWebhook(T *testing.T) {
 		x := buildGetWebhook(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -66,7 +66,7 @@ func Test_buildBuildGetWebhooksRequest(T *testing.T) {
 		x := buildBuildGetWebhooksRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -82,7 +82,7 @@ func Test_buildGetWebhooks(T *testing.T) {
 		x := buildGetWebhooks(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -98,7 +98,7 @@ func Test_buildBuildCreateWebhookRequest(T *testing.T) {
 		x := buildBuildCreateWebhookRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -114,7 +114,7 @@ func Test_buildCreateWebhook(T *testing.T) {
 		x := buildCreateWebhook(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -130,7 +130,7 @@ func Test_buildBuildUpdateWebhookRequest(T *testing.T) {
 		x := buildBuildUpdateWebhookRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -146,7 +146,7 @@ func Test_buildUpdateWebhook(T *testing.T) {
 		x := buildUpdateWebhook(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -162,7 +162,7 @@ func Test_buildBuildArchiveWebhookRequest(T *testing.T) {
 		x := buildBuildArchiveWebhookRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -178,7 +178,7 @@ func Test_buildArchiveWebhook(T *testing.T) {
 		x := buildArchiveWebhook(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

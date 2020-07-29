@@ -1,10 +1,10 @@
 package client
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
@@ -18,7 +18,7 @@ func Test_oauth2ClientsTestDotGo(T *testing.T) {
 		x := oauth2ClientsTestDotGo(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x)
+		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -34,7 +34,7 @@ func Test_buildV1Client_BuildGetOAuth2ClientRequest(T *testing.T) {
 		x := buildV1Client_BuildGetOAuth2ClientRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -50,7 +50,7 @@ func Test_buildV1Client_GetOAuth2Client(T *testing.T) {
 		x := buildV1Client_GetOAuth2Client(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -65,7 +65,7 @@ func Test_buildV1Client_BuildGetOAuth2ClientsRequest(T *testing.T) {
 		x := buildV1Client_BuildGetOAuth2ClientsRequest()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -81,7 +81,7 @@ func Test_buildV1Client_GetOAuth2Clients(T *testing.T) {
 		x := buildV1Client_GetOAuth2Clients(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -97,7 +97,7 @@ func Test_buildV1Client_BuildCreateOAuth2ClientRequest(T *testing.T) {
 		x := buildV1Client_BuildCreateOAuth2ClientRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -113,7 +113,7 @@ func Test_buildV1Client_CreateOAuth2Client(T *testing.T) {
 		x := buildV1Client_CreateOAuth2Client(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -129,7 +129,7 @@ func Test_buildV1Client_BuildArchiveOAuth2ClientRequest(T *testing.T) {
 		x := buildV1Client_BuildArchiveOAuth2ClientRequest(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -145,7 +145,7 @@ func Test_buildV1Client_ArchiveOAuth2Client(T *testing.T) {
 		x := buildV1Client_ArchiveOAuth2Client(proj)
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

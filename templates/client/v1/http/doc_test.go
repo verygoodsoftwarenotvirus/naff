@@ -16,7 +16,7 @@ func Test_docDotGo(T *testing.T) {
 		x := docDotGo()
 
 		expected := ``
-		actual := testutils.RenderFunctionToString(t, x)
+		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
