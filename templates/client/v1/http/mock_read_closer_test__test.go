@@ -1,14 +1,11 @@
 package client
 
 import (
-	"bytes"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_mockReadCloserTestDotGo(T *testing.T) {
@@ -18,15 +15,10 @@ func Test_mockReadCloserTestDotGo(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
-		out := mockReadCloserTestDotGo(proj)
+		x := mockReadCloserTestDotGo(proj)
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -38,16 +30,10 @@ func Test_buildMockReadCloserInterfaceAssurance(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildMockReadCloserInterfaceAssurance()...)
+		x := buildMockReadCloserInterfaceAssurance()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -59,16 +45,10 @@ func Test_buildMockReadCloserDecl(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildMockReadCloserDecl()...)
+		x := buildMockReadCloserDecl()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -80,16 +60,10 @@ func Test_buildNewMockReadCloser(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildNewMockReadCloser()...)
+		x := buildNewMockReadCloser()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -101,16 +75,10 @@ func Test_buildMockReadCloserReadHandler(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildMockReadCloserReadHandler()...)
+		x := buildMockReadCloserReadHandler()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -122,16 +90,10 @@ func Test_buildMockReadCloserClose(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildMockReadCloserClose()...)
+		x := buildMockReadCloserClose()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

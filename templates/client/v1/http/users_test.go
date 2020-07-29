@@ -1,14 +1,11 @@
 package client
 
 import (
-	"bytes"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_usersDotGo(T *testing.T) {
@@ -18,15 +15,10 @@ func Test_usersDotGo(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
-		out := usersDotGo(proj)
+		x := usersDotGo(proj)
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -39,17 +31,10 @@ func Test_buildBuildGetUserRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildGetUserRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildGetUserRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -62,17 +47,10 @@ func Test_buildGetUser(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildGetUser(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildGetUser(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -85,17 +63,10 @@ func Test_buildBuildGetUsersRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildGetUsersRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildGetUsersRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -108,17 +79,10 @@ func Test_buildGetUsers(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildGetUsers(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildGetUsers(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -131,17 +95,10 @@ func Test_buildBuildCreateUserRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildCreateUserRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildCreateUserRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -154,17 +111,10 @@ func Test_buildCreateUser(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildCreateUser(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildCreateUser(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -177,17 +127,10 @@ func Test_buildBuildArchiveUserRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildArchiveUserRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildArchiveUserRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -200,17 +143,10 @@ func Test_buildArchiveUser(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildArchiveUser(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildArchiveUser(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -223,17 +159,10 @@ func Test_buildBuildLoginRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildLoginRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildLoginRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -246,17 +175,10 @@ func Test_buildLogin(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildLogin(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildLogin(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -269,17 +191,10 @@ func Test_buildBuildVerifyTOTPSecretRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildVerifyTOTPSecretRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildVerifyTOTPSecretRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -292,17 +207,10 @@ func Test_buildVerifyTOTPSecret(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildVerifyTOTPSecret(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildVerifyTOTPSecret(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

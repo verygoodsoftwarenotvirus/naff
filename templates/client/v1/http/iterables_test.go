@@ -1,14 +1,12 @@
 package client
 
 import (
-	"bytes"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_iterablesDotGo(T *testing.T) {
@@ -19,16 +17,10 @@ func Test_iterablesDotGo(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := iterablesDotGo(proj, typ)
 
-		out := iterablesDotGo(proj, typ)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -41,17 +33,10 @@ func Test_attachURIToSpanCall(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := attachURIToSpanCall(proj)
 
-		out := jen.NewFile("main")
-		out.Add(attachURIToSpanCall(proj))
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -65,18 +50,11 @@ func Test_buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(T *testing.
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
-		firstVar := jen.Nil()
+		firstVar := constants.CtxVar()
+		x := buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, firstVar, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, firstVar, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -90,18 +68,11 @@ func Test_buildV1ClientURLBuildingParamsForCreatingSomething(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
-		firstVar := jen.Nil()
+		firstVar := constants.CtxVar()
+		x := buildV1ClientURLBuildingParamsForCreatingSomething(proj, firstVar, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildV1ClientURLBuildingParamsForCreatingSomething(proj, firstVar, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -115,18 +86,11 @@ func Test_buildV1ClientURLBuildingParamsForListOfSomething(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
-		firstVar := jen.Nil()
+		firstVar := constants.CtxVar()
+		x := buildV1ClientURLBuildingParamsForListOfSomething(proj, firstVar, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildV1ClientURLBuildingParamsForListOfSomething(proj, firstVar, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -140,18 +104,11 @@ func Test_buildV1ClientURLBuildingParamsForSearchingSomething(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
-		firstVar := jen.Nil()
+		firstVar := constants.CtxVar()
+		x := buildV1ClientURLBuildingParamsForSearchingSomething(proj, firstVar, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildV1ClientURLBuildingParamsForSearchingSomething(proj, firstVar, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -165,18 +122,11 @@ func Test_buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(T *testi
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
-		firstVar := jen.Nil()
+		firstVar := constants.CtxVar()
+		x := buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, firstVar, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, firstVar, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -190,17 +140,10 @@ func Test_buildBuildSomethingExistsRequest(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildSomethingExistsRequest(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildSomethingExistsRequest(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -214,17 +157,10 @@ func Test_buildSomethingExists(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildSomethingExists(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildSomethingExists(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -238,17 +174,10 @@ func Test_buildBuildGetSomethingRequestFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildGetSomethingRequestFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildGetSomethingRequestFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -262,17 +191,10 @@ func Test_buildGetSomethingFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildGetSomethingFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildGetSomethingFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -286,17 +208,10 @@ func Test_buildBuildSearchSomethingRequestFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildSearchSomethingRequestFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildSearchSomethingRequestFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -310,17 +225,10 @@ func Test_buildSearchSomethingFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildSearchSomethingFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildSearchSomethingFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -334,17 +242,10 @@ func Test_buildBuildGetListOfSomethingRequestFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -358,17 +259,10 @@ func Test_buildGetListOfSomethingFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildGetListOfSomethingFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildGetListOfSomethingFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -382,17 +276,10 @@ func Test_buildBuildCreateSomethingRequestFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildCreateSomethingRequestFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildCreateSomethingRequestFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -406,17 +293,10 @@ func Test_buildCreateSomethingFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildCreateSomethingFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildCreateSomethingFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -430,17 +310,10 @@ func Test_buildBuildUpdateSomethingRequestFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildUpdateSomethingRequestFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildUpdateSomethingRequestFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -454,17 +327,10 @@ func Test_buildUpdateSomethingFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildUpdateSomethingFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildUpdateSomethingFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -478,17 +344,10 @@ func Test_buildBuildArchiveSomethingRequestFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildBuildArchiveSomethingRequestFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildArchiveSomethingRequestFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -502,17 +361,10 @@ func Test_buildArchiveSomethingFuncDecl(T *testing.T) {
 
 		proj := testprojects.TodoApp
 		typ := proj.DataTypes[0]
+		x := buildArchiveSomethingFuncDecl(proj, typ)
 
-		out := jen.NewFile("main")
-		out.Add(buildArchiveSomethingFuncDecl(proj, typ)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

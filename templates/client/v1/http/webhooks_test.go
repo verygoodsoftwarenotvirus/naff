@@ -1,14 +1,11 @@
 package client
 
 import (
-	"bytes"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_webhooksDotGo(T *testing.T) {
@@ -18,15 +15,10 @@ func Test_webhooksDotGo(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
-		out := webhooksDotGo(proj)
+		x := webhooksDotGo(proj)
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -39,17 +31,10 @@ func Test_buildBuildGetWebhookRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildGetWebhookRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildGetWebhookRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -62,17 +47,10 @@ func Test_buildGetWebhook(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildGetWebhook(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildGetWebhook(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -85,17 +63,10 @@ func Test_buildBuildGetWebhooksRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildGetWebhooksRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildGetWebhooksRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -108,17 +79,10 @@ func Test_buildGetWebhooks(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildGetWebhooks(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildGetWebhooks(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -131,17 +95,10 @@ func Test_buildBuildCreateWebhookRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildCreateWebhookRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildCreateWebhookRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -154,17 +111,10 @@ func Test_buildCreateWebhook(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildCreateWebhook(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildCreateWebhook(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -177,17 +127,10 @@ func Test_buildBuildUpdateWebhookRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildUpdateWebhookRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildUpdateWebhookRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -200,17 +143,10 @@ func Test_buildUpdateWebhook(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildUpdateWebhook(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildUpdateWebhook(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -223,17 +159,10 @@ func Test_buildBuildArchiveWebhookRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildBuildArchiveWebhookRequest(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildBuildArchiveWebhookRequest(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -246,17 +175,10 @@ func Test_buildArchiveWebhook(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildArchiveWebhook(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildArchiveWebhook(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

@@ -1,14 +1,11 @@
 package client
 
 import (
-	"bytes"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_roundtripperTestDotGo(T *testing.T) {
@@ -18,15 +15,10 @@ func Test_roundtripperTestDotGo(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
-		out := roundtripperTestDotGo(proj)
+		x := roundtripperTestDotGo(proj)
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -38,16 +30,10 @@ func Test_buildTestBuildDefaultTransport(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestBuildDefaultTransport()...)
+		x := buildTestBuildDefaultTransport()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -59,16 +45,10 @@ func Test_buildTestDefaultRoundTripperRoundTrip(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestDefaultRoundTripperRoundTrip()...)
+		x := buildTestDefaultRoundTripperRoundTrip()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -80,16 +60,10 @@ func Test_buildTestNewDefaultRoundTripper(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestNewDefaultRoundTripper()...)
+		x := buildTestNewDefaultRoundTripper()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})

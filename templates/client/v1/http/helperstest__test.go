@@ -1,14 +1,11 @@
 package client
 
 import (
-	"bytes"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_helpersTestDotGo(T *testing.T) {
@@ -18,15 +15,10 @@ func Test_helpersTestDotGo(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
-		out := helpersTestDotGo(proj)
+		x := helpersTestDotGo(proj)
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -38,16 +30,10 @@ func Test_buildHelperTestingType(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildHelperTestingType()...)
+		x := buildHelperTestingType()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -59,16 +45,10 @@ func Test_buildTestArgIsNotPointerOrNil(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestArgIsNotPointerOrNil()...)
+		x := buildTestArgIsNotPointerOrNil()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -80,16 +60,10 @@ func Test_buildTestArgIsNotPointer(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestArgIsNotPointer()...)
+		x := buildTestArgIsNotPointer()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -101,16 +75,10 @@ func Test_buildTestArgIsNotNil(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestArgIsNotNil()...)
+		x := buildTestArgIsNotNil()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -123,17 +91,10 @@ func Test_buildTestUnmarshalBody(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.TodoApp
+		x := buildTestUnmarshalBody(proj)
 
-		out := jen.NewFile("main")
-		out.Add(buildTestUnmarshalBody(proj)...)
-
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -145,16 +106,10 @@ func Test_buildHelperTestBreakableStruct(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildHelperTestBreakableStruct()...)
+		x := buildHelperTestBreakableStruct()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
@@ -166,16 +121,10 @@ func Test_buildTestCreateBodyFromStruct(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		out := jen.NewFile("main")
-		out.Add(buildTestCreateBodyFromStruct()...)
+		x := buildTestCreateBodyFromStruct()
 
-		var b bytes.Buffer
-		require.NoError(t, out.Render(&b))
-
-		expected := `
-
-`
-		actual := "\n" + b.String()
+		expected := ``
+		actual := testutils.RenderFunctionToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
