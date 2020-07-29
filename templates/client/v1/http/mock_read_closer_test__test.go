@@ -17,7 +17,37 @@ func Test_mockReadCloserTestDotGo(T *testing.T) {
 		proj := testprojects.TodoApp
 		x := mockReadCloserTestDotGo(proj)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	mock "github.com/stretchr/testify/mock"
+	"io"
+)
+
+var _ io.ReadCloser = (*ReadCloser)(nil)
+
+// ReadCloser is a mock io.ReadCloser for testing purposes.
+type ReadCloser struct {
+	mock.Mock
+}
+
+// newMockReadCloser returns a new mock io.ReadCloser.
+func newMockReadCloser() *ReadCloser {
+	return &ReadCloser{}
+}
+
+// ReadHandler implements the ReadHandler part of our ReadCloser.
+func (m *ReadCloser) Read(b []byte) (i int, err error) {
+	retVals := m.Called(b)
+	return retVals.Int(0), retVals.Error(1)
+}
+
+// Close implements the Closer part of our ReadCloser.
+func (m *ReadCloser) Close() (err error) {
+	return m.Called().Error(0)
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -32,7 +62,15 @@ func Test_buildMockReadCloserInterfaceAssurance(T *testing.T) {
 
 		x := buildMockReadCloserInterfaceAssurance()
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"io"
+)
+
+var _ io.ReadCloser = (*ReadCloser)(nil)
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -47,7 +85,18 @@ func Test_buildMockReadCloserDecl(T *testing.T) {
 
 		x := buildMockReadCloserDecl()
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	mock "github.com/stretchr/testify/mock"
+)
+
+// ReadCloser is a mock io.ReadCloser for testing purposes.
+type ReadCloser struct {
+	mock.Mock
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -62,7 +111,16 @@ func Test_buildNewMockReadCloser(T *testing.T) {
 
 		x := buildNewMockReadCloser()
 
-		expected := ``
+		expected := `
+package example
+
+import ()
+
+// newMockReadCloser returns a new mock io.ReadCloser.
+func newMockReadCloser() *ReadCloser {
+	return &ReadCloser{}
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -77,7 +135,17 @@ func Test_buildMockReadCloserReadHandler(T *testing.T) {
 
 		x := buildMockReadCloserReadHandler()
 
-		expected := ``
+		expected := `
+package example
+
+import ()
+
+// ReadHandler implements the ReadHandler part of our ReadCloser.
+func (m *ReadCloser) Read(b []byte) (i int, err error) {
+	retVals := m.Called(b)
+	return retVals.Int(0), retVals.Error(1)
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -92,7 +160,16 @@ func Test_buildMockReadCloserClose(T *testing.T) {
 
 		x := buildMockReadCloserClose()
 
-		expected := ``
+		expected := `
+package example
+
+import ()
+
+// Close implements the Closer part of our ReadCloser.
+func (m *ReadCloser) Close() (err error) {
+	return m.Called().Error(0)
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")

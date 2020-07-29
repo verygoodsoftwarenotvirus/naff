@@ -17,7 +17,48 @@ func Test_roundtripperTestDotGo(T *testing.T) {
 		proj := testprojects.TodoApp
 		x := roundtripperTestDotGo(proj)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	require "github.com/stretchr/testify/require"
+	"net/http"
+	"testing"
+)
+
+func Test_buildDefaultTransport(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = buildDefaultTransport()
+	})
+}
+
+func Test_defaultRoundTripper_RoundTrip(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		transport := newDefaultRoundTripper()
+
+		req, err := http.NewRequest(http.MethodGet, "https://verygoodsoftwarenotvirus.ru", nil)
+
+		require.NotNil(t, req)
+		assert.NoError(t, err)
+
+		_, err = transport.RoundTrip(req)
+		assert.NoError(t, err)
+	})
+}
+
+func Test_newDefaultRoundTripper(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = newDefaultRoundTripper()
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -32,7 +73,21 @@ func Test_buildTestBuildDefaultTransport(T *testing.T) {
 
 		x := buildTestBuildDefaultTransport()
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"testing"
+)
+
+func Test_buildDefaultTransport(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = buildDefaultTransport()
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -47,7 +102,32 @@ func Test_buildTestDefaultRoundTripperRoundTrip(T *testing.T) {
 
 		x := buildTestDefaultRoundTripperRoundTrip()
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	require "github.com/stretchr/testify/require"
+	"net/http"
+	"testing"
+)
+
+func Test_defaultRoundTripper_RoundTrip(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		transport := newDefaultRoundTripper()
+
+		req, err := http.NewRequest(http.MethodGet, "https://verygoodsoftwarenotvirus.ru", nil)
+
+		require.NotNil(t, req)
+		assert.NoError(t, err)
+
+		_, err = transport.RoundTrip(req)
+		assert.NoError(t, err)
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
@@ -62,7 +142,21 @@ func Test_buildTestNewDefaultRoundTripper(T *testing.T) {
 
 		x := buildTestNewDefaultRoundTripper()
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"testing"
+)
+
+func Test_newDefaultRoundTripper(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = newDefaultRoundTripper()
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")

@@ -1,10 +1,11 @@
 package client
 
 import (
+	"bytes"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
 )
 
 func Test_docDotGo(T *testing.T) {
@@ -15,8 +16,19 @@ func Test_docDotGo(T *testing.T) {
 
 		x := docDotGo()
 
-		expected := ``
-		actual := testutils.RenderOuterStatementToString(t, x)
+		expected := `
+/*
+Package client provides an HTTP client that can communicate with and interpret the responses
+of an instance of the todo service.
+*/
+package client
+
+import ()
+`
+		b := bytes.NewBufferString("\n")
+		require.NoError(t, x.Render(b))
+
+		actual := b.String()
 
 		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
