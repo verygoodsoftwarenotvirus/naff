@@ -267,7 +267,7 @@ func AssertExpectationsFor(varNames ...string) jen.Code {
 
 // RunGoimportsForFile runs the `goimports` binary for a given filename
 func RunGoimportsForFile(filename string) error {
-	return exec.Command(determineGoimportsPath(), "-w", filename).Run()
+	return exec.Command("goimports", "-w", filename).Run()
 }
 
 func determineGoimportsPath() string {

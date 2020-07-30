@@ -12,7 +12,19 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestClient_GetWebhook(proj)...)
+	code.Add(buildTestClient_GetAllWebhooksCount(proj)...)
+	code.Add(buildTestClient_GetAllWebhooks(proj)...)
+	code.Add(buildTestClient_GetWebhooks(proj)...)
+	code.Add(buildTestClient_CreateWebhook(proj)...)
+	code.Add(buildTestClient_UpdateWebhook(proj)...)
+	code.Add(buildTestClient_ArchiveWebhook(proj)...)
+
+	return code
+}
+
+func buildTestClient_GetWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -40,9 +52,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetAllWebhooksCount(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetAllWebhooksCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -64,9 +80,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetAllWebhooks(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetAllWebhooks").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -88,9 +108,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetWebhooks(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetWebhooks").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -145,9 +169,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_CreateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_CreateWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -171,9 +199,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_UpdateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_UpdateWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -197,9 +229,13 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_ArchiveWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_ArchiveWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -224,7 +260,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -18,7 +18,16 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	code.Add(
+	code.Add(buildBuildTestClient(proj)...)
+	code.Add(buildTestMigrate(proj)...)
+	code.Add(buildTestIsReady(proj)...)
+	code.Add(buildTestProvideDatabaseClient(proj)...)
+
+	return code
+}
+
+func buildBuildTestClient(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
@@ -28,9 +37,13 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			jen.Return(jen.List(jen.ID("c"), jen.ID("db"))),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestMigrate(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestMigrate").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -59,9 +72,13 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestIsReady(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestIsReady").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -77,9 +94,13 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideDatabaseClient(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -122,7 +143,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -12,7 +12,22 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestClient_GetUser(proj)...)
+	code.Add(buildTestClient_GetUserWithUnverifiedTwoFactorSecret(proj)...)
+	code.Add(buildTestClient_VerifyUserTwoFactorSecret(proj)...)
+	code.Add(buildTestClient_GetUserByUsername(proj)...)
+	code.Add(buildTestClient_GetAllUsersCount(proj)...)
+	code.Add(buildTestClient_GetUsers(proj)...)
+	code.Add(buildTestClient_CreateUser(proj)...)
+	code.Add(buildTestClient_UpdateUser(proj)...)
+	code.Add(buildTestClient_UpdateUserPassword(proj)...)
+	code.Add(buildTestClient_ArchiveUser(proj)...)
+
+	return code
+}
+
+func buildTestClient_GetUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -41,9 +56,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetUserWithUnverifiedTwoFactorSecret(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetUserWithUnverifiedTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -72,9 +91,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_VerifyUserTwoFactorSecret(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_VerifyUserTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -101,9 +124,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetUserByUsername(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -128,9 +155,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetAllUsersCount(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetAllUsersCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -154,9 +185,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_GetUsers(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -205,9 +240,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_CreateUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -234,9 +273,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_UpdateUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -261,9 +304,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_UpdateUserPassword(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_UpdateUserPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -293,9 +340,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClient_ArchiveUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -317,7 +368,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
