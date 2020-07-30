@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func RemoveImportBlock(input string) string {
+func removeImportBlock(input string) string {
 	var (
 		importBlockStartLine,
 		importBlockEndLine int
@@ -49,6 +49,21 @@ func RenderCallArgsToString(t *testing.T, args []jen.Code) string {
 	f.Add(
 		jen.Func().ID("main").Params().Body(
 			jen.ID("exampleFunction").Call(args...),
+		),
+	)
+	require.NoError(t, f.Render(b))
+
+	return b.String()
+}
+
+func RenderCallArgsPerLineToString(t *testing.T, args []jen.Code) string {
+	t.Helper()
+
+	b := bytes.NewBufferString("\n")
+	f := jen.NewFile("main")
+	f.Add(
+		jen.Func().ID("main").Params().Body(
+			jen.ID("exampleFunction").Callln(args...),
 		),
 	)
 	require.NoError(t, f.Render(b))

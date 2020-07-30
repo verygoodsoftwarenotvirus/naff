@@ -12,10 +12,17 @@ import (
 func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile("main")
 
-	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", proj.OutputPath)
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMain(proj)...)
+
+	return code
+}
+
+func buildMain(proj *models.Project) []jen.Code {
+	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", proj.OutputPath)
+
+	return []jen.Code{
 		jen.Func().ID("main").Params().Block(
 			jen.Comment("initialize our logger of choice."),
 			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
@@ -66,7 +73,5 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("server").Dot("Serve").Call(),
 		),
 		jen.Line(),
-	)
-
-	return code
+	}
 }

@@ -29,6 +29,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile("main")
 
 	utils.AddImports(proj, code)
+
+	code.PackageComment(`Command index_initializer is a CLI that takes in some data via flags about your 
+database and the type you want to index, and hydrates a Bleve index full of that type.
+This tool is to be used in the event of some data corruption that takes the search index
+out of commission.`)
+
 	code.ImportName(constants.FlagParsingLibrary, "flag")
 	code.ImportAlias(constants.FlagParsingLibrary, "flag")
 
@@ -39,7 +45,23 @@ func mainDotGo(proj *models.Project) *jen.File {
 		}
 	}
 
-	code.Add(
+	code.Add(buildVarDeclarations(proj)...)
+	code.Add(buildConstDeclarations()...)
+	code.Add(buildInit()...)
+	code.Add(buildMain(proj)...)
+
+	return code
+}
+
+func buildVarDeclarations(proj *models.Project) []jen.Code {
+	validTypes := []jen.Code{}
+	for _, typ := range proj.DataTypes {
+		if typ.SearchEnabled {
+			validTypes = append(validTypes, jen.Lit(typ.Name.RouteName()).MapAssign().Values())
+		}
+	}
+
+	return []jen.Code{
 		jen.Var().Defs(
 			jen.ID("indexOutputPath").String(),
 			jen.ID("typeName").String(),
@@ -60,18 +82,22 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
+}
 
-	code.Add(
+func buildConstDeclarations() []jen.Code {
+	return []jen.Code{
 		jen.Const().Defs(
 			jen.ID("outputPathVerboseFlagName").Equals().Lit("output"),
 			jen.ID("dbConnectionVerboseFlagName").Equals().Lit("db_connection"),
 			jen.ID("dbTypeVerboseFlagName").Equals().Lit("db_type"),
 		),
 		jen.Line(),
-	)
+	}
+}
 
-	code.Add(
+func buildInit() []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.Qual(constants.FlagParsingLibrary, "StringVarP").Call(
 				jen.AddressOf().ID("indexOutputPath"),
@@ -113,8 +139,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
+}
 
+func buildMain(proj *models.Project) []jen.Code {
 	searchTypeNames := []string{}
 	switchCases := []jen.Code{}
 
@@ -171,7 +199,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 		),
 	)
 
-	code.Add(
+	return []jen.Code{
 		jen.Func().ID("main").Params().Block(
 			jen.Qual(constants.FlagParsingLibrary, "Parse").Call(),
 			jen.ID(constants.LoggerVarName).Assign().Qual(filepath.Join(constants.LoggingPkg, "zerolog"), "NewZeroLogger").Call().Dot("WithName").Call(jen.Lit("search_index_initializer")),
@@ -245,7 +273,5 @@ func mainDotGo(proj *models.Project) *jen.File {
 				switchCases...,
 			),
 		),
-	)
-
-	return code
+	}
 }
