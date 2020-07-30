@@ -109,6 +109,10 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 	}
 }
 
+func BuildInterfaceCheck(interfaceName, implementerType string) jen.Code {
+	return jen.Var().Underscore().ID(interfaceName).Equals().Parens(jen.PointerTo().ID(implementerType)).Call(jen.Nil())
+}
+
 // BuildTemplatePath builds a template path
 func BuildTemplatePath(pkgRoot, tail string) string {
 	// in tests we may set the pkgRoot value to `/tmp`, in which case we don't want to chunk that into the GOPATH
@@ -263,12 +267,16 @@ func AssertExpectationsFor(varNames ...string) jen.Code {
 
 // RunGoimportsForFile runs the `goimports` binary for a given filename
 func RunGoimportsForFile(filename string) error {
-	hd, err := os.UserHomeDir()
+	return exec.Command(determineGoimportsPath(), "-w", filename).Run()
+}
+
+func determineGoimportsPath() string {
+	gofmtLocation, err := exec.Command("which", "goimports").Output()
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	return exec.Command(filepath.Join(hd, "bin/goimports"), "-w", filename).Run()
+	return string(gofmtLocation)
 }
 
 func determineGofmtPath() string {
