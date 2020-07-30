@@ -23,6 +23,7 @@ template_tests:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/templates/...
 
 models_tests:
@@ -32,6 +33,7 @@ models_tests:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/models/...
 
 lib_tests:
@@ -41,4 +43,5 @@ lib_tests:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/lib/...
