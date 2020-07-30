@@ -108,7 +108,7 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	interfaceMethods = append(interfaceMethods,
 		jen.IDf("Create%s", sn).Params(typ.BuildInterfaceDefinitionCreationMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
 		jen.IDf("Update%s", sn).Params(typ.BuildInterfaceDefinitionUpdateMethodParams(proj, "updated")...).Params(jen.Error()),
-		jen.IDf("Archive%s", sn).Params(typ.BuildInterfaceDefinitionArchiveMethodParams(proj)...).Params(jen.Error()),
+		jen.IDf("Archive%s", sn).Params(typ.BuildInterfaceDefinitionArchiveMethodParams()...).Params(jen.Error()),
 	)
 
 	return interfaceMethods

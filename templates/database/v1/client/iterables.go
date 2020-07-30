@@ -360,7 +360,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	params := typ.BuildDBClientArchiveMethodParams(proj)
+	params := typ.BuildDBClientArchiveMethodParams()
 	callArgs := typ.BuildDBClientArchiveMethodCallArgs()
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).MapAssign().IDf("%sID", uvn),

@@ -241,11 +241,11 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	return lines
 }
 
-func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code {
+func buildArchiveSomething(_ *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 
-	params := typ.BuildInterfaceDefinitionArchiveMethodParams(proj)
+	params := typ.BuildInterfaceDefinitionArchiveMethodParams()
 	callArgs := typ.BuildInterfaceDefinitionArchiveMethodCallArgs()
 
 	lines := []jen.Code{

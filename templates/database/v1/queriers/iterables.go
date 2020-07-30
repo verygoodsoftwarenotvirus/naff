@@ -1132,7 +1132,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	}
 }
 
-func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildArchiveSomethingQueryFuncDecl(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -1145,7 +1145,7 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 		jen.ID("idColumn").MapAssign().IDf("%sID", uvn),
 		jen.ID("archivedOnColumn").MapAssign().ID("nil"),
 	}
-	paramsList := typ.BuildDBQuerierArchiveQueryMethodParams(proj)
+	paramsList := typ.BuildDBQuerierArchiveQueryMethodParams()
 
 	if typ.BelongsToNobody {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s ", sn, scn)
@@ -1203,13 +1203,13 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 }
 
-func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildArchiveSomethingFuncDecl(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
-	params := typ.BuildDBQuerierArchiveMethodParams(proj)
+	params := typ.BuildDBQuerierArchiveMethodParams()
 	queryBuildingArgs := typ.BuildDBQuerierArchiveQueryBuildingArgs()
 
 	return []jen.Code{

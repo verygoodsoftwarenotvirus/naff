@@ -71,14 +71,15 @@ import (
 )
 
 type SomethingDataManager interface {
+	ChildExists(ctx context.Context, grandparentID, parentID, childID uint64) (bool, error)
 	GetChild(ctx context.Context, grandparentID, parentID, childID uint64) (*Child, error)
-	GetChildCount(ctx context.Context, grandparentID, parentID uint64, filter *QueryFilter) (uint64, error)
 	GetAllChildrenCount(ctx context.Context) (uint64, error)
+	GetAllChildren(ctx context.Context, resultChannel chan []Child) error
 	GetChildren(ctx context.Context, grandparentID, parentID uint64, filter *QueryFilter) (*ChildList, error)
-	GetAllChildrenForParent(ctx context.Context, grandparentID, parentID uint64) ([]Child, error)
-	CreateChild(ctx context.Context, grandparentID, parentID uint64, input *ChildCreationInput) (*Child, error)
-	UpdateChild(ctx context.Context, grandparentID uint64, updated *Child) error
-	ArchiveChild(ctx context.Context, grandparentID, parentID, childID uint64) error
+	GetChildrenWithIDs(ctx context.Context, userID uint64, limit uint8, ids []uint64) ([]Child, error)
+	CreateChild(ctx context.Context, input *ChildCreationInput) (*Child, error)
+	UpdateChild(ctx context.Context, updated *Child) error
+	ArchiveChild(ctx context.Context, parentID, childID uint64) error
 }
 `
 		actual := b.String()
