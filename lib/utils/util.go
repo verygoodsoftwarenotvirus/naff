@@ -111,6 +111,10 @@ func buildDoubleValueTestifyFunc(pkg, method string) func(expected, actual, mess
 
 // BuildTemplatePath builds a template path
 func BuildTemplatePath(pkgRoot, tail string) string {
+	// in tests we may set the pkgRoot value to `/tmp`, in which case we don't want to chunk that into the GOPATH
+	if strings.HasPrefix(pkgRoot, "/") {
+		return filepath.Join(pkgRoot, tail)
+	}
 	return filepath.Join(os.Getenv("GOPATH"), "src", pkgRoot, tail)
 }
 

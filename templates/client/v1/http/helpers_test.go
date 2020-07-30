@@ -14,7 +14,7 @@ func Test_helpersDotGo(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := helpersDotGo(proj)
 
 		expected := `
@@ -110,7 +110,7 @@ func createBodyFromStruct(in interface{}) (io.Reader, error) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -140,7 +140,7 @@ func argIsNotPointer(i interface{}) (notAPointer bool, err error) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -169,7 +169,7 @@ func argIsNotNil(i interface{}) (isNil bool, err error) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -203,7 +203,7 @@ func argIsNotPointerOrNil(i interface{}) error {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -213,7 +213,7 @@ func Test_buildUnmarshalBody(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildUnmarshalBody(proj)
 
 		expected := `
@@ -264,7 +264,7 @@ func unmarshalBody(ctx context.Context, res *http.Response, dest interface{}) er
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -297,6 +297,6 @@ func createBodyFromStruct(in interface{}) (io.Reader, error) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }

@@ -11,17 +11,25 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
-		jen.Const().Defs(determineConstants(proj)...),
-		jen.Line(),
-	)
+	code.Add(determineConstants(proj)...)
 
 	code.Add(
 		jen.Type().ID("configFunc").Func().Params(jen.ID("filePath").String()).Params(jen.Error()),
 		jen.Line(),
 	)
 
-	code.Add(
+	code.Add(renderFileMap(proj)...)
+	code.Add(buildDevelopmentConfig(proj)...)
+	code.Add(buildFrontendTestsConfig(proj)...)
+	code.Add(buildCoverageConfig(proj)...)
+	code.Add(buildBuildIntegrationTestForDBImplementation(proj)...)
+	code.Add(buildMain(proj)...)
+
+	return code
+}
+
+func renderFileMap(proj *models.Project) []jen.Code {
+	return []jen.Code{
 		jen.Var().Defs(
 			jen.ID("files").Equals().Map(jen.String()).ID("configFunc").Valuesln(
 				jen.Lit("environments/local/config.toml").MapAssign().ID("developmentConfig"),
@@ -48,16 +56,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
-
-	code.Add(buildDevelopmentConfig(proj)...)
-	code.Add(buildFrontendTestsConfig(proj)...)
-	code.Add(buildCoverageConfig(proj)...)
-	//code.Add(buildProductionConfig(proj)...)
-	code.Add(buildBuildIntegrationTestForDBImplementation(proj)...)
-	code.Add(buildMain(proj)...)
-
-	return code
+	}
 }
 
 func determineConstants(proj *models.Project) []jen.Code {
@@ -134,7 +133,10 @@ func determineConstants(proj *models.Project) []jen.Code {
 		}
 	}
 
-	return lines
+	return []jen.Code{
+		jen.Const().Defs(lines...),
+		jen.Line(),
+	}
 }
 
 func buildDevelopmentConfig(proj *models.Project) []jen.Code {

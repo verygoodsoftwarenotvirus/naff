@@ -14,7 +14,7 @@ func Test_oauth2ClientsDotGo(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj)
 
 		expected := `
@@ -155,7 +155,7 @@ func (c *V1Client) ArchiveOAuth2Client(ctx context.Context, id uint64) error {
 `
 		actual := testutils.RenderOuterStatementToString(t, x)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -165,7 +165,7 @@ func Test_buildBuildGetOAuth2ClientRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientRequest(proj)
 
 		expected := `
@@ -190,7 +190,7 @@ func (c *V1Client) BuildGetOAuth2ClientRequest(ctx context.Context, id uint64) (
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -200,7 +200,7 @@ func Test_buildGetOAuth2Client(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj)
 
 		expected := `
@@ -229,7 +229,7 @@ func (c *V1Client) GetOAuth2Client(ctx context.Context, id uint64) (oauth2Client
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -239,7 +239,7 @@ func Test_buildBuildGetOAuth2ClientsRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientsRequest(proj)
 
 		expected := `
@@ -264,7 +264,7 @@ func (c *V1Client) BuildGetOAuth2ClientsRequest(ctx context.Context, filter *v1.
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -274,7 +274,7 @@ func Test_buildGetOAuth2Clients(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Clients(proj)
 
 		expected := `
@@ -304,7 +304,7 @@ func (c *V1Client) GetOAuth2Clients(ctx context.Context, filter *v1.QueryFilter)
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -314,7 +314,7 @@ func Test_buildBuildCreateOAuth2ClientRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateOAuth2ClientRequest(proj)
 
 		expected := `
@@ -349,7 +349,7 @@ func (c *V1Client) BuildCreateOAuth2ClientRequest(
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -359,7 +359,7 @@ func Test_buildCreateOAuth2Client(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj)
 
 		expected := `
@@ -403,7 +403,7 @@ func (c *V1Client) CreateOAuth2Client(
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -413,7 +413,7 @@ func Test_buildBuildArchiveOAuth2ClientRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildBuildArchiveOAuth2ClientRequest(proj)
 
 		expected := `
@@ -438,7 +438,7 @@ func (c *V1Client) BuildArchiveOAuth2ClientRequest(ctx context.Context, id uint6
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -448,7 +448,7 @@ func Test_buildArchiveOAuth2Client(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildArchiveOAuth2Client(proj)
 
 		expected := `
@@ -475,6 +475,6 @@ func (c *V1Client) ArchiveOAuth2Client(ctx context.Context, id uint64) error {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }

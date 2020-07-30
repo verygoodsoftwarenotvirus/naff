@@ -14,7 +14,7 @@ func Test_iterablesTestDotGo(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesTestDotGo(proj, typ)
 
@@ -536,7 +536,7 @@ func TestV1Client_ArchiveItem(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -546,7 +546,7 @@ func Test_buildTestV1Client_BuildSomethingExistsRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildSomethingExistsRequest(proj, typ)
 
@@ -587,7 +587,7 @@ func TestV1Client_BuildItemExistsRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -597,7 +597,7 @@ func Test_buildTestV1Client_SomethingExists(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_SomethingExists(proj, typ)
 
@@ -657,7 +657,7 @@ func TestV1Client_ItemExists(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -667,7 +667,7 @@ func Test_buildTestV1Client_BuildGetSomethingRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildGetSomethingRequest(proj, typ)
 
@@ -709,7 +709,7 @@ func TestV1Client_BuildGetItemRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -719,7 +719,7 @@ func Test_buildTestV1Client_GetSomething(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_GetSomething(proj, typ)
 
@@ -805,7 +805,7 @@ func TestV1Client_GetItem(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -815,7 +815,7 @@ func Test_buildTestV1Client_BuildSearchSomethingRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildSearchSomethingRequest(proj, typ)
 
@@ -855,7 +855,7 @@ func TestV1Client_BuildSearchItemsRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -865,7 +865,7 @@ func Test_buildTestV1Client_SearchSomething(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_SearchSomething(proj, typ)
 
@@ -959,7 +959,7 @@ func TestV1Client_SearchItems(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -969,7 +969,7 @@ func Test_buildTestV1Client_BuildGetListOfSomethingRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildGetListOfSomethingRequest(proj, typ)
 
@@ -1007,7 +1007,7 @@ func TestV1Client_BuildGetItemsRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1017,7 +1017,7 @@ func Test_buildTestV1Client_GetListOfSomething(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_GetListOfSomething(proj, typ)
 
@@ -1103,7 +1103,7 @@ func TestV1Client_GetItems(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1113,7 +1113,7 @@ func Test_buildTestV1Client_BuildCreateSomethingRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildCreateSomethingRequest(proj, typ)
 
@@ -1155,7 +1155,7 @@ func TestV1Client_BuildCreateItemRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1165,7 +1165,7 @@ func Test_buildTestV1Client_CreateSomething(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_CreateSomething(proj, typ)
 
@@ -1236,7 +1236,7 @@ func TestV1Client_CreateItem(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1246,7 +1246,7 @@ func Test_buildTestV1Client_BuildUpdateSomethingRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildUpdateSomethingRequest(proj, typ)
 
@@ -1284,7 +1284,7 @@ func TestV1Client_BuildUpdateItemRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1294,7 +1294,7 @@ func Test_buildTestV1Client_UpdateSomething(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_UpdateSomething(proj, typ)
 
@@ -1346,7 +1346,7 @@ func TestV1Client_UpdateItem(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1356,7 +1356,7 @@ func Test_buildTestV1Client_BuildArchiveSomethingRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_BuildArchiveSomethingRequest(proj, typ)
 
@@ -1399,7 +1399,7 @@ func TestV1Client_BuildArchiveItemRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1409,7 +1409,7 @@ func Test_buildTestV1Client_ArchiveSomething(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestV1Client_ArchiveSomething(proj, typ)
 
@@ -1460,6 +1460,6 @@ func TestV1Client_ArchiveItem(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }

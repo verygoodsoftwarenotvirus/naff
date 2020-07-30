@@ -2,12 +2,33 @@ package testutils
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 	"github.com/stretchr/testify/require"
 )
+
+func RemoveImportBlock(input string) string {
+	var (
+		importBlockStartLine,
+		importBlockEndLine int
+	)
+	lines := strings.Split(input, "\n")
+
+	for i, line := range lines {
+		if strings.HasPrefix(line, "import (") {
+			importBlockStartLine = i - 1
+		}
+		if importBlockStartLine != 0 && line == ")" {
+			importBlockEndLine = i + 1
+			break
+		}
+	}
+
+	return strings.Join(append(lines[:importBlockStartLine], lines[importBlockEndLine:]...), "\n")
+}
 
 func RenderFunctionParamsToString(t *testing.T, params []jen.Code) string {
 	t.Helper()
@@ -59,6 +80,15 @@ func RenderOuterStatementToString(t *testing.T, code ...jen.Code) string {
 
 	b := bytes.NewBufferString("\n")
 	require.NoError(t, out.Render(b))
+
+	return b.String()
+}
+
+func RenderFileToString(t *testing.T, f *jen.File) string {
+	t.Helper()
+
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, f.Render(b))
 
 	return b.String()
 }

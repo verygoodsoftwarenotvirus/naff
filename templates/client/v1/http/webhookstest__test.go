@@ -14,7 +14,7 @@ func Test_webhooksTestDotGo(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := webhooksTestDotGo(proj)
 
 		expected := `
@@ -318,7 +318,7 @@ func TestV1Client_ArchiveWebhook(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -328,7 +328,7 @@ func Test_buildTestV1ClientBuildGetWebhookRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildGetWebhookRequest(proj)
 
 		expected := `
@@ -368,7 +368,7 @@ func TestV1Client_BuildGetWebhookRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -378,7 +378,7 @@ func Test_buildTestV1ClientGetWebhook(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientGetWebhook(proj)
 
 		expected := `
@@ -439,7 +439,7 @@ func TestV1Client_GetWebhook(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -449,7 +449,7 @@ func Test_buildTestV1ClientBuildGetWebhooksRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildGetWebhooksRequest(proj)
 
 		expected := `
@@ -484,7 +484,7 @@ func TestV1Client_BuildGetWebhooksRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -494,7 +494,7 @@ func Test_buildTestV1ClientGetWebhooks(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientGetWebhooks(proj)
 
 		expected := `
@@ -548,7 +548,7 @@ func TestV1Client_GetWebhooks(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -558,7 +558,7 @@ func Test_buildTestV1ClientBuildCreateWebhookRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildCreateWebhookRequest(proj)
 
 		expected := `
@@ -597,7 +597,7 @@ func TestV1Client_BuildCreateWebhookRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -607,7 +607,7 @@ func Test_buildTestV1ClientCreateWebhook(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientCreateWebhook(proj)
 
 		expected := `
@@ -672,7 +672,7 @@ func TestV1Client_CreateWebhook(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -682,7 +682,7 @@ func Test_buildTestV1ClientBuildUpdateWebhookRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildUpdateWebhookRequest(proj)
 
 		expected := `
@@ -719,7 +719,7 @@ func TestV1Client_BuildUpdateWebhookRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -729,7 +729,7 @@ func Test_buildTestV1ClientUpdateWebhook(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientUpdateWebhook(proj)
 
 		expected := `
@@ -780,7 +780,7 @@ func TestV1Client_UpdateWebhook(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -790,7 +790,7 @@ func Test_buildTestV1ClientBuildArchiveWebhookRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildArchiveWebhookRequest(proj)
 
 		expected := `
@@ -831,7 +831,7 @@ func TestV1Client_BuildArchiveWebhookRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -841,7 +841,7 @@ func Test_buildTestV1ClientArchiveWebhook(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientArchiveWebhook(proj)
 
 		expected := `
@@ -890,6 +890,6 @@ func TestV1Client_ArchiveWebhook(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }

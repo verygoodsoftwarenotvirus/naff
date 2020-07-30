@@ -1,4 +1,4 @@
-package client
+package v1
 
 import (
 	"testing"
@@ -16,16 +16,15 @@ func Test_docDotGo(T *testing.T) {
 
 		expected := `
 /*
-Package client provides an HTTP client that can communicate with and interpret the responses
-of an instance of the todo service.
+Command config_gen generates configuration files in the local repository, configured
+via the precise mechanism that parses them to guard against invalid configuration
 */
-package client
+package main
 
 import ()
 `
-
 		actual := testutils.RenderFileToString(t, docDotGo())
 
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
+		assert.Equal(t, actual, expected, "expected and actual output do not match")
 	})
 }

@@ -7,13 +7,13 @@ func {{.TestName}}(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
         t.Parallel()
 
-        {{range $i, $el := .Parameters}}{{if eq .Name "proj"}} proj := testprojects.TodoApp {{end}}{{end}} {{range $i, $el := .Parameters}}{{if eq .Name "typ"}} {{ print "\n" }} typ := proj.DataTypes[0] {{end}}{{end}}
+        {{range $i, $el := .Parameters}}{{if eq .Name "proj"}} proj := testprojects.BuildTodoApp() {{end}}{{end}} {{range $i, $el := .Parameters}}{{if eq .Name "typ"}} {{ print "\n" }} typ := proj.DataTypes[0] {{end}}{{end}}
         x := {{with .Receiver}}{{if not .IsStruct}}tt.{{end}}{{Receiver .}}.{{end}}{{.Name}}({{range $i, $el := .Parameters}}{{if $i}}, {{end}}{{if not .IsWriter}}{{end}}{{Param .}}{{if .Type.IsVariadic}}...{{end}}{{end}})
 
         expected := ``
-		actual := testutils.RenderFunctionToString(t, x...)
+		actual := testutils.RenderOuterStatementToString(t, x...)
 
-        assert.Equal(t, actual, expected, "expected and actual output do not match")
+        assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 {{end}}

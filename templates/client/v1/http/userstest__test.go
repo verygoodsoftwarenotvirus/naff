@@ -14,7 +14,7 @@ func Test_usersTestDotGo(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := usersTestDotGo(proj)
 
 		expected := `
@@ -549,7 +549,7 @@ func TestV1Client_ValidateTOTPSecret(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -559,7 +559,7 @@ func Test_buildTestV1ClientBuildGetUserRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildGetUserRequest(proj)
 
 		expected := `
@@ -600,7 +600,7 @@ func TestV1Client_BuildGetUserRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -610,7 +610,7 @@ func Test_buildTestV1ClientGetUser(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientGetUser(proj)
 
 		expected := `
@@ -680,7 +680,7 @@ func TestV1Client_GetUser(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -724,7 +724,7 @@ func TestV1Client_BuildGetUsersRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -734,7 +734,7 @@ func Test_buildTestV1ClientGetUsers(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientGetUsers(proj)
 
 		expected := `
@@ -802,7 +802,7 @@ func TestV1Client_GetUsers(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -812,7 +812,7 @@ func Test_buildTestV1ClientBuildCreateUserRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildCreateUserRequest(proj)
 
 		expected := `
@@ -850,7 +850,7 @@ func TestV1Client_BuildCreateUserRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -860,7 +860,7 @@ func Test_buildTestV1ClientCreateUser(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientCreateUser(proj)
 
 		expected := `
@@ -927,7 +927,7 @@ func TestV1Client_CreateUser(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -937,7 +937,7 @@ func Test_buildTestV1ClientBuildArchiveUserRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildArchiveUserRequest(proj)
 
 		expected := `
@@ -978,7 +978,7 @@ func TestV1Client_BuildArchiveUserRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -988,7 +988,7 @@ func Test_buildTestV1ClientArchiveUser(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientArchiveUser(proj)
 
 		expected := `
@@ -1037,7 +1037,7 @@ func TestV1Client_ArchiveUser(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1047,7 +1047,7 @@ func Test_buildTestV1ClientBuildLoginRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildLoginRequest(proj)
 
 		expected := `
@@ -1095,7 +1095,7 @@ func TestV1Client_BuildLoginRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1105,7 +1105,7 @@ func Test_buildTestV1ClientLogin(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientLogin(proj)
 
 		expected := `
@@ -1221,7 +1221,7 @@ func TestV1Client_Login(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1231,7 +1231,7 @@ func Test_buildTestV1ClientBuildValidateTOTPSecretRequest(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildValidateTOTPSecretRequest(proj)
 
 		expected := `
@@ -1268,7 +1268,7 @@ func TestV1Client_BuildValidateTOTPSecretRequest(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
 
@@ -1278,7 +1278,7 @@ func Test_buildTestV1ClientValidateTOTPSecret(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.TodoApp
+		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientValidateTOTPSecret(proj)
 
 		expected := `
@@ -1406,6 +1406,6 @@ func TestV1Client_ValidateTOTPSecret(T *testing.T) {
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
-		assert.Equal(t, actual, expected, "expected and actual output do not match")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 }
