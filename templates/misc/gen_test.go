@@ -1,57 +1,52 @@
 package misc
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
-	"strings"
+	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// RenderPackage renders the package
-func RenderPackage(project *models.Project) error {
-	files := map[string]func(*models.Project) string{
-		".dockerignore":  dockerIgnore,
-		".gitignore":     gitIgnore,
-		"Makefile":       makefile,
-		".gitlab-ci.yml": gitlabCIDotYAML,
-		"README.md":      readmeDotMD,
-		".golangci.yml":  golancCILintDotYAML,
-	}
+func TestRenderPackage(T *testing.T) {
+	T.Parallel()
 
-	for filename, file := range files {
-		fname := utils.BuildTemplatePath(project.OutputPath, filename)
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
 
-		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
-			log.Printf("error making directory: %v\n", mkdirErr)
-		}
+		project := testprojects.BuildTodoApp()
+		project.OutputPath = filepath.Join(os.TempDir(), "one", "two")
 
-		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Printf("error opening file: %v", err)
-			return err
-		}
-
-		if _, err := f.WriteString(file(project)); err != nil {
-			log.Printf("error writing to file: %v", err)
-			return err
-		}
-	}
-
-	return nil
+		assert.NoError(t, RenderPackage(project))
+	})
 }
 
-func dockerIgnore(_ *models.Project) string {
-	return `**/node_modules
+func Test_dockerIgnore(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		expected := `**/node_modules
 **/dist
 `
+		actual := dockerIgnore(nil)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func gitIgnore(project *models.Project) string {
-	output := `# Binaries for programs and plugins
+func Test_gitIgnore(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		project := testprojects.BuildTodoApp()
+
+		expected := `# Binaries for programs and plugins
 *.exe
 *.dll
 *.so
@@ -99,27 +94,23 @@ frontend/v1/public/bundle.*
 *.profile
 
 cmd/playground
+*.bleve
 `
+		actual := gitIgnore(project)
 
-	if project.SearchEnabled() {
-		output += "*.bleve\n"
-	}
-
-	if project.DatabaseIsEnabled(models.Sqlite) {
-		output += "*.sqlite\n"
-	}
-
-	return output
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func gitlabCIDotYAML(project *models.Project) string {
-	projRoot := project.OutputPath
-	projParts := strings.Split(projRoot, "/")
+func Test_gitlabCIDotYAML(T *testing.T) {
+	T.Parallel()
 
-	ciPath := strings.Join([]string{projParts[0], projParts[1]}, "/")
-	ciBuildPath := strings.Join([]string{projParts[1], projParts[2]}, "/")
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
 
-	f := fmt.Sprintf(`stages:
+		project := testprojects.BuildTodoApp()
+
+		expected := `stages:
   - quality
   - frontend-testing
   - integration-testing
@@ -127,9 +118,9 @@ func gitlabCIDotYAML(project *models.Project) string {
   - publish
 
 before_script:
-  - mkdir -p /go/src/%s/
-  - cp -rf /builds/%s /go/src/%s/
-  - cd /go/src/%s
+  - mkdir -p /go/src/gitlab.com/verygoodsoftwarenotvirus/
+  - cp -rf /builds/verygoodsoftwarenotvirus/naff /go/src/gitlab.com/verygoodsoftwarenotvirus/
+  - cd /go/src/gitlab.com/verygoodsoftwarenotvirus/naff/example_output
   - apt-get update -y && apt-get install -y make git gcc musl-dev
 
 formatting:
@@ -342,18 +333,26 @@ gitlabcr:
     - docker:dind
   script:
     - docker login --username=gitlab-ci-token --password=$CI_JOB_TOKEN registry.gitlab.com
-    - docker build --tag registry.%s:latest --file dockerfiles/server.Dockerfile .
-    - docker push registry.%s:latest
+    - docker build --tag registry.gitlab.com/verygoodsoftwarenotvirus/naff/example_output:latest --file dockerfiles/server.Dockerfile .
+    - docker push registry.gitlab.com/verygoodsoftwarenotvirus/naff/example_output:latest
   only:
     - master
-`, ciPath, ciBuildPath, ciPath, projRoot, projRoot, projRoot)
+`
+		actual := gitlabCIDotYAML(project)
 
-	return f
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func golancCILintDotYAML(project *models.Project) string {
-	projRoot := project.OutputPath
-	f := fmt.Sprintf(`# options for analysis running
+func Test_golancCILintDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		project := testprojects.BuildTodoApp()
+
+		expected := `# options for analysis running
 run:
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   deadline: 5m
@@ -412,11 +411,11 @@ output:
 # all available settings of specific linters
 linters-settings:
   errcheck:
-    # report about not checking of errors in type assertions: `+"`"+`a := b.(MyStruct)`+"`"+`;
+    # report about not checking of errors in type assertions: ` + "`" + `a := b.(MyStruct)` + "`" + `;
     # default is false: such cases aren't reported by default.
     check-type-assertions: true
 
-    # report about assignment of errors to blank identifier: `+"`"+`num, _ := strconv.Atoi(numStr)`+"`"+`;
+    # report about assignment of errors to blank identifier: ` + "`" + `num, _ := strconv.Atoi(numStr)` + "`" + `;
     # default is false: such cases aren't reported by default.
     check-blank: true
 
@@ -429,8 +428,8 @@ linters-settings:
 
     # settings per analyzer
     settings:
-      printf: # analyzer name, run `+"`"+`go tool vet help`+"`"+` to see all analyzers
-        funcs: # run `+"`"+`go tool vet help printf`+"`"+` to see available settings for `+"`"+`printf`+"`"+` analyzer
+      printf: # analyzer name, run ` + "`" + `go tool vet help` + "`" + ` to see all analyzers
+        funcs: # run ` + "`" + `go tool vet help printf` + "`" + ` to see available settings for ` + "`" + `printf` + "`" + ` analyzer
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
@@ -442,12 +441,12 @@ linters-settings:
     # minimal confidence for issues, default is 0.8
     min-confidence: 0.8
   gofmt:
-    # simplify code: gofmt with `+"`"+`-s`+"`"+` option, true by default
+    # simplify code: gofmt with ` + "`" + `-s` + "`" + ` option, true by default
     simplify: true
   goimports:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
-    local-prefixes: %s
+    local-prefixes: gitlab.com/verygoodsoftwarenotvirus/naff/example_output
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 20
@@ -508,7 +507,7 @@ linters-settings:
       - captLocal
       - singleCaseSwitch
 
-    # Enable multiple checks by tags, run `+"`"+`GL_DEBUG=gocritic golangci-lint`+"`"+` run to see all tags and checks.
+    # Enable multiple checks by tags, run ` + "`" + `GL_DEBUG=gocritic golangci-lint` + "`" + ` run to see all tags and checks.
     # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
     enabled-tags:
       - diagnostic
@@ -567,8 +566,8 @@ linters:
 issues:
   # # List of regexps of issue texts to exclude, empty list by default.
   # # But independently from this option we use default exclude patterns,
-  # # it can be disabled by `+"`"+`exclude-use-default: false`+"`"+`. To list all
-  # # excluded by default patterns execute `+"`"+`golangci-lint run --help`+"`"+`
+  # # it can be disabled by ` + "`" + `exclude-use-default: false` + "`" + `. To list all
+  # # excluded by default patterns execute ` + "`" + `golangci-lint run --help` + "`" + `
   # exclude:
   #   -
 
@@ -650,9 +649,9 @@ issues:
         - lll
       source: "^//go:generate "
 
-  # Independently from option `+"`"+`exclude`+"`"+` we use default exclude patterns,
+  # Independently from option ` + "`" + `exclude` + "`" + ` we use default exclude patterns,
   # it can be disabled by this option. To list all
-  # excluded by default patterns execute `+"`"+`golangci-lint run --help`+"`"+`.
+  # excluded by default patterns execute ` + "`" + `golangci-lint run --help` + "`" + `.
   # Default value for this option is true.
   exclude-use-default: false
 
@@ -671,13 +670,15 @@ issues:
   new: false
 
   #
-  # # Show only new issues created after git revision `+"`"+`REV`+"`"+`
+  # # Show only new issues created after git revision ` + "`" + `REV` + "`" + `
   # new-from-rev: REV
   #
   # # Show only new issues created in git patch with set file path.
   # new-from-patch: path/to/patch/file
   #
-`, projRoot)
+`
+		actual := golancCILintDotYAML(project)
 
-	return f
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }

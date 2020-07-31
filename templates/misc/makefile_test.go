@@ -1,26 +1,31 @@
 package misc
 
 import (
-	"fmt"
-	"strings"
+	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func makefile(proj *models.Project) string {
-	projRoot := proj.OutputPath
-	projectNameKebab := proj.Name.KebabName()
+func Test_makefile(T *testing.T) {
+	T.Parallel()
 
-	f := fmt.Sprintf(`PWD                      := $(shell pwd)
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+
+		expected := `PWD                      := $(shell pwd)
 GOPATH                   := $(GOPATH)
 ARTIFACTS_DIR            := artifacts
 COVERAGE_OUT             := $(ARTIFACTS_DIR)/coverage.out
 CONFIG_DIR               := config_files
 GO_FORMAT                := gofmt -s -w
-PACKAGE_LIST             := ` + "`" + fmt.Sprintf(`go list %s/... | grep -Ev '(cmd|tests|mock|fake)'`, projRoot) + "`" + `
+PACKAGE_LIST             := `+"`"+`go list gitlab.com/verygoodsoftwarenotvirus/naff/example_output/... | grep -Ev '(cmd|tests|mock|fake)'`+"`"+`
 DOCKER_FILES_DIR         := dockerfiles
 DOCKER_COMPOSE_FILES_DIR := compose_files
-SERVER_DOCKER_IMAGE_NAME := ` + fmt.Sprintf("%s-server", projectNameKebab) + `
+SERVER_DOCKER_IMAGE_NAME := todo-server
 SERVER_DOCKER_REPO_NAME  := docker.io/verygoodsoftwarenotvirus/$(SERVER_DOCKER_IMAGE_NAME)
 
 $(ARTIFACTS_DIR):
@@ -61,7 +66,7 @@ wire-clean:
 
 .PHONY: wire
 wire: ensure-wire
-	wire gen ` + fmt.Sprintf("%s/cmd/server/v1", projRoot) + `
+	wire gen gitlab.com/verygoodsoftwarenotvirus/naff/example_output/cmd/server/v1
 
 .PHONY: rewire
 rewire: ensure-wire wire-clean wire
@@ -82,8 +87,8 @@ lint:
 	@docker pull golangci/golangci-lint:latest
 	docker run \
 		--rm \
-		--volume ` + "`" + `pwd` + "`" + `:` + "`" + `pwd` + "`" + ` \
-		--workdir=` + "`" + `pwd` + "`" + ` \
+		--volume `+"`"+`pwd`+"`"+`:`+"`"+`pwd`+"`"+` \
+		--workdir=`+"`"+`pwd`+"`"+` \
 		--env=GO111MODULE=on \
 		golangci/golangci-lint:latest golangci-lint run --config=.golangci.yml ./...
 
@@ -100,13 +105,13 @@ gitlab-ci-junit-report: $(ARTIFACTS_DIR) ensure-go-junit-report
 	@mkdir $(CI_PROJECT_DIR)/test_artifacts
 	go test -v -race -count 5 $(PACKAGE_LIST) | go-junit-report > $(CI_PROJECT_DIR)/test_artifacts/unit_test_report.xml
 
-.PHONY: quicktest # basically the same as coverage.out, only running once instead of with ` + "`" + `-count` + "`" + ` set
+.PHONY: quicktest # basically the same as coverage.out, only running once instead of with `+"`"+`-count`+"`"+` set
 quicktest: $(ARTIFACTS_DIR)
 	go test -cover -race -failfast $(PACKAGE_LIST)
 
 .PHONY: format
 format:
-	for file in ` + "`" + `find $(PWD) -name '*.go'` + "`" + `; do $(GO_FORMAT) $$file; done
+	for file in `+"`"+`find $(PWD) -name '*.go'`+"`"+`; do $(GO_FORMAT) $$file; done
 
 .PHONY: check_formatting
 check_formatting:
@@ -133,26 +138,9 @@ gamut: revendor rewire config_files quicktest lint integration-tests-postgres in
 .PHONY: lintegration-tests # this is just a handy lil' helper I use sometimes
 lintegration-tests: integration-tests lint
 
-`)
+.PHONY: integration-tests
+integration-tests: 
 
-	var (
-		integrationTestTargets []string
-		integrationTests       []string
-		loadTestTargets        []string
-	)
-
-	for _, db := range proj.EnabledDatabases() {
-		loadTestTargets = append(loadTestTargets, fmt.Sprintf("load-tests-%s", db))
-		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
-	}
-
-	f += fmt.Sprintf(`.PHONY: integration-tests
-integration-tests: %s
-`, strings.Join(integrationTestTargets, " "))
-
-	f += strings.Join(integrationTests, "")
-
-	f += `
 .PHONY: integration-tests-
 integration-tests-%:
 	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/integration-tests-$*.json up \
@@ -180,7 +168,7 @@ integration-coverage: $(ARTIFACTS_DIR)
 ## Load tests
 
 .PHONY: load-tests
-load-tests: ` + strings.Join(loadTestTargets, " ") + `
+load-tests: 
 
 .PHONY: load-tests-
 load-tests-%:
@@ -223,6 +211,8 @@ run:
 	--renew-anon-volumes \
 	--always-recreate-deps \
 	--abort-on-container-exit`
+		actual := makefile(proj)
 
-	return f
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
