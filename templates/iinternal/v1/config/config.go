@@ -12,7 +12,20 @@ func configDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildConfigConstantVariableDeclarations()...)
+	code.Add(buildConfigVariableDeclarations()...)
+	code.Add(buildInit()...)
+	code.Add(buildTypeDefinitions(proj)...)
+	code.Add(buildEncodeToFile()...)
+	code.Add(buildBuildConfig()...)
+	code.Add(buildParseConfigFile()...)
+	code.Add(buildRandString()...)
+
+	return code
+}
+
+func buildConfigConstantVariableDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("DevelopmentRunMode is the run mode for a development environment"),
 			jen.ID("DevelopmentRunMode").ID("runMode").Equals().Lit("development"),
@@ -29,9 +42,13 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("randStringSize").Equals().Lit(32),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildConfigVariableDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("validModes").Equals().Map(jen.ID("runMode")).Struct().Valuesln(
 				jen.ID("DevelopmentRunMode").MapAssign().Values(),
@@ -40,9 +57,13 @@ func configDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildInit() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -50,110 +71,9 @@ func configDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
-		jen.Type().Defs(
-			buildTypeDefinitions(proj)...,
-		),
-	)
-
-	code.Add(
-		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder."),
-		jen.Line(),
-		jen.Func().Params(
-			jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("EncodeToFile").
-			Params(
-				jen.ID("path").String(),
-				jen.ID("marshaler").Func().Params(jen.ID("v").Interface()).Params(jen.Index().Byte(), jen.Error()),
-			).Params(jen.Error()).Block(
-			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.PointerTo().ID("cfg")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().Err(),
-			),
-			jen.Line(),
-			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Op("0600")),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
-		jen.Comment("BuildConfig is a constructor function that initializes a viper config."),
-		jen.Line(),
-		jen.Func().ID("BuildConfig").Params().Params(jen.PointerTo().Qual("github.com/spf13/viper", "Viper")).Block(
-			jen.ID("cfg").Assign().ID("viper").Dot("New").Call(),
-			jen.Line(),
-			jen.Comment("meta stuff."),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("meta.run_mode"), jen.ID("defaultRunMode")),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("meta.startup_deadline"), jen.ID("defaultStartupDeadline")),
-			jen.Line(),
-			jen.Comment("auth stuff."),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.cookie_lifetime"), jen.ID("defaultCookieLifetime")),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.enable_user_signup"), jen.True()),
-			jen.Line(),
-			jen.Comment("metrics stuff."),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("metrics.database_metrics_collection_interval"), jen.ID("defaultMetricsCollectionInterval")),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("metrics.runtime_metrics_collection_interval"), jen.ID("defaultDatabaseMetricsCollectionInterval")),
-			jen.Line(),
-			jen.Comment("server stuff."),
-			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("server.http_port"), jen.Lit(80)),
-			jen.Line(),
-			jen.Return().ID("cfg"),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
-		jen.Comment("ParseConfigFile parses a configuration file."),
-		jen.Line(),
-		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").String()).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
-			jen.ID("cfg").Assign().ID("BuildConfig").Call(),
-			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
-			jen.Line(),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("ReadInConfig").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
-			),
-			jen.Line(),
-			jen.Var().ID("serverConfig").PointerTo().ID("ServerConfig"),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.AddressOf().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
-			),
-			jen.Line(),
-			jen.If(
-				jen.List(jen.Underscore(), jen.ID("ok")).Assign().ID("validModes").Index(
-					jen.ID("serverConfig").Dot("Meta").Dot("RunMode"),
-				),
-				jen.Not().ID("ok"),
-			).Block(
-				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("invalid run mode: %q"), jen.ID("serverConfig").Dot("Meta").Dot("RunMode"))),
-			),
-			jen.Line(),
-			jen.Comment("set the cookie secret to something (relatively) secure if not provided"),
-			jen.If(jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").IsEqualTo().EmptyString()).Block(
-				jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").Equals().ID("randString").Call(jen.ID("randStringSize")),
-			),
-			jen.Line(),
-			jen.Return().List(jen.ID("serverConfig"), jen.Nil()),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
-		jen.Comment("randString produces a random string."),
-		jen.Line(),
-		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
-		jen.Line(),
-		jen.Func().ID("randString").Params(jen.ID("size").Uint()).Params(jen.String()).Block(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.ID("size")),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.ID("panic").Call(jen.Err()),
-			),
-			jen.Return().Qual("encoding/base32", "StdEncoding").Dot("WithPadding").Call(jen.Qual("encoding/base32", "NoPadding")).Dot("EncodeToString").Call(jen.ID("b")),
-		),
-		jen.Line(),
-	)
-
-	return code
+	return lines
 }
 
 func buildTypeDefinitions(proj *models.Project) []jen.Code {
@@ -379,6 +299,117 @@ func buildTypeDefinitions(proj *models.Project) []jen.Code {
 		),
 		jen.Line(),
 	)
+
+	return []jen.Code{jen.Type().Defs(lines...)}
+}
+
+func buildEncodeToFile() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder."),
+		jen.Line(),
+		jen.Func().Params(
+			jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("EncodeToFile").
+			Params(
+				jen.ID("path").String(),
+				jen.ID("marshaler").Func().Params(jen.ID("v").Interface()).Params(jen.Index().Byte(), jen.Error()),
+			).Params(jen.Error()).Block(
+			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.PointerTo().ID("cfg")),
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().Err(),
+			),
+			jen.Line(),
+			jen.Return().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.ID("byteSlice"), jen.Op("0600")),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildConfig() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("BuildConfig is a constructor function that initializes a viper config."),
+		jen.Line(),
+		jen.Func().ID("BuildConfig").Params().Params(jen.PointerTo().Qual("github.com/spf13/viper", "Viper")).Block(
+			jen.ID("cfg").Assign().ID("viper").Dot("New").Call(),
+			jen.Line(),
+			jen.Comment("meta stuff."),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("meta.run_mode"), jen.ID("defaultRunMode")),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("meta.startup_deadline"), jen.ID("defaultStartupDeadline")),
+			jen.Line(),
+			jen.Comment("auth stuff."),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.cookie_lifetime"), jen.ID("defaultCookieLifetime")),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("auth.enable_user_signup"), jen.True()),
+			jen.Line(),
+			jen.Comment("metrics stuff."),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("metrics.database_metrics_collection_interval"), jen.ID("defaultMetricsCollectionInterval")),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("metrics.runtime_metrics_collection_interval"), jen.ID("defaultDatabaseMetricsCollectionInterval")),
+			jen.Line(),
+			jen.Comment("server stuff."),
+			jen.ID("cfg").Dot("SetDefault").Call(jen.Lit("server.http_port"), jen.Lit(80)),
+			jen.Line(),
+			jen.Return().ID("cfg"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildParseConfigFile() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("ParseConfigFile parses a configuration file."),
+		jen.Line(),
+		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").String()).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
+			jen.ID("cfg").Assign().ID("BuildConfig").Call(),
+			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
+			jen.Line(),
+			jen.If(jen.Err().Assign().ID("cfg").Dot("ReadInConfig").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
+			),
+			jen.Line(),
+			jen.Var().ID("serverConfig").PointerTo().ID("ServerConfig"),
+			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.AddressOf().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
+			),
+			jen.Line(),
+			jen.If(
+				jen.List(jen.Underscore(), jen.ID("ok")).Assign().ID("validModes").Index(
+					jen.ID("serverConfig").Dot("Meta").Dot("RunMode"),
+				),
+				jen.Not().ID("ok"),
+			).Block(
+				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("invalid run mode: %q"), jen.ID("serverConfig").Dot("Meta").Dot("RunMode"))),
+			),
+			jen.Line(),
+			jen.Comment("set the cookie secret to something (relatively) secure if not provided"),
+			jen.If(jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").IsEqualTo().EmptyString()).Block(
+				jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").Equals().ID("randString").Call(jen.ID("randStringSize")),
+			),
+			jen.Line(),
+			jen.Return().List(jen.ID("serverConfig"), jen.Nil()),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildRandString() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("randString produces a random string."),
+		jen.Line(),
+		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
+		jen.Line(),
+		jen.Func().ID("randString").Params(jen.ID("size").Uint()).Params(jen.String()).Block(
+			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.ID("size")),
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID("panic").Call(jen.Err()),
+			),
+			jen.Return().Qual("encoding/base32", "StdEncoding").Dot("WithPadding").Call(jen.Qual("encoding/base32", "NoPadding")).Dot("EncodeToString").Call(jen.ID("b")),
+		),
+		jen.Line(),
+	}
 
 	return lines
 }

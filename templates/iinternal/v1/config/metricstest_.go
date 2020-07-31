@@ -12,7 +12,14 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestServerConfig_ProvideInstrumentationHandler()...)
+	code.Add(buildTestServerConfig_ProvideTracing()...)
+
+	return code
+}
+
+func buildTestServerConfig_ProvideInstrumentationHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -29,9 +36,13 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestServerConfig_ProvideTracing() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -47,7 +58,7 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -152,7 +152,7 @@ func listTestFilesInDirectory(dirPath string) []string {
 }
 
 func main() {
-	const packagePath = "templates/iinternal/v1/auth"
+	const packagePath = "templates/iinternal/v1/tracing"
 
 	for _, filePath := range listTestFilesInDirectory(packagePath) {
 		testsForFile := listTestsForFile(filePath)

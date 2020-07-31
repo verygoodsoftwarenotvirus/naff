@@ -13,13 +13,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
-		jen.Const().Defs(
-			buildConstants(proj)...,
-		),
-		jen.Line(),
-	)
-
+	code.Add(buildConstants(proj)...)
 	code.Add(buildAttachUint64ToSpan()...)
 	code.Add(buildAttachStringToSpan()...)
 	code.Add(buildAttachFilterToSpan(proj)...)
@@ -66,7 +60,10 @@ func buildConstants(proj *models.Project) []jen.Code {
 		)
 	}
 
-	return lines
+	return []jen.Code{
+		jen.Const().Defs(lines...),
+		jen.Line(),
+	}
 }
 
 func buildAttachUint64ToSpan() []jen.Code {

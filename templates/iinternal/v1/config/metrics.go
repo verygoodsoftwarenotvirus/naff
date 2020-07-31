@@ -12,7 +12,17 @@ func metricsDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMetricsConstantsDeclarations()...)
+	code.Add(buildMetricsTypeDeclarations()...)
+	code.Add(buildMetricsVarDeclarations()...)
+	code.Add(buildProvideInstrumentationHandler(proj)...)
+	code.Add(buildProvideTracing()...)
+
+	return code
+}
+
+func buildMetricsConstantsDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("MetricsNamespace is the namespace under which we register metrics."),
 			jen.ID("MetricsNamespace").Equals().Lit("todo_server"),
@@ -23,17 +33,25 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMetricsTypeDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.ID("metricsProvider").String(),
 			jen.ID("tracingProvider").String(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMetricsVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("ErrInvalidMetricsProvider is a sentinel error value."),
 			jen.ID("ErrInvalidMetricsProvider").Equals().Qual("errors", "New").Call(jen.Lit("invalid metrics provider")),
@@ -50,9 +68,13 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.ID("DefaultTracingProvider").Equals().ID("Jaeger"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(
@@ -98,9 +120,13 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideTracing() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideTracing provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(
@@ -134,7 +160,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

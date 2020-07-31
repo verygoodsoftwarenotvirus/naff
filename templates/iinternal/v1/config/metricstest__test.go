@@ -1,0 +1,139 @@
+package config
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
+)
+
+func Test_metricsTestDotGo(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		x := metricsTestDotGo(proj)
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	"testing"
+	"time"
+)
+
+func TestServerConfig_ProvideInstrumentationHandler(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		c := &ServerConfig{
+			Metrics: MetricsSettings{
+				RuntimeMetricsCollectionInterval: time.Second,
+				MetricsProvider:                  DefaultMetricsProvider,
+			},
+		}
+
+		assert.NotNil(t, c.ProvideInstrumentationHandler(noop.ProvideNoopLogger()))
+	})
+}
+
+func TestServerConfig_ProvideTracing(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		c := &ServerConfig{
+			Metrics: MetricsSettings{
+				TracingProvider: DefaultTracingProvider,
+			},
+		}
+
+		assert.NoError(t, c.ProvideTracing(noop.ProvideNoopLogger()))
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+}
+
+func Test_buildTestServerConfig_ProvideInstrumentationHandler(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		x := buildTestServerConfig_ProvideInstrumentationHandler()
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	"testing"
+	"time"
+)
+
+func TestServerConfig_ProvideInstrumentationHandler(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		c := &ServerConfig{
+			Metrics: MetricsSettings{
+				RuntimeMetricsCollectionInterval: time.Second,
+				MetricsProvider:                  DefaultMetricsProvider,
+			},
+		}
+
+		assert.NotNil(t, c.ProvideInstrumentationHandler(noop.ProvideNoopLogger()))
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+}
+
+func Test_buildTestServerConfig_ProvideTracing(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		x := buildTestServerConfig_ProvideTracing()
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	"testing"
+)
+
+func TestServerConfig_ProvideTracing(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		c := &ServerConfig{
+			Metrics: MetricsSettings{
+				TracingProvider: DefaultTracingProvider,
+			},
+		}
+
+		assert.NoError(t, c.ProvideTracing(noop.ProvideNoopLogger()))
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+}

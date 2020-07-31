@@ -12,7 +12,13 @@ func utilsDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUtilsVarDeclarations()...)
+
+	return code
+}
+
+func buildUtilsVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("belongsToUserWithMandatedRestrictionRegexp").Equals().Qual("regexp", "MustCompile").Call(
 				jen.RawString(`\+belongsToUser:\d+`),
@@ -54,7 +60,7 @@ func utilsDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Return(jen.ID("query")),
 		),
-	)
+	}
 
-	return code
+	return lines
 }
