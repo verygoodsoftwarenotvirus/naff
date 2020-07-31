@@ -1,15 +1,22 @@
 package deploy
 
 import (
-	"fmt"
+	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func dashboardDotJSON(project *models.Project) string {
-	serviceName := project.Name.RouteName()
+func Test_dashboardDotJSON(T *testing.T) {
+	T.Parallel()
 
-	dash := fmt.Sprintf(`{
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		project := testprojects.BuildTodoApp()
+
+		expected := `{
   "annotations": {
     "list": [
       {
@@ -66,7 +73,7 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "%s_server_heap_alloc",
+          "expr": "todo_server_heap_alloc",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -152,25 +159,17 @@ func dashboardDotJSON(project *models.Project) string {
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
-      "targets": [`, serviceName)
-
-	for _, typ := range project.DataTypes {
-		dash += fmt.Sprintf(`
+      "targets": [
         {
-          "expr": "%s_server_%s_count",
+          "expr": "todo_server_items_count",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
-          "legendFormat": %q,
+          "legendFormat": "items",
           "refId": "A"
-        },`,
-			serviceName, typ.Name.PluralRouteName(), typ.Name.PluralCommonName(),
-		)
-	}
-
-	dash += fmt.Sprintf(`
+        },
         {
-          "expr": "%s_server_oauth2_clients_count",
+          "expr": "todo_server_oauth2_clients_count",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -178,7 +177,7 @@ func dashboardDotJSON(project *models.Project) string {
           "refId": "C"
         },
         {
-          "expr": "%s_server_users_count",
+          "expr": "todo_server_users_count",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -186,7 +185,7 @@ func dashboardDotJSON(project *models.Project) string {
           "refId": "B"
         },
         {
-          "expr": "%s_server_webhooks_count",
+          "expr": "todo_server_webhooks_count",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -274,7 +273,7 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "%s_server_metrics_aggregation_time",
+          "expr": "todo_server_metrics_aggregation_time",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{ job }}",
@@ -364,21 +363,21 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum(rate(%s_server_opencensus_io_http_server_latency_bucket[5m])) by (job, le))",
+          "expr": "histogram_quantile(0.99, sum(rate(todo_server_opencensus_io_http_server_latency_bucket[5m])) by (job, le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "99th percentile",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(%s_server_opencensus_io_http_server_latency_bucket[5m])) by (job, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(todo_server_opencensus_io_http_server_latency_bucket[5m])) by (job, le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "95th percentile",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.90, sum(rate(%s_server_opencensus_io_http_server_latency_bucket[5m])) by (job, le))",
+          "expr": "histogram_quantile(0.90, sum(rate(todo_server_opencensus_io_http_server_latency_bucket[5m])) by (job, le))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "90th percentile",
@@ -483,7 +482,7 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "%s_server_next_gc",
+          "expr": "todo_server_next_gc",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "target heap size of the next GC cycle",
@@ -569,7 +568,7 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(%s_server_opencensus_io_http_server_request_count_by_method) by (http_method)",
+          "expr": "sum(todo_server_opencensus_io_http_server_request_count_by_method) by (http_method)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{ http_method }}",
@@ -655,7 +654,7 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "%s_server_gc_cpu_fraction",
+          "expr": "todo_server_gc_cpu_fraction",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{ job }}",
@@ -666,7 +665,7 @@ func dashboardDotJSON(project *models.Project) string {
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "GC CPU%%",
+      "title": "GC CPU%",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -684,7 +683,7 @@ func dashboardDotJSON(project *models.Project) string {
         {
           "decimals": 5,
           "format": "percentunit",
-          "label": "%% of CPU used by gc",
+          "label": "% of CPU used by gc",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -742,7 +741,7 @@ func dashboardDotJSON(project *models.Project) string {
       "steppedLine": false,
       "targets": [
         {
-          "expr": "%s_server_opencensus_io_http_server_response_count_by_status_code",
+          "expr": "todo_server_opencensus_io_http_server_response_count_by_status_code",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{ http_status }}",
@@ -819,10 +818,12 @@ func dashboardDotJSON(project *models.Project) string {
     "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "",
-  "title": "%s Server Dashboard",
+  "title": "Todo Server Dashboard",
   "version": 1
 }
-`, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, project.Name.Singular())
+`
+		actual := dashboardDotJSON(project)
 
-	return dash
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }

@@ -1,87 +1,79 @@
 package composefiles
 
 import (
-	"fmt"
-	"log"
-	"os"
-	"path/filepath"
-
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"os"
+	"testing"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// RenderPackage renders the package
-func RenderPackage(project *models.Project) error {
-	files := map[string]string{
-		"environments/local/docker-compose.yaml":                                         developmentDotYaml(project.Name),
-		"environments/testing/compose_files/frontend-tests.yaml":                         frontendTestsDotYAML(project.Name),
-		"environments/testing/compose_files/integration_tests/integration-coverage.yaml": integrationCoverageDotYAML(project.Name),
-	}
+func TestRenderPackage(T *testing.T) {
+	T.Parallel()
 
-	for _, db := range project.EnabledDatabases() {
-		_ = db
-		files[fmt.Sprintf("environments/testing/compose_files/integration_tests/integration-tests-%s.yaml", db)] = integrationTestsDotYAML(project.Name, getDatabasePalabra(db))
-		files[fmt.Sprintf("environments/testing/compose_files/load_tests/load-tests-%s.yaml", db)] = loadTestsDotYAML(project.Name, getDatabasePalabra(db))
-	}
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
 
-	for filename, file := range files {
-		fname := utils.BuildTemplatePath(project.OutputPath, filename)
+		project := testprojects.BuildTodoApp()
+		project.OutputPath = os.TempDir()
 
-		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
-			log.Printf("error making directory: %v\n", mkdirErr)
-		}
-
-		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Printf("error opening file: %v", err)
-			return err
-		}
-
-		if _, err := f.WriteString(file); err != nil {
-			log.Printf("error writing to file: %v", err)
-			return err
-		}
-	}
-
-	return nil
+		assert.NoError(t, RenderPackage(project))
+	})
 }
 
-func getDatabasePalabra(vendor string) wordsmith.SuperPalabra {
-	switch vendor {
-	case "postgres":
-		return wordsmith.FromSingularPascalCase("Postgres")
-	case "sqlite":
-		return wordsmith.FromSingularPascalCase("Sqlite")
-	case "mariadb", "maria_db":
-		return &wordsmith.ManualWord{
-			SingularStr:                           "MariaDB",
-			PluralStr:                             "MariaDBs",
-			RouteNameStr:                          "mariadb",
-			KebabNameStr:                          "mariadb",
-			PluralRouteNameStr:                    "mariadbs",
-			UnexportedVarNameStr:                  "mariaDB",
-			PluralUnexportedVarNameStr:            "mariaDBs",
-			PackageNameStr:                        "mariadbs",
-			SingularPackageNameStr:                "mariadb",
-			SingularCommonNameStr:                 "maria DB",
-			ProperSingularCommonNameWithPrefixStr: "a Maria DB",
-			PluralCommonNameStr:                   "maria DBs",
-			SingularCommonNameWithPrefixStr:       "maria DB",
-			PluralCommonNameWithPrefixStr:         "maria DBs",
-		}
-	default:
-		panic(fmt.Sprintf("unknown vendor: %q", vendor))
-	}
+func Test_getDatabasePalabra(T *testing.T) {
+	T.Parallel()
+
+	T.Run("postgres", func(t *testing.T) {
+		t.Parallel()
+
+		dbName := "postgres"
+
+		expected := `Postgres`
+		actual := getDatabasePalabra(dbName).Singular()
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("sqlite", func(t *testing.T) {
+		t.Parallel()
+
+		dbName := "sqlite"
+
+		expected := `Sqlite`
+		actual := getDatabasePalabra(dbName).Singular()
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb", func(t *testing.T) {
+		t.Parallel()
+
+		dbName := "mariadb"
+
+		expected := `MariaDB`
+		actual := getDatabasePalabra(dbName).Singular()
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func developmentDotYaml(projectName wordsmith.SuperPalabra) string {
-	return fmt.Sprintf(`version: "3.3"
+func Test_developmentDotYaml(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+
+		expected := `version: "3.3"
 services:
     database:
         image: postgres:latest
         environment:
-            POSTGRES_DB: '%s'
+            POSTGRES_DB: 'whatever'
             POSTGRES_PASSWORD: 'hunter2'
             POSTGRES_USER: 'dbuser'
         logging:
@@ -120,13 +112,13 @@ services:
               target: "/etc/prometheus/config.yaml"
               type: 'bind'
         command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
-    %s-server:
+    whatever-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
             JAEGER_AGENT_HOST: 'tracing-server'
             JAEGER_AGENT_PORT: '6831'
             JAEGER_SAMPLER_MANAGER_HOST_PORT: 'tracing-server:5778'
-            JAEGER_SERVICE_NAME: '%s-server'
+            JAEGER_SERVICE_NAME: 'whatever-server'
         ports:
             - 80:8888
         links:
@@ -153,25 +145,35 @@ services:
             - 6831:6831/udp
             - 5778:5778
             - 16686:16686
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName())
+`
+		actual := developmentDotYaml(exampleProjectName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func integrationTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
-	switch dbName.RouteName() {
-	case "postgres":
-		return fmt.Sprintf(`version: "3.3"
+func Test_integrationTestsDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("postgres", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+		dbName := getDatabasePalabra("postgres")
+
+		expected := `version: "3.3"
 services:
     database:
         image: postgres:latest
         environment:
-            POSTGRES_DB: '%s'
+            POSTGRES_DB: 'whatever'
             POSTGRES_PASSWORD: 'hunter2'
             POSTGRES_USER: 'dbuser'
         logging:
             driver: none
         ports:
             - 2345:5432
-    %s-server:
+    whatever-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
         ports:
@@ -183,22 +185,63 @@ services:
             dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
     test:
         environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
+            TARGET_ADDRESS: 'http://whatever-server:8888'
         links:
-            - %s-server
+            - whatever-server
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'postgres_integration_tests'
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	case "mariadb", "maria_db":
-		return fmt.Sprintf(`version: "3.3"
+`
+		actual := integrationTestsDotYAML(exampleProjectName, dbName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("sqlite", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+		dbName := getDatabasePalabra("sqlite")
+
+		expected := `version: '3.3'
+services:
+    whatever-server:
+        environment:
+            CONFIGURATION_FILEPATH: '/etc/config.toml'
+        ports:
+            - 80:8888
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
+    test:
+        environment:
+            TARGET_ADDRESS: 'http://whatever-server:8888'
+        links:
+            - whatever-server
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
+        container_name: 'sqlite_integration_tests'
+`
+		actual := integrationTestsDotYAML(exampleProjectName, dbName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+		dbName := getDatabasePalabra("mariadb")
+
+		expected := `version: "3.3"
 services:
     database:
         image: "mariadb:latest"
         environment:
             MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
-            MYSQL_DATABASE: '%s'
+            MYSQL_DATABASE: 'whatever'
             MYSQL_PASSWORD: 'hunter2'
             MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
             MYSQL_USER: 'dbuser'
@@ -206,7 +249,7 @@ services:
             driver: none
         ports:
             - 3306:3306
-    %s-server:
+    whatever-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
         ports:
@@ -218,50 +261,36 @@ services:
             dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
     test:
         environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
+            TARGET_ADDRESS: 'http://whatever-server:8888'
         links:
-            - %s-server
+            - whatever-server
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'mariadb_integration_tests'
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	case "sqlite":
-		return fmt.Sprintf(`version: '3.3'
-services:
-    %s-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
-    test:
-        environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
-        links:
-            - %s-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
-        container_name: 'sqlite_integration_tests'
-`, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	}
+`
+		actual := integrationTestsDotYAML(exampleProjectName, dbName)
 
-	panic("invalid db")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func loadTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
-	switch dbName.RouteName() {
-	case "postgres":
-		return fmt.Sprintf(`---
+func Test_loadTestsDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("postgres", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+		dbName := getDatabasePalabra("postgres")
+
+		expected := `---
 version: '3.3'
 services:
     database:
         image: postgres:latest
         environment:
-            POSTGRES_DB: '%s'
+            POSTGRES_DB: 'whatever'
             POSTGRES_PASSWORD: 'hunter2'
             POSTGRES_USER: 'dbuser'
         logging:
@@ -270,13 +299,13 @@ services:
             - 2345:5432
     load-tests:
         environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
+            TARGET_ADDRESS: 'http://whatever-server:8888'
         links:
-            - %s-server
+            - whatever-server
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    %s-server:
+    whatever-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
         ports:
@@ -286,15 +315,55 @@ services:
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	case "mariadb", "maria_db":
-		return fmt.Sprintf(`version: '3.3'
+`
+		actual := loadTestsDotYAML(exampleProjectName, dbName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("sqlite", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+		dbName := getDatabasePalabra("sqlite")
+
+		expected := `version: '3.3'
+services:
+    load-tests:
+        environment:
+            TARGET_ADDRESS: 'http://whatever-server:8888'
+        links:
+            - whatever-server
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
+    whatever-server:
+        environment:
+            CONFIGURATION_FILEPATH: '/etc/config.toml'
+        ports:
+            - 80:8888
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
+`
+		actual := loadTestsDotYAML(exampleProjectName, dbName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+		dbName := getDatabasePalabra("mariadb")
+
+		expected := `version: '3.3'
 services:
     database:
         image: mariadb:latest
         environment:
             MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
-            MYSQL_DATABASE: '%s'
+            MYSQL_DATABASE: 'whatever'
             MYSQL_PASSWORD: 'hunter2'
             MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
             MYSQL_USER: 'dbuser'
@@ -304,13 +373,13 @@ services:
             - 3306:3306
     load-tests:
         environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
+            TARGET_ADDRESS: 'http://whatever-server:8888'
         links:
-            - %s-server
+            - whatever-server
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    %s-server:
+    whatever-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
         ports:
@@ -320,34 +389,22 @@ services:
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	case "sqlite":
-		return fmt.Sprintf(`version: '3.3'
-services:
-    load-tests:
-        environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
-        links:
-            - %s-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    %s-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
-`, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	}
+`
+		actual := loadTestsDotYAML(exampleProjectName, dbName)
 
-	panic("invalid db")
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func frontendTestsDotYAML(projectName wordsmith.SuperPalabra) string {
-	return fmt.Sprintf(`version: "3.3"
+func Test_frontendTestsDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+
+		expected := `version: "3.3"
 services:
     chrome:
         image: selenium/node-chrome:3.141.59-oxygen
@@ -365,7 +422,7 @@ services:
     database:
         image: postgres:latest
         environment:
-            POSTGRES_DB: '%s'
+            POSTGRES_DB: 'whatever'
             POSTGRES_PASSWORD: 'hunter2'
             POSTGRES_USER: 'dbuser'
         logging:
@@ -394,17 +451,17 @@ services:
     test:
         environment:
             DOCKER: 'true'
-            TARGET_ADDRESS: 'http://%s-server:8888'
+            TARGET_ADDRESS: 'http://whatever-server:8888'
         links:
             - selenium-hub
-            - %s-server
+            - whatever-server
         build:
             context: '../../../'
             dockerfile: 'environments/testing/dockerfiles/frontend-tests.Dockerfile'
         depends_on:
             - firefox
             - chrome
-    %s-server:
+    whatever-server:
         build:
             context: '../../../'
             dockerfile: 'environments/testing/dockerfiles/frontend-tests-server.Dockerfile'
@@ -414,11 +471,22 @@ services:
             - 80:8888
         links:
             - database
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
+`
+		actual := frontendTestsDotYAML(exampleProjectName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func integrationCoverageDotYAML(projectName wordsmith.SuperPalabra) string {
-	return fmt.Sprintf(`version: '3.3'
+func Test_integrationCoverageDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
+
+		expected := `version: '3.3'
 services:
     coverage-server:
         environment:
@@ -441,7 +509,7 @@ services:
     database:
         image: postgres:latest
         environment:
-            POSTGRES_DB: '%s'
+            POSTGRES_DB: 'whatever'
             POSTGRES_PASSWORD: 'hunter2'
             POSTGRES_USER: 'dbuser'
         logging:
@@ -461,5 +529,9 @@ services:
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
-`, projectName.RouteName())
+`
+		actual := integrationCoverageDotYAML(exampleProjectName)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }

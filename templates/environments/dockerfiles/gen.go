@@ -12,7 +12,7 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
-	files := map[string]func(projRoot, binaryName string) []byte{
+	files := map[string]func(projRoot, binaryName string) string{
 		"environments/local/Dockerfile":                                           developmentDotDockerfile,
 		"environments/testing/dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
 		"environments/testing/dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
@@ -40,7 +40,7 @@ func RenderPackage(project *models.Project) error {
 		}
 
 		bytes := file(project.OutputPath, project.Name.SingularPackageName())
-		if _, err := f.Write(bytes); err != nil {
+		if _, err := f.WriteString(bytes); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err
 		}
@@ -49,8 +49,8 @@ func RenderPackage(project *models.Project) error {
 	return nil
 }
 
-func formattingDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`FROM golang:stretch
+func formattingDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`FROM golang:stretc
 
 WORKDIR /go/src/%s
 
@@ -59,11 +59,11 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 ADD ../../../dockerfiles .
 
 CMD if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then exit 1; fi
-`, projRoot))
+`, projRoot)
 }
 
-func developmentDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`# frontend-build-stage
+func developmentDotDockerfile(projRoot, binaryName string) string {
+	return fmt.Sprintf(`# frontend-build-stage
 FROM node:latest AS frontend-build-stage
 
 WORKDIR /app
@@ -96,11 +96,11 @@ USER appuser
 
 ENV DOCKER=true
 
-ENTRYPOINT ["/%s"]`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName))
+ENTRYPOINT ["/%s"]`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName)
 }
 
-func frontendTestDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`FROM golang:stretch
+func frontendTestDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`FROM golang:stretch
 
 WORKDIR /go/src/%s
 
@@ -109,11 +109,11 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 ADD . .
 
 ENTRYPOINT [ "go", "test", "-v", "-failfast", "-parallel=1", "%s/tests/v1/frontend" ]
-`, projRoot, projRoot))
+`, projRoot, projRoot)
 }
 
-func integrationCoverageServerDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`# build stage
+func integrationCoverageServerDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
 WORKDIR /go/src/%s
@@ -147,12 +147,12 @@ EXPOSE 80
 
 ENTRYPOINT ["/integration-server", "-test.coverprofile=/home/integration-coverage.out"]
 
-`, projRoot, projRoot, projRoot, projRoot, projRoot, projRoot))
+`, projRoot, projRoot, projRoot, projRoot, projRoot, projRoot)
 }
 
-func buildIntegrationServerDotDockerfile(dbName string) func(projRoot, binaryName string) []byte {
-	return func(projRoot, binaryName string) []byte {
-		return []byte(fmt.Sprintf(`# build stage
+func buildIntegrationServerDotDockerfile(dbName string) func(projRoot, binaryName string) string {
+	return func(projRoot, binaryName string) string {
+		return fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
 WORKDIR /go/src/%s
@@ -187,12 +187,12 @@ COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/%s"]
-`, projRoot, binaryName, projRoot, dbName, binaryName, binaryName, binaryName))
+`, projRoot, binaryName, projRoot, dbName, binaryName, binaryName, binaryName)
 	}
 }
 
-func frontendTestsServerDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`# build stage
+func frontendTestsServerDotDockerfile(projRoot, binaryName string) string {
+	return fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
 WORKDIR /go/src/%s
@@ -227,11 +227,11 @@ COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/%s"]
-`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName))
+`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName)
 }
 
-func integrationTestsDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`FROM golang:stretch
+func integrationTestsDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`FROM golang:stretch
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
@@ -243,11 +243,11 @@ ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/v1/integration" ]
 
 # for a more specific test:
 # ENTRYPOINT [ "go", "test", "-v", "%s/tests/v1/integration", "-run", "InsertTestNameHere" ]
-`, projRoot, projRoot, projRoot))
+`, projRoot, projRoot, projRoot)
 }
 
-func loadTestsDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`# build stage
+func loadTestsDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
 WORKDIR /go/src/%s
@@ -266,46 +266,5 @@ COPY --from=build-stage /loadtester /loadtester
 ENV DOCKER=true
 
 ENTRYPOINT ["/loadtester"]
-`, projRoot, projRoot))
-}
-
-func serverDotDockerfile(projRoot, binaryName string) []byte {
-	return []byte(fmt.Sprintf(`# build stage
-FROM golang:stretch AS build-stage
-
-WORKDIR /go/src/%s
-
-RUN apt-get update -y && apt-get install -y make git gcc musl-dev
-
-ADD . .
-
-RUN go build -trimpath -o /%s %s/cmd/server/v1
-
-# frontend-build-stage
-FROM node:latest AS frontend-build-stage
-
-WORKDIR /app
-
-ADD frontend/v1 .
-
-RUN npm install && npm run build
-
-# final stage
-FROM debian:stable
-
-RUN mkdir /home/appuser
-RUN groupadd --gid 999 appuser && \
-    useradd --system --uid 999 --gid appuser appuser
-RUN chown appuser /home/appuser
-WORKDIR /home/appuser
-USER appuser
-
-COPY config_files config_files
-COPY --from=build-stage /%s /%s
-COPY --from=frontend-build-stage /app/public /frontend
-
-ENV DOCKER=true
-
-ENTRYPOINT ["/%s"]
-`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName))
+`, projRoot, projRoot)
 }

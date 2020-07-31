@@ -1,56 +1,36 @@
 package deploy
 
 import (
-	"fmt"
-	"log"
 	"os"
-	"path/filepath"
+	"testing"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// RenderPackage renders the package
-func RenderPackage(project *models.Project) error {
-	files := map[string]func(project *models.Project) string{
-		"environments/local/prometheus/config.yaml":         prometheusLocalConfigDotYAML,
-		"environments/local/grafana/dashboards/main.json":   dashboardDotJSON,
-		"environments/local/grafana/dashboards.yaml":        grafanaLocalProvisioningDashboardsAllDotYAML,
-		"environments/local/grafana/datasources.yaml":       grafanaLocalProvisioningDataSourcesAllDotYAML,
-		"environments/local/grafana/grafana.ini":            grafanaDotIni,
-		"environments/testing/prometheus/config.yaml":       prometheusLocalConfigDotYAML,
-		"environments/testing/grafana/dashboards/main.json": dashboardDotJSON,
-		"environments/testing/grafana/dashboards.yaml":      grafanaLocalProvisioningDashboardsAllDotYAML,
-		"environments/testing/grafana/datasources.yaml":     grafanaLocalProvisioningDataSourcesAllDotYAML,
-		"environments/testing/grafana/grafana.ini":          grafanaDotIni,
-	}
+func TestRenderPackage(T *testing.T) {
+	T.Parallel()
 
-	for filename, file := range files {
-		fname := utils.BuildTemplatePath(project.OutputPath, filename)
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
 
-		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
-			log.Printf("error making directory: %v\n", mkdirErr)
-		}
+		project := testprojects.BuildTodoApp()
+		project.OutputPath = os.TempDir()
 
-		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Printf("error opening file: %v", err)
-			return err
-		}
-
-		if _, err := f.WriteString(file(project)); err != nil {
-			log.Printf("error writing to file: %v", err)
-			return err
-		}
-	}
-
-	return nil
+		assert.NoError(t, RenderPackage(project))
+	})
 }
 
-func prometheusLocalConfigDotYAML(project *models.Project) string {
-	serviceName := project.Name.KebabName()
+func Test_prometheusLocalConfigDotYAML(T *testing.T) {
+	T.Parallel()
 
-	return fmt.Sprintf(`global:
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		project := testprojects.BuildTodoApp()
+
+		expected := `global:
   # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   scrape_interval:     15s
   # Evaluate rules every 15 seconds. The default is every 1 minute.
@@ -58,10 +38,10 @@ func prometheusLocalConfigDotYAML(project *models.Project) string {
   # scrape_timeout is set to the global default (10s).
 
 scrape_configs:
-  - job_name: '%s-server'
+  - job_name: 'todo-server'
 
     static_configs:
-      - targets: ['%s-server:8888']
+      - targets: ['todo-server:8888']
 
     # How frequently to scrape targets from this job.
     scrape_interval: 15s
@@ -128,11 +108,20 @@ scrape_configs:
 #            - "1.2.3.4:9093"
 #            - "1.2.3.5:9093"
 #            - "1.2.3.6:9093"
-`, serviceName, serviceName)
+`
+		actual := prometheusLocalConfigDotYAML(project)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func grafanaLocalProvisioningDashboardsAllDotYAML(_ *models.Project) string {
-	return `apiVersion: 1
+func Test_grafanaLocalProvisioningDashboardsAllDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		expected := `apiVersion: 1
 
 providers:
   # <string> an unique provider name
@@ -157,10 +146,19 @@ providers:
       # <string, required> path to dashboard files on disk. Required
       path: '/etc/grafana/provisioning/dashboards/dashboards'
 `
+		actual := grafanaLocalProvisioningDashboardsAllDotYAML(nil)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func grafanaLocalProvisioningDataSourcesAllDotYAML(_ *models.Project) string {
-	return `apiVersion: 1
+func Test_grafanaLocalProvisioningDataSourcesAllDotYAML(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		expected := `apiVersion: 1
 
 # Thanks to https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
 datasources:
@@ -172,10 +170,19 @@ datasources:
     org_id: 1 # id of the organization to tie this datasource to
     url: 'http://prometheus:9090' # url of the prom instance
 `
+		actual := grafanaLocalProvisioningDataSourcesAllDotYAML(nil)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
-func grafanaDotIni(_ *models.Project) string {
-	return `##################### Grafana Configuration Example #####################
+func Test_grafanaDotIni(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		t.Parallel()
+
+		expected := `##################### Grafana Configuration Example #####################
 #
 # Everything has defaults so you only need to uncomment things you want to
 # change
@@ -191,7 +198,7 @@ func grafanaDotIni(_ *models.Project) string {
 # Path to where grafana can store temp files, sessions, and the sqlite3 db (if that is used)
 ;data = /var/lib/grafana
 
-# Temporary files in ` + "`" + `data` + "`" + ` directory older than given duration will be removed
+# Temporary files in `+"`"+`data`+"`"+` directory older than given duration will be removed
 ;temp_data_lifetime = 24h
 
 # Directory where grafana can store logs
@@ -225,7 +232,7 @@ func grafanaDotIni(_ *models.Project) string {
 # If you use reverse proxy and sub path specify full url (with sub path)
 ;root_url = %(protocol)s://%(domain)s:%(http_port)s/
 
-# Serve Grafana from subpath specified in ` + "`" + `root_url` + "`" + ` setting. By default it is set to ` + "`" + `false` + "`" + ` for compatibility reasons.
+# Serve Grafana from subpath specified in `+"`"+`root_url`+"`"+` setting. By default it is set to `+"`"+`false`+"`"+` for compatibility reasons.
 ;serve_from_sub_path = false
 
 # Log web requests
@@ -294,7 +301,7 @@ func grafanaDotIni(_ *models.Project) string {
 
 # cache connectionstring options
 # database: will use Grafana primary database.
-# redis: config like redis server e.g. ` + "`" + `addr=127.0.0.1:6379,pool_size=100,db=0,ssl=false` + "`" + `. Only addr is required. ssl may be 'true', 'false', or 'insecure'.
+# redis: config like redis server e.g. `+"`"+`addr=127.0.0.1:6379,pool_size=100,db=0,ssl=false`+"`"+`. Only addr is required. ssl may be 'true', 'false', or 'insecure'.
 # memcache: 127.0.0.1:11211
 ;connstr =
 
@@ -358,7 +365,7 @@ func grafanaDotIni(_ *models.Project) string {
 # set to true if you host Grafana behind HTTPS. default is false.
 ;cookie_secure = false
 
-# set cookie SameSite attribute. defaults to ` + "`" + `lax` + "`" + `. can be set to "lax", "strict", "none" and "disabled"
+# set cookie SameSite attribute. defaults to `+"`"+`lax`+"`"+`. can be set to "lax", "strict", "none" and "disabled"
 ;cookie_samesite = lax
 
 # set to true if you want to allow browsers to render Grafana in a <frame>, <iframe>, <embed> or <object>. default is false.
@@ -938,4 +945,8 @@ func grafanaDotIni(_ *models.Project) string {
 # enable features, separated by spaces
 ;enable =
 `
+		actual := grafanaDotIni(nil)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }

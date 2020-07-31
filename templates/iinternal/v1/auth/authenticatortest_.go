@@ -11,8 +11,14 @@ func authenticatorTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
-		jen.Func().ID("TestProvideBcryptHashCost").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+	code.Add(buildTestProvideBcryptHashCost(proj)...)
+
+	return code
+}
+
+func buildTestProvideBcryptHashCost(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
+		jen.Func().ID("buildTestProvideBcryptHashCost").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -21,7 +27,7 @@ func authenticatorTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

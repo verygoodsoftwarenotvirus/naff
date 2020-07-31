@@ -83,4 +83,4 @@ docker_image:
 	docker build --tag naff:latest --file Dockerfile .
 
 generate_tests:
-	 gotests -template_dir /home/vgsnv/src/gitlab.com/verygoodsoftwarenotvirus/naff/development/gotests_templates -all -w # fill this out
+	gotests -template_dir /home/vgsnv/src/gitlab.com/verygoodsoftwarenotvirus/naff/development/gotests_templates -all -w # fill this out
