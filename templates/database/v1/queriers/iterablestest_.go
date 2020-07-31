@@ -20,6 +20,93 @@ const (
 	sqlMockPkg                   = "github.com/DATA-DOG/go-sqlmock"
 )
 
+func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+	spn := dbvendor.SingularPackageName()
+
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+
+	utils.AddImports(proj, code)
+
+	code.Add(buildBuildMockRowsFromSomething(proj, typ)...)
+	code.Add(buildBuildErroneousMockRowFromSomething(proj, typ)...)
+	code.Add(buildTestScanListOfThings(proj, dbvendor, typ)...)
+	code.Add(buildTestDBBuildSomethingExistsQuery(proj, dbvendor, typ)...)
+	code.Add(buildTestDBSomethingExists(proj, dbvendor, typ)...)
+	code.Add(buildTestDBBuildGetSomethingQuery(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
+	code.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetAllSomethingCount(dbvendor, typ)...)
+	code.Add(buildTestDBGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetAllOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetListOfSomethingWithIDsFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestBuildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
+
+	return code
+}
+
+func buildBuildMockRowsFromSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	pn := typ.Name.Plural()
+	puvn := n.PluralUnexportedVarName()
+
+	gFields := buildGeneralFields("x", typ)
+
+	lines := []jen.Code{
+		jen.Func().IDf("buildMockRowsFrom%s", pn).Params(
+			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		).Params(
+			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
+		).Block(
+			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
+			jen.Line(),
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.ID("columns")),
+			jen.Line(),
+			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Block(
+				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
+				jen.Line(),
+				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
+			),
+			jen.Line(),
+			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildErroneousMockRowFromSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	puvn := n.PluralUnexportedVarName()
+
+	badFields := buildBadFields("x", typ)
+
+	lines := []jen.Code{
+		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(
+			jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn),
+		).Params(
+			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
+		).Block(
+			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
+			jen.Line(),
+			jen.Return().ID("exampleRows"),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func applyFleshedOutQueryFilter(qb squirrel.SelectBuilder, tableName string) squirrel.SelectBuilder {
 	qb = qb.
 		Where(squirrel.Gt{fmt.Sprintf("%s.created_on", tableName): whateverValue}).
@@ -138,7 +225,7 @@ func buildPrefixedStringColumnsAsString(typ models.DataType) string {
 	return strings.Join(buildPrefixedStringColumns(typ), ", ")
 }
 
-func buildCreationStringColumnsAndArgs(_ *models.Project, typ models.DataType) (cols []string, args []jen.Code) {
+func buildCreationStringColumnsAndArgs(typ models.DataType) (cols []string, args []jen.Code) {
 	cols, args = []string{}, []jen.Code{}
 
 	for _, field := range typ.Fields {
@@ -190,79 +277,6 @@ func getTimeQuery(dbvendor wordsmith.SuperPalabra) string {
 	} else {
 		return ""
 	}
-}
-
-func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
-	spn := dbvendor.SingularPackageName()
-
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
-
-	utils.AddImports(proj, code)
-
-	n := typ.Name
-	sn := n.Singular()
-	pn := typ.Name.Plural()
-	puvn := n.PluralUnexportedVarName()
-
-	gFields := buildGeneralFields("x", typ)
-
-	code.Add(
-		jen.Func().IDf("buildMockRowsFrom%s", pn).Params(
-			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
-		).Params(
-			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
-		).Block(
-			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
-			jen.Line(),
-			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.ID("columns")),
-			jen.Line(),
-			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Block(
-				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
-				jen.Line(),
-				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
-			),
-			jen.Line(),
-			jen.Return().ID("exampleRows"),
-		),
-		jen.Line(),
-	)
-
-	badFields := buildBadFields("x", typ)
-
-	code.Add(
-		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(
-			jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn),
-		).Params(
-			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
-		).Block(
-			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
-			jen.Line(),
-			jen.Return().ID("exampleRows"),
-		),
-		jen.Line(),
-	)
-
-	code.Add(buildTestScanListOfThings(proj, dbvendor, typ)...)
-	code.Add(buildTestDBBuildSomethingExistsQuery(proj, dbvendor, typ)...)
-	code.Add(buildTestDBSomethingExists(proj, dbvendor, typ)...)
-	code.Add(buildTestDBBuildGetSomethingQuery(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
-	code.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetAllSomethingCount(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetAllOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBGetListOfSomethingWithIDsFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestBuildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildTestDBArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
-
-	return code
 }
 
 func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -328,7 +342,7 @@ func buildTestDBBuildSomethingExistsQuery(proj *models.Project, dbvendor wordsmi
 	callArgs := typ.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(proj)
 	pql := typ.BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("%sExists", sn), qb, nil, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("%sExists", sn), qb, nil, callArgs, pql)
 }
 
 func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -438,7 +452,7 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 	callArgs := typ.BuildDBQuerierRetrievalQueryTestCallArgs(proj)
 	pql := typ.BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", sn), qb, []jen.Code{}, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("Get%s", sn), qb, []jen.Code{}, callArgs, pql)
 }
 
 func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -535,10 +549,10 @@ func buildTestDBBuildGetAllSomethingCountQuery(proj *models.Project, dbvendor wo
 			fmt.Sprintf("%s.archived_on", tableName): nil,
 		})
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("GetAll%sCount", pn), qb, []jen.Code{}, []jen.Code{}, nil)
+	return buildQueryTest(dbvendor, fmt.Sprintf("GetAll%sCount", pn), qb, []jen.Code{}, []jen.Code{}, nil)
 }
 
-func buildTestDBGetAllSomethingCount(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildTestDBGetAllSomethingCount(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbfl := dbvendor.LowercaseAbbreviation()
 	pn := typ.Name.Plural()
 	dbvsn := dbvendor.Singular()
@@ -600,7 +614,7 @@ func buildTestDBGetBatchOfSomethingQueryFuncDecl(proj *models.Project, dbvendor 
 		jen.List(jen.ID("beginID"), jen.ID("endID")).Assign().List(jen.Uint64().Call(jen.One()), jen.Uint64().Call(jen.Lit(1000))),
 	}
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("GetBatchOf%s", pn), qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("GetBatchOf%s", pn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -862,7 +876,7 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	callArgs := typ.BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj)
 	pql := typ.BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Get%s", pn), qb, nil, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("Get%s", pn), qb, nil, callArgs, pql)
 }
 
 func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -1667,7 +1681,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
-	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(proj, typ)
+	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(typ)
 	valueArgs := []interface{}{}
 	for range expectedArgs {
 		valueArgs = append(valueArgs, whateverValue)
@@ -1684,7 +1698,7 @@ func buildTestDBCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor word
 	pql := typ.BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(proj)
 	callArgs := typ.BuildArgsToUseForDBQuerierCreationQueryBuildingTest()
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Create%s", sn), qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("Create%s", sn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -1697,7 +1711,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 		expectedQueryVarName = "expectedCreationQuery"
 	)
 
-	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(proj, typ)
+	fieldCols, expectedArgs := buildCreationStringColumnsAndArgs(typ)
 	callArgs := typ.BuildDBQuerierCreationMethodArgsToUseFromMethodTest()
 
 	valueArgs := []interface{}{}
@@ -1920,7 +1934,7 @@ func buildTestBuildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateQueryBuilder()
 	pql := typ.BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(proj)
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Update%s", sn), qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("Update%s", sn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
@@ -2082,7 +2096,7 @@ func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wor
 	pql := typ.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(proj)
 	callArgs := typ.BuildArgsForDBQuerierTestOfArchiveQueryBuilder()
 
-	return buildQueryTest(proj, dbvendor, fmt.Sprintf("Archive%s", sn), qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, fmt.Sprintf("Archive%s", sn), qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {

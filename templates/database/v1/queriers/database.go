@@ -17,20 +17,33 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	utils.AddImports(proj, code)
 
-	uvn := dbvendor.UnexportedVarName()
-	cn := dbvendor.SingularCommonName()
-	sn := dbvendor.Singular()
-	rn := dbvendor.RouteName()
-	dbrn := rn
-	dbfl := strings.ToLower(string([]byte(sn)[0]))
+	code.Add(buildDBDotGoConsts(dbvendor)...)
+	code.Add(buildDBDotGoInit(dbvendor)...)
+	code.Add(buildDBDotGoVarDecls(proj, dbvendor)...)
+	code.Add(buildProvideDatabaseConn(proj, dbvendor)...)
+	code.Add(buildProvideDatabaseClient(proj, dbvendor)...)
+	code.Add(buildIsReady(dbvendor)...)
+	code.Add(buildLogQueryBuildingError(dbvendor)...)
 
-	squirrelPlaceholder := "Question"
-	if dbrn == "postgres" {
-		squirrelPlaceholder = "Dollar"
+	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
+		code.Add(buildLogIDRetrievalError(dbvendor)...)
 	}
-	squirrelInitConfig := jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", squirrelPlaceholder))
 
-	code.Add(
+	code.Add(buildBuildError()...)
+
+	if isPostgres(dbvendor) {
+		code.Add(buildJoinUint64s())
+	}
+
+	return code
+}
+
+func buildDBDotGoConsts(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	rn := dbvendor.RouteName()
+	cn := dbvendor.SingularCommonName()
+	uvn := dbvendor.UnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("loggerName").Equals().Lit(rn),
 			jen.IDf("%sDriverName", uvn).Equals().Litf("wrapped-%s-driver", dbvendor.KebabName()),
@@ -62,9 +75,14 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.ID("defaultBucketSize").Equals().Uint64().Call(jen.Lit(1000)),
 		),
 		jen.Line(),
-	)
+	}
 
-	////////////
+	return lines
+}
+
+func buildDBDotGoInit(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	uvn := dbvendor.UnexportedVarName()
 
 	var driverInit jen.Code
 	if isPostgres(dbvendor) {
@@ -75,7 +93,7 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 		driverInit = jen.AddressOf().Qual("github.com/go-sql-driver/mysql", "MySQLDriver").Values()
 	}
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.Commentf("Explicitly wrap the %s driver with ocsql.", sn),
 			jen.ID("driver").Assign().Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
@@ -91,9 +109,15 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Qual("database/sql", "Register").Call(jen.IDf("%sDriverName", uvn), jen.ID("driver")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDBDotGoVarDecls(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
@@ -122,19 +146,24 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	////////////
-	var (
-		dbTrail string
-	)
+	return lines
+}
+
+func buildProvideDatabaseConn(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	cn := dbvendor.SingularCommonName()
+	sn := dbvendor.Singular()
+	uvn := dbvendor.UnexportedVarName()
+
+	var dbTrail string
 	if !isMariaDB(dbvendor) {
 		dbTrail = "DB"
 	} else {
 		dbTrail = "Connection"
 	}
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
 		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
@@ -142,15 +171,27 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
 		jen.Line(),
-	)
+	}
 
-	////////////
-	dbTrail = ""
+	return lines
+}
+
+func buildProvideDatabaseClient(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	cn := dbvendor.SingularCommonName()
+	sn := dbvendor.Singular()
+
+	dbTrail := ""
 	if !isMariaDB(dbvendor) {
 		dbTrail = " db"
 	}
 
-	code.Add(
+	squirrelPlaceholder := "Question"
+	if isPostgres(dbvendor) {
+		squirrelPlaceholder = "Dollar"
+	}
+	squirrelInitConfig := jen.ID("sqlBuilder").MapAssign().Qual("github.com/Masterminds/squirrel", "StatementBuilder").Dot("PlaceholderFormat").Call(jen.Qual("github.com/Masterminds/squirrel", squirrelPlaceholder))
+
+	lines := []jen.Code{
 		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
 		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Block(
@@ -168,69 +209,16 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			),
 		),
 		jen.Line(),
-	)
-
-	buildIsReadyBody := func() []jen.Code {
-		if isSqlite(dbvendor) {
-			return []jen.Code{jen.Return(jen.True())}
-		} else if isPostgres(dbvendor) {
-			return []jen.Code{
-				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
-				jen.Line(),
-				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-					jen.Lit("interval").MapAssign().Qual("time", "Second"),
-					jen.Lit("max_attempts").MapAssign().Lit(50)),
-				).Dot("Debug").Call(jen.Lit("IsReady called")),
-				jen.Line(),
-				jen.For(jen.Not().ID("ready")).Block(
-					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
-					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
-						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
-						jen.Line(),
-						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
-						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
-							jen.Return().False(),
-						),
-					).Else().Block(
-						jen.ID("ready").Equals().True(),
-						jen.Return().ID("ready"),
-					),
-				),
-				jen.Return().False(),
-			}
-		} else if isMariaDB(dbvendor) {
-			return []jen.Code{
-				jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
-				jen.Line(),
-				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-					jen.Lit("interval").MapAssign().Qual("time", "Second"),
-					jen.Lit("max_attempts").MapAssign().Lit(50)),
-				).Dot("Debug").Call(jen.Lit("IsReady called")),
-				jen.Line(),
-				jen.For(jen.Not().ID("ready")).Block(
-					jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
-					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
-						jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
-						jen.Line(),
-						jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
-						jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
-							jen.Return().False(),
-						),
-					).Else().Block(
-						jen.ID("ready").Equals().True(),
-						jen.Return().ID("ready"),
-					),
-				),
-				jen.Return().False(),
-			}
-		}
-		return nil
 	}
 
-	code.Add(
-		jen.Comment("IsReady reports whether or not the db is ready."),
+	return lines
+}
+
+func buildIsReady(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	lines := []jen.Code{jen.Comment("IsReady reports whether or not the db is ready."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("IsReady").Params(
 			func() jen.Code {
@@ -240,12 +228,76 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 				return jen.Underscore().Qual("context", "Context")
 			}(),
 		).Params(jen.ID("ready").Bool()).Block(
-			buildIsReadyBody()...,
+			func() []jen.Code {
+				if isSqlite(dbvendor) {
+					return []jen.Code{jen.Return(jen.True())}
+				} else if isPostgres(dbvendor) {
+					return []jen.Code{
+						jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
+						jen.Line(),
+						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+							jen.Lit("interval").MapAssign().Qual("time", "Second"),
+							jen.Lit("max_attempts").MapAssign().Lit(50)),
+						).Dot("Debug").Call(jen.Lit("IsReady called")),
+						jen.Line(),
+						jen.For(jen.Not().ID("ready")).Block(
+							jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
+							jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+								jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
+								jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
+								jen.Line(),
+								jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
+								jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
+									jen.Return().False(),
+								),
+							).Else().Block(
+								jen.ID("ready").Equals().True(),
+								jen.Return().ID("ready"),
+							),
+						),
+						jen.Return().False(),
+					}
+				} else if isMariaDB(dbvendor) {
+					return []jen.Code{
+						jen.ID("numberOfUnsuccessfulAttempts").Assign().Zero(),
+						jen.Line(),
+						jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+							jen.Lit("interval").MapAssign().Qual("time", "Second"),
+							jen.Lit("max_attempts").MapAssign().Lit(50)),
+						).Dot("Debug").Call(jen.Lit("IsReady called")),
+						jen.Line(),
+						jen.For(jen.Not().ID("ready")).Block(
+							jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
+							jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+								jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
+								jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
+								jen.Line(),
+								jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
+								jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
+									jen.Return().False(),
+								),
+							).Else().Block(
+								jen.ID("ready").Equals().True(),
+								jen.Return().ID("ready"),
+							),
+						),
+						jen.Return().False(),
+					}
+				}
+				return nil
+			}()...,
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildLogQueryBuildingError(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	lines := []jen.Code{
 		jen.Comment("logQueryBuildingError logs errors that may occur during query construction."),
 		jen.Line(),
 		jen.Comment("Such errors should be few and far between, as the generally only occur with"),
@@ -262,30 +314,39 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			),
 		),
 		jen.Line(),
-	)
-
-	if isMariaDB(dbvendor) || isSqlite(dbvendor) {
-		code.Add(
-			jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
-			jen.Line(),
-			jen.Comment("Such errors should be few and far between, as the generally only occur with"),
-			jen.Line(),
-			jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
-			jen.Line(),
-			jen.Comment("any log entries with the given name, and those alerts should be investigated"),
-			jen.Line(),
-			jen.Comment("with the utmost priority."),
-			jen.Line(),
-			jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logIDRetrievalError").Params(jen.Err().Error()).Block(
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("ROW_ID_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("fetching row ID")),
-				),
-			),
-			jen.Line(),
-		)
 	}
 
-	code.Add(
+	return lines
+}
+
+func buildLogIDRetrievalError(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	sn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(sn)[0]))
+
+	lines := []jen.Code{
+		jen.Comment("logIDRetrievalError logs errors that may occur during created db row ID retrieval."),
+		jen.Line(),
+		jen.Comment("Such errors should be few and far between, as the generally only occur with"),
+		jen.Line(),
+		jen.Comment("type discrepancies or other misuses of SQL. An alert should be set up for"),
+		jen.Line(),
+		jen.Comment("any log entries with the given name, and those alerts should be investigated"),
+		jen.Line(),
+		jen.Comment("with the utmost priority."),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logIDRetrievalError").Params(jen.Err().Error()).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("ROW_ID_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("fetching row ID")),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildBuildError() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("buildError takes a given error and wraps it with a message, provided that it"),
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
@@ -302,21 +363,24 @@ func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.Return().Qual("fmt", "Errorf").Call(jen.ID("msg"), jen.Err()),
 		),
 		jen.Line(),
-	)
-
-	if isPostgres(dbvendor) {
-		code.Add(
-			jen.Func().ID("joinUint64s").Params(jen.ID("in").Index().Uint64()).Params(jen.String()).Block(
-				jen.ID("out").Assign().Index().String().Values(),
-				jen.Line(),
-				jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Block(
-					jen.ID("out").Equals().Append(jen.ID("out"), jen.Qual("strconv", "FormatUint").Call(jen.ID("x"), jen.Lit(10))),
-				),
-				jen.Line(),
-				jen.Return(jen.Qual("strings", "Join").Call(jen.ID("out"), jen.Lit(","))),
-			),
-		)
 	}
 
-	return code
+	return lines
+}
+
+func buildJoinUint64s() jen.Code {
+	return jen.Func().ID("joinUint64s").Params(jen.ID("in").Index().Uint64()).Params(jen.String()).Block(
+		jen.ID("out").Assign().Index().String().Values(),
+		jen.Line(),
+		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Block(
+			jen.ID("out").Equals().Append(
+				jen.ID("out"), jen.Qual("strconv", "FormatUint").Call(
+					jen.ID("x"),
+					jen.Lit(10),
+				),
+			),
+		),
+		jen.Line(),
+		jen.Return(jen.Qual("strings", "Join").Call(jen.ID("out"), jen.Lit(","))),
+	)
 }

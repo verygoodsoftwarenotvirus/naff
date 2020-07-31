@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-func getExpectedOutputForTest(testName string) string {
-	cmd := exec.Command("go", "test", "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1/client", "-run", testName)
+func getExpectedOutputForTest(packagePath, testName string) string {
+	cmd := exec.Command("go", "test", filepath.Join("gitlab.com/verygoodsoftwarenotvirus/naff", packagePath), "-run", testName)
 
 	outputBytes, err := cmd.CombinedOutput()
 	if err != nil && fmt.Sprintf("%v", err) != "exit status 1" { // lol that second condition is groooooooooossssssss
@@ -52,6 +52,7 @@ func getExpectedOutputForTest(testName string) string {
 		expectedOutput = strings.ReplaceAll(expectedOutput, "\\t", "\t")
 		expectedOutput = strings.ReplaceAll(expectedOutput, `\"`, `"`)
 		expectedOutput = strings.ReplaceAll(expectedOutput, "`", "`+\"`\"+`")
+		expectedOutput = strings.ReplaceAll(expectedOutput, `\\`, `\`)
 
 		return expectedOutput
 	}
@@ -84,18 +85,24 @@ func listTestsForFile(filePath string) []foundTest {
 				name: fn.Name.Name,
 			}
 			functions = append(functions)
-			if len(fn.Body.List) == 2 {
-				if tDotRunCall, tdrExprOk := fn.Body.List[1].(*ast.ExprStmt); tdrExprOk {
+			for _, decl := range fn.Body.List {
+				if tDotRunCall, tdrExprOk := decl.(*ast.ExprStmt); tdrExprOk {
 					if subtestCallExpr, subtestCallExprOk := tDotRunCall.X.(*ast.CallExpr); subtestCallExprOk {
 						if len(subtestCallExpr.Args) == 2 {
+							if subtestName, subtestNameOk := subtestCallExpr.Args[0].(*ast.BasicLit); subtestNameOk {
+								fun.name = fmt.Sprintf("%s/%s", fn.Name.Name, strings.ReplaceAll(subtestName.Value, `"`, ""))
+							}
 							if funcLit, funcLitOk := subtestCallExpr.Args[1].(*ast.FuncLit); funcLitOk {
-								if len(funcLit.Body.List) == 6 {
-									if assStmt, assStmtOk := funcLit.Body.List[3].(*ast.AssignStmt); assStmtOk {
-										expectedAssign := assStmt.Lhs[0].(*ast.Ident)
-										expectedAssignVal := assStmt.Rhs[0].(*ast.BasicLit)
-										if expectedAssign.Name == "expected" && expectedAssignVal.Value == "``" {
-											fun.lineNumber = fset.Position(expectedAssign.Pos()).Line
-											functions = append(functions, fun)
+								for _, expr := range funcLit.Body.List {
+									if assStmt, assStmtOk := expr.(*ast.AssignStmt); assStmtOk {
+										if expectedAssign, expectedAssignOk := assStmt.Lhs[0].(*ast.Ident); expectedAssignOk {
+											if expectedAssignVal, expectedAssignValOk := assStmt.Rhs[0].(*ast.BasicLit); expectedAssignValOk {
+												if expectedAssign.Name == "expected" && expectedAssignVal.Value == "``" {
+													fun.lineNumber = fset.Position(expectedAssign.Pos()).Line
+													functions = append(functions, fun)
+													break
+												}
+											}
 										}
 									}
 								}
@@ -145,15 +152,18 @@ func listTestFilesInDirectory(dirPath string) []string {
 }
 
 func main() {
-	for _, filePath := range listTestFilesInDirectory("templates/database/v1/client") {
+	const packagePath = "templates/database/v1/queriers"
+
+	for _, filePath := range listTestFilesInDirectory(packagePath) {
 		testsForFile := listTestsForFile(filePath)
 		for i := 0; i < len(testsForFile); i++ {
 			tests := listTestsForFile(filePath)
 			if len(tests) > 0 {
 				test := tests[0]
 				if test.lineNumber > 0 {
-					result := getExpectedOutputForTest(fmt.Sprintf("%s/obligatory", test.name))
+					result := getExpectedOutputForTest(packagePath, test.name)
 					if result != "" {
+						log.Printf("correcting test: %q", test.name)
 						correctTestsForFile(filePath, test.lineNumber, result)
 					}
 				}

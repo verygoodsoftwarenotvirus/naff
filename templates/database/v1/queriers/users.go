@@ -15,7 +15,36 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUsersFileConstDeclarations()...)
+	code.Add(buildUsersFileVarDeclarations()...)
+	code.Add(buildScanUser(proj, dbvendor)...)
+	code.Add(buildScanUsers(proj, dbvendor)...)
+	code.Add(buildBuildGetUserQuery(dbvendor)...)
+	code.Add(buildGetUser(proj, dbvendor)...)
+	code.Add(buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(dbvendor)...)
+	code.Add(buildGetUserWithUnverifiedTwoFactorSecret(proj, dbvendor)...)
+	code.Add(buildBuildGetUserByUsernameQuery(dbvendor)...)
+	code.Add(buildGetUserByUsername(proj, dbvendor)...)
+	code.Add(buildBuildGetAllUsersCountQuery(dbvendor)...)
+	code.Add(buildGetAllUsersCount(dbvendor)...)
+	code.Add(buildBuildGetUsersQuery(proj, dbvendor)...)
+	code.Add(buildGetUsers(proj, dbvendor)...)
+	code.Add(buildBuildCreateUserQuery(proj, dbvendor)...)
+	code.Add(buildCreateUser(proj, dbvendor)...)
+	code.Add(buildBuildUpdateUserQuery(proj, dbvendor)...)
+	code.Add(buildUpdateUser(proj, dbvendor)...)
+	code.Add(buildBuildUpdateUserPasswordQuery(dbvendor)...)
+	code.Add(buildUpdateUserPassword(dbvendor)...)
+	code.Add(buildBuildVerifyUserTwoFactorSecretQuery(dbvendor)...)
+	code.Add(buildVerifyUserTwoFactorSecret(dbvendor)...)
+	code.Add(buildBuildArchiveUserQuery(dbvendor)...)
+	code.Add(buildArchiveUser(dbvendor)...)
+
+	return code
+}
+
+func buildUsersFileConstDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("usersTableName").Equals().Lit("users"),
 			jen.ID("usersTableUsernameColumn").Equals().Lit("username"),
@@ -28,9 +57,13 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 			jen.ID("usersTableIsAdminColumn").Equals().Lit("is_admin"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersFileVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("usersTableColumns").Equals().Index().String().Valuesln(
 				utils.FormatString("%s.%s", jen.ID("usersTableName"), jen.ID("idColumn")),
@@ -48,32 +81,9 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(buildScanUser(proj, dbvendor)...)
-	code.Add(buildScanUsers(proj, dbvendor)...)
-	code.Add(buildBuildGetUserQuery(proj, dbvendor)...)
-	code.Add(buildGetUser(proj, dbvendor)...)
-	code.Add(buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(proj, dbvendor)...)
-	code.Add(buildGetUserWithUnverifiedTwoFactorSecret(proj, dbvendor)...)
-	code.Add(buildBuildGetUserByUsernameQuery(proj, dbvendor)...)
-	code.Add(buildGetUserByUsername(proj, dbvendor)...)
-	code.Add(buildBuildGetAllUsersCountQuery(proj, dbvendor)...)
-	code.Add(buildGetAllUsersCount(proj, dbvendor)...)
-	code.Add(buildBuildGetUsersQuery(proj, dbvendor)...)
-	code.Add(buildGetUsers(proj, dbvendor)...)
-	code.Add(buildBuildCreateUserQuery(proj, dbvendor)...)
-	code.Add(buildCreateUser(proj, dbvendor)...)
-	code.Add(buildBuildUpdateUserQuery(proj, dbvendor)...)
-	code.Add(buildUpdateUser(proj, dbvendor)...)
-	code.Add(buildBuildUpdateUserPasswordQuery(proj, dbvendor)...)
-	code.Add(buildUpdateUserPassword(proj, dbvendor)...)
-	code.Add(buildBuildVerifyUserTwoFactorSecretQuery(proj, dbvendor)...)
-	code.Add(buildVerifyUserTwoFactorSecret(proj, dbvendor)...)
-	code.Add(buildBuildArchiveUserQuery(proj, dbvendor)...)
-	code.Add(buildArchiveUser(proj, dbvendor)...)
-
-	return code
+	return lines
 }
 
 func buildScanUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -165,7 +175,7 @@ func buildScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen
 	return lines
 }
 
-func buildBuildGetUserQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetUserQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -223,7 +233,7 @@ func buildGetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.C
 	return lines
 }
 
-func buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -280,7 +290,7 @@ func buildGetUserWithUnverifiedTwoFactorSecret(proj *models.Project, dbvendor wo
 	return lines
 }
 
-func buildBuildGetUserByUsernameQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetUserByUsernameQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -347,7 +357,7 @@ func buildGetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	return lines
 }
 
-func buildBuildGetAllUsersCountQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetAllUsersCountQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -382,7 +392,7 @@ func buildBuildGetAllUsersCountQuery(_ *models.Project, dbvendor wordsmith.Super
 	return lines
 }
 
-func buildGetAllUsersCount(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildGetAllUsersCount(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -689,7 +699,7 @@ func buildUpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 	return lines
 }
 
-func buildBuildUpdateUserPasswordQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildUpdateUserPasswordQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -735,7 +745,7 @@ func buildBuildUpdateUserPasswordQuery(_ *models.Project, dbvendor wordsmith.Sup
 	return lines
 }
 
-func buildUpdateUserPassword(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildUpdateUserPassword(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -759,7 +769,7 @@ func buildUpdateUserPassword(_ *models.Project, dbvendor wordsmith.SuperPalabra)
 	return lines
 }
 
-func buildBuildVerifyUserTwoFactorSecretQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildVerifyUserTwoFactorSecretQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -786,7 +796,7 @@ func buildBuildVerifyUserTwoFactorSecretQuery(_ *models.Project, dbvendor wordsm
 	return lines
 }
 
-func buildVerifyUserTwoFactorSecret(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildVerifyUserTwoFactorSecret(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -812,7 +822,7 @@ func buildVerifyUserTwoFactorSecret(_ *models.Project, dbvendor wordsmith.SuperP
 	return lines
 }
 
-func buildBuildArchiveUserQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildArchiveUserQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -849,7 +859,7 @@ func buildBuildArchiveUserQuery(_ *models.Project, dbvendor wordsmith.SuperPalab
 	return lines
 }
 
-func buildArchiveUser(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildArchiveUser(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 

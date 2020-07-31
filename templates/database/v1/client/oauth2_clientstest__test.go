@@ -529,7 +529,73 @@ func Test_buildTestClient_GetOAuth2ClientsForUser(T *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetOAuth2ClientsForUser(proj)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"context"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_GetOAuth2ClientsForUser(T *testing.T) {
+	T.Parallel()
+
+	exampleUser := fake.BuildFakeUser()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		c, mockDB := buildTestClient()
+		exampleOAuth2ClientList := fake.BuildFakeOAuth2ClientList()
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientsForUser", mock.Anything, exampleUser.ID, filter).Return(exampleOAuth2ClientList, nil)
+
+		actual, err := c.GetOAuth2ClientsForUser(ctx, exampleUser.ID, filter)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleOAuth2ClientList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+
+	T.Run("with nil filter", func(t *testing.T) {
+		ctx := context.Background()
+
+		c, mockDB := buildTestClient()
+		exampleOAuth2ClientList := fake.BuildFakeOAuth2ClientList()
+		filter := (*v1.QueryFilter)(nil)
+
+		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientsForUser", mock.Anything, exampleUser.ID, filter).Return(exampleOAuth2ClientList, nil)
+
+		actual, err := c.GetOAuth2ClientsForUser(ctx, exampleUser.ID, filter)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleOAuth2ClientList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+
+	T.Run("with error returned from querier", func(t *testing.T) {
+		ctx := context.Background()
+
+		c, mockDB := buildTestClient()
+		exampleOAuth2ClientList := (*v1.OAuth2ClientList)(nil)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.OAuth2ClientDataManager.On("GetOAuth2ClientsForUser", mock.Anything, exampleUser.ID, filter).Return(exampleOAuth2ClientList, errors.New("blah"))
+
+		actual, err := c.GetOAuth2ClientsForUser(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Equal(t, exampleOAuth2ClientList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
@@ -545,7 +611,58 @@ func Test_buildTestClient_CreateOAuth2Client(T *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_CreateOAuth2Client(proj)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"context"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_CreateOAuth2Client(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		c, mockDB := buildTestClient()
+
+		exampleOAuth2Client := fake.BuildFakeOAuth2Client()
+		exampleInput := fake.BuildFakeOAuth2ClientCreationInputFromClient(exampleOAuth2Client)
+
+		mockDB.OAuth2ClientDataManager.On("CreateOAuth2Client", mock.Anything, exampleInput).Return(exampleOAuth2Client, nil)
+
+		actual, err := c.CreateOAuth2Client(ctx, exampleInput)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleOAuth2Client, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+
+	T.Run("with error returned from querier", func(t *testing.T) {
+		ctx := context.Background()
+
+		c, mockDB := buildTestClient()
+
+		expected := (*v1.OAuth2Client)(nil)
+		exampleOAuth2Client := fake.BuildFakeOAuth2Client()
+		exampleInput := fake.BuildFakeOAuth2ClientCreationInputFromClient(exampleOAuth2Client)
+
+		mockDB.OAuth2ClientDataManager.On("CreateOAuth2Client", mock.Anything, exampleInput).Return(expected, errors.New("blah"))
+
+		actual, err := c.CreateOAuth2Client(ctx, exampleInput)
+		assert.Error(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
@@ -561,7 +678,37 @@ func Test_buildTestClient_UpdateOAuth2Client(T *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_UpdateOAuth2Client(proj)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_UpdateOAuth2Client(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleOAuth2Client := fake.BuildFakeOAuth2Client()
+
+		var expected error
+		c, mockDB := buildTestClient()
+		mockDB.OAuth2ClientDataManager.On("UpdateOAuth2Client", mock.Anything, exampleOAuth2Client).Return(expected)
+
+		actual := c.UpdateOAuth2Client(ctx, exampleOAuth2Client)
+		assert.NoError(t, actual)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
@@ -577,7 +724,54 @@ func Test_buildTestClient_ArchiveOAuth2Client(T *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_ArchiveOAuth2Client(proj)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"context"
+	"fmt"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_ArchiveOAuth2Client(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleOAuth2Client := fake.BuildFakeOAuth2Client()
+
+		var expected error
+		c, mockDB := buildTestClient()
+		mockDB.OAuth2ClientDataManager.On("ArchiveOAuth2Client", mock.Anything, exampleOAuth2Client.ID, exampleOAuth2Client.BelongsToUser).Return(expected)
+
+		actual := c.ArchiveOAuth2Client(ctx, exampleOAuth2Client.ID, exampleOAuth2Client.BelongsToUser)
+		assert.NoError(t, actual)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+
+	T.Run("with error returned from querier", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleOAuth2Client := fake.BuildFakeOAuth2Client()
+
+		expected := fmt.Errorf("blah")
+		c, mockDB := buildTestClient()
+		mockDB.OAuth2ClientDataManager.On("ArchiveOAuth2Client", mock.Anything, exampleOAuth2Client.ID, exampleOAuth2Client.BelongsToUser).Return(expected)
+
+		actual := c.ArchiveOAuth2Client(ctx, exampleOAuth2Client.ID, exampleOAuth2Client.BelongsToUser)
+		assert.Error(t, actual)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")

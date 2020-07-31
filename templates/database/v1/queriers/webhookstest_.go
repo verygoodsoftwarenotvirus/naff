@@ -191,7 +191,7 @@ func buildTestDB_buildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.S
 		utils.BuildFakeVar(proj, "Webhook"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetWebhook", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetWebhook", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -295,7 +295,7 @@ func buildTestDB_buildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wo
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, "GetAllWebhooksCount", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(dbvendor, "GetAllWebhooksCount", qb, expectedArgs, callArgs, nil)
 }
 
 func buildTestDB_GetAllWebhooksCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -362,7 +362,7 @@ func buildTestDB_buildGetAllWebhooksQuery(proj *models.Project, dbvendor wordsmi
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, "GetAllWebhooks", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(dbvendor, "GetAllWebhooks", qb, expectedArgs, callArgs, nil)
 }
 
 func buildTestDB_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -475,7 +475,7 @@ func buildTestDB_buildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetWebhooks", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetWebhooks", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -637,7 +637,7 @@ func buildTestDB_buildWebhookCreationQuery(proj *models.Project, dbvendor wordsm
 		utils.BuildFakeVar(proj, "Webhook"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "WebhookCreation", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "WebhookCreation", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -812,7 +812,7 @@ func buildTestDB_buildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmit
 		utils.BuildFakeVar(proj, "Webhook"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "UpdateWebhook", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "UpdateWebhook", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -941,7 +941,7 @@ func buildTestDB_buildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmi
 		utils.BuildFakeVar(proj, "Webhook"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "ArchiveWebhook", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "ArchiveWebhook", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_ArchiveWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

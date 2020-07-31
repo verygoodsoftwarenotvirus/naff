@@ -15,7 +15,30 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildWebhooksConstDeclarations()...)
+	code.Add(buildWebhooksVarDeclarations()...)
+	code.Add(buildScanWebhook(proj, dbvendor)...)
+	code.Add(buildScanWebhooks(proj, dbvendor)...)
+	code.Add(buildBuildGetWebhookQuery(dbvendor)...)
+	code.Add(build_GetWebhook(proj, dbvendor)...)
+	code.Add(buildBuildGetAllWebhooksCountQuery(dbvendor)...)
+	code.Add(build_GetAllWebhooksCount(dbvendor)...)
+	code.Add(buildBuildGetAllWebhooksQuery(dbvendor)...)
+	code.Add(build_GetAllWebhooks(proj, dbvendor)...)
+	code.Add(buildBuildGetWebhooksQuery(proj, dbvendor)...)
+	code.Add(buildGetWebhooks(proj, dbvendor)...)
+	code.Add(buildBuildWebhookCreationQuery(proj, dbvendor)...)
+	code.Add(buildCreateWebhook(proj, dbvendor)...)
+	code.Add(buildBuildUpdateWebhookQuery(proj, dbvendor)...)
+	code.Add(buildUpdateWebhook(proj, dbvendor)...)
+	code.Add(buildBuildArchiveWebhookQuery(dbvendor)...)
+	code.Add(buildArchiveWebhook(dbvendor)...)
+
+	return code
+}
+
+func buildWebhooksConstDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("commaSeparator").Equals().Lit(","),
 			jen.Line(),
@@ -34,9 +57,13 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			jen.ID("webhooksTableOwnershipColumn").Equals().Lit("belongs_to_user"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhooksVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("webhooksTableColumns").Equals().Index().String().Valuesln(
 				utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("idColumn")),
@@ -54,26 +81,9 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(buildScanWebhook(proj, dbvendor)...)
-	code.Add(buildScanWebhooks(proj, dbvendor)...)
-	code.Add(buildBuildGetWebhookQuery(proj, dbvendor)...)
-	code.Add(build_GetWebhook(proj, dbvendor)...)
-	code.Add(buildBuildGetAllWebhooksCountQuery(proj, dbvendor)...)
-	code.Add(build_GetAllWebhooksCount(proj, dbvendor)...)
-	code.Add(buildBuildGetAllWebhooksQuery(proj, dbvendor)...)
-	code.Add(build_GetAllWebhooks(proj, dbvendor)...)
-	code.Add(buildBuildGetWebhooksQuery(proj, dbvendor)...)
-	code.Add(buildGetWebhooks(proj, dbvendor)...)
-	code.Add(buildBuildWebhookCreationQuery(proj, dbvendor)...)
-	code.Add(buildCreateWebhook(proj, dbvendor)...)
-	code.Add(buildBuildUpdateWebhookQuery(proj, dbvendor)...)
-	code.Add(buildUpdateWebhook(proj, dbvendor)...)
-	code.Add(buildBuildArchiveWebhookQuery(proj, dbvendor)...)
-	code.Add(buildArchiveWebhook(proj, dbvendor)...)
-
-	return code
+	return lines
 }
 
 func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -176,7 +186,7 @@ func buildScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []
 	return lines
 }
 
-func buildBuildGetWebhookQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetWebhookQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -231,7 +241,7 @@ func build_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 	return lines
 }
 
-func buildBuildGetAllWebhooksCountQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetAllWebhooksCountQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -266,7 +276,7 @@ func buildBuildGetAllWebhooksCountQuery(_ *models.Project, dbvendor wordsmith.Su
 	return lines
 }
 
-func build_GetAllWebhooksCount(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func build_GetAllWebhooksCount(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -283,7 +293,7 @@ func build_GetAllWebhooksCount(_ *models.Project, dbvendor wordsmith.SuperPalabr
 	return lines
 }
 
-func buildBuildGetAllWebhooksQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildGetAllWebhooksQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -637,7 +647,7 @@ func buildUpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 	return lines
 }
 
-func buildBuildArchiveWebhookQuery(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildArchiveWebhookQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -679,7 +689,7 @@ func buildBuildArchiveWebhookQuery(_ *models.Project, dbvendor wordsmith.SuperPa
 	return lines
 }
 
-func buildArchiveWebhook(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildArchiveWebhook(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 

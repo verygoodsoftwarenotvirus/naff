@@ -11,6 +11,78 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
+	spn := dbvendor.SingularPackageName()
+
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+
+	utils.AddImports(proj, code)
+
+	code.Add(buildMigrationVarDeclarations(proj, dbvendor))
+	code.Add(buildBuildMigrationFuncDecl(dbvendor)...)
+	code.Add(buildMigrate(dbvendor)...)
+
+	return code
+}
+
+func buildMigrationVarDeclarations(proj *models.Project, dbvendor wordsmith.SuperPalabra) jen.Code {
+	lines := makeMigrations(proj, dbvendor)
+
+	return lines
+}
+
+func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	dbcn := dbvendor.SingularCommonName()
+	dbvsn := dbvendor.Singular()
+	isMariaDB := dbvendor.RouteName() == "mariadb" || dbvendor.RouteName() == "maria_db"
+
+	var dialectName string
+	if !isMariaDB {
+		dialectName = fmt.Sprintf("%sDialect", dbvsn)
+	} else {
+		dialectName = "MySQLDialect"
+	}
+
+	return []jen.Code{
+		jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
+		jen.Line(),
+		jen.Commentf("migrate a %s database.", dbcn),
+		jen.Line(),
+		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").PointerTo().Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
+			jen.Return().Func().Params().Block(
+				jen.ID("driver").Assign().Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
+				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.ID("panic").Call(jen.Err()),
+				),
+			),
+		),
+		jen.Line(),
+	}
+}
+
+func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
+	dbvsn := dbvendor.Singular()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	return []jen.Code{
+		jen.Comment("Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be"),
+		jen.Line(),
+		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
+		jen.Line(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
+			jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Info").Call(jen.Lit("migrating db")),
+			jen.If(jen.Not().ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Block(
+				jen.Return().Qual("errors", "New").Call(jen.Lit("db is not ready yet")),
+			),
+			jen.Line(),
+			jen.ID(dbfl).Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID(dbfl).Dot("db"))),
+			jen.Line(),
+			jen.Return().ID("nil"),
+		),
+		jen.Line(),
+	}
+}
+
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
 		//"[]string": "CHARACTER VARYING",
@@ -167,7 +239,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 			);
 
 			CREATE INDEX sessions_expiry_idx ON sessions (expiry);
-			`),
+		`),
 		},
 		{
 			description: "create oauth2_clients table",
@@ -518,7 +590,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 				data BLOB NOT NULL,
 				expiry REAL NOT NULL
 			);
-			
+
 			CREATE INDEX sessions_expiry_idx ON sessions(expiry);
 			`),
 		},
@@ -619,7 +691,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 	return migrations
 }
 
-func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) []jen.Code {
+func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) jen.Code {
 	var (
 		out        []jen.Code
 		migrations []migration
@@ -644,81 +716,9 @@ func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) []jen
 		))
 	}
 
-	return out
-}
-
-func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
-	spn := dbvendor.SingularPackageName()
-
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
-
-	utils.AddImports(proj, code)
-
-	code.Add(
-		jen.Var().Defs(
-			jen.ID("migrations").Equals().Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(makeMigrations(proj, dbvendor)...),
+	return jen.Var().Defs(
+		jen.ID("migrations").Equals().Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(
+			out...,
 		),
 	)
-
-	code.Add(
-		buildBuildMigrationFuncDecl(dbvendor)...,
-	)
-
-	code.Add(
-		buildMigrate(dbvendor)...,
-	)
-
-	return code
-}
-
-func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
-	dbcn := dbvendor.SingularCommonName()
-	dbvsn := dbvendor.Singular()
-	isMariaDB := dbvendor.RouteName() == "mariadb" || dbvendor.RouteName() == "maria_db"
-
-	var dialectName string
-	if !isMariaDB {
-		dialectName = fmt.Sprintf("%sDialect", dbvsn)
-	} else {
-		dialectName = "MySQLDialect"
-	}
-
-	return []jen.Code{
-		jen.Comment("buildMigrationFunc returns a sync.Once compatible function closure that will"),
-		jen.Line(),
-		jen.Commentf("migrate a %s database.", dbcn),
-		jen.Line(),
-		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").PointerTo().Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
-			jen.Return().Func().Params().Block(
-				jen.ID("driver").Assign().Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
-				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
-					jen.ID("panic").Call(jen.Err()),
-				),
-			),
-		),
-		jen.Line(),
-	}
-}
-
-func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
-	dbvsn := dbvendor.Singular()
-	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
-
-	return []jen.Code{
-		jen.Comment("Migrate migrates the database. It does so by invoking the migrateOnce function via sync.Once, so it should be"),
-		jen.Line(),
-		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
-		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
-			jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Info").Call(jen.Lit("migrating db")),
-			jen.If(jen.Not().ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Block(
-				jen.Return().Qual("errors", "New").Call(jen.Lit("db is not ready yet")),
-			),
-			jen.Line(),
-			jen.ID(dbfl).Dot("migrateOnce").Dot("Do").Call(jen.ID("buildMigrationFunc").Call(jen.ID(dbfl).Dot("db"))),
-			jen.Line(),
-			jen.Return().ID("nil"),
-		),
-		jen.Line(),
-	}
 }

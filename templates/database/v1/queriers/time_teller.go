@@ -15,15 +15,9 @@ func timeTellerDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 
 	utils.AddImports(proj, code)
 
-	code.Add(
-		jen.Type().ID("timeTeller").Interface(
-			jen.ID("Now").Call().Uint64(),
-		),
-	)
+	code.Add(jen.Type().ID("timeTeller").Interface(jen.ID("Now").Call().Uint64()))
 
-	code.Add(
-		jen.Type().ID("stdLibTimeTeller").Struct(),
-	)
+	code.Add(jen.Type().ID("stdLibTimeTeller").Struct())
 
 	code.Add(
 		jen.Func().Receiver(jen.ID("t").PointerTo().ID("stdLibTimeTeller")).ID("Now").Params().Uint64().Block(
