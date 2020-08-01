@@ -8,18 +8,29 @@ import (
 )
 
 func middlewareDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("httpserver")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildServerMiddlewareVarDeclarations()...)
+	code.Add(buildServerFormatSpanNameForRequest()...)
+	code.Add(buildServerServerLoggingMiddleware()...)
+
+	return code
+}
+
+func buildServerMiddlewareVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("idReplacementRegex").Equals().Qual("regexp", "MustCompile").Call(jen.RawString(`[^(v|oauth)]\\d+`)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildServerFormatSpanNameForRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.Return().Qual("fmt", "Sprintf").Callln(
 				jen.Lit("%s %s"),
@@ -28,9 +39,12 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildServerServerLoggingMiddleware() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
 				jen.ID("ww").Assign().Qual("github.com/go-chi/chi/middleware", "NewWrapResponseWriter").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName).Dot("ProtoMajor")),
@@ -46,7 +60,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
