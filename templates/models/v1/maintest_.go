@@ -12,8 +12,13 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(utils.FakeSeedFunc(), jen.Line())
+	code.Add(buildTestErrorResponse_Error()...)
 
-	code.Add(
+	return code
+}
+
+func buildTestErrorResponse_Error() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -23,7 +28,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

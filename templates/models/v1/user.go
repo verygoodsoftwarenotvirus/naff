@@ -12,7 +12,15 @@ func userDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUserTypeDefinitions()...)
+	code.Add(buildUserUpdate()...)
+	code.Add(buildUserToSessionInfo()...)
+
+	return code
+}
+
+func buildUserTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("User represents a user."),
 			jen.ID("User").Struct(
@@ -146,9 +154,12 @@ func userDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildUserUpdate() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Update accepts a User as input and merges those values if they're set."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Block(
@@ -165,9 +176,12 @@ func userDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildUserToSessionInfo() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ToSessionInfo accepts a User as input and merges those values if they're set."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("ToSessionInfo").Params().PointerTo().ID("SessionInfo").Block(
@@ -177,7 +191,7 @@ func userDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

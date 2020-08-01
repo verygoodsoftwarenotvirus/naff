@@ -12,7 +12,19 @@ func webhookDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildWebhookTypeDefinitions()...)
+	code.Add(buildWebhookUpdate()...)
+	code.Add(buildWebhookbuildErrorLogFunc()...)
+
+	// if proj.EnableNewsman {
+	code.Add(buildWebhookToListener()...)
+	// }
+
+	return code
+}
+
+func buildWebhookTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("Webhook represents a webhook listener, an endpoint to send an HTTP request to upon an event."),
 			jen.ID("Webhook").Struct(
@@ -99,9 +111,13 @@ func webhookDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookUpdate() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Update merges an WebhookCreationInput with an Webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("Update").Params(jen.ID("input").PointerTo().ID("WebhookUpdateInput")).Block(
@@ -129,9 +145,13 @@ func webhookDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookbuildErrorLogFunc() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), constants.LoggerParam()).Params(jen.Func().Params(jen.Error())).Block(
 			jen.Return().Func().Params(jen.Err().Error()).Block(
 				jen.ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
@@ -142,10 +162,13 @@ func webhookDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	// if proj.EnableNewsman {
-	code.Add(
+	return lines
+}
+
+func buildWebhookToListener() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ToListener creates a newsman Listener from a Webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(constants.LoggerParam()).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Block(
@@ -164,8 +187,7 @@ func webhookDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
-	// }
+	}
 
-	return code
+	return lines
 }

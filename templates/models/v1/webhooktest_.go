@@ -12,7 +12,15 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestWebhook_Update()...)
+	code.Add(buildTestWebhook_ToListener()...)
+	code.Add(buildTest_buildErrorLogFunc()...)
+
+	return code
+}
+
+func buildTestWebhook_Update() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -52,9 +60,12 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildTestWebhook_ToListener() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -65,9 +76,12 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildTest_buildErrorLogFunc() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -79,7 +93,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -17,14 +17,31 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	code.Add(
+	code.Add(buildMockWebhookDataServer()...)
+	code.Add(buildMockWebhookCreationInputMiddleware()...)
+	code.Add(buildMockWebhookUpdateInputMiddleware()...)
+	code.Add(buildMockWebhookListHandler()...)
+	code.Add(buildMockWebhookCreateHandler()...)
+	code.Add(buildMockWebhookReadHandler()...)
+	code.Add(buildMockWebhookUpdateHandler()...)
+	code.Add(buildMockWebhookArchiveHandler()...)
+
+	return code
+}
+
+func buildMockWebhookDataServer() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("WebhookDataServer is a mocked models.WebhookDataServer for testing"),
 		jen.Line(),
 		jen.Type().ID("WebhookDataServer").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookCreationInputMiddleware() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreationInputMiddleware implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -32,9 +49,13 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookUpdateInputMiddleware() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UpdateInputMiddleware implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -42,9 +63,13 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookListHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ListHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ListHandler").Params(
@@ -54,9 +79,13 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookCreateHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("CreateHandler").Params(
@@ -66,9 +95,13 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookReadHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ReadHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ReadHandler").Params(
@@ -78,9 +111,13 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookUpdateHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UpdateHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("UpdateHandler").Params(
@@ -90,9 +127,13 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockWebhookArchiveHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ArchiveHandler implements our interface requirements."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("WebhookDataServer")).ID("ArchiveHandler").Params(
@@ -102,7 +143,7 @@ func mockWebhookDataServerDotGo(proj *models.Project) *jen.File {
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

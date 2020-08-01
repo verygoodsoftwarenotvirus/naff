@@ -86,6 +86,32 @@ func RenderIndependentStatementToString(t *testing.T, result jen.Code) string {
 	return b.String()
 }
 
+func RenderInterfaceMethodsToString(t *testing.T, methods ...jen.Code) string {
+	t.Helper()
+
+	out := jen.NewFile("example")
+
+	out.Add(jen.Type().ID("Example").Interface(methods...))
+
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, out.Render(b))
+
+	return b.String()
+}
+
+func RenderStructFieldsToString(t *testing.T, fields ...jen.Code) string {
+	t.Helper()
+
+	out := jen.NewFile("example")
+
+	out.Add(jen.Type().ID("Example").Struct(fields...))
+
+	b := bytes.NewBufferString("\n")
+	require.NoError(t, out.Render(b))
+
+	return b.String()
+}
+
 func RenderOuterStatementToString(t *testing.T, code ...jen.Code) string {
 	t.Helper()
 

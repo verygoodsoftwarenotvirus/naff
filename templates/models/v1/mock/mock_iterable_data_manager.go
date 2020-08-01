@@ -37,7 +37,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	code.Add(buildGetSomethingsWithIDs(proj, typ)...)
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
-	code.Add(buildArchiveSomething(proj, typ)...)
+	code.Add(buildArchiveSomething(typ)...)
 
 	return code
 }
@@ -241,7 +241,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	return lines
 }
 
-func buildArchiveSomething(_ *models.Project, typ models.DataType) []jen.Code {
+func buildArchiveSomething(typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 

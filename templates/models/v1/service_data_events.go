@@ -11,14 +11,25 @@ func serviceDataEventsDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildServiceDataEvent()...)
+	code.Add(buildServiceDataEventsConstantDefs()...)
+
+	return code
+}
+
+func buildServiceDataEvent() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ServiceDataEvent is a simple string alias."),
 		jen.Line(),
 		jen.Type().ID("ServiceDataEvent").String(),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceDataEventsConstantDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("Create represents a create event."),
 			jen.ID("Create").ID("ServiceDataEvent").Equals().Lit("create"),
@@ -28,7 +39,7 @@ func serviceDataEventsDotGo(proj *models.Project) *jen.File {
 			jen.ID("Archive").ID("ServiceDataEvent").Equals().Lit("archive"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

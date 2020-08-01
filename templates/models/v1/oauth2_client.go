@@ -12,15 +12,32 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildOAuth2ClientsConstantDefs()...)
+	code.Add(buildOAuth2ClientsTypeDefs()...)
+	code.Add(buildOAuth2PkgInterfaceImplementationStatement()...)
+	code.Add(buildOAuth2ClientDotGetID()...)
+	code.Add(buildOAuth2ClientDotGetSecret()...)
+	code.Add(buildOAuth2ClientDotGetDomain()...)
+	code.Add(buildOAuth2ClientDotGetUserID()...)
+	code.Add(buildOAuth2ClientDotHasScope()...)
+
+	return code
+}
+
+func buildOAuth2ClientsConstantDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("OAuth2ClientKey is a ContextKey for use with contexts involving OAuth2 clients."),
 			jen.ID("OAuth2ClientKey").ID("ContextKey").Equals().Lit("oauth2_client"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientsTypeDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("OAuth2Client represents a user-authorized API client"),
 			jen.ID("OAuth2Client").Struct(
@@ -101,50 +118,74 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2PkgInterfaceImplementationStatement() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual("gopkg.in/oauth2.v3", "ClientInfo").Equals().Parens(jen.PointerTo().ID("OAuth2Client")).Call(jen.Nil()),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientDotGetID() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetID returns the client ID. NOTE: I believe this is implemented for the above interface spec (oauth2.ClientInfo)"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetID").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("ClientID"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientDotGetSecret() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetSecret returns the ClientSecret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("ClientSecret"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientDotGetDomain() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetDomain returns the client's domain."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.String()).Block(
 			jen.Return().ID("c").Dot("RedirectURI"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientDotGetUserID() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetUserID returns the client's UserID."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.String()).Block(
 			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot(constants.UserOwnershipFieldName), jen.Lit(10)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientDotHasScope() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
@@ -162,7 +203,7 @@ func oauth2ClientDotGo(proj *models.Project) *jen.File {
 			jen.Return().False(),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
