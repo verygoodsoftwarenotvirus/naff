@@ -30,48 +30,48 @@ import (
 type (
 	// Webhook represents a webhook listener, an endpoint to send an HTTP request to upon an event.
 	Webhook struct {
-		ID            uint64   `+"`"+`json:"id"`+"`"+`
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ContentType   string   `+"`"+`json:"contentType"`+"`"+`
-		URL           string   `+"`"+`json:"url"`+"`"+`
-		Method        string   `+"`"+`json:"method"`+"`"+`
-		Events        []string `+"`"+`json:"events"`+"`"+`
-		DataTypes     []string `+"`"+`json:"dataTypes"`+"`"+`
-		Topics        []string `+"`"+`json:"topics"`+"`"+`
-		CreatedOn     uint64   `+"`"+`json:"createdOn"`+"`"+`
-		LastUpdatedOn *uint64  `+"`"+`json:"lastUpdatedOn"`+"`"+`
-		ArchivedOn    *uint64  `+"`"+`json:"archivedOn"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"belongsToUser"`+"`"+`
+		ID            uint64   ` + "`" + `json:"id"` + "`" + `
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ContentType   string   ` + "`" + `json:"contentType"` + "`" + `
+		URL           string   ` + "`" + `json:"url"` + "`" + `
+		Method        string   ` + "`" + `json:"method"` + "`" + `
+		Events        []string ` + "`" + `json:"events"` + "`" + `
+		DataTypes     []string ` + "`" + `json:"dataTypes"` + "`" + `
+		Topics        []string ` + "`" + `json:"topics"` + "`" + `
+		CreatedOn     uint64   ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn *uint64  ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn    *uint64  ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	// WebhookCreationInput represents what a user could set as input for creating a webhook.
 	WebhookCreationInput struct {
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ContentType   string   `+"`"+`json:"contentType"`+"`"+`
-		URL           string   `+"`"+`json:"url"`+"`"+`
-		Method        string   `+"`"+`json:"method"`+"`"+`
-		Events        []string `+"`"+`json:"events"`+"`"+`
-		DataTypes     []string `+"`"+`json:"dataTypes"`+"`"+`
-		Topics        []string `+"`"+`json:"topics"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"-"`+"`"+`
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ContentType   string   ` + "`" + `json:"contentType"` + "`" + `
+		URL           string   ` + "`" + `json:"url"` + "`" + `
+		Method        string   ` + "`" + `json:"method"` + "`" + `
+		Events        []string ` + "`" + `json:"events"` + "`" + `
+		DataTypes     []string ` + "`" + `json:"dataTypes"` + "`" + `
+		Topics        []string ` + "`" + `json:"topics"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// WebhookUpdateInput represents what a user could set as input for updating a webhook.
 	WebhookUpdateInput struct {
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ContentType   string   `+"`"+`json:"contentType"`+"`"+`
-		URL           string   `+"`"+`json:"url"`+"`"+`
-		Method        string   `+"`"+`json:"method"`+"`"+`
-		Events        []string `+"`"+`json:"events"`+"`"+`
-		DataTypes     []string `+"`"+`json:"dataTypes"`+"`"+`
-		Topics        []string `+"`"+`json:"topics"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"-"`+"`"+`
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ContentType   string   ` + "`" + `json:"contentType"` + "`" + `
+		URL           string   ` + "`" + `json:"url"` + "`" + `
+		Method        string   ` + "`" + `json:"method"` + "`" + `
+		Events        []string ` + "`" + `json:"events"` + "`" + `
+		DataTypes     []string ` + "`" + `json:"dataTypes"` + "`" + `
+		Topics        []string ` + "`" + `json:"topics"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// WebhookList represents a list of webhooks.
 	WebhookList struct {
 		Pagination
-		Webhooks []Webhook `+"`"+`json:"webhooks"`+"`"+`
+		Webhooks []Webhook ` + "`" + `json:"webhooks"` + "`" + `
 	}
 
 	// WebhookDataManager describes a structure capable of storing webhooks.
@@ -176,48 +176,48 @@ import (
 type (
 	// Webhook represents a webhook listener, an endpoint to send an HTTP request to upon an event.
 	Webhook struct {
-		ID            uint64   `+"`"+`json:"id"`+"`"+`
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ContentType   string   `+"`"+`json:"contentType"`+"`"+`
-		URL           string   `+"`"+`json:"url"`+"`"+`
-		Method        string   `+"`"+`json:"method"`+"`"+`
-		Events        []string `+"`"+`json:"events"`+"`"+`
-		DataTypes     []string `+"`"+`json:"dataTypes"`+"`"+`
-		Topics        []string `+"`"+`json:"topics"`+"`"+`
-		CreatedOn     uint64   `+"`"+`json:"createdOn"`+"`"+`
-		LastUpdatedOn *uint64  `+"`"+`json:"lastUpdatedOn"`+"`"+`
-		ArchivedOn    *uint64  `+"`"+`json:"archivedOn"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"belongsToUser"`+"`"+`
+		ID            uint64   ` + "`" + `json:"id"` + "`" + `
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ContentType   string   ` + "`" + `json:"contentType"` + "`" + `
+		URL           string   ` + "`" + `json:"url"` + "`" + `
+		Method        string   ` + "`" + `json:"method"` + "`" + `
+		Events        []string ` + "`" + `json:"events"` + "`" + `
+		DataTypes     []string ` + "`" + `json:"dataTypes"` + "`" + `
+		Topics        []string ` + "`" + `json:"topics"` + "`" + `
+		CreatedOn     uint64   ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn *uint64  ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn    *uint64  ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	// WebhookCreationInput represents what a user could set as input for creating a webhook.
 	WebhookCreationInput struct {
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ContentType   string   `+"`"+`json:"contentType"`+"`"+`
-		URL           string   `+"`"+`json:"url"`+"`"+`
-		Method        string   `+"`"+`json:"method"`+"`"+`
-		Events        []string `+"`"+`json:"events"`+"`"+`
-		DataTypes     []string `+"`"+`json:"dataTypes"`+"`"+`
-		Topics        []string `+"`"+`json:"topics"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"-"`+"`"+`
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ContentType   string   ` + "`" + `json:"contentType"` + "`" + `
+		URL           string   ` + "`" + `json:"url"` + "`" + `
+		Method        string   ` + "`" + `json:"method"` + "`" + `
+		Events        []string ` + "`" + `json:"events"` + "`" + `
+		DataTypes     []string ` + "`" + `json:"dataTypes"` + "`" + `
+		Topics        []string ` + "`" + `json:"topics"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// WebhookUpdateInput represents what a user could set as input for updating a webhook.
 	WebhookUpdateInput struct {
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ContentType   string   `+"`"+`json:"contentType"`+"`"+`
-		URL           string   `+"`"+`json:"url"`+"`"+`
-		Method        string   `+"`"+`json:"method"`+"`"+`
-		Events        []string `+"`"+`json:"events"`+"`"+`
-		DataTypes     []string `+"`"+`json:"dataTypes"`+"`"+`
-		Topics        []string `+"`"+`json:"topics"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"-"`+"`"+`
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ContentType   string   ` + "`" + `json:"contentType"` + "`" + `
+		URL           string   ` + "`" + `json:"url"` + "`" + `
+		Method        string   ` + "`" + `json:"method"` + "`" + `
+		Events        []string ` + "`" + `json:"events"` + "`" + `
+		DataTypes     []string ` + "`" + `json:"dataTypes"` + "`" + `
+		Topics        []string ` + "`" + `json:"topics"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// WebhookList represents a list of webhooks.
 	WebhookList struct {
 		Pagination
-		Webhooks []Webhook `+"`"+`json:"webhooks"`+"`"+`
+		Webhooks []Webhook ` + "`" + `json:"webhooks"` + "`" + `
 	}
 
 	// WebhookDataManager describes a structure capable of storing webhooks.

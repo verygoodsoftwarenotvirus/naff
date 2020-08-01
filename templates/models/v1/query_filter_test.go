@@ -51,13 +51,13 @@ const (
 
 // QueryFilter represents all the filters a user could apply to a list query.
 type QueryFilter struct {
-	Page          uint64   `+"`"+`json:"page"`+"`"+`
-	Limit         uint8    `+"`"+`json:"limit"`+"`"+`
-	CreatedAfter  uint64   `+"`"+`json:"createdBefore,omitempty"`+"`"+`
-	CreatedBefore uint64   `+"`"+`json:"createdAfter,omitempty"`+"`"+`
-	UpdatedAfter  uint64   `+"`"+`json:"updatedBefore,omitempty"`+"`"+`
-	UpdatedBefore uint64   `+"`"+`json:"updatedAfter,omitempty"`+"`"+`
-	SortBy        sortType `+"`"+`json:"sortBy"`+"`"+`
+	Page          uint64   ` + "`" + `json:"page"` + "`" + `
+	Limit         uint8    ` + "`" + `json:"limit"` + "`" + `
+	CreatedAfter  uint64   ` + "`" + `json:"createdBefore,omitempty"` + "`" + `
+	CreatedBefore uint64   ` + "`" + `json:"createdAfter,omitempty"` + "`" + `
+	UpdatedAfter  uint64   ` + "`" + `json:"updatedBefore,omitempty"` + "`" + `
+	UpdatedBefore uint64   ` + "`" + `json:"updatedAfter,omitempty"` + "`" + `
+	SortBy        sortType ` + "`" + `json:"sortBy"` + "`" + `
 }
 
 // DefaultQueryFilter builds the default query filter.
@@ -252,13 +252,13 @@ import ()
 
 // QueryFilter represents all the filters a user could apply to a list query.
 type QueryFilter struct {
-	Page          uint64   `+"`"+`json:"page"`+"`"+`
-	Limit         uint8    `+"`"+`json:"limit"`+"`"+`
-	CreatedAfter  uint64   `+"`"+`json:"createdBefore,omitempty"`+"`"+`
-	CreatedBefore uint64   `+"`"+`json:"createdAfter,omitempty"`+"`"+`
-	UpdatedAfter  uint64   `+"`"+`json:"updatedBefore,omitempty"`+"`"+`
-	UpdatedBefore uint64   `+"`"+`json:"updatedAfter,omitempty"`+"`"+`
-	SortBy        sortType `+"`"+`json:"sortBy"`+"`"+`
+	Page          uint64   ` + "`" + `json:"page"` + "`" + `
+	Limit         uint8    ` + "`" + `json:"limit"` + "`" + `
+	CreatedAfter  uint64   ` + "`" + `json:"createdBefore,omitempty"` + "`" + `
+	CreatedBefore uint64   ` + "`" + `json:"createdAfter,omitempty"` + "`" + `
+	UpdatedAfter  uint64   ` + "`" + `json:"updatedBefore,omitempty"` + "`" + `
+	UpdatedBefore uint64   ` + "`" + `json:"updatedAfter,omitempty"` + "`" + `
+	SortBy        sortType ` + "`" + `json:"sortBy"` + "`" + `
 }
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

@@ -36,40 +36,40 @@ const (
 type (
 	// OAuth2Client represents a user-authorized API client
 	OAuth2Client struct {
-		ID              uint64   `+"`"+`json:"id"`+"`"+`
-		Name            string   `+"`"+`json:"name"`+"`"+`
-		ClientID        string   `+"`"+`json:"clientID"`+"`"+`
-		ClientSecret    string   `+"`"+`json:"clientSecret"`+"`"+`
-		RedirectURI     string   `+"`"+`json:"redirectURI"`+"`"+`
-		Scopes          []string `+"`"+`json:"scopes"`+"`"+`
-		ImplicitAllowed bool     `+"`"+`json:"implicitAllowed"`+"`"+`
-		CreatedOn       uint64   `+"`"+`json:"createdOn"`+"`"+`
-		LastUpdatedOn   *uint64  `+"`"+`json:"lastUpdatedOn"`+"`"+`
-		ArchivedOn      *uint64  `+"`"+`json:"archivedOn"`+"`"+`
-		BelongsToUser   uint64   `+"`"+`json:"belongsToUser"`+"`"+`
+		ID              uint64   ` + "`" + `json:"id"` + "`" + `
+		Name            string   ` + "`" + `json:"name"` + "`" + `
+		ClientID        string   ` + "`" + `json:"clientID"` + "`" + `
+		ClientSecret    string   ` + "`" + `json:"clientSecret"` + "`" + `
+		RedirectURI     string   ` + "`" + `json:"redirectURI"` + "`" + `
+		Scopes          []string ` + "`" + `json:"scopes"` + "`" + `
+		ImplicitAllowed bool     ` + "`" + `json:"implicitAllowed"` + "`" + `
+		CreatedOn       uint64   ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn   *uint64  ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn      *uint64  ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToUser   uint64   ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	// OAuth2ClientList is a response struct containing a list of OAuth2Clients.
 	OAuth2ClientList struct {
 		Pagination
-		Clients []OAuth2Client `+"`"+`json:"clients"`+"`"+`
+		Clients []OAuth2Client ` + "`" + `json:"clients"` + "`" + `
 	}
 
 	// OAuth2ClientCreationInput is a struct for use when creating OAuth2 clients.
 	OAuth2ClientCreationInput struct {
 		UserLoginInput
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ClientID      string   `+"`"+`json:"-"`+"`"+`
-		ClientSecret  string   `+"`"+`json:"-"`+"`"+`
-		RedirectURI   string   `+"`"+`json:"redirectURI"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"-"`+"`"+`
-		Scopes        []string `+"`"+`json:"scopes"`+"`"+`
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ClientID      string   ` + "`" + `json:"-"` + "`" + `
+		ClientSecret  string   ` + "`" + `json:"-"` + "`" + `
+		RedirectURI   string   ` + "`" + `json:"redirectURI"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"-"` + "`" + `
+		Scopes        []string ` + "`" + `json:"scopes"` + "`" + `
 	}
 
 	// OAuth2ClientUpdateInput is a struct for use when updating OAuth2 clients.
 	OAuth2ClientUpdateInput struct {
-		RedirectURI string   `+"`"+`json:"redirectURI"`+"`"+`
-		Scopes      []string `+"`"+`json:"scopes"`+"`"+`
+		RedirectURI string   ` + "`" + `json:"redirectURI"` + "`" + `
+		Scopes      []string ` + "`" + `json:"scopes"` + "`" + `
 	}
 
 	// OAuth2ClientDataManager handles OAuth2 clients.
@@ -188,40 +188,40 @@ import (
 type (
 	// OAuth2Client represents a user-authorized API client
 	OAuth2Client struct {
-		ID              uint64   `+"`"+`json:"id"`+"`"+`
-		Name            string   `+"`"+`json:"name"`+"`"+`
-		ClientID        string   `+"`"+`json:"clientID"`+"`"+`
-		ClientSecret    string   `+"`"+`json:"clientSecret"`+"`"+`
-		RedirectURI     string   `+"`"+`json:"redirectURI"`+"`"+`
-		Scopes          []string `+"`"+`json:"scopes"`+"`"+`
-		ImplicitAllowed bool     `+"`"+`json:"implicitAllowed"`+"`"+`
-		CreatedOn       uint64   `+"`"+`json:"createdOn"`+"`"+`
-		LastUpdatedOn   *uint64  `+"`"+`json:"lastUpdatedOn"`+"`"+`
-		ArchivedOn      *uint64  `+"`"+`json:"archivedOn"`+"`"+`
-		BelongsToUser   uint64   `+"`"+`json:"belongsToUser"`+"`"+`
+		ID              uint64   ` + "`" + `json:"id"` + "`" + `
+		Name            string   ` + "`" + `json:"name"` + "`" + `
+		ClientID        string   ` + "`" + `json:"clientID"` + "`" + `
+		ClientSecret    string   ` + "`" + `json:"clientSecret"` + "`" + `
+		RedirectURI     string   ` + "`" + `json:"redirectURI"` + "`" + `
+		Scopes          []string ` + "`" + `json:"scopes"` + "`" + `
+		ImplicitAllowed bool     ` + "`" + `json:"implicitAllowed"` + "`" + `
+		CreatedOn       uint64   ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn   *uint64  ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn      *uint64  ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToUser   uint64   ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	// OAuth2ClientList is a response struct containing a list of OAuth2Clients.
 	OAuth2ClientList struct {
 		Pagination
-		Clients []OAuth2Client `+"`"+`json:"clients"`+"`"+`
+		Clients []OAuth2Client ` + "`" + `json:"clients"` + "`" + `
 	}
 
 	// OAuth2ClientCreationInput is a struct for use when creating OAuth2 clients.
 	OAuth2ClientCreationInput struct {
 		UserLoginInput
-		Name          string   `+"`"+`json:"name"`+"`"+`
-		ClientID      string   `+"`"+`json:"-"`+"`"+`
-		ClientSecret  string   `+"`"+`json:"-"`+"`"+`
-		RedirectURI   string   `+"`"+`json:"redirectURI"`+"`"+`
-		BelongsToUser uint64   `+"`"+`json:"-"`+"`"+`
-		Scopes        []string `+"`"+`json:"scopes"`+"`"+`
+		Name          string   ` + "`" + `json:"name"` + "`" + `
+		ClientID      string   ` + "`" + `json:"-"` + "`" + `
+		ClientSecret  string   ` + "`" + `json:"-"` + "`" + `
+		RedirectURI   string   ` + "`" + `json:"redirectURI"` + "`" + `
+		BelongsToUser uint64   ` + "`" + `json:"-"` + "`" + `
+		Scopes        []string ` + "`" + `json:"scopes"` + "`" + `
 	}
 
 	// OAuth2ClientUpdateInput is a struct for use when updating OAuth2 clients.
 	OAuth2ClientUpdateInput struct {
-		RedirectURI string   `+"`"+`json:"redirectURI"`+"`"+`
-		Scopes      []string `+"`"+`json:"scopes"`+"`"+`
+		RedirectURI string   ` + "`" + `json:"redirectURI"` + "`" + `
+		Scopes      []string ` + "`" + `json:"scopes"` + "`" + `
 	}
 
 	// OAuth2ClientDataManager handles OAuth2 clients.

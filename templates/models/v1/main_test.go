@@ -40,19 +40,19 @@ type (
 
 	// Pagination represents a pagination request.
 	Pagination struct {
-		Page  uint64 `+"`"+`json:"page"`+"`"+`
-		Limit uint8  `+"`"+`json:"limit"`+"`"+`
+		Page  uint64 ` + "`" + `json:"page"` + "`" + `
+		Limit uint8  ` + "`" + `json:"limit"` + "`" + `
 	}
 
 	// CountResponse is what we respond with when a user requests a count of data types.
 	CountResponse struct {
-		Count uint64 `+"`"+`json:"count"`+"`"+`
+		Count uint64 ` + "`" + `json:"count"` + "`" + `
 	}
 	// ErrorResponse represents a response we might send to the user in the event of an error.
 
 	ErrorResponse struct {
-		Message string `+"`"+`json:"message"`+"`"+`
-		Code    uint   `+"`"+`json:"code"`+"`"+`
+		Message string ` + "`" + `json:"message"` + "`" + `
+		Code    uint   ` + "`" + `json:"code"` + "`" + `
 	}
 )
 
@@ -116,19 +116,19 @@ type (
 
 	// Pagination represents a pagination request.
 	Pagination struct {
-		Page  uint64 `+"`"+`json:"page"`+"`"+`
-		Limit uint8  `+"`"+`json:"limit"`+"`"+`
+		Page  uint64 ` + "`" + `json:"page"` + "`" + `
+		Limit uint8  ` + "`" + `json:"limit"` + "`" + `
 	}
 
 	// CountResponse is what we respond with when a user requests a count of data types.
 	CountResponse struct {
-		Count uint64 `+"`"+`json:"count"`+"`"+`
+		Count uint64 ` + "`" + `json:"count"` + "`" + `
 	}
 	// ErrorResponse represents a response we might send to the user in the event of an error.
 
 	ErrorResponse struct {
-		Message string `+"`"+`json:"message"`+"`"+`
-		Code    uint   `+"`"+`json:"code"`+"`"+`
+		Message string ` + "`" + `json:"message"` + "`" + `
+		Code    uint   ` + "`" + `json:"code"` + "`" + `
 	}
 )
 `

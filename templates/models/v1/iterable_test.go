@@ -308,13 +308,13 @@ package example
 import ()
 
 type Example struct {
-	ID            uint64  `+"`"+`json:"id"`+"`"+`
-	Name          string  `+"`"+`json:"name"`+"`"+`
-	Details       string  `+"`"+`json:"details"`+"`"+`
-	CreatedOn     uint64  `+"`"+`json:"createdOn"`+"`"+`
-	LastUpdatedOn *uint64 `+"`"+`json:"lastUpdatedOn"`+"`"+`
-	ArchivedOn    *uint64 `+"`"+`json:"archivedOn"`+"`"+`
-	BelongsToUser uint64  `+"`"+`json:"belongsToUser"`+"`"+`
+	ID            uint64  ` + "`" + `json:"id"` + "`" + `
+	Name          string  ` + "`" + `json:"name"` + "`" + `
+	Details       string  ` + "`" + `json:"details"` + "`" + `
+	CreatedOn     uint64  ` + "`" + `json:"createdOn"` + "`" + `
+	LastUpdatedOn *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+	ArchivedOn    *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
+	BelongsToUser uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
 }
 `
 		actual := testutils.RenderStructFieldsToString(t, x...)
@@ -339,9 +339,9 @@ package example
 import ()
 
 type Example struct {
-	Name          string `+"`"+`json:"name"`+"`"+`
-	Details       string `+"`"+`json:"details"`+"`"+`
-	BelongsToUser uint64 `+"`"+`json:"-"`+"`"+`
+	Name          string ` + "`" + `json:"name"` + "`" + `
+	Details       string ` + "`" + `json:"details"` + "`" + `
+	BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
 }
 `
 		actual := testutils.RenderStructFieldsToString(t, x...)
@@ -366,9 +366,9 @@ package example
 import ()
 
 type Example struct {
-	Name          string `+"`"+`json:"name"`+"`"+`
-	Details       string `+"`"+`json:"details"`+"`"+`
-	BelongsToUser uint64 `+"`"+`json:"-"`+"`"+`
+	Name          string ` + "`" + `json:"name"` + "`" + `
+	Details       string ` + "`" + `json:"details"` + "`" + `
+	BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
 }
 `
 		actual := testutils.RenderStructFieldsToString(t, x...)

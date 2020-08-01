@@ -38,15 +38,15 @@ type (
 	// SessionInfo represents what we encode in our authentication cookies.
 
 	SessionInfo struct {
-		UserID      uint64 `+"`"+`json:"-"`+"`"+`
-		UserIsAdmin bool   `+"`"+`json:"-"`+"`"+`
+		UserID      uint64 ` + "`" + `json:"-"` + "`" + `
+		UserIsAdmin bool   ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// StatusResponse is what we encode when the frontend wants to check auth status
 
 	StatusResponse struct {
-		Authenticated bool `+"`"+`json:"isAuthenticated"`+"`"+`
-		IsAdmin       bool `+"`"+`json:"isAdmin"`+"`"+`
+		Authenticated bool ` + "`" + `json:"isAuthenticated"` + "`" + `
+		IsAdmin       bool ` + "`" + `json:"isAdmin"` + "`" + `
 	}
 )
 
@@ -133,15 +133,15 @@ type (
 	// SessionInfo represents what we encode in our authentication cookies.
 
 	SessionInfo struct {
-		UserID      uint64 `+"`"+`json:"-"`+"`"+`
-		UserIsAdmin bool   `+"`"+`json:"-"`+"`"+`
+		UserID      uint64 ` + "`" + `json:"-"` + "`" + `
+		UserIsAdmin bool   ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// StatusResponse is what we encode when the frontend wants to check auth status
 
 	StatusResponse struct {
-		Authenticated bool `+"`"+`json:"isAuthenticated"`+"`"+`
-		IsAdmin       bool `+"`"+`json:"isAdmin"`+"`"+`
+		Authenticated bool ` + "`" + `json:"isAuthenticated"` + "`" + `
+		IsAdmin       bool ` + "`" + `json:"isAdmin"` + "`" + `
 	}
 )
 `

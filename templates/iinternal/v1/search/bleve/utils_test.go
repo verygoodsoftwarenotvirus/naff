@@ -26,8 +26,8 @@ import (
 )
 
 var (
-	belongsToUserWithMandatedRestrictionRegexp    = regexp.MustCompile(`+"`"+`\+belongsToUser:\d+`+"`"+`)
-	belongsToUserWithoutMandatedRestrictionRegexp = regexp.MustCompile(`+"`"+`belongsToUser:\d+`+"`"+`)
+	belongsToUserWithMandatedRestrictionRegexp    = regexp.MustCompile(` + "`" + `\+belongsToUser:\d+` + "`" + `)
+	belongsToUserWithoutMandatedRestrictionRegexp = regexp.MustCompile(` + "`" + `belongsToUser:\d+` + "`" + `)
 )
 
 // ensureQueryIsRestrictedToUser takes a query and userID and ensures that query
@@ -68,8 +68,8 @@ import (
 )
 
 var (
-	belongsToUserWithMandatedRestrictionRegexp    = regexp.MustCompile(`+"`"+`\+belongsToUser:\d+`+"`"+`)
-	belongsToUserWithoutMandatedRestrictionRegexp = regexp.MustCompile(`+"`"+`belongsToUser:\d+`+"`"+`)
+	belongsToUserWithMandatedRestrictionRegexp    = regexp.MustCompile(` + "`" + `\+belongsToUser:\d+` + "`" + `)
+	belongsToUserWithoutMandatedRestrictionRegexp = regexp.MustCompile(` + "`" + `belongsToUser:\d+` + "`" + `)
 )
 
 // ensureQueryIsRestrictedToUser takes a query and userID and ensures that query

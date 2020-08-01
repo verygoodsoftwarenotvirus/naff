@@ -59,7 +59,7 @@ scrape_configs:
     # params:
     #   key: 'value'
 
-    # Sets the `+"`"+`Authorization`+"`"+` header on every scrape request with the
+    # Sets the ` + "`" + `Authorization` + "`" + ` header on every scrape request with the
     # configured username and password.
     # password and password_file are mutually exclusive.
     #  basic_auth:
@@ -67,12 +67,12 @@ scrape_configs:
     #    password: <secret>
     #    password_file: <string>
 
-    # Sets the `+"`"+`Authorization`+"`"+` header on every scrape request with
-    # the configured bearer token. It is mutually exclusive with `+"`"+`bearer_token_file`+"`"+`.
+    # Sets the ` + "`" + `Authorization` + "`" + ` header on every scrape request with
+    # the configured bearer token. It is mutually exclusive with ` + "`" + `bearer_token_file` + "`" + `.
     # bearer_token: <secret>
 
-    # Sets the `+"`"+`Authorization`+"`"+` header on every scrape request with the bearer token
-    # read from the configured file. It is mutually exclusive with `+"`"+`bearer_token`+"`"+`.
+    # Sets the ` + "`" + `Authorization` + "`" + ` header on every scrape request with the bearer token
+    # read from the configured file. It is mutually exclusive with ` + "`" + `bearer_token` + "`" + `.
     #  bearer_token_file: /path/to/bearer/token/file
 
     # Configures the scrape request's TLS settings.
@@ -198,7 +198,7 @@ func Test_grafanaDotIni(T *testing.T) {
 # Path to where grafana can store temp files, sessions, and the sqlite3 db (if that is used)
 ;data = /var/lib/grafana
 
-# Temporary files in `+"`"+`data`+"`"+` directory older than given duration will be removed
+# Temporary files in ` + "`" + `data` + "`" + ` directory older than given duration will be removed
 ;temp_data_lifetime = 24h
 
 # Directory where grafana can store logs
@@ -232,7 +232,7 @@ func Test_grafanaDotIni(T *testing.T) {
 # If you use reverse proxy and sub path specify full url (with sub path)
 ;root_url = %(protocol)s://%(domain)s:%(http_port)s/
 
-# Serve Grafana from subpath specified in `+"`"+`root_url`+"`"+` setting. By default it is set to `+"`"+`false`+"`"+` for compatibility reasons.
+# Serve Grafana from subpath specified in ` + "`" + `root_url` + "`" + ` setting. By default it is set to ` + "`" + `false` + "`" + ` for compatibility reasons.
 ;serve_from_sub_path = false
 
 # Log web requests
@@ -301,7 +301,7 @@ func Test_grafanaDotIni(T *testing.T) {
 
 # cache connectionstring options
 # database: will use Grafana primary database.
-# redis: config like redis server e.g. `+"`"+`addr=127.0.0.1:6379,pool_size=100,db=0,ssl=false`+"`"+`. Only addr is required. ssl may be 'true', 'false', or 'insecure'.
+# redis: config like redis server e.g. ` + "`" + `addr=127.0.0.1:6379,pool_size=100,db=0,ssl=false` + "`" + `. Only addr is required. ssl may be 'true', 'false', or 'insecure'.
 # memcache: 127.0.0.1:11211
 ;connstr =
 
@@ -365,7 +365,7 @@ func Test_grafanaDotIni(T *testing.T) {
 # set to true if you host Grafana behind HTTPS. default is false.
 ;cookie_secure = false
 
-# set cookie SameSite attribute. defaults to `+"`"+`lax`+"`"+`. can be set to "lax", "strict", "none" and "disabled"
+# set cookie SameSite attribute. defaults to ` + "`" + `lax` + "`" + `. can be set to "lax", "strict", "none" and "disabled"
 ;cookie_samesite = lax
 
 # set to true if you want to allow browsers to render Grafana in a <frame>, <iframe>, <embed> or <object>. default is false.

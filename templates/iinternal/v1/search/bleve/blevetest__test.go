@@ -33,15 +33,15 @@ import (
 
 type (
 	exampleType struct {
-		ID            uint64 `+"`"+`json:"id"`+"`"+`
-		Name          string `+"`"+`json:"name"`+"`"+`
-		BelongsToUser uint64 `+"`"+`json:"belongsToUser"`+"`"+`
+		ID            uint64 ` + "`" + `json:"id"` + "`" + `
+		Name          string ` + "`" + `json:"name"` + "`" + `
+		BelongsToUser uint64 ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	exampleTypeWithStringID struct {
-		ID            string `+"`"+`json:"id"`+"`"+`
-		Name          string `+"`"+`json:"name"`+"`"+`
-		BelongsToUser uint64 `+"`"+`json:"belongsToUser"`+"`"+`
+		ID            string ` + "`" + `json:"id"` + "`" + `
+		Name          string ` + "`" + `json:"name"` + "`" + `
+		BelongsToUser uint64 ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 )
 
@@ -240,15 +240,15 @@ import ()
 
 type (
 	exampleType struct {
-		ID            uint64 `+"`"+`json:"id"`+"`"+`
-		Name          string `+"`"+`json:"name"`+"`"+`
-		BelongsToUser uint64 `+"`"+`json:"belongsToUser"`+"`"+`
+		ID            uint64 ` + "`" + `json:"id"` + "`" + `
+		Name          string ` + "`" + `json:"name"` + "`" + `
+		BelongsToUser uint64 ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	exampleTypeWithStringID struct {
-		ID            string `+"`"+`json:"id"`+"`"+`
-		Name          string `+"`"+`json:"name"`+"`"+`
-		BelongsToUser uint64 `+"`"+`json:"belongsToUser"`+"`"+`
+		ID            string ` + "`" + `json:"id"` + "`" + `
+		Name          string ` + "`" + `json:"name"` + "`" + `
+		BelongsToUser uint64 ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 )
 `

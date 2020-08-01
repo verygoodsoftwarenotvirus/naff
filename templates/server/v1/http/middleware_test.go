@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	idReplacementRegex = regexp.MustCompile(`+"`"+`[^(v|oauth)]\\d+`+"`"+`)
+	idReplacementRegex = regexp.MustCompile(` + "`" + `[^(v|oauth)]\\d+` + "`" + `)
 )
 
 func formatSpanNameForRequest(req *http.Request) string {
@@ -77,7 +77,7 @@ import (
 )
 
 var (
-	idReplacementRegex = regexp.MustCompile(`+"`"+`[^(v|oauth)]\\d+`+"`"+`)
+	idReplacementRegex = regexp.MustCompile(` + "`" + `[^(v|oauth)]\\d+` + "`" + `)
 )
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

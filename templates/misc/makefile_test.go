@@ -22,7 +22,7 @@ ARTIFACTS_DIR            := artifacts
 COVERAGE_OUT             := $(ARTIFACTS_DIR)/coverage.out
 CONFIG_DIR               := config_files
 GO_FORMAT                := gofmt -s -w
-PACKAGE_LIST             := `+"`"+`go list gitlab.com/verygoodsoftwarenotvirus/naff/example_output/... | grep -Ev '(cmd|tests|mock|fake)'`+"`"+`
+PACKAGE_LIST             := ` + "`" + `go list gitlab.com/verygoodsoftwarenotvirus/naff/example_output/... | grep -Ev '(cmd|tests|mock|fake)'` + "`" + `
 DOCKER_FILES_DIR         := dockerfiles
 DOCKER_COMPOSE_FILES_DIR := compose_files
 SERVER_DOCKER_IMAGE_NAME := todo-server
@@ -87,8 +87,8 @@ lint:
 	@docker pull golangci/golangci-lint:latest
 	docker run \
 		--rm \
-		--volume `+"`"+`pwd`+"`"+`:`+"`"+`pwd`+"`"+` \
-		--workdir=`+"`"+`pwd`+"`"+` \
+		--volume ` + "`" + `pwd` + "`" + `:` + "`" + `pwd` + "`" + ` \
+		--workdir=` + "`" + `pwd` + "`" + ` \
 		--env=GO111MODULE=on \
 		golangci/golangci-lint:latest golangci-lint run --config=.golangci.yml ./...
 
@@ -105,13 +105,13 @@ gitlab-ci-junit-report: $(ARTIFACTS_DIR) ensure-go-junit-report
 	@mkdir $(CI_PROJECT_DIR)/test_artifacts
 	go test -v -race -count 5 $(PACKAGE_LIST) | go-junit-report > $(CI_PROJECT_DIR)/test_artifacts/unit_test_report.xml
 
-.PHONY: quicktest # basically the same as coverage.out, only running once instead of with `+"`"+`-count`+"`"+` set
+.PHONY: quicktest # basically the same as coverage.out, only running once instead of with ` + "`" + `-count` + "`" + ` set
 quicktest: $(ARTIFACTS_DIR)
 	go test -cover -race -failfast $(PACKAGE_LIST)
 
 .PHONY: format
 format:
-	for file in `+"`"+`find $(PWD) -name '*.go'`+"`"+`; do $(GO_FORMAT) $$file; done
+	for file in ` + "`" + `find $(PWD) -name '*.go'` + "`" + `; do $(GO_FORMAT) $$file; done
 
 .PHONY: check_formatting
 check_formatting:

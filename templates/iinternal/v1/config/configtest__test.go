@@ -53,7 +53,7 @@ func TestParseConfigFile(T *testing.T) {
 		require.NoError(t, err)
 		expected := "thisisatest"
 
-		_, err = tf.Write([]byte(fmt.Sprintf(`+"`"+`
+		_, err = tf.Write([]byte(fmt.Sprintf(` + "`" + `
 [server]
 http_port = 1234
 debug = false
@@ -62,7 +62,7 @@ debug = false
 provider = "postgres"
 debug = true
 connection_details = "%s"
-`+"`"+`, expected)))
+` + "`" + `, expected)))
 		require.NoError(t, err)
 
 		expectedConfig := &ServerConfig{
@@ -191,7 +191,7 @@ func TestParseConfigFile(T *testing.T) {
 		require.NoError(t, err)
 		expected := "thisisatest"
 
-		_, err = tf.Write([]byte(fmt.Sprintf(`+"`"+`
+		_, err = tf.Write([]byte(fmt.Sprintf(` + "`" + `
 [server]
 http_port = 1234
 debug = false
@@ -200,7 +200,7 @@ debug = false
 provider = "postgres"
 debug = true
 connection_details = "%s"
-`+"`"+`, expected)))
+` + "`" + `, expected)))
 		require.NoError(t, err)
 
 		expectedConfig := &ServerConfig{
