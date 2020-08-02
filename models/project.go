@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
@@ -75,7 +76,8 @@ type Project struct {
 	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
 
-	enabledDatabases map[validDatabase]struct{}
+	enabledDatabasesLock sync.RWMutex
+	enabledDatabases     map[validDatabase]struct{}
 }
 
 // lastDataType is a helper method for tests
@@ -198,6 +200,9 @@ func (p *Project) FindDependentsOfType(parentType DataType) []DataType {
 }
 
 func (p *Project) ensureNoNilFields() {
+	p.enabledDatabasesLock.Lock()
+	defer p.enabledDatabasesLock.Unlock()
+
 	if p.enabledDatabases == nil {
 		p.enabledDatabases = map[validDatabase]struct{}{}
 	}
