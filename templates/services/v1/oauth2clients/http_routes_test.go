@@ -46,7 +46,7 @@ func randString() string {
 		panic(err)
 	}
 
-	// this is so that we don't end up with `+"`"+`=`+"`"+` in IDs
+	// this is so that we don't end up with ` + "`" + `=` + "`" + ` in IDs
 	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
 }
 
@@ -295,7 +295,7 @@ func randString() string {
 		panic(err)
 	}
 
-	// this is so that we don't end up with `+"`"+`=`+"`"+` in IDs
+	// this is so that we don't end up with ` + "`" + `=` + "`" + ` in IDs
 	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
 }
 `

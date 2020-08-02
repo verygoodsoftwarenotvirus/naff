@@ -73,11 +73,11 @@ func (s *Service) buildStaticFileServer(fileDir string) (*afero.HttpFs, error) {
 var (
 	// Here is where you should put route regexes that need to be ignored by the static file server.
 	// For instance, if you allow someone to see an event in the frontend via a URL that contains dynamic.
-	// information, such as `+"`"+`/event/123`+"`"+`, you would want to put something like this below:
-	// 		eventsFrontendPathRegex = regexp.MustCompile(`+"`"+`/event/\d+`+"`"+`)
+	// information, such as ` + "`" + `/event/123` + "`" + `, you would want to put something like this below:
+	// 		eventsFrontendPathRegex = regexp.MustCompile(` + "`" + `/event/\d+` + "`" + `)
 
 	// itemsFrontendPathRegex matches URLs against our frontend router's specification for specific item routes.
-	itemsFrontendPathRegex = regexp.MustCompile(`+"`"+`/items/\d+`+"`"+`)
+	itemsFrontendPathRegex = regexp.MustCompile(` + "`" + `/items/\d+` + "`" + `)
 )
 
 // StaticDir builds a static directory handler.
@@ -207,11 +207,11 @@ import (
 var (
 	// Here is where you should put route regexes that need to be ignored by the static file server.
 	// For instance, if you allow someone to see an event in the frontend via a URL that contains dynamic.
-	// information, such as `+"`"+`/event/123`+"`"+`, you would want to put something like this below:
-	// 		eventsFrontendPathRegex = regexp.MustCompile(`+"`"+`/event/\d+`+"`"+`)
+	// information, such as ` + "`" + `/event/123` + "`" + `, you would want to put something like this below:
+	// 		eventsFrontendPathRegex = regexp.MustCompile(` + "`" + `/event/\d+` + "`" + `)
 
 	// itemsFrontendPathRegex matches URLs against our frontend router's specification for specific item routes.
-	itemsFrontendPathRegex = regexp.MustCompile(`+"`"+`/items/\d+`+"`"+`)
+	itemsFrontendPathRegex = regexp.MustCompile(` + "`" + `/items/\d+` + "`" + `)
 )
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

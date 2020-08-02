@@ -48,13 +48,13 @@ func loginUser(ctx context.Context, t *testing.T, username, password, totpSecret
 	code, err := totp.GenerateCode(strings.ToUpper(totpSecret), time.Now().UTC())
 	assert.NoError(t, err)
 
-	bodyStr := fmt.Sprintf(`+"`"+`
+	bodyStr := fmt.Sprintf(` + "`" + `
 	{
 		"username": %q,
 		"password": %q,
 		"totpToken": %q
 	}
-`+"`"+`, username, password, code)
+` + "`" + `, username, password, code)
 
 	body := strings.NewReader(bodyStr)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, loginURL, body)
@@ -686,13 +686,13 @@ func loginUser(ctx context.Context, t *testing.T, username, password, totpSecret
 	code, err := totp.GenerateCode(strings.ToUpper(totpSecret), time.Now().UTC())
 	assert.NoError(t, err)
 
-	bodyStr := fmt.Sprintf(`+"`"+`
+	bodyStr := fmt.Sprintf(` + "`" + `
 	{
 		"username": %q,
 		"password": %q,
 		"totpToken": %q
 	}
-`+"`"+`, username, password, code)
+` + "`" + `, username, password, code)
 
 	body := strings.NewReader(bodyStr)
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, loginURL, body)
