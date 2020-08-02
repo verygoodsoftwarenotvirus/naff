@@ -31,7 +31,21 @@ and draws the TOTP code for that secret in big ASCII numbers. This command is
 helpful when you need to repeatedly test the logic of registering an account
 and logging in.`)
 
-	code.Add(
+	code.Add(buildConstDeclarations()...)
+	code.Add(buildVarDeclarations()...)
+	code.Add(buildLimitSlice()...)
+	code.Add(buildMustnt()...)
+	code.Add(buildClearTheScreen()...)
+	code.Add(buildBuildTheThing()...)
+	code.Add(buildDoTheThing()...)
+	code.Add(buildRequestTOTPSecret()...)
+	code.Add(buildMain()...)
+
+	return code
+}
+
+func buildConstDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("zero").Equals().Lit("  ___   & / _ \\  &| | | | &| |_| | & \\___/  "),
 			jen.ID("one").Equals().Lit("    _    &  /_ |   &   | |   &  _| |_  & |_____| "),
@@ -45,9 +59,13 @@ and logging in.`)
 			jen.ID("nine").Equals().Lit("  ___   & /   \\  &| (_) | & \\__, | &   /_/  "),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("lastChange").Qual("time", "Time"),
 			jen.ID("currentCode").String(),
@@ -66,9 +84,13 @@ and logging in.`)
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildLimitSlice() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().String()).Params(jen.ID("out").Index(jen.Lit(5)).String()).Block(
 			jen.If(jen.Len(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
 				jen.ID("panic").Call(jen.Lit("wut")),
@@ -79,24 +101,38 @@ and logging in.`)
 			jen.Return(),
 		),
 		jen.Line(),
-	)
-	code.Add(
+	}
+
+	return lines
+}
+
+func buildMustnt() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("mustnt").Params(jen.Err().Error()).Block(
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
 		jen.Line(),
-	)
-	code.Add(
+	}
+
+	return lines
+}
+
+func buildClearTheScreen() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("clearTheScreen").Params().Block(
 			jen.Qual("fmt", "Println").Call(jen.Lit("\033[2J")),
 			jen.Qual("fmt", "Printf").Call(jen.Lit("\033[0;0H")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBuildTheThing() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildTheThing").Params(jen.ID("token").String()).Params(jen.String()).Block(
 			jen.Var().ID("out").String(),
 			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
@@ -119,9 +155,13 @@ and logging in.`)
 			jen.Return().ID("out"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDoTheThing() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("doTheThing").Params(jen.ID("secret").String()).Block(
 			jen.ID("t").Assign().Qual("strings", "ToUpper").Call(jen.ID("secret")),
 			jen.ID("n").Assign().Qual("time", "Now").Call().Dot("UTC").Call(),
@@ -141,9 +181,13 @@ and logging in.`)
 			jen.Qual("fmt", "Println").Call(jen.ID("buildTheThing").Call(jen.ID("code"))),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildRequestTOTPSecret() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("requestTOTPSecret").Params().Params(jen.String()).Block(
 			jen.Var().Defs(
 				jen.ID("token").String(),
@@ -162,9 +206,13 @@ and logging in.`)
 			jen.Return().ID("token"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMain() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("main").Params().Block(
 			jen.ID("secret").Assign().ID("requestTOTPSecret").Call(),
 			jen.ID("clearTheScreen").Call(),
@@ -176,7 +224,7 @@ and logging in.`)
 				jen.ID("doTheThing").Call(jen.ID("secret")),
 			),
 		),
-	)
+	}
 
-	return code
+	return lines
 }

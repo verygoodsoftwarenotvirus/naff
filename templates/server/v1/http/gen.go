@@ -8,9 +8,12 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const (
+	packageName = "httpserver"
+)
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-
 	files := map[string]*jen.File{
 		"server/v1/http/doc.go":                      docDotGo(),
 		"server/v1/http/middleware_test.go":          middlewareTestDotGo(proj),

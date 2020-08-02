@@ -11,8 +11,16 @@ func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code)
 
+	code.Add(buildTestProvideSomethingDataManager(proj, typ)...)
+	code.Add(buildTestProvideSomethingDataServer(typ)...)
+
+	return code
+}
+
+func buildTestProvideSomethingDataManager(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	code.Add(
+
+	lines := []jen.Code{
 		jen.Func().IDf("TestProvide%sDataManager", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -20,9 +28,15 @@ func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.IDf("Provide%sDataManager", sn).Call(jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call()),
 			)),
 		),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideSomethingDataServer(typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	lines := []jen.Code{
 		jen.Func().IDf("TestProvide%sDataServer", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -30,7 +44,7 @@ func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.IDf("Provide%sDataServer", sn).Call(jen.ID("buildTestService").Call()),
 			)),
 		),
-	)
+	}
 
-	return code
+	return lines
 }

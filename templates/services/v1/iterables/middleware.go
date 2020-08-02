@@ -13,9 +13,17 @@ func middlewareDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
 	utils.AddImports(proj, code)
+
+	code.Add(buildCreationInputMiddleware(proj, typ)...)
+	code.Add(buildUpdateInputMiddleware(proj, typ)...)
+
+	return code
+}
+
+func buildCreationInputMiddleware(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular() // singular name, PascalCased by default
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Commentf("CreationInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -40,9 +48,15 @@ func middlewareDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUpdateInputMiddleware(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular() // singular name, PascalCased by default
+
+	lines := []jen.Code{
 		jen.Commentf("UpdateInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request.", sn),
 		jen.Line(),
 		jen.Comment("This is the same as the creation one, but that won't always be the case."),
@@ -70,7 +84,7 @@ func middlewareDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

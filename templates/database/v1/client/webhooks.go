@@ -17,7 +17,19 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	code.Add(
+	code.Add(buildGetWebhook(proj)...)
+	code.Add(buildGetWebhooks(proj)...)
+	code.Add(buildGetAllWebhooks(proj)...)
+	code.Add(buildGetAllWebhooksCount(proj)...)
+	code.Add(buildCreateWebhook(proj)...)
+	code.Add(buildUpdateWebhook(proj)...)
+	code.Add(buildArchiveWebhook(proj)...)
+
+	return code
+}
+
+func buildGetWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetWebhook fetches a webhook from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
@@ -36,9 +48,13 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildGetWebhooks(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetWebhooks fetches a list of webhooks from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetWebhooks").Params(
@@ -57,9 +73,13 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("GetWebhooks").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildGetAllWebhooks(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetAllWebhooks fetches a list of webhooks from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
@@ -71,9 +91,13 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooks").Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildGetAllWebhooksCount(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetAllWebhooksCount fetches the count of webhooks from the database that meet a particular filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
@@ -85,9 +109,13 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("GetAllWebhooksCount").Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCreateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateWebhook creates a webhook in a database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
@@ -101,9 +129,13 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("input")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUpdateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UpdateWebhook updates a particular webhook."),
 		jen.Line(),
 		jen.Comment("NOTE: this function expects the provided input to have a non-zero ID."),
@@ -120,9 +152,13 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("input")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildArchiveWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ArchiveWebhook archives a webhook from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.Error()).Block(
@@ -140,7 +176,7 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

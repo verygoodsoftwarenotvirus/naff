@@ -8,7 +8,7 @@ import (
 )
 
 func middlewareTestDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("httpserver")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 
@@ -17,21 +17,39 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	code.Add(
+	code.Add(buildMiddlewareTestTypeDefinitions()...)
+	code.Add(buildMockHTTPHandlerServeHTTP()...)
+	code.Add(buildBuildRequest()...)
+	code.Add(buildTest_formatSpanNameForRequest()...)
+	code.Add(buildTestServer_loggingMiddleware()...)
+
+	return code
+}
+
+func buildMiddlewareTestTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().ID("mockHTTPHandler").Struct(
 			jen.Qual(constants.MockPkg, "Mock"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockHTTPHandlerServeHTTP() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBuildRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -47,9 +65,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID(constants.RequestVarName),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTest_formatSpanNameForRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_formatSpanNameForRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -66,9 +88,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestServer_loggingMiddleware() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestServer_loggingMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -91,7 +117,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

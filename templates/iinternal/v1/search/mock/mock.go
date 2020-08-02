@@ -12,12 +12,23 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildInterfaceImplementationStatement(proj)...)
+	code.Add(buildIndexManager()...)
+
+	return code
+}
+
+func buildInterfaceImplementationStatement(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual(proj.InternalSearchV1Package(), "IndexManager").Equals().Parens(jen.PointerTo().ID("IndexManager")).Parens(jen.Nil()),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIndexManager() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("IndexManager is a mock IndexManager"),
 		jen.Line(),
 		jen.Type().ID("IndexManager").Struct(
@@ -73,7 +84,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 			jen.Return(jen.ID("args").Dot("Error").Call(jen.Zero())),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

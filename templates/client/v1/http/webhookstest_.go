@@ -17,8 +17,22 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
-		jen.Line(),
+	code.Add(buildTestV1ClientBuildGetWebhookRequest(proj)...)
+	code.Add(buildTestV1ClientGetWebhook(proj)...)
+	code.Add(buildTestV1ClientBuildGetWebhooksRequest(proj)...)
+	code.Add(buildTestV1ClientGetWebhooks(proj)...)
+	code.Add(buildTestV1ClientBuildCreateWebhookRequest(proj)...)
+	code.Add(buildTestV1ClientCreateWebhook(proj)...)
+	code.Add(buildTestV1ClientBuildUpdateWebhookRequest(proj)...)
+	code.Add(buildTestV1ClientUpdateWebhook(proj)...)
+	code.Add(buildTestV1ClientBuildArchiveWebhookRequest(proj)...)
+	code.Add(buildTestV1ClientArchiveWebhook(proj)...)
+
+	return code
+}
+
+func buildTestV1ClientBuildGetWebhookRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildGetWebhookRequest").Block(
 			utils.ParallelTest(nil),
 			jen.Line(),
@@ -62,9 +76,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientGetWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_GetWebhook").Block(
 			utils.ParallelTest(nil),
@@ -139,9 +158,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildGetWebhooksRequest").Block(
 			utils.ParallelTest(nil),
@@ -176,9 +200,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientGetWebhooks(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_GetWebhooks").Block(
 			utils.ParallelTest(nil),
@@ -234,9 +263,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildCreateWebhookRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildCreateWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -274,9 +308,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientCreateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_CreateWebhook").Block(
 			utils.ParallelTest(nil),
@@ -329,9 +368,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildUpdateWebhookRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildUpdateWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -358,9 +402,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientUpdateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_UpdateWebhook").Block(
 			utils.ParallelTest(nil),
@@ -403,9 +452,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientBuildArchiveWebhookRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_BuildArchiveWebhookRequest").Block(
 			utils.ParallelTest(nil),
@@ -454,9 +508,14 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestV1ClientArchiveWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Line(),
 		utils.OuterTestFunc("V1Client_ArchiveWebhook").Block(
 			utils.ParallelTest(nil),
@@ -503,7 +562,8 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertError(jen.Err(), jen.Lit("error should be returned")),
 			),
 		),
-	)
+		jen.Line(),
+	}
 
-	return code
+	return lines
 }

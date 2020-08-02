@@ -19,7 +19,19 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
-	code.Add(
+	code.Add(buildGetOAuth2Client(proj)...)
+	code.Add(buildGetOAuth2ClientByClientID(proj)...)
+	code.Add(buildGetAllOAuth2ClientCount(proj)...)
+	code.Add(buildGetOAuth2ClientsForUser(proj)...)
+	code.Add(buildCreateOAuth2Client(proj)...)
+	code.Add(buildUpdateOAuth2Client(proj)...)
+	code.Add(buildArchiveOAuth2Client(proj)...)
+
+	return code
+}
+
+func buildGetOAuth2Client(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetOAuth2Client gets an OAuth2 client from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
@@ -42,9 +54,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildGetOAuth2ClientByClientID(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetOAuth2ClientByClientID fetches any OAuth2 client by client ID, regardless of ownership."),
 		jen.Line(),
 		jen.Comment("This is used by authenticating middleware to fetch client information it needs to validate."),
@@ -66,9 +82,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildGetAllOAuth2ClientCount(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetAllOAuth2ClientCount gets the count of OAuth2 clients that match the current filter."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllOAuth2ClientCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()).Block(
@@ -80,26 +100,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2ClientCount").Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	//code.Add(
-	//	jen.Comment("GetAllOAuth2Clients returns all OAuth2 clients, irrespective of ownership."),
-	//	jen.Line(),
-	//	jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllOAuth2Clients").Params(utils.CtxParam()).Params(
-	//		jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-	//		jen.Error(),
-	//	).Block(
-	//		jen.List(utils.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(utils.CtxVar(), jen.Lit("GetAllOAuth2Clients")),
-	//		jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-	//		jen.Line(),
-	//		jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("GetAllOAuth2Clients called")),
-	//		jen.Line(),
-	//		jen.Return().ID("c").Dot("querier").Dot("GetAllOAuth2Clients").Call(utils.CtxVar()),
-	//	),
-	//	jen.Line(),
-	//)
+	return lines
+}
 
-	code.Add(
+func buildGetOAuth2ClientsForUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetOAuth2ClientsForUser gets a list of OAuth2 clients."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetOAuth2ClientsForUser").Params(
@@ -118,9 +125,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("GetOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateOAuth2Client creates an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
@@ -143,9 +154,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUpdateOAuth2Client(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UpdateOAuth2Client updates a OAuth2 client. Note that this function expects the input's"),
 		jen.Line(),
 		jen.Comment("ID field to be valid."),
@@ -157,9 +172,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c").Dot("querier").Dot("UpdateOAuth2Client").Call(constants.CtxVar(), jen.ID("updated")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildArchiveOAuth2Client(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ArchiveOAuth2Client archives an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.Error()).Block(
@@ -184,7 +203,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

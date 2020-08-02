@@ -12,22 +12,39 @@ func authDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildAuthConstantDefinitions()...)
+	code.Add(buildAuthInit()...)
+	code.Add(buildAuthTypeDefinitions()...)
+	code.Add(buildAuthSessionInfoToBytes()...)
+
+	return code
+}
+
+func buildAuthConstantDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("SessionInfoKey is the non-string type we use for referencing SessionInfo structs"),
 			jen.ID("SessionInfoKey").ID("ContextKey").Equals().Lit("session_info"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAuthInit() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.Qual("encoding/gob", "Register").Call(jen.AddressOf().ID("SessionInfo").Values()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAuthTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("SessionInfo represents what we encode in our authentication cookies."),
 			jen.Line(),
@@ -44,9 +61,13 @@ func authDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAuthSessionInfoToBytes() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ToBytes returns the gob encoded session info"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("i").PointerTo().ID("SessionInfo")).ID("ToBytes").Params().Params(jen.Index().Byte()).Block(
@@ -62,7 +83,7 @@ func authDotGo(proj *models.Project) *jen.File {
 			jen.Return(jen.ID("b").Dot("Bytes").Call()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

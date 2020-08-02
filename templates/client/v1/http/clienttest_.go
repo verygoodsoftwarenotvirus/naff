@@ -11,40 +11,10 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 	utils.AddImports(proj, code)
 
-	// vars
-	code.Add(
-		jen.Const().Defs(
-			jen.ID(utils.BuildFakeVarName("URI")).Equals().Lit("https://todo.verygoodsoftwarenotvirus.ru"),
-			jen.ID("asciiControlChar").Equals().String().Call(jen.Byte().Call(jen.Lit(0x7f))),
-		),
-	)
+	code.Add(buildClientTestConstants()...)
+	code.Add(buildClientTestTypes()...)
+	code.Add(buildClientTestValuer()...)
 
-	// types
-	code.Add(
-		jen.Type().Defs(
-			jen.ID("argleBargle").Struct(
-				jen.ID("Name").String(),
-			),
-			jen.Line(),
-			jen.ID("valuer").Map(jen.String()).Index().String(),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
-		jen.Func().Params(
-			jen.ID("v").ID("valuer"),
-		).ID("ToValues").Params().Params(
-			jen.Qual("net/url", "Values"),
-		).Block(
-			jen.Return().Qual("net/url", "Values").Call(
-				jen.ID("v"),
-			),
-		),
-		jen.Line(),
-	)
-
-	// funcs
 	code.Add(
 		jen.Line(),
 		jen.Comment("begin helper funcs"),
@@ -82,6 +52,49 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	code.Add(buildTestV1Client_executeUnauthenticatedDataRequest()...)
 
 	return code
+}
+
+func buildClientTestConstants() []jen.Code {
+	lines := []jen.Code{
+		jen.Const().Defs(
+			jen.ID(utils.BuildFakeVarName("URI")).Equals().Lit("https://todo.verygoodsoftwarenotvirus.ru"),
+			jen.ID("asciiControlChar").Equals().String().Call(jen.Byte().Call(jen.Lit(0x7f))),
+		),
+	}
+
+	return lines
+}
+
+func buildClientTestTypes() []jen.Code {
+	lines := []jen.Code{
+		jen.Line(),
+		jen.Type().Defs(
+			jen.ID("argleBargle").Struct(
+				jen.ID("Name").String(),
+			),
+			jen.Line(),
+			jen.ID("valuer").Map(jen.String()).Index().String(),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildClientTestValuer() []jen.Code {
+	lines := []jen.Code{
+
+		jen.Func().Params(jen.ID("v").ID("valuer")).ID("ToValues").Params().Params(
+			jen.Qual("net/url", "Values"),
+		).Block(
+			jen.Return().Qual("net/url", "Values").Call(
+				jen.ID("v"),
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
 }
 
 func buildMustParseURL() []jen.Code {

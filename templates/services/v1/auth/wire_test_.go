@@ -12,7 +12,16 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	// if proj.EnableNewsman {
-	code.Add(
+	code.Add(buildTestProvideWebsocketAuthFunc()...)
+	// }
+
+	code.Add(buildTestProvideOAuth2ClientValidator(proj)...)
+
+	return code
+}
+
+func buildTestProvideWebsocketAuthFunc() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideWebsocketAuthFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -21,10 +30,13 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
-	// }
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideOAuth2ClientValidator(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideOAuth2ClientValidator").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -33,7 +45,7 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

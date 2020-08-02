@@ -11,7 +11,13 @@ func utilsTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestEnsureQueryIsRestrictedToUser(proj)...)
+
+	return code
+}
+
+func buildTestEnsureQueryIsRestrictedToUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestEnsureQueryIsRestrictedToUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -87,7 +93,7 @@ func utilsTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-	)
+	}
 
-	return code
+	return lines
 }

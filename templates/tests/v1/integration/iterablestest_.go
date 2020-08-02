@@ -14,6 +14,17 @@ const (
 	createdVarPrefix = "created"
 )
 
+func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
+	code := jen.NewFile("integration")
+
+	utils.AddImports(proj, code)
+
+	code.Add(buildCheckSomethingEquality(proj, typ)...)
+	code.Add(buildTestSomething(proj, typ)...)
+
+	return code
+}
+
 func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
@@ -62,24 +73,25 @@ func buildListArguments(proj *models.Project, varPrefix string, typ models.DataT
 	return creationArgs
 }
 
-func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	code := jen.NewFile("integration")
-
-	utils.AddImports(proj, code)
-
+func buildCheckSomethingEquality(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	pn := typ.Name.Plural()
-	scn := typ.Name.SingularCommonName()
-	pcn := typ.Name.PluralCommonName()
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	pn := typ.Name.Plural()
+	scn := typ.Name.SingularCommonName()
+	pcn := typ.Name.PluralCommonName()
+
+	lines := []jen.Code{
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			buildTestCreating(proj, typ),
 			jen.Line(),
@@ -129,9 +141,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Line(),
 			buildTestDeleting(proj, typ),
 		),
-	)
+	}
 
-	return code
+	return lines
 }
 
 func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) (lines []jen.Code) {
@@ -281,49 +293,6 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj *models
 	}
 
 	return params
-}
-
-func buildBuildDummySomething(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-
-	blockLines := []jen.Code{
-		jen.ID("t").Dot("Helper").Call(),
-		jen.Line(),
-	}
-
-	stopIndex := 6 // the number of `jen.Line`s we need to skip some irrelevant bits of creation code
-	cc := buildRequisiteCreationCode(proj, typ)
-	if len(cc) > stopIndex {
-		blockLines = append(blockLines, cc[:len(cc)-stopIndex]...)
-	}
-
-	creationArgs := append(buildCreationArguments(proj, "created", typ), jen.ID("exampleInput"))
-
-	blockLines = append(blockLines,
-		constants.CreateCtx(),
-		utils.BuildFakeVar(proj, sn),
-		utils.BuildFakeVarWithCustomName(
-			proj,
-			"exampleInput",
-			fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
-			jen.ID(utils.BuildFakeVarName(sn)),
-		),
-		jen.List(jen.ID("y"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
-			creationArgs...,
-		),
-		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
-		jen.Return().ID("y"),
-	)
-
-	lines := []jen.Code{
-		jen.Func().IDf("buildDummy%s", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
-			blockLines...,
-		),
-		jen.Line(),
-	}
-
-	return lines
 }
 
 func buildEqualityCheckLines(typ models.DataType) []jen.Code {
@@ -722,13 +691,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 
 	lines = append(lines,
 		jen.Comment("create user and oauth2 client A."),
-		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(
+		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(
+		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userA"),
 		),
@@ -779,13 +748,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		jen.ID("query").Assign().IDf("example%sA", sn).Dot(firstStringField.Singular()),
 		jen.Line(),
 		jen.Comment("create user and oauth2 client B."),
-		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(
+		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(
+		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userB"),
 		),
@@ -1144,8 +1113,6 @@ func buildRequisiteCleanupCodeForUpdate404s(proj *models.Project, typ models.Dat
 
 func buildSubtestsForUpdate404Tests(proj *models.Project, typ models.DataType) []jen.Code {
 	var subtests []jen.Code
-	//sn := typ.Name.Singular()
-	//scn := typ.Name.SingularCommonName()
 
 	for i, ot := range proj.FindOwnerTypeChain(typ) {
 		lines := append(

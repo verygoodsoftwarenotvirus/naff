@@ -12,7 +12,15 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildFrontendBuildStaticFileServer()...)
+	code.Add(buildFrontendVarDeclarations(proj)...)
+	code.Add(buildFrontendStaticDir(proj)...)
+
+	return code
+}
+
+func buildFrontendBuildStaticFileServer() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildStaticFileServer").Params(jen.ID("fileDir").String()).Params(jen.PointerTo().Qual("github.com/spf13/afero", "HttpFs"), jen.Error()).Block(jen.Var().ID("afs").Qual("github.com/spf13/afero", "Fs"), jen.If(jen.ID("s").Dot("config").Dot("CacheStaticFiles")).Block(
 			jen.ID("afs").Equals().Qual("github.com/spf13/afero", "NewMemMapFs").Call(),
 			jen.List(jen.ID("files"), jen.Err()).Assign().Qual("io/ioutil", "ReadDir").Call(jen.ID("fileDir")),
@@ -52,84 +60,42 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.Qual("github.com/spf13/afero", "NewHttpFs").Call(jen.ID("afs")), jen.Nil()),
 		),
 		jen.Line(),
-	)
-
-	buildRegexPairs := func() []jen.Code {
-		pairs := []jen.Code{
-			jen.Comment("Here is where you should put route regexes that need to be ignored by the static file server."),
-			jen.Comment("For instance, if you allow someone to see an event in the frontend via a URL that contains dynamic."),
-			jen.Comment("information, such as `/event/123`, you would want to put something like this below:"),
-			jen.Comment("		eventsFrontendPathRegex = regexp.MustCompile(`/event/\\d+`)"),
-			jen.Line(),
-		}
-
-		for _, typ := range proj.DataTypes {
-			tuvn := typ.Name.PluralUnexportedVarName()
-			pairs = append(pairs,
-				jen.Commentf("%sFrontendPathRegex matches URLs against our frontend router's specification for specific %s routes.", tuvn, typ.Name.SingularCommonName()),
-				jen.IDf("%sFrontendPathRegex", tuvn).Equals().Qual("regexp", "MustCompile").Call(jen.RawStringf(`/%s/\d+`, typ.Name.PluralRouteName())),
-			)
-		}
-
-		return pairs
 	}
 
-	code.Add(
+	return lines
+}
+
+func buildFrontendVarDeclarations(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
-			buildRegexPairs()...,
+			func() []jen.Code {
+				pairs := []jen.Code{
+					jen.Comment("Here is where you should put route regexes that need to be ignored by the static file server."),
+					jen.Comment("For instance, if you allow someone to see an event in the frontend via a URL that contains dynamic."),
+					jen.Comment("information, such as `/event/123`, you would want to put something like this below:"),
+					jen.Comment("		eventsFrontendPathRegex = regexp.MustCompile(`/event/\\d+`)"),
+					jen.Line(),
+				}
+
+				for _, typ := range proj.DataTypes {
+					tuvn := typ.Name.PluralUnexportedVarName()
+					pairs = append(pairs,
+						jen.Commentf("%sFrontendPathRegex matches URLs against our frontend router's specification for specific %s routes.", tuvn, typ.Name.SingularCommonName()),
+						jen.IDf("%sFrontendPathRegex", tuvn).Equals().Qual("regexp", "MustCompile").Call(jen.RawStringf(`/%s/\d+`, typ.Name.PluralRouteName())),
+					)
+				}
+
+				return pairs
+			}()...,
 		),
 		jen.Line(),
-	)
-
-	buildHistoryRoutes := func() []jen.Code {
-		lines := []jen.Code{
-			jen.Lit("/register"),
-			jen.Lit("/login"),
-		}
-
-		for _, typ := range proj.DataTypes {
-			prn := typ.Name.PluralRouteName()
-			lines = append(lines, jen.Litf("/%s", prn), jen.Litf("/%s/new", prn))
-		}
-
-		lines = append(lines, jen.Lit("/password/new"))
-
-		return lines
 	}
 
-	buildIndexRoute := func() []jen.Code {
-		lines := []jen.Code{
-			jen.ID("rl").Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-			jen.ID("rl").Dot("Debug").Call(jen.Lit("static file requested")),
-			jen.Switch(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path")).Block(
-				jen.Comment("list your frontend history routes here."),
-				jen.Caseln(
-					buildHistoryRoutes()...,
-				).Block(jen.ID("rl").Dot("Debug").Call(jen.Lit("rerouting")),
-					jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/"),
-				),
-			),
-		}
+	return lines
+}
 
-		for _, typ := range proj.DataTypes {
-			tpuvn := typ.Name.PluralUnexportedVarName()
-			lines = append(lines,
-				jen.If(jen.IDf("%sFrontendPathRegex", tpuvn).Dot("MatchString").Call(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"))).Block(
-					jen.ID("rl").Dot("Debug").Call(jen.Litf("rerouting %s request", typ.Name.SingularCommonName())),
-					jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/"),
-				),
-			)
-		}
-
-		lines = append(lines,
-			jen.Line(),
-			jen.ID("fs").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		)
-
-		return lines
-	}
-
-	code.Add(
+func buildFrontendStaticDir(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("StaticDir builds a static directory handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("StaticDir").Params(jen.ID("staticFilesDirectory").String()).Params(jen.Qual("net/http", "HandlerFunc"), jen.Error()).Block(
@@ -147,11 +113,55 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("fs").Assign().Qual("net/http", "StripPrefix").Call(jen.Lit("/"), jen.Qual("net/http", "FileServer").Call(jen.ID("httpFs").Dot("Dir").Call(jen.ID("fileDir")))),
 			jen.Line(),
 			jen.Return().List(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
-				buildIndexRoute()...,
+				func() []jen.Code {
+					lines := []jen.Code{
+						jen.ID("rl").Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
+						jen.ID("rl").Dot("Debug").Call(jen.Lit("static file requested")),
+						jen.Switch(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path")).Block(
+							jen.Comment("list your frontend history routes here."),
+							jen.Caseln(
+								func() []jen.Code {
+									lines := []jen.Code{
+										jen.Lit("/register"),
+										jen.Lit("/login"),
+									}
+
+									for _, typ := range proj.DataTypes {
+										prn := typ.Name.PluralRouteName()
+										lines = append(lines, jen.Litf("/%s", prn), jen.Litf("/%s/new", prn))
+									}
+
+									lines = append(lines, jen.Lit("/password/new"))
+
+									return lines
+								}()...,
+							).Block(jen.ID("rl").Dot("Debug").Call(jen.Lit("rerouting")),
+								jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/"),
+							),
+						),
+					}
+
+					for _, typ := range proj.DataTypes {
+						tpuvn := typ.Name.PluralUnexportedVarName()
+						lines = append(lines,
+							jen.If(jen.IDf("%sFrontendPathRegex", tpuvn).Dot("MatchString").Call(jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"))).Block(
+								jen.ID("rl").Dot("Debug").Call(jen.Litf("rerouting %s request", typ.Name.SingularCommonName())),
+								jen.ID(constants.RequestVarName).Dot("URL").Dot("Path").Equals().Lit("/"),
+							),
+						)
+					}
+
+					lines = append(lines,
+						jen.Line(),
+						jen.ID("fs").Dot("ServeHTTP").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
+					)
+
+					return lines
+				}()...,
 			), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

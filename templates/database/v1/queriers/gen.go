@@ -26,6 +26,18 @@ const (
 	countQuery = "COUNT(%s.id)"
 )
 
+func isPostgres(dbvendor wordsmith.SuperPalabra) bool {
+	return dbvendor.Singular() == "Postgres"
+}
+
+func isSqlite(dbvendor wordsmith.SuperPalabra) bool {
+	return dbvendor.Singular() == "Sqlite"
+}
+
+func isMariaDB(dbvendor wordsmith.SuperPalabra) bool {
+	return dbvendor.Singular() == "MariaDB" || dbvendor.RouteName() == "maria_db"
+}
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	for _, vendor := range proj.EnabledDatabases() {
@@ -189,7 +201,6 @@ func convertArgsToCode(args []interface{}) (code []jen.Code) {
 }
 
 func buildQueryTest(
-	_ *models.Project,
 	dbvendor wordsmith.SuperPalabra,
 	queryName string,
 	queryBuilder sqlBuilder,

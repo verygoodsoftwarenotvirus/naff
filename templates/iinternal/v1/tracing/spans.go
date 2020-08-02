@@ -12,7 +12,13 @@ func spansDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildStartSpan()...)
+
+	return code
+}
+
+func buildStartSpan() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("StartSpan starts a span."),
 		jen.Line(),
 		jen.Func().ID("StartSpan").Params(
@@ -27,7 +33,8 @@ func spansDotGo(proj *models.Project) *jen.File {
 				jen.ID("funcName"),
 			)),
 		),
-	)
+		jen.Line(),
+	}
 
-	return code
+	return lines
 }

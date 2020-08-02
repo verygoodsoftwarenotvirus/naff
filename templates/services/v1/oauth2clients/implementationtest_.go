@@ -12,14 +12,30 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildImplementationTestConstantDefs()...)
+	code.Add(buildTestService_OAuth2InternalErrorHandler()...)
+	code.Add(buildTestService_OAuth2ResponseErrorHandler()...)
+	code.Add(buildTestService_AuthorizeScopeHandler(proj)...)
+	code.Add(buildTestService_UserAuthorizationHandler(proj)...)
+	code.Add(buildTestService_ClientAuthorizedHandler(proj)...)
+	code.Add(buildTestService_ClientScopeHandler(proj)...)
+
+	return code
+}
+
+func buildImplementationTestConstantDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("apiURLPrefix").Equals().Lit("/api/v1"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_OAuth2InternalErrorHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_OAuth2InternalErrorHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -33,9 +49,13 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_OAuth2ResponseErrorHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_OAuth2ResponseErrorHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -46,9 +66,13 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_AuthorizeScopeHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_AuthorizeScopeHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -212,9 +236,13 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_UserAuthorizationHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_UserAuthorizationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -270,9 +298,13 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_ClientAuthorizedHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_ClientAuthorizedHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -353,9 +385,13 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_ClientScopeHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_ClientScopeHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -433,7 +469,7 @@ func implementationTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -18,35 +18,51 @@ func databaseDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 	code.ImportAlias("github.com/alexedwards/scs/v2", "scs")
 
-	var constDefs []jen.Code
 	if proj.DatabaseIsEnabled(models.Postgres) {
 		code.ImportName(filepath.Join(SessionManagerLibrary, "postgresstore"), "postgresstore")
+	}
+	if proj.DatabaseIsEnabled(models.Sqlite) {
+		code.ImportName(filepath.Join(SessionManagerLibrary, "sqlite3store"), "sqlite3store")
+	}
+	if proj.DatabaseIsEnabled(models.MariaDB) {
+		code.ImportName(filepath.Join(SessionManagerLibrary, "mysqlstore"), "mysqlstore")
+	}
+
+	code.Add(buildDatabaseConstantDeclarations(proj)...)
+	code.Add(buildProvideDatabaseConnection(proj)...)
+	code.Add(buildProvideDatabaseClient(proj)...)
+	code.Add(buildProvideSessionManager(proj)...)
+
+	return code
+}
+
+func buildDatabaseConstantDeclarations(proj *models.Project) []jen.Code {
+	var constDefs []jen.Code
+	if proj.DatabaseIsEnabled(models.Postgres) {
 		constDefs = append(constDefs,
 			jen.Comment("PostgresProviderKey is the string we use to refer to postgres"),
 			jen.ID("PostgresProviderKey").Equals().Lit("postgres"),
 		)
 	}
 	if proj.DatabaseIsEnabled(models.Sqlite) {
-		code.ImportName(filepath.Join(SessionManagerLibrary, "sqlite3store"), "sqlite3store")
 		constDefs = append(constDefs,
 			jen.Comment("MariaDBProviderKey is the string we use to refer to mariaDB"),
 			jen.ID("MariaDBProviderKey").Equals().Lit("mariadb"),
 		)
 	}
 	if proj.DatabaseIsEnabled(models.MariaDB) {
-		code.ImportName(filepath.Join(SessionManagerLibrary, "mysqlstore"), "mysqlstore")
 		constDefs = append(constDefs,
 			jen.Comment("SqliteProviderKey is the string we use to refer to sqlite"),
 			jen.ID("SqliteProviderKey").Equals().Lit("sqlite"),
 		)
 	}
 
-	code.Add(jen.Const().Defs(constDefs...), jen.Line())
-	code.Add(buildProvideDatabaseConnection(proj)...)
-	code.Add(buildProvideDatabaseClient(proj)...)
-	code.Add(buildProvideSessionManager(proj)...)
+	lines := []jen.Code{
+		jen.Const().Defs(constDefs...),
+		jen.Line(),
+	}
 
-	return code
+	return lines
 }
 
 func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {

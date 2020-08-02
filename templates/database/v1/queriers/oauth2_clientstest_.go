@@ -51,7 +51,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	code.Add(buildTestDB_buildGetOAuth2ClientQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetOAuth2Client(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetAllOAuth2ClientsCountQuery(proj, dbvendor)...)
-	code.Add(buildTestDB_GetAllOAuth2ClientCount(proj, dbvendor)...)
+	code.Add(buildTestDB_GetAllOAuth2ClientCount(dbvendor)...)
 	code.Add(buildTestDB_buildGetOAuth2ClientsForUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetOAuth2ClientsForUser(proj, dbvendor)...)
 	code.Add(buildTestDB_buildCreateOAuth2ClientQuery(proj, dbvendor)...)
@@ -188,7 +188,7 @@ func buildTestDB_buildGetOAuth2ClientByClientIDQuery(proj *models.Project, dbven
 		utils.BuildFakeVar(proj, "OAuth2Client"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetOAuth2ClientByClientID", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetOAuth2ClientByClientID", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -290,7 +290,7 @@ func buildTestDB_buildGetAllOAuth2ClientsQuery(proj *models.Project, dbvendor wo
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, "GetAllOAuth2Clients", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(dbvendor, "GetAllOAuth2Clients", qb, expectedArgs, callArgs, nil)
 }
 
 func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -498,7 +498,7 @@ func buildTestDB_buildGetOAuth2ClientQuery(proj *models.Project, dbvendor wordsm
 		utils.BuildFakeVar(proj, "OAuth2Client"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetOAuth2Client", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetOAuth2Client", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -588,10 +588,10 @@ func buildTestDB_buildGetAllOAuth2ClientsCountQuery(proj *models.Project, dbvend
 		callArgs     []jen.Code
 	)
 
-	return buildQueryTest(proj, dbvendor, "GetAllOAuth2ClientsCount", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(dbvendor, "GetAllOAuth2ClientsCount", qb, expectedArgs, callArgs, nil)
 }
 
-func buildTestDB_GetAllOAuth2ClientCount(_ *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_GetAllOAuth2ClientCount(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
@@ -652,7 +652,7 @@ func buildTestDB_buildGetOAuth2ClientsForUserQuery(proj *models.Project, dbvendo
 		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetOAuth2ClientsForUser", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetOAuth2ClientsForUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -808,7 +808,7 @@ func buildTestDB_buildCreateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		utils.BuildFakeVar(proj, "OAuth2Client"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "CreateOAuth2Client", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "CreateOAuth2Client", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_CreateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -966,7 +966,7 @@ func buildTestDB_buildUpdateOAuth2ClientQuery(proj *models.Project, dbvendor wor
 		utils.BuildFakeVar(proj, "OAuth2Client"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "UpdateOAuth2Client", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "UpdateOAuth2Client", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_UpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -1072,7 +1072,7 @@ func buildTestDB_buildArchiveOAuth2ClientQuery(proj *models.Project, dbvendor wo
 		utils.BuildFakeVar(proj, "OAuth2Client"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "ArchiveOAuth2Client", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "ArchiveOAuth2Client", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_ArchiveOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

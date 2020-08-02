@@ -12,7 +12,7 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
-	files := map[string]func(project *models.Project) []byte{
+	files := map[string]func(project *models.Project) string{
 		"environments/local/prometheus/config.yaml":         prometheusLocalConfigDotYAML,
 		"environments/local/grafana/dashboards/main.json":   dashboardDotJSON,
 		"environments/local/grafana/dashboards.yaml":        grafanaLocalProvisioningDashboardsAllDotYAML,
@@ -38,7 +38,7 @@ func RenderPackage(project *models.Project) error {
 			return err
 		}
 
-		if _, err := f.Write(file(project)); err != nil {
+		if _, err := f.WriteString(file(project)); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err
 		}
@@ -47,10 +47,10 @@ func RenderPackage(project *models.Project) error {
 	return nil
 }
 
-func prometheusLocalConfigDotYAML(project *models.Project) []byte {
+func prometheusLocalConfigDotYAML(project *models.Project) string {
 	serviceName := project.Name.KebabName()
 
-	return []byte(fmt.Sprintf(`global:
+	return fmt.Sprintf(`global:
   # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   scrape_interval:     15s
   # Evaluate rules every 15 seconds. The default is every 1 minute.
@@ -128,11 +128,11 @@ scrape_configs:
 #            - "1.2.3.4:9093"
 #            - "1.2.3.5:9093"
 #            - "1.2.3.6:9093"
-`, serviceName, serviceName))
+`, serviceName, serviceName)
 }
 
-func grafanaLocalProvisioningDashboardsAllDotYAML(project *models.Project) []byte {
-	return []byte(`apiVersion: 1
+func grafanaLocalProvisioningDashboardsAllDotYAML(_ *models.Project) string {
+	return `apiVersion: 1
 
 providers:
   # <string> an unique provider name
@@ -156,11 +156,11 @@ providers:
     options:
       # <string, required> path to dashboard files on disk. Required
       path: '/etc/grafana/provisioning/dashboards/dashboards'
-`)
+`
 }
 
-func grafanaLocalProvisioningDataSourcesAllDotYAML(project *models.Project) []byte {
-	return []byte(`apiVersion: 1
+func grafanaLocalProvisioningDataSourcesAllDotYAML(_ *models.Project) string {
+	return `apiVersion: 1
 
 # Thanks to https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
 datasources:
@@ -171,11 +171,11 @@ datasources:
     type: 'prometheus' # type of the data source
     org_id: 1 # id of the organization to tie this datasource to
     url: 'http://prometheus:9090' # url of the prom instance
-`)
+`
 }
 
-func grafanaDotIni(project *models.Project) []byte {
-	return []byte(`##################### Grafana Configuration Example #####################
+func grafanaDotIni(_ *models.Project) string {
+	return `##################### Grafana Configuration Example #####################
 #
 # Everything has defaults so you only need to uncomment things you want to
 # change
@@ -937,5 +937,5 @@ func grafanaDotIni(project *models.Project) []byte {
 [feature_toggles]
 # enable features, separated by spaces
 ;enable =
-`)
+`
 }

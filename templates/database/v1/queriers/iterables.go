@@ -15,16 +15,37 @@ const (
 	squirrelPkg = "github.com/Masterminds/squirrel"
 )
 
-func isPostgres(dbvendor wordsmith.SuperPalabra) bool {
-	return dbvendor.Singular() == "Postgres"
-}
+func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
+	spn := dbvendor.SingularPackageName()
 
-func isSqlite(dbvendor wordsmith.SuperPalabra) bool {
-	return dbvendor.Singular() == "Sqlite"
-}
+	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
 
-func isMariaDB(dbvendor wordsmith.SuperPalabra) bool {
-	return dbvendor.Singular() == "MariaDB" || dbvendor.RouteName() == "maria_db"
+	utils.AddImports(proj, code)
+
+	code.Add(buildIterableConstants(typ)...)
+	code.Add(buildIterableVariableDecs(proj, typ)...)
+	code.Add(buildScanSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildScanListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildSomethingExistsFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
+	code.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
+	code.Add(buildGetBatchOfSomethingQueryFuncDecl(dbvendor, typ)...)
+	code.Add(buildGetAllOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)...)
+	code.Add(buildGetListOfSomethingWithIDsFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildArchiveSomethingQueryFuncDecl(dbvendor, typ)...)
+	code.Add(buildArchiveSomethingFuncDecl(dbvendor, typ)...)
+
+	return code
 }
 
 func buildIterableConstants(typ models.DataType) []jen.Code {
@@ -49,7 +70,10 @@ func buildIterableConstants(typ models.DataType) []jen.Code {
 		consts = append(consts, jen.IDf("%sTableOwnershipColumn", puvn).Equals().Litf("belongs_to_%s", typ.BelongsToStruct.RouteName()))
 	}
 
-	return consts
+	return []jen.Code{
+		jen.Const().Defs(consts...),
+		jen.Line(),
+	}
 }
 
 func buildIterableVariableDecs(proj *models.Project, typ models.DataType) []jen.Code {
@@ -57,7 +81,7 @@ func buildIterableVariableDecs(proj *models.Project, typ models.DataType) []jen.
 
 	vars := []jen.Code{
 		jen.IDf("%sTableColumns", puvn).Equals().Index().String().Valuesln(
-			buildTableColumns(proj, typ)...,
+			buildTableColumns(typ)...,
 		),
 		jen.Line(),
 	}
@@ -81,40 +105,7 @@ func buildIterableVariableDecs(proj *models.Project, typ models.DataType) []jen.
 	}
 }
 
-func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
-	spn := dbvendor.SingularPackageName()
-
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
-
-	utils.AddImports(proj, code)
-
-	code.Add(jen.Const().Defs(buildIterableConstants(typ)...), jen.Line())
-	code.Add(buildIterableVariableDecs(proj, typ)...)
-	code.Add(buildScanSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildScanListOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildSomethingExistsFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildSomethingAllCountQueryDecls(dbvendor, typ)...)
-	code.Add(buildGetAllSomethingCountFuncDecl(dbvendor, typ)...)
-	code.Add(buildGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetAllOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildGetListOfSomethingWithIDsFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildCreateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildCreateSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildUpdateSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildUpdateSomethingFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildArchiveSomethingQueryFuncDecl(proj, dbvendor, typ)...)
-	code.Add(buildArchiveSomethingFuncDecl(proj, dbvendor, typ)...)
-
-	return code
-}
-
-func buildTableColumns(_ *models.Project, typ models.DataType) []jen.Code {
+func buildTableColumns(typ models.DataType) []jen.Code {
 	puvn := typ.Name.PluralUnexportedVarName()
 	tableNameVar := fmt.Sprintf("%sTableName", puvn)
 
@@ -140,7 +131,7 @@ func buildTableColumns(_ *models.Project, typ models.DataType) []jen.Code {
 	return tableColumns
 }
 
-func buildScanFields(_ *models.Project, typ models.DataType) (scanFields []jen.Code) {
+func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 	scanFields = []jen.Code{jen.AddressOf().ID("x").Dot("ID")}
 
 	for _, field := range typ.Fields {
@@ -183,7 +174,7 @@ func buildScanSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPa
 				body := []jen.Code{
 					jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(),
 					jen.Line(),
-					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(proj, typ)...),
+					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(typ)...),
 					jen.Line(),
 					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Block(
 						jen.Return().List(jen.Nil(), jen.Err()),
@@ -465,7 +456,7 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 	}
 }
 
-func buildGetBatchOfSomethingQueryFuncDecl(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetBatchOfSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	pn := typ.Name.Plural()
 	sn := typ.Name.Plural()
@@ -659,7 +650,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 	}
 }
 
-func buildGetListOfSomethingWithIDsQueryFuncDecl(_ *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	pn := typ.Name.Plural()
 	puvn := typ.Name.PluralUnexportedVarName()
@@ -864,7 +855,7 @@ func buildGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor words
 	}
 }
 
-func determineCreationColumns(_ *models.Project, typ models.DataType) []jen.Code {
+func determineCreationColumns(typ models.DataType) []jen.Code {
 	puvn := typ.Name.PluralUnexportedVarName()
 	var creationColumns []jen.Code
 
@@ -882,7 +873,7 @@ func determineCreationColumns(_ *models.Project, typ models.DataType) []jen.Code
 	return creationColumns
 }
 
-func determineCreationQueryValues(_ *models.Project, inputVarName string, typ models.DataType) []jen.Code {
+func determineCreationQueryValues(inputVarName string, typ models.DataType) []jen.Code {
 	var valuesColumns []jen.Code
 
 	for _, field := range typ.Fields {
@@ -909,8 +900,8 @@ func buildCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 
 	qb := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
 		Dotln("Insert").Call(jen.IDf("%sTableName", puvn)).
-		Dotln("Columns").Callln(determineCreationColumns(proj, typ)...).
-		Dotln("Values").Callln(determineCreationQueryValues(proj, "input", typ)...)
+		Dotln("Columns").Callln(determineCreationColumns(typ)...).
+		Dotln("Values").Callln(determineCreationQueryValues("input", typ)...)
 
 	if isPostgres(dbvendor) {
 		qb.Dotln("Suffix").Call(
@@ -960,7 +951,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	)
 
 	params := typ.BuildDBQuerierCreationMethodParams(proj)
-	queryBuildingArgs := typ.BuildDBQuerierCreationMethodQueryBuildingArgs(proj)
+	queryBuildingArgs := typ.BuildDBQuerierCreationMethodQueryBuildingArgs()
 	queryBuildingArgs = queryBuildingArgs[:len(queryBuildingArgs)-1]
 	queryBuildingArgs = append(queryBuildingArgs, jen.ID("x"))
 
@@ -1101,7 +1092,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 
 	const updatedVarName = "input"
 
-	args := typ.BuildDBQuerierUpdateMethodArgs(proj, updatedVarName)
+	args := typ.BuildDBQuerierUpdateMethodArgs(updatedVarName)
 	block := []jen.Code{
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildUpdate%sQuery", sn).Call(args...),
 	}
@@ -1132,7 +1123,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	}
 }
 
-func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildArchiveSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -1145,7 +1136,7 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 		jen.ID("idColumn").MapAssign().IDf("%sID", uvn),
 		jen.ID("archivedOnColumn").MapAssign().ID("nil"),
 	}
-	paramsList := typ.BuildDBQuerierArchiveQueryMethodParams(proj)
+	paramsList := typ.BuildDBQuerierArchiveQueryMethodParams()
 
 	if typ.BelongsToNobody {
 		comment = fmt.Sprintf("buildArchive%sQuery returns a SQL query which marks a given %s ", sn, scn)
@@ -1203,14 +1194,14 @@ func buildArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 }
 
-func buildArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildArchiveSomethingFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	dbvsn := dbvendor.Singular()
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
 
-	params := typ.BuildDBQuerierArchiveMethodParams(proj)
-	queryBuildingArgs := typ.BuildDBQuerierArchiveQueryBuildingArgs(proj)
+	params := typ.BuildDBQuerierArchiveMethodParams()
+	queryBuildingArgs := typ.BuildDBQuerierArchiveQueryBuildingArgs()
 
 	return []jen.Code{
 		jen.Commentf("Archive%s marks %s as archived in the database.", sn, scnwp),

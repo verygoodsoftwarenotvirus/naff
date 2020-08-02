@@ -12,23 +12,16 @@ import (
 func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
-	uvn := typ.Name.UnexportedVarName()
-	scn := typ.Name.SingularCommonName()
-
 	utils.AddImports(proj, code)
 
-	code.Add(
-		jen.Const().Defs(
-			jen.Commentf("URIParamKey is a standard string that we'll use to refer to %s IDs with.", scn),
-			jen.ID("URIParamKey").Equals().Lit(fmt.Sprintf("%sID", uvn)),
-		),
-		jen.Line(),
-	)
+	code.Add(buildHTTPRoutesConstantDefs(typ)...)
 
 	code.Add(buildListHandlerFuncDecl(proj, typ)...)
+
 	if typ.SearchEnabled {
 		code.Add(buildSearchHandlerFuncDecl(proj, typ)...)
 	}
+
 	code.Add(buildCreateHandlerFuncDecl(proj, typ)...)
 	code.Add(buildExistenceHandlerFuncDecl(proj, typ)...)
 	code.Add(buildReadHandlerFuncDecl(proj, typ)...)
@@ -36,6 +29,21 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildArchiveHandlerFuncDecl(proj, typ)...)
 
 	return code
+}
+
+func buildHTTPRoutesConstantDefs(typ models.DataType) []jen.Code {
+	uvn := typ.Name.UnexportedVarName()
+	scn := typ.Name.SingularCommonName()
+
+	lines := []jen.Code{
+		jen.Const().Defs(
+			jen.Commentf("URIParamKey is a standard string that we'll use to refer to %s IDs with.", scn),
+			jen.ID("URIParamKey").Equals().Lit(fmt.Sprintf("%sID", uvn)),
+		),
+		jen.Line(),
+	}
+
+	return lines
 }
 
 func buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj *models.Project, typ models.DataType) []jen.Code {
@@ -569,7 +577,7 @@ func buildArchiveHandlerFuncDecl(proj *models.Project, typ models.DataType) []je
 		jen.Line(),
 	}
 	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, true, false, false)...)
-	callArgs := typ.BuildDBClientArchiveMethodCallArgs(proj)
+	callArgs := typ.BuildDBClientArchiveMethodCallArgs()
 
 	block = append(block,
 		jen.Line(),

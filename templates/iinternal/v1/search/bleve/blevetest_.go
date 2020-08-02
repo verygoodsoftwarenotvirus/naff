@@ -12,7 +12,17 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBleveTestTypeDefinitions()...)
+	code.Add(buildTestNewBleveIndexManager(proj)...)
+	code.Add(buildTestBleveIndexManager_Index(proj)...)
+	code.Add(buildTestBleveIndexManager_Search(proj)...)
+	code.Add(buildTestBleveIndexManager_Delete(proj)...)
+
+	return code
+}
+
+func buildBleveTestTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.ID("exampleType").Struct(
 				jen.ID("ID").Uint64().Tag(map[string]string{"json": "id"}),
@@ -26,14 +36,9 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("BelongsToUser").Uint64().Tag(map[string]string{"json": "belongsToUser"}),
 			),
 		),
-	)
+	}
 
-	code.Add(buildTestNewBleveIndexManager(proj)...)
-	code.Add(buildTestBleveIndexManager_Index(proj)...)
-	code.Add(buildTestBleveIndexManager_Search(proj)...)
-	code.Add(buildTestBleveIndexManager_Delete(proj)...)
-
-	return code
+	return lines
 }
 
 func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {

@@ -15,8 +15,19 @@ func bleveDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	// constants
-	code.Add(
+	code.Add(buildConstantDefinitions(proj)...)
+	code.Add(buildInterfaceImplementationStatement(proj)...)
+	code.Add(buildTypeDefinitions()...)
+	code.Add(buildNewBleveIndexManager(proj)...)
+	code.Add(buildNewBleveIndexManager_Index(proj)...)
+	code.Add(buildNewBleveIndexManager_Search(proj)...)
+	code.Add(buildNewBleveIndexManager_Delete(proj)...)
+
+	return code
+}
+
+func buildConstantDefinitions(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("base").Equals().Lit(10),
 			jen.ID("bitSize").Equals().Lit(64),
@@ -25,14 +36,22 @@ func bleveDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit("testing"),
 		),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildInterfaceImplementationStatement(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual(proj.InternalSearchV1Package(), "IndexManager").Equals().Parens(jen.PointerTo().ID("bleveIndexManager")).Parens(jen.Nil()),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.ID("bleveIndexManager").Struct(
 				jen.ID("index").Qual(searchPackage, "Index"),
@@ -40,14 +59,9 @@ func bleveDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(buildNewBleveIndexManager(proj)...)
-	code.Add(buildNewBleveIndexManager_Index(proj)...)
-	code.Add(buildNewBleveIndexManager_Search(proj)...)
-	code.Add(buildNewBleveIndexManager_Delete(proj)...)
-
-	return code
+	return lines
 }
 
 func buildNewBleveIndexManager(proj *models.Project) []jen.Code {

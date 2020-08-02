@@ -14,11 +14,9 @@ import (
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
-
 	utils.AddImports(proj, code)
 	code.Add(jen.Const().Defs(
-		jen.ID(basePath).Equals().Lit(typ.Name.PluralRouteName())),
+		jen.IDf("%sBasePath", typ.Name.PluralUnexportedVarName()).Equals().Lit(typ.Name.PluralRouteName())),
 	)
 
 	code.Add(buildBuildSomethingExistsRequest(proj, typ)...)
@@ -47,10 +45,10 @@ func attachURIToSpanCall(proj *models.Project) jen.Code {
 	return jen.Qual(proj.InternalTracingV1Package(), "AttachRequestURIToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("uri"))
 }
 
-func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{
-		firstVar,
+		jen.Nil(),
 	}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
@@ -73,10 +71,10 @@ func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Pro
 	return urlBuildingParams
 }
 
-func buildV1ClientURLBuildingParamsForCreatingSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParamsForCreatingSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{
-		firstVar,
+		jen.Nil(),
 	}
 
 	parents := proj.FindOwnerTypeChain(typ)
@@ -101,10 +99,10 @@ func buildV1ClientURLBuildingParamsForCreatingSomething(proj *models.Project, fi
 	return urlBuildingParams
 }
 
-func buildV1ClientURLBuildingParamsForListOfSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParamsForListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{
-		firstVar,
+		jen.ID(constants.FilterVarName).Dot("ToValues").Call(),
 	}
 
 	for _, pt := range proj.FindOwnerTypeChain(typ) {
@@ -123,10 +121,10 @@ func buildV1ClientURLBuildingParamsForListOfSomething(proj *models.Project, firs
 	return urlBuildingParams
 }
 
-func buildV1ClientURLBuildingParamsForSearchingSomething(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParamsForSearchingSomething(typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
 	urlBuildingParams := []jen.Code{
-		firstVar,
+		jen.ID("params"),
 		jen.ID(basePath),
 		jen.Lit("search"),
 	}
@@ -134,9 +132,9 @@ func buildV1ClientURLBuildingParamsForSearchingSomething(proj *models.Project, f
 	return urlBuildingParams
 }
 
-func buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj *models.Project, firstVar jen.Code, typ models.DataType) []jen.Code {
+func buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj *models.Project, typ models.DataType) []jen.Code {
 	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
-	urlBuildingParams := []jen.Code{firstVar}
+	urlBuildingParams := []jen.Code{jen.Nil()}
 
 	ownerChain := proj.FindOwnerTypeChain(typ)
 	for i, pt := range ownerChain {
@@ -178,11 +176,7 @@ func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType)
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
-				proj,
-				jen.Nil(),
-				typ,
-			)...,
+			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, typ)...,
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
@@ -247,11 +241,7 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
-				proj,
-				jen.Nil(),
-				typ,
-			)...,
+			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, typ)...,
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
@@ -333,11 +323,7 @@ func buildBuildSearchSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		),
 		jen.Line(),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForSearchingSomething(
-				proj,
-				jen.ID("params"),
-				typ,
-			)...,
+			buildV1ClientURLBuildingParamsForSearchingSomething(typ)...,
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
@@ -417,11 +403,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 
 	funcName := fmt.Sprintf("BuildGet%sRequest", tp)
 
-	urlBuildingParams := buildV1ClientURLBuildingParamsForListOfSomething(
-		proj,
-		jen.ID(constants.FilterVarName).Dot("ToValues").Call(),
-		typ,
-	)
+	urlBuildingParams := buildV1ClientURLBuildingParamsForListOfSomething(proj, typ)
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
@@ -501,11 +483,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForCreatingSomething(
-				proj,
-				jen.Nil(),
-				typ,
-			)...,
+			buildV1ClientURLBuildingParamsForCreatingSomething(proj, typ)...,
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
@@ -593,7 +571,7 @@ func buildBuildUpdateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, jen.Nil(), typ)...,
+			buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, typ)...,
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),
@@ -672,11 +650,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("uri").Assign().ID("c").Dot("BuildURL").Callln(
-			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(
-				proj,
-				jen.Nil(),
-				typ,
-			)...,
+			buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, typ)...,
 		),
 		attachURIToSpanCall(proj),
 		jen.Line(),

@@ -12,7 +12,22 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBuildRequest()...)
+	code.Add(buildTestService_validateCredentialChangeRequest(proj)...)
+	code.Add(buildTestService_ListHandler(proj)...)
+	code.Add(buildTestService_CreateHandler(proj)...)
+	code.Add(buildTestService_ReadHandler(proj)...)
+	code.Add(buildTestService_NewTOTPSecretHandler(proj)...)
+	code.Add(buildTestService_TOTPSecretValidationHandler(proj)...)
+	code.Add(buildTestService_UpdatePasswordHandler(proj)...)
+	code.Add(buildTestService_Archive(proj)...)
+	code.Add(buildTestService_buildQRCode(proj)...)
+
+	return code
+}
+
+func buildBuildRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -27,9 +42,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID(constants.RequestVarName),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_validateCredentialChangeRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_validateCredentialChangeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -198,9 +217,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_ListHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -285,9 +308,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -604,9 +631,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -727,9 +758,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_NewTOTPSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -1042,9 +1077,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_TOTPSecretValidationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -1250,9 +1289,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Line(),
 		),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_UpdatePasswordHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -1508,9 +1551,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_Archive(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -1573,9 +1620,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_buildQRCode(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_buildQRCode").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -1602,7 +1653,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 			),
 		),
-	)
+	}
 
-	return code
+	return lines
 }

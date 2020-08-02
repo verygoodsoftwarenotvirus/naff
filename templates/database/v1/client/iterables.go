@@ -298,7 +298,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	scnwp := n.SingularCommonNameWithPrefix()
 
 	params := typ.BuildDBClientCreationMethodParams(proj)
-	args := typ.BuildDBClientCreationMethodCallArgs(proj)
+	args := typ.BuildDBClientCreationMethodCallArgs()
 
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s in the database.", sn, scnwp),
@@ -329,7 +329,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	const updatedVarName = "updated"
 
 	params := typ.BuildDBClientUpdateMethodParams(proj, updatedVarName)
-	args := typ.BuildDBClientUpdateMethodCallArgs(proj, updatedVarName)
+	args := typ.BuildDBClientUpdateMethodCallArgs(updatedVarName)
 
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the", sn, scn, sn),
@@ -360,8 +360,8 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	uvn := n.UnexportedVarName()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	params := typ.BuildDBClientArchiveMethodParams(proj)
-	callArgs := typ.BuildDBClientArchiveMethodCallArgs(proj)
+	params := typ.BuildDBClientArchiveMethodParams()
+	callArgs := typ.BuildDBClientArchiveMethodCallArgs()
 	loggerValues := []jen.Code{
 		jen.Litf("%s_id", rn).MapAssign().IDf("%sID", uvn),
 	}

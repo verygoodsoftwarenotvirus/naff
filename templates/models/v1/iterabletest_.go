@@ -10,40 +10,54 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile("models")
 
 	utils.AddImports(proj, code)
+
+	code.Add(buildTestSomething_Update(typ)...)
+	code.Add(buildTestSomething_ToUpdateInput(proj, typ)...)
+
+	return code
+}
+
+func buildTestSomething_Update(typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
 
-	buildUpdateInputColumns := func() (updateCols []jen.Code, assertCalls []jen.Code) {
-		for _, field := range typ.Fields {
-			sn := field.Name.Singular()
-			updateCols = append(updateCols, jen.ID(sn).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
-			assertCalls = append(assertCalls, utils.AssertEqual(jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn), nil))
-		}
+	var (
+		updateCols  []jen.Code
+		assertCalls []jen.Code
+	)
 
-		return
+	for _, field := range typ.Fields {
+		sn := field.Name.Singular()
+		updateCols = append(updateCols, jen.ID(sn).MapAssign().Add(utils.FakeFuncForType(field.Type, field.Pointer)()))
+		assertCalls = append(assertCalls, utils.AssertEqual(jen.ID("expected").Dot(sn), jen.ID("i").Dot(sn), nil))
 	}
 
-	updateCols, assertCalls := buildUpdateInputColumns()
-
-	buildHappyPathBlock := func() []jen.Code {
-		lines := []jen.Code{
-			jen.ID("i").Assign().AddressOf().ID(sn).Values(),
-			jen.Line(),
-			jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
-			jen.Line(),
-			jen.ID("i").Dot("Update").Call(jen.ID("expected")),
-		}
-		lines = append(lines, assertCalls...)
-		return lines
-	}
-
-	code.Add(
+	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			utils.BuildSubTestWithoutContext("happy path", buildHappyPathBlock()...)),
+			utils.BuildSubTestWithoutContext("happy path",
+				func() []jen.Code {
+					lines := []jen.Code{
+						jen.ID("i").Assign().AddressOf().ID(sn).Values(),
+						jen.Line(),
+						jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
+						jen.Line(),
+						jen.ID("i").Dot("Update").Call(jen.ID("expected")),
+					}
+					lines = append(lines, assertCalls...)
+					return lines
+				}()...,
+			),
+		),
 		jen.Line(),
-	)
+	}
+
+	return lines
+}
+
+func buildTestSomething_ToUpdateInput(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 
 	updateInputFields := []jen.Code{}
 	expectedFields := []jen.Code{}
@@ -55,7 +69,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		}
 	}
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -70,7 +84,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

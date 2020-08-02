@@ -12,7 +12,18 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildConstDefinitions()...)
+	code.Add(buildTestBcrypt_HashPassword(proj)...)
+	code.Add(buildTestBcrypt_PasswordMatches(proj)...)
+	code.Add(buildTestBcrypt_PasswordIsAcceptable(proj)...)
+	code.Add(buildTestBcrypt_ValidateLogin(proj)...)
+	code.Add(buildTestProvideBcrypt(proj)...)
+
+	return code
+}
+
+func buildConstDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID(utils.BuildFakeVarName("Password")).Equals().Lit("Pa$$w0rdPa$$w0rdPa$$w0rdPa$$w0rd"),
 			jen.ID("weaklyHashedExamplePassword").Equals().Lit("$2a$04$7G7dHZe7MeWjOMsYKO8uCu/CRKnDMMBHOfXaB6YgyQL/cl8nhwf/2"),
@@ -20,8 +31,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			jen.ID(utils.BuildFakeVarName("TwoFactorSecret")).Equals().Lit("HEREISASECRETWHICHIVEMADEUPBECAUSEIWANNATESTRELIABLY"),
 		),
 		jen.Line(),
-	)
-	code.Add(
+	}
+
+	return lines
+}
+
+func buildTestBcrypt_HashPassword(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -38,9 +54,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestBcrypt_PasswordMatches(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestBcrypt_PasswordMatches").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -65,9 +85,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestBcrypt_PasswordIsAcceptable(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestBcrypt_PasswordIsAcceptable").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -82,9 +106,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestBcrypt_ValidateLogin(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestBcrypt_ValidateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -175,9 +203,13 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideBcrypt(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideBcrypt").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -189,9 +221,8 @@ func bcryptTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

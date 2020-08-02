@@ -12,7 +12,17 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBuildTestService(proj)...)
+	code.Add(buildTestProvideOAuth2ClientsService(proj)...)
+	code.Add(buildTest_clientStore_GetByID(proj)...)
+	code.Add(buildTestService_HandleAuthorizeRequest()...)
+	code.Add(buildTestService_HandleTokenRequest()...)
+
+	return code
+}
+
+func buildBuildTestService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -35,9 +45,13 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideOAuth2ClientsService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -105,9 +119,13 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTest_clientStore_GetByID(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_clientStore_GetByID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -175,9 +193,13 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_HandleAuthorizeRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_HandleAuthorizeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -200,9 +222,13 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_HandleTokenRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_HandleTokenRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -225,7 +251,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

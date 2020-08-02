@@ -14,10 +14,18 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code)
 
+	code.Add(buildWireProviders(typ)...)
+	code.Add(buildWireProvideSomethingDataManager(proj, typ)...)
+	code.Add(buildWireProvideSomethingDataServer(proj, typ)...)
+
+	return code
+}
+
+func buildWireProviders(typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services."),
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
@@ -34,25 +42,37 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWireProvideSomethingDataManager(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	lines := []jen.Code{
 		jen.Commentf("Provide%sDataManager turns a database into an %sDataManager.", sn, sn),
 		jen.Line(),
 		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn))).Block(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWireProvideSomethingDataServer(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	lines := []jen.Code{
 		jen.Commentf("Provide%sDataServer is an arbitrary function for dependency injection's sake.", sn),
 		jen.Line(),
 		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn))).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

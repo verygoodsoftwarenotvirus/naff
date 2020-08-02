@@ -12,26 +12,45 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMainServiceAttacker(proj)...)
+	code.Add(buildMainSetup()...)
+	code.Add(buildMainDo()...)
+	code.Add(buildMainTeardown()...)
+	code.Add(buildMainClone()...)
+	code.Add(buildMainMain()...)
+
+	return code
+}
+
+func buildMainServiceAttacker(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
 			jen.ID("todoClient").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
-		jen.Comment("Setup implement's hazana's Attacker interface."),
+	return lines
+}
+
+func buildMainSetup() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("Setup implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.Underscore().Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
-		jen.Comment("Do implement's hazana's Attacker interface."),
+	return lines
+}
+
+func buildMainDo() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("Do implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Do").Params(
 			jen.Underscore().Qual("context", "Context"),
@@ -81,27 +100,39 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("dr"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMainTeardown() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Teardown implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.Error()).Block(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMainClone() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Clone implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Block(
 			jen.Return().ID("a"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMainMain() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("main").Params().Block(
 			jen.ID("todoClient").Assign().ID("initializeClient").Call(jen.ID("oa2Client")),
 			jen.Line(),
@@ -133,7 +164,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Qual("github.com/emicklei/hazana", "PrintReport").Call(jen.ID("r")),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

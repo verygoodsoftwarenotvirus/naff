@@ -12,7 +12,14 @@ func authTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildLoginUser(proj)...)
+	code.Add(buildTestAuth(proj)...)
+
+	return code
+}
+
+func buildLoginUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("loginUser").Params(
 			constants.CtxParam(),
 			jen.ID("t").PointerTo().Qual("testing", "T"),
@@ -62,9 +69,13 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestAuth(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -680,10 +691,10 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A."),
-				jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+				jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
+				jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
@@ -702,10 +713,10 @@ func authTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("webhookA"), jen.Err()),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client B."),
-				jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+				jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestutilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
+				jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
 				jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
@@ -768,7 +779,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

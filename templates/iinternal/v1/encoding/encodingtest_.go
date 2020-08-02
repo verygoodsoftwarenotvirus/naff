@@ -12,14 +12,26 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildEncodingTestTypeDeclarations()...)
+	code.Add(buildTestServerEncoderDecoder_EncodeResponse()...)
+	code.Add(buildTestServerEncoderDecoder_DecodeRequest()...)
+
+	return code
+}
+
+func buildEncodingTestTypeDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().ID("example").Struct(
 			jen.ID("Name").String().Tag(map[string]string{"json": "name", "xml": "name"}),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestServerEncoderDecoder_EncodeResponse() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -51,9 +63,13 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestServerEncoderDecoder_DecodeRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -93,7 +109,7 @@ func encodingTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

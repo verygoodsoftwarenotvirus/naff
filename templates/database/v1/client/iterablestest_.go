@@ -287,7 +287,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 	}
 
 	lines := typ.BuildRequisiteFakeVarsForDBClientCreateMethodTest(proj)
-	callArgs := typ.BuildCallArgsForDBClientCreationMethodTest(proj)
+	callArgs := typ.BuildCallArgsForDBClientCreationMethodTest()
 
 	mockCalls = append(mockCalls, callArgs[1:]...)
 
@@ -329,7 +329,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 
 	lines := typ.BuildRequisiteVarsForDBClientUpdateMethodTest(proj)
 
-	callArgs := append(typ.BuildCallArgsForDBClientUpdateMethodTest(proj))
+	callArgs := append(typ.BuildCallArgsForDBClientUpdateMethodTest())
 	mockArgs = append(mockArgs, callArgs...)
 
 	lines = append(lines,

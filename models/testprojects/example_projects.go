@@ -402,3 +402,11 @@ var (
 		),
 	}
 )
+
+func BuildTodoApp() *models.Project {
+	return &models.Project{
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
+		Name:       wordsmith.FromSingularPascalCase("Todo"),
+		DataTypes:  todoDataTypes,
+	}
+}

@@ -12,26 +12,32 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMockHTTPHandler()...)
+	code.Add(buildTestService_CreationInputMiddleware(proj)...)
+	code.Add(buildTestService_UpdateInputMiddleware(proj)...)
+
+	return code
+}
+
+func buildMockHTTPHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("MockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
-	)
-
-	code.Add(
 		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
-	)
-
-	code.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_CreationInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -82,9 +88,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_UpdateInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_UpdateInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -135,7 +145,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -12,7 +12,16 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildWebhooksServiceConstDefs(proj)...)
+	code.Add(buildWebhooksServiceVarDefs(proj)...)
+	code.Add(buildWebhooksServiceTypeDefs(proj)...)
+	code.Add(buildProvideWebhooksService(proj)...)
+
+	return code
+}
+
+func buildWebhooksServiceConstDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("createMiddlewareCtxKey is a string alias we can use for referring to webhook input data in contexts."),
 			jen.ID("createMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("webhook_create_input"),
@@ -25,16 +34,24 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("serviceName").String().Equals().Lit("webhooks_service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhooksServiceVarDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "WebhookDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhooksServiceTypeDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.ID("eventManager").Interface(
 				jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
@@ -61,9 +78,13 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 		),
 
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideWebhooksService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
@@ -93,7 +114,7 @@ func webhooksServiceDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

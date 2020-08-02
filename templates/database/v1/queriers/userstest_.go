@@ -41,8 +41,8 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 
 	utils.AddImports(proj, code)
 
-	code.Add(buildBuildMockRowsFromUser(proj, dbvendor)...)
-	code.Add(buildBuildErroneousMockRowFromUser(proj, dbvendor)...)
+	code.Add(buildBuildMockRowsFromUser(proj)...)
+	code.Add(buildBuildErroneousMockRowFromUser(proj)...)
 	code.Add(buildTestScanUsers(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetUser(proj, dbvendor)...)
@@ -52,8 +52,8 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	code.Add(buildTestDB_GetUsers(proj, dbvendor)...)
 	code.Add(buildTestDB_buildGetUserByUsernameQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_GetUserByUsername(proj, dbvendor)...)
-	code.Add(buildTestDB_buildGetAllUsersCountQuery(proj, dbvendor)...)
-	code.Add(buildTestDB_GetAllUsersCount(proj, dbvendor)...)
+	code.Add(buildTestDB_buildGetAllUsersCountQuery(dbvendor)...)
+	code.Add(buildTestDB_GetAllUsersCount(dbvendor)...)
 	code.Add(buildTestDB_buildCreateUserQuery(proj, dbvendor)...)
 	code.Add(buildTestDB_CreateUser(proj, dbvendor)...)
 	code.Add(buildTestDB_buildUpdateUserQuery(proj, dbvendor)...)
@@ -68,7 +68,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 	return code
 }
 
-func buildBuildMockRowsFromUser(proj *models.Project, _ wordsmith.SuperPalabra) []jen.Code {
+func buildBuildMockRowsFromUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildMockRowsFromUser").Params(
 			jen.ID("users").Spread().PointerTo().Qual(proj.ModelsV1Package(), "User"),
@@ -108,7 +108,7 @@ func buildBuildMockRowsFromUser(proj *models.Project, _ wordsmith.SuperPalabra) 
 	return lines
 }
 
-func buildBuildErroneousMockRowFromUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildErroneousMockRowFromUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
@@ -201,7 +201,7 @@ func buildTestDB_buildGetUserQuery(proj *models.Project, dbvendor wordsmith.Supe
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetUser", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -286,7 +286,7 @@ func buildTestDB_buildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models.Pro
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetUserWithUnverifiedTwoFactorSecret", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetUserWithUnverifiedTwoFactorSecret", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUserWithUnverifiedTwoFactorSecret(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -368,7 +368,7 @@ func buildTestDB_buildGetUsersQuery(proj *models.Project, dbvendor wordsmith.Sup
 		jen.ID(constants.FilterVarName).Assign().Qual(proj.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call(),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetUsers", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetUsers", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -491,7 +491,7 @@ func buildTestDB_buildGetUserByUsernameQuery(proj *models.Project, dbvendor word
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "GetUserByUsername", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "GetUserByUsername", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -572,7 +572,7 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 	return lines
 }
 
-func buildTestDB_buildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_buildGetAllUsersCountQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	qb := queryBuilderForDatabase(dbvendor).
 		Select(fmt.Sprintf(countQuery, usersTableName)).
 		From(usersTableName).
@@ -583,10 +583,10 @@ func buildTestDB_buildGetAllUsersCountQuery(proj *models.Project, dbvendor words
 	expectedArgs := []jen.Code{}
 	callArgs := []jen.Code{}
 
-	return buildQueryTest(proj, dbvendor, "GetAllUsersCount", qb, expectedArgs, callArgs, nil)
+	return buildQueryTest(dbvendor, "GetAllUsersCount", qb, expectedArgs, callArgs, nil)
 }
 
-func buildTestDB_GetAllUsersCount(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildTestDB_GetAllUsersCount(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
@@ -679,7 +679,7 @@ func buildTestDB_buildCreateUserQuery(proj *models.Project, dbvendor wordsmith.S
 		),
 	}
 
-	return buildQueryTest(proj, dbvendor, "CreateUser", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "CreateUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -882,7 +882,7 @@ func buildTestDB_buildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.S
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "UpdateUser", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "UpdateUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -988,7 +988,7 @@ func buildTestDB_buildUpdateUserPasswordQuery(proj *models.Project, dbvendor wor
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "UpdateUserPassword", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "UpdateUserPassword", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_UpdateUserPassword(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -1061,7 +1061,7 @@ func buildTestDB_buildVerifyUserTwoFactorSecretQuery(proj *models.Project, dbven
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "VerifyUserTwoFactorSecret", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "VerifyUserTwoFactorSecret", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_VerifyUserTwoFactorSecret(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
@@ -1132,7 +1132,7 @@ func buildTestDB_buildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.
 		utils.BuildFakeVar(proj, "User"),
 	}
 
-	return buildQueryTest(proj, dbvendor, "ArchiveUser", qb, expectedArgs, callArgs, pql)
+	return buildQueryTest(dbvendor, "ArchiveUser", qb, expectedArgs, callArgs, pql)
 }
 
 func buildTestDB_ArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {

@@ -12,15 +12,31 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildWebhookHTTPRoutesConstDefs()...)
+	code.Add(buildWebhookHTTPRoutesValidateWebhook(proj)...)
+	code.Add(buildWebhookHTTPRoutesCreateHandler(proj)...)
+	code.Add(buildWebhookHTTPRoutesListHandler(proj)...)
+	code.Add(buildWebhookHTTPRoutesReadHandler(proj)...)
+	code.Add(buildWebhookHTTPRoutesUpdateHandler(proj)...)
+	code.Add(buildWebhookHTTPRoutesArchiveHandler(proj)...)
+
+	return code
+}
+
+func buildWebhookHTTPRoutesConstDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("URIParamKey is a standard string that we'll use to refer to webhook IDs with."),
 			jen.ID("URIParamKey").Equals().Lit("webhookID"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookHTTPRoutesValidateWebhook(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("validateWebhook does some validation on a WebhookCreationInput and returns an error if anything runs foul."),
 		jen.Line(),
 		jen.Func().ID("validateWebhook").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(),
@@ -54,9 +70,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateHandler is our webhook creation route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -113,9 +133,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookHTTPRoutesListHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ListHandler is our list route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -149,9 +173,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ReadHandler returns a GET handler that returns an webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -188,9 +216,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookHTTPRoutesUpdateHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UpdateHandler returns a handler that updates an webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -252,9 +284,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWebhookHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ArchiveHandler returns a handler that archives an webhook."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -297,7 +333,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

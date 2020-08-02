@@ -16,88 +16,109 @@ const (
 func databaseMockDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile("database")
 
-	mockModelsImp := proj.ModelsV1Package("mock")
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Var().Underscore().ID("DataManager").Equals().Parens(jen.PointerTo().ID("MockDatabase")).Call(jen.Nil()),
+		utils.BuildInterfaceCheck("DataManager", "MockDatabase"),
 		jen.Line(),
 	)
 
-	buildMockDatabaseLines := func() []jen.Code {
-		var lines []jen.Code
+	code.Add(buildBuildMockDatabase(proj)...)
+	code.Add(buildMockDatabase(proj)...)
+	code.Add(buildMigrate()...)
+	code.Add(buildIsReady()...)
+	code.Add(buildResultIterator()...)
 
-		for _, typ := range proj.DataTypes {
-			lines = append(lines, jen.IDf("%sDataManager", typ.Name.Singular()).MapAssign().AddressOf().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
-		}
+	return code
+}
 
-		lines = append(lines,
-			jen.ID("UserDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "UserDataManager").Values(),
-			jen.ID("OAuth2ClientDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
-			jen.ID("WebhookDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "WebhookDataManager").Values(),
-		)
+func buildBuildMockDatabase(proj *models.Project) []jen.Code {
+	mockModelsImp := proj.ModelsV1Package("mock")
 
-		return lines
+	var mockDatabaseLines []jen.Code
+
+	for _, typ := range proj.DataTypes {
+		mockDatabaseLines = append(mockDatabaseLines, jen.IDf("%sDataManager", typ.Name.Singular()).MapAssign().AddressOf().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())).Values())
 	}
 
-	code.Add(
+	mockDatabaseLines = append(mockDatabaseLines,
+		jen.ID("UserDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "UserDataManager").Values(),
+		jen.ID("OAuth2ClientDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "OAuth2ClientDataManager").Values(),
+		jen.ID("WebhookDataManager").MapAssign().AddressOf().Qual(mockModelsImp, "WebhookDataManager").Values(),
+	)
+
+	lines := []jen.Code{
 		jen.Comment("BuildMockDatabase builds a mock database."),
 		jen.Line(),
 		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Block(
 			jen.Return().AddressOf().ID("MockDatabase").Valuesln(
-				buildMockDatabaseLines()...,
+				mockDatabaseLines...,
 			),
 		),
 		jen.Line(),
-	)
-
-	buildMockDBLines := func() []jen.Code {
-		lines := []jen.Code{
-			jen.Qual(mockImp, "Mock"),
-			jen.Line(),
-		}
-
-		for _, typ := range proj.DataTypes {
-			lines = append(lines, jen.PointerTo().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())))
-		}
-
-		lines = append(lines,
-			jen.PointerTo().Qual(mockModelsImp, "UserDataManager"),
-			jen.PointerTo().Qual(mockModelsImp, "OAuth2ClientDataManager"),
-			jen.PointerTo().Qual(mockModelsImp, "WebhookDataManager"),
-		)
-
-		return lines
 	}
 
-	code.Add(
+	return lines
+}
+
+func buildMockDatabase(proj *models.Project) []jen.Code {
+	mockModelsImp := proj.ModelsV1Package("mock")
+
+	mockDBLines := []jen.Code{
+		jen.Qual(mockImp, "Mock"),
+		jen.Line(),
+	}
+
+	for _, typ := range proj.DataTypes {
+		mockDBLines = append(mockDBLines, jen.PointerTo().Qual(mockModelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())))
+	}
+
+	mockDBLines = append(mockDBLines,
+		jen.PointerTo().Qual(mockModelsImp, "UserDataManager"),
+		jen.PointerTo().Qual(mockModelsImp, "OAuth2ClientDataManager"),
+		jen.PointerTo().Qual(mockModelsImp, "WebhookDataManager"),
+	)
+
+	lines := []jen.Code{
 		jen.Comment("MockDatabase is our mock database structure."),
 		jen.Line(),
 		jen.Type().ID("MockDatabase").Struct(
-			buildMockDBLines()...,
+			mockDBLines...,
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMigrate() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Migrate satisfies the DataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIsReady() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("IsReady satisfies the DataManager interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildResultIterator() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().ID("ResultIterator").Equals().Parens(jen.PointerTo().ID("MockResultIterator")).Call(jen.Nil()),
 		jen.Line(),
 		jen.Line(),
@@ -125,7 +146,8 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Close").Params().Params(jen.Error()).Block(
 			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Error").Call(jen.Zero()),
 		),
-	)
+		jen.Line(),
+	}
 
-	return code
+	return lines
 }

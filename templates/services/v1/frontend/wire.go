@@ -12,7 +12,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildProviders()...)
+
+	return code
+}
+
+func buildProviders() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services."),
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
@@ -20,7 +26,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

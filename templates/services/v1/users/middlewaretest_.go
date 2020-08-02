@@ -12,24 +12,32 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMiddlewareTestingMockHTTPHandler()...)
+	code.Add(buildMiddlewareTestingTestService_UserInputMiddleware(proj)...)
+	code.Add(buildMiddlewareTestingTestService_PasswordUpdateInputMiddleware(proj)...)
+	code.Add(buildMiddlewareTestingTestService_TOTPSecretVerificationInputMiddleware(proj)...)
+	code.Add(buildMiddlewareTestingTestService_TOTPSecretRefreshInputMiddleware(proj)...)
+
+	return code
+}
+
+func buildMiddlewareTestingMockHTTPHandler() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual("net/http", "Handler").Equals().Parens(jen.PointerTo().ID("MockHTTPHandler")).Call(jen.Nil()),
 		jen.Line(),
-	)
-
-	code.Add(
 		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
-	)
-
-	code.Add(
 		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMiddlewareTestingTestService_UserInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_UserInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -92,9 +100,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMiddlewareTestingTestService_PasswordUpdateInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_PasswordUpdateInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -165,9 +177,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMiddlewareTestingTestService_TOTPSecretVerificationInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_TOTPSecretVerificationInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -230,9 +246,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMiddlewareTestingTestService_TOTPSecretRefreshInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_TOTPSecretRefreshInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -295,7 +315,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

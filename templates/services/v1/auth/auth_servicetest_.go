@@ -14,7 +14,14 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 
 	code.ImportName("github.com/alexedwards/scs/v2/memstore", "memstore")
 
-	code.Add(
+	code.Add(buildBuildTestService(proj)...)
+	code.Add(buildTestProvideAuthService(proj)...)
+
+	return code
+}
+
+func buildBuildTestService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -45,9 +52,13 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideAuthService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -73,7 +84,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 				utils.AssertNoError(jen.Err(), nil),
 			),
 		),
-	)
+	}
 
-	return code
+	return lines
 }

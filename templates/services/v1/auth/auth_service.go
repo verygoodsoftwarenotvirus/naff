@@ -12,14 +12,26 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildAuthServiceConstantDefs()...)
+	code.Add(buildAuthServiceTypeDefs(proj)...)
+	code.Add(buildProvideAuthService(proj)...)
+
+	return code
+}
+
+func buildAuthServiceConstantDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("serviceName").Equals().Lit("auth_service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAuthServiceTypeDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes."),
@@ -46,9 +58,13 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideAuthService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideAuthService builds a new AuthService."),
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
@@ -78,7 +94,7 @@ func authServiceDotGo(proj *models.Project) *jen.File {
 			jen.Return(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

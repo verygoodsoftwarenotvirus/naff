@@ -12,7 +12,21 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildQueryFilterConstantDeclarations0()...)
+	code.Add(buildQueryFilter()...)
+	code.Add(buildDefaultQueryFilter()...)
+	code.Add(buildFromParams()...)
+	code.Add(buildSetPage()...)
+	code.Add(buildQueryPage()...)
+	code.Add(buildToValues()...)
+	code.Add(buildApplyToQueryBuilder()...)
+	code.Add(buildExtractQueryFilter()...)
+
+	return code
+}
+
+func buildQueryFilterConstantDeclarations0() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("MaxLimit is the maximum value for list queries."),
 			jen.ID("MaxLimit").Equals().Lit(250),
@@ -32,9 +46,13 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.ID("sortByQueryKey").Equals().Lit("sortBy"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildQueryFilter() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("QueryFilter represents all the filters a user could apply to a list query."),
 		jen.Line(),
 		jen.Type().ID("QueryFilter").Struct(
@@ -47,9 +65,13 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.ID("SortBy").ID("sortType").Tag(jsonTag("sortBy")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDefaultQueryFilter() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("DefaultQueryFilter builds the default query filter."),
 		jen.Line(),
 		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.PointerTo().ID("QueryFilter")).Block(
@@ -60,9 +82,13 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildFromParams() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("FromParams overrides the core QueryFilter values with values retrieved from url.Params"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
@@ -100,27 +126,39 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildSetPage() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("SetPage sets the current page with certain constraints."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").Uint64()).Block(
 			jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.One(), jen.ID("float64").Call(jen.ID("page")))),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildQueryPage() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("QueryPage calculates a query page from the current filter values."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("QueryPage").Params().Params(jen.Uint64()).Block(
 			jen.Return().Uint64().Call(jen.ID("qf").Dot("Limit")).Times().Parens(jen.ID("qf").Dot("Page").Minus().One()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildToValues() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ToValues returns a url.Values from a QueryFilter"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ToValues").Params().Params(jen.Qual("net/url", "Values")).Block(
@@ -154,9 +192,13 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("v"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildApplyToQueryBuilder() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ApplyToQueryBuilder applies the query filter to a query builder."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ApplyToQueryBuilder").Params(
@@ -220,9 +262,13 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("queryBuilder"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildExtractQueryFilter() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ExtractQueryFilter can extract a QueryFilter from a request."),
 		jen.Line(),
 		jen.Func().ID("ExtractQueryFilter").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Block(
@@ -231,7 +277,7 @@ func queryFilterDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("qf"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

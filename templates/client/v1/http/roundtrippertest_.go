@@ -12,9 +12,15 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(jen.Line())
+	code.Add(buildTestBuildDefaultTransport()...)
+	code.Add(buildTestDefaultRoundTripperRoundTrip()...)
+	code.Add(buildTestNewDefaultRoundTripper()...)
 
-	code.Add(
+	return code
+}
+
+func buildTestBuildDefaultTransport() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_buildDefaultTransport").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -24,9 +30,13 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestDefaultRoundTripperRoundTrip() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_defaultRoundTripper_RoundTrip").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -48,9 +58,13 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestNewDefaultRoundTripper() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_newDefaultRoundTripper").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -60,7 +74,7 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

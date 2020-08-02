@@ -10,6 +10,154 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
+	code := jen.NewFile("models")
+
+	utils.AddImports(proj, code)
+
+	code.Add(buildSomethingConstantDefinitions(proj, typ)...)
+	code.Add(buildSomethingTypeDefinitions(proj, typ)...)
+	code.Add(buildUpdateSomething(typ)...)
+	code.Add(buildSomethingToUpdateInput(typ)...)
+
+	return code
+}
+
+func buildUpdateSomething(typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	cnwp := n.SingularCommonNameWithPrefix()
+
+	lines := []jen.Code{
+		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	pn := n.Plural()
+	pcn := n.PluralCommonName()
+
+	lines := []jen.Code{
+		jen.Const().Defs(
+			jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
+			jen.Line(),
+			jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	pn := n.Plural()
+	cnwp := n.SingularCommonNameWithPrefix()
+	pcn := n.PluralCommonName()
+	prn := n.PluralRouteName()
+
+	lines := []jen.Code{jen.Type().Defs(
+		jen.Commentf("%s represents %s.", sn, cnwp),
+		jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
+		jen.Line(),
+		jen.Commentf("%sList represents a list of %s.", sn, pcn),
+		jen.IDf("%sList", sn).Struct(
+			jen.ID("Pagination"),
+			jen.ID(pn).Index().ID(sn).Tag(jsonTag(prn)),
+		),
+		jen.Line(),
+		jen.Commentf("%sCreationInput represents what a user could set as input for creating %s.", sn, pcn),
+		jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
+		jen.Line(),
+		jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s.", sn, pcn),
+		jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
+		jen.Line(),
+		jen.Commentf("%sDataManager describes a structure capable of storing %s permanently.", sn, pcn),
+		jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(proj, typ)...),
+		jen.Line(),
+		jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s.", sn, pcn),
+		jen.IDf("%sDataServer", sn).Interface(
+			jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
+			jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
+			jen.Line(),
+			func() jen.Code {
+				if typ.SearchEnabled {
+					return jen.ID("SearchHandler").Params(
+						jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+						jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+					)
+				}
+				return jen.Null()
+			}(),
+			jen.ID("ListHandler").Params(
+				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+			),
+			jen.ID("CreateHandler").Params(
+				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+			),
+			jen.ID("ExistenceHandler").Params(
+				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+			),
+			jen.ID("ReadHandler").Params(
+				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+			),
+			jen.ID("UpdateHandler").Params(
+				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+			),
+			jen.ID("ArchiveHandler").Params(
+				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
+				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
+			),
+		),
+	),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	cnwp := n.SingularCommonNameWithPrefix()
+
+	lines := []jen.Code{
+		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s.", sn, cnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(
+			jen.PointerTo().IDf("%sUpdateInput", sn),
+		).Block(
+			func() jen.Code {
+				lines := []jen.Code{}
+
+				for _, typ := range typ.Fields {
+					if typ.ValidForUpdateInput {
+						fsn := typ.Name.Singular()
+						lines = append(lines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
+					}
+				}
+
+				return jen.Return(jen.AddressOf().IDf("%sUpdateInput", sn).Valuesln(lines...))
+			}(),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
 func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	out := []jen.Code{jen.ID("ID").Uint64().Tag(jsonTag("id"))}
 
@@ -108,123 +256,10 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	interfaceMethods = append(interfaceMethods,
 		jen.IDf("Create%s", sn).Params(typ.BuildInterfaceDefinitionCreationMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
 		jen.IDf("Update%s", sn).Params(typ.BuildInterfaceDefinitionUpdateMethodParams(proj, "updated")...).Params(jen.Error()),
-		jen.IDf("Archive%s", sn).Params(typ.BuildInterfaceDefinitionArchiveMethodParams(proj)...).Params(jen.Error()),
+		jen.IDf("Archive%s", sn).Params(typ.BuildInterfaceDefinitionArchiveMethodParams()...).Params(jen.Error()),
 	)
 
 	return interfaceMethods
-}
-
-func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	code := jen.NewFile("models")
-
-	utils.AddImports(proj, code)
-	n := typ.Name
-	sn := n.Singular()
-	pn := n.Plural()
-	cnwp := n.SingularCommonNameWithPrefix()
-	pcn := n.PluralCommonName()
-	prn := n.PluralRouteName()
-
-	code.Add(
-		jen.Const().Defs(
-			jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
-			jen.Line(),
-			jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
-		jen.Type().Defs(
-			jen.Commentf("%s represents %s.", sn, cnwp),
-			jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
-			jen.Line(),
-			jen.Commentf("%sList represents a list of %s.", sn, pcn),
-			jen.IDf("%sList", sn).Struct(
-				jen.ID("Pagination"),
-				jen.ID(pn).Index().ID(sn).Tag(jsonTag(prn)),
-			),
-			jen.Line(),
-			jen.Commentf("%sCreationInput represents what a user could set as input for creating %s.", sn, pcn),
-			jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
-			jen.Line(),
-			jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s.", sn, pcn),
-			jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
-			jen.Line(),
-			jen.Commentf("%sDataManager describes a structure capable of storing %s permanently.", sn, pcn),
-			jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(proj, typ)...),
-			jen.Line(),
-			jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s.", sn, pcn),
-			jen.IDf("%sDataServer", sn).Interface(
-				jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.Line(),
-				func() jen.Code {
-					if typ.SearchEnabled {
-						return jen.ID("SearchHandler").Params(
-							jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-							jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-						)
-					}
-					return jen.Null()
-				}(),
-				jen.ID("ListHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("CreateHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("ExistenceHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("ReadHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("UpdateHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("ArchiveHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-			),
-		),
-		jen.Line(),
-	)
-
-	code.Add(
-		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
-		jen.Line(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
-		jen.Line(),
-	)
-
-	buildToUpdateInput := func() jen.Code {
-		lines := []jen.Code{}
-
-		for _, typ := range typ.Fields {
-			if typ.ValidForUpdateInput {
-				fsn := typ.Name.Singular()
-				lines = append(lines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
-			}
-		}
-
-		return jen.Return(jen.AddressOf().IDf("%sUpdateInput", sn).Valuesln(lines...))
-	}
-
-	code.Add(
-		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s.", sn, cnwp),
-		jen.Line(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(jen.PointerTo().IDf("%sUpdateInput", sn)).Block(buildToUpdateInput()),
-		jen.Line(),
-	)
-
-	return code
 }
 
 func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {

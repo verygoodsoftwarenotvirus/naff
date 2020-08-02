@@ -12,11 +12,16 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(jen.Null(),
+	code.Add(buildAuthenticatorVariableDeclarations()...)
+	code.Add(buildProvideBcryptHashCost()...)
+	code.Add(buildAuthenticatorTypeDefinitions()...)
+	code.Add(buildInit()...)
 
-		jen.Line(),
-	)
-	code.Add(
+	return code
+}
+
+func buildAuthenticatorVariableDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("ErrInvalidTwoFactorCode indicates that a provided two factor code is invalid."),
 			jen.ID("ErrInvalidTwoFactorCode").Equals().Qual("errors", "New").Call(jen.Lit("invalid two factor code")),
@@ -27,18 +32,26 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(jen.ID("ProvideBcryptAuthenticator"), jen.ID("ProvideBcryptHashCost")),
 			jen.Line(),
 		),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideBcryptHashCost() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost."),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
 			jen.Return().ID("DefaultBcryptHashCost"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAuthenticatorTypeDefinitions() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("PasswordHasher hashes passwords."),
 			jen.ID("PasswordHasher").Interface(
@@ -64,8 +77,13 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
-	code.Add(
+	}
+
+	return lines
+}
+
+func buildInit() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
 		jen.Func().ID("init").Params().Block(
@@ -76,7 +94,7 @@ func authenticatorDotGo(proj *models.Project) *jen.File {
 		),
 
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

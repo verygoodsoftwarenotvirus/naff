@@ -23,7 +23,16 @@ func clientDotGo(proj *models.Project) *jen.File {
 `)
 	code.Line()
 
-	code.Add(
+	code.Add(buildClientDeclaration(proj)...)
+	code.Add(buildMigrate(proj)...)
+	code.Add(buildIsReady(proj)...)
+	code.Add(buildProvideDatabaseClient(proj)...)
+
+	return code
+}
+
+func buildClientDeclaration(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Client is a wrapper around a database querier. Client is where all"),
 		jen.Line(),
 		jen.Comment("logging and trace propagation should happen, the querier is where"),
@@ -33,13 +42,9 @@ func clientDotGo(proj *models.Project) *jen.File {
 		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("debug").Bool(), constants.LoggerParam()),
 		jen.Line(),
-	)
+	}
 
-	code.Add(buildMigrate(proj)...)
-	code.Add(buildIsReady(proj)...)
-	code.Add(buildProvideDatabaseClient(proj)...)
-
-	return code
+	return lines
 }
 
 func buildMigrate(proj *models.Project) []jen.Code {

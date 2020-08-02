@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -13,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
@@ -25,7 +25,6 @@ const (
 	metaFieldName = "_META_"
 
 	belongsTo    = "belongs_to"
-	restricted   = "restricted_to_user"
 	notCreatable = "!creatable"
 	notEditable  = "!editable"
 
@@ -34,11 +33,25 @@ const (
 	Sqlite   validDatabase = "sqlite"
 )
 
-type validDatabase string
-
 type depWrapper struct {
 	dependency string
 }
+
+type validDatabase string
+
+var (
+	validDatabaseMap = map[validDatabase]struct{}{
+		Postgres: {},
+		Sqlite:   {},
+		MariaDB:  {},
+	}
+
+	nameToValidDBMap = map[string]validDatabase{
+		string(Postgres): Postgres,
+		string(Sqlite):   Sqlite,
+		string(MariaDB):  MariaDB,
+	}
+)
 
 func (dw depWrapper) ID() int {
 	x := fnv.New32a()
@@ -63,7 +76,13 @@ type Project struct {
 	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
 
-	enabledDatabases map[validDatabase]struct{}
+	enabledDatabasesLock sync.RWMutex
+	enabledDatabases     map[validDatabase]struct{}
+}
+
+// lastDataType is a helper method for tests
+func (p *Project) lastDataType() DataType {
+	return p.DataTypes[len(p.DataTypes)-1]
 }
 
 func (p *Project) Validate() {
@@ -80,6 +99,10 @@ func (p *Project) Validate() {
 			log.Panicf("no fields defined for type %q!", dt.Name.Singular())
 		}
 	}
+
+	if p.containsCyclicOwnerships() {
+		log.Panic("error: cyclic ownership detected")
+	}
 }
 
 func (p *Project) ParseModels() error {
@@ -92,16 +115,11 @@ func (p *Project) ParseModels() error {
 
 	for _, pkg := range packages {
 		dts, imps, err := parseModels(p.OutputPath, pkg.Files)
-		p.DataTypes = append(p.DataTypes, dts...)
 		if err != nil {
 			return fmt.Errorf("attempting to read package %s: %w", pkg.Name, err)
 		}
-		p.Validate() // trust by verify
-
-		if p.containsCyclicOwnerships() {
-			return errors.New("error: cyclic ownership detected")
-		}
-
+		p.DataTypes = append(p.DataTypes, dts...)
+		p.Validate() // trust but verify
 		p.iterableServicesImports = append(p.iterableServicesImports, imps...)
 	}
 
@@ -111,7 +129,7 @@ func (p *Project) ParseModels() error {
 // SearchEnabled returns true if any of the datatypes have SearchEnabled
 func (p *Project) SearchEnabled() bool {
 	for _, typ := range p.DataTypes {
-		if typ.BelongsToUser {
+		if typ.SearchEnabled {
 			return true
 		}
 	}
@@ -181,21 +199,10 @@ func (p *Project) FindDependentsOfType(parentType DataType) []DataType {
 	return dependents
 }
 
-var (
-	validDatabaseMap = map[validDatabase]struct{}{
-		Postgres: {},
-		Sqlite:   {},
-		MariaDB:  {},
-	}
-
-	nameToValidDBMap = map[string]validDatabase{
-		string(Postgres): Postgres,
-		string(Sqlite):   Sqlite,
-		string(MariaDB):  MariaDB,
-	}
-)
-
 func (p *Project) ensureNoNilFields() {
+	p.enabledDatabasesLock.Lock()
+	defer p.enabledDatabasesLock.Unlock()
+
 	if p.enabledDatabases == nil {
 		p.enabledDatabases = map[validDatabase]struct{}{}
 	}
@@ -205,7 +212,7 @@ func (p *Project) EnableDatabase(database validDatabase) {
 	p.ensureNoNilFields()
 
 	if _, ok := validDatabaseMap[database]; !ok {
-		log.Fatalf("unknown database: %q", database)
+		log.Panicf("unknown database: %q", database)
 	}
 
 	if _, ok := p.enabledDatabases[database]; !ok {
@@ -217,7 +224,7 @@ func (p *Project) DisableDatabase(database validDatabase) {
 	p.ensureNoNilFields()
 
 	if _, ok := validDatabaseMap[database]; !ok {
-		log.Fatalf("unknown database: %q", database)
+		log.Panicf("unknown database: %q", database)
 	}
 
 	if _, ok := p.enabledDatabases[database]; ok {
@@ -227,6 +234,10 @@ func (p *Project) DisableDatabase(database validDatabase) {
 
 func (p *Project) DatabaseIsEnabled(database validDatabase) bool {
 	p.ensureNoNilFields()
+
+	if _, ok := validDatabaseMap[database]; !ok {
+		log.Panicf("unknown database: %q", database)
+	}
 
 	_, present := p.enabledDatabases[database]
 
@@ -278,7 +289,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 					df.UnderlyingType = GetTypeForTypeName(df.Type)
 
 					if fieldName != metaFieldName && df.Type == "uintptr" {
-						log.Panic("invalid type!")
+						panic("invalid type!")
 					}
 
 					// check if this is the meta flag
@@ -440,6 +451,45 @@ func (p *Project) containsCyclicOwnerships() bool {
 	return len(cycles) != 0
 }
 
+// GetTypeForTypeName blah
+func GetTypeForTypeName(name string) types.Type {
+	switch strings.ToLower(name) {
+	case "bool":
+		return types.Typ[types.Bool]
+	case "int":
+		return types.Typ[types.Int]
+	case "int8":
+		return types.Typ[types.Int8]
+	case "int16":
+		return types.Typ[types.Int16]
+	case "int32":
+		return types.Typ[types.Int32]
+	case "int64":
+		return types.Typ[types.Int64]
+	case "uint":
+		return types.Typ[types.Uint]
+	case "uint8":
+		return types.Typ[types.Uint8]
+	case "uint16":
+		return types.Typ[types.Uint16]
+	case "uint32":
+		return types.Typ[types.Uint32]
+	case "uint64":
+		return types.Typ[types.Uint64]
+	case "uintptr":
+		return types.Typ[types.Uintptr]
+	case "float32":
+		return types.Typ[types.Float32]
+	case "float64":
+		return types.Typ[types.Float64]
+	case "string":
+		return types.Typ[types.String]
+	default:
+		log.Panicf("invalid type: %q", name)
+		return nil
+	}
+}
+
 type projectSurvey struct {
 	Name             string `survey:"name"`
 	OutputRepository string `survey:"outputRepository"`
@@ -518,7 +568,9 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 	if strings.HasSuffix(targetDestination, "verygoodsoftwarenotvirus") {
 		log.Fatal("I don't think you actually want to do that.")
 	} else {
-		os.RemoveAll(targetDestination)
+		if err := os.RemoveAll(targetDestination); err != nil {
+			log.Printf("error removing target folder: %v", err)
+		}
 	}
 
 	proj := &Project{
@@ -532,43 +584,4 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 	}
 
 	return proj, nil
-}
-
-// GetTypeForTypeName blah
-func GetTypeForTypeName(name string) types.Type {
-	switch strings.ToLower(name) {
-	case "bool":
-		return types.Typ[types.Bool]
-	case "int":
-		return types.Typ[types.Int]
-	case "int8":
-		return types.Typ[types.Int8]
-	case "int16":
-		return types.Typ[types.Int16]
-	case "int32":
-		return types.Typ[types.Int32]
-	case "int64":
-		return types.Typ[types.Int64]
-	case "uint":
-		return types.Typ[types.Uint]
-	case "uint8":
-		return types.Typ[types.Uint8]
-	case "uint16":
-		return types.Typ[types.Uint16]
-	case "uint32":
-		return types.Typ[types.Uint32]
-	case "uint64":
-		return types.Typ[types.Uint64]
-	case "uintptr":
-		return types.Typ[types.Uintptr]
-	case "float32":
-		return types.Typ[types.Float32]
-	case "float64":
-		return types.Typ[types.Float64]
-	case "string":
-		return types.Typ[types.String]
-	default:
-		log.Panicf("invalid type: %q", name)
-		return nil
-	}
 }

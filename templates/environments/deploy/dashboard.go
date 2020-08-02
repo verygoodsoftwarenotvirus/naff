@@ -6,7 +6,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func dashboardDotJSON(project *models.Project) []byte {
+func dashboardDotJSON(project *models.Project) string {
 	serviceName := project.Name.RouteName()
 
 	dash := fmt.Sprintf(`{
@@ -824,5 +824,5 @@ func dashboardDotJSON(project *models.Project) []byte {
 }
 `, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, serviceName, project.Name.Singular())
 
-	return []byte(dash)
+	return dash
 }

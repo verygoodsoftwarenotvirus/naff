@@ -12,7 +12,16 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUsersServiceConstDefs(proj)...)
+	code.Add(buildUsersServiceVarDefs(proj)...)
+	code.Add(buildUsersServiceTypeDefs(proj)...)
+	code.Add(buildProvideUsersService(proj)...)
+
+	return code
+}
+
+func buildUsersServiceConstDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("serviceName").Equals().Lit("users_service"),
 			jen.ID("topicName").Equals().Lit("users"),
@@ -20,16 +29,24 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("counterName").Equals().Qual(proj.InternalMetricsV1Package(), "CounterName").Call(jen.ID("serviceName")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersServiceVarDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersServiceTypeDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("RequestValidator validates request."),
 			jen.ID("RequestValidator").Interface(
@@ -60,9 +77,13 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideUsersService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideUsersService builds a new UsersService."),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
@@ -102,7 +123,7 @@ func usersServiceDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

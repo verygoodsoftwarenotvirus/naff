@@ -12,7 +12,13 @@ func frontendServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestProvideFrontendService(proj)...)
+
+	return code
+}
+
+func buildTestProvideFrontendService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideFrontendService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -22,7 +28,7 @@ func frontendServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

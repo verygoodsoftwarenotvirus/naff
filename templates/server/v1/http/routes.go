@@ -12,6 +12,7 @@ const routingLibrary = "github.com/go-chi/chi"
 func buildCORSHandlerDef() []jen.Code {
 	return []jen.Code{
 		jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
+		jen.Line(),
 		jen.ID("ch").Assign().Qual("github.com/go-chi/cors", "New").Call(jen.Qual("github.com/go-chi/cors", "Options").Valuesln(
 			jen.Comment(`AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts`),
 			jen.ID("AllowedOrigins").MapAssign().Index().String().Values(jen.Lit("*")),
@@ -38,7 +39,7 @@ func buildCORSHandlerDef() []jen.Code {
 }
 
 func routesDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("httpserver")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 

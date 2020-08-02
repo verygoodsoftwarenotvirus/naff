@@ -12,7 +12,18 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMiddlewareConstantDefs(proj)...)
+	code.Add(buildCookieAuthenticationMiddleware(proj)...)
+	code.Add(buildAuthenticationMiddleware(proj)...)
+	code.Add(buildAdminMiddleware(proj)...)
+	code.Add(buildparseLoginInputFromForm(proj)...)
+	code.Add(buildUserLoginInputMiddleware(proj)...)
+
+	return code
+}
+
+func buildMiddlewareConstantDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("userLoginInputMiddlewareCtxKey is the context key for login input."),
 			jen.ID("userLoginInputMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_login_input"),
@@ -25,9 +36,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.ID("totpTokenFormKey").Equals().Lit("totpToken"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCookieAuthenticationMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CookieAuthenticationMiddleware checks every request for a user cookie."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CookieAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -60,9 +75,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAuthenticationMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("AuthenticationMiddleware authenticates based on either an oauth2 token or a cookie."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthenticationMiddleware").Params(jen.ID("allowValidCookieInLieuOfAValidToken").Bool()).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))).Block(
@@ -129,9 +148,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAdminMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("AdminMiddleware restricts requests to admin users only."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -158,9 +181,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildparseLoginInputFromForm(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant."),
 		jen.Line(),
 		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")).Block(
@@ -178,9 +205,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUserLoginInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UserLoginInputMiddleware fetches user login input from requests."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -202,7 +233,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

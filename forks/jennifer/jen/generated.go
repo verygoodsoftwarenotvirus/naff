@@ -314,6 +314,20 @@ func (s *Statement) Block(statements ...Code) *Statement {
 	return s
 }
 
+// Body is an alias for block
+func (s *Statement) Body(statements ...Code) *Statement {
+	g := &Group{
+		close:     "}",
+		items:     statements,
+		multi:     true,
+		name:      "block",
+		open:      "{",
+		separator: "",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
 func SingleLineBlock(statements ...Code) *Statement {
 	return newStatement().SingleLineBlock(statements...)

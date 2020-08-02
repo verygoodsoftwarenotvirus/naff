@@ -16,7 +16,21 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBcryptConstDeclarations()...)
+	code.Add(buildBcryptVarDeclarations()...)
+	code.Add(buildBcryptTypeDeclarations()...)
+	code.Add(buildProvideBcryptAuthenticator()...)
+	code.Add(buildHashPassword(proj)...)
+	code.Add(buildValidateLogin(proj)...)
+	code.Add(buildPasswordMatches(proj)...)
+	code.Add(buildHashedPasswordIsTooWeak(proj)...)
+	code.Add(buildPasswordIsAcceptable()...)
+
+	return code
+}
+
+func buildBcryptConstDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("bcryptCostCompensation").Equals().Lit(2),
 			jen.ID("defaultMinimumPasswordSize").Equals().Lit(16),
@@ -25,9 +39,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.ID("DefaultBcryptHashCost").Equals().ID("BcryptHashCost").Call(jen.Qual("golang.org/x/crypto/bcrypt", "DefaultCost").Plus().ID("bcryptCostCompensation")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBcryptVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Underscore().ID("Authenticator").Equals().Parens(jen.PointerTo().ID("BcryptAuthenticator")).Call(jen.Nil()),
 			jen.Line(),
@@ -35,9 +53,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.ID("ErrCostTooLow").Equals().Qual("errors", "New").Call(jen.Lit("stored password's cost is too low")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBcryptTypeDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("BcryptAuthenticator is our bcrypt-based authenticator"),
 			jen.ID("BcryptAuthenticator").Struct(
@@ -50,9 +72,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.ID("BcryptHashCost").ID("uint"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideBcryptAuthenticator() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideBcryptAuthenticator returns a bcrypt powered Authenticator."),
 		jen.Line(),
 		jen.Func().ID("ProvideBcryptAuthenticator").Params(
@@ -67,9 +93,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("ba"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildHashPassword(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("HashPassword takes a password and hashes it using bcrypt."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(
@@ -86,9 +116,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.String().Call(jen.ID("hashedPass")), jen.Err()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildValidateLogin(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ValidateLogin validates a login attempt by:"),
 		jen.Line(),
 		jen.Comment("1. checking that the provided password matches the stored hashed password"),
@@ -133,9 +167,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("passwordMatches"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildPasswordMatches(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Block(
@@ -143,9 +181,13 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().Byte().Call(jen.ID("hashedPassword")), jen.Index().Byte().Call(jen.ID("providedPassword"))).IsEqualTo().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildHashedPasswordIsTooWeak(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("hashedPasswordIsTooWeak determines if a given hashed password was hashed with too weak a bcrypt cost."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("hashedPasswordIsTooWeak").Params(
@@ -160,16 +202,20 @@ func bcryptDotGo(proj *models.Project) *jen.File {
 			jen.Return().Err().DoesNotEqual().ID("nil").Or().ID("uint").Call(jen.ID("cost")).LessThan().ID("b").Dot("hashCost"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildPasswordIsAcceptable() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").String()).Params(jen.Bool()).Block(
 			jen.Return().ID("uint").Call(jen.Len(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

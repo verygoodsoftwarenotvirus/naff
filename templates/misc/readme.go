@@ -6,7 +6,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func readmeDotMD(proj *models.Project) []byte {
+func readmeDotMD(proj *models.Project) string {
 	projectName := proj.Name
 	f := fmt.Sprintf(`# %s
 
@@ -119,7 +119,8 @@ It's a good idea to run `+"`"+`make quicktest lintegration-tests`+"`"+` before c
 
 1. run `+"`"+`make dev`+"`"+`
 2. in a different terminal, cd into `+"`"+`frontend/v1`+"`"+` and run `+"`"+`npm run autobuild`+"`"+`
-3. edit and have fun`, projectName.Singular())
+3. edit and have fun
+`, projectName.Singular())
 
-	return []byte(f)
+	return f
 }

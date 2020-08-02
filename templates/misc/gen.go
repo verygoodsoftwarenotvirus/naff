@@ -13,7 +13,7 @@ import (
 
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
-	files := map[string]func(*models.Project) []byte{
+	files := map[string]func(*models.Project) string{
 		".dockerignore":  dockerIgnore,
 		".gitignore":     gitIgnore,
 		"Makefile":       makefile,
@@ -35,8 +35,7 @@ func RenderPackage(project *models.Project) error {
 			return err
 		}
 
-		bytes := file(project)
-		if _, err := f.Write(bytes); err != nil {
+		if _, err := f.WriteString(file(project)); err != nil {
 			log.Printf("error writing to file: %v", err)
 			return err
 		}
@@ -45,13 +44,13 @@ func RenderPackage(project *models.Project) error {
 	return nil
 }
 
-func dockerIgnore(project *models.Project) []byte {
-	return []byte(`**/node_modules
+func dockerIgnore(_ *models.Project) string {
+	return `**/node_modules
 **/dist
-`)
+`
 }
 
-func gitIgnore(project *models.Project) []byte {
+func gitIgnore(project *models.Project) string {
 	output := `# Binaries for programs and plugins
 *.exe
 *.dll
@@ -110,10 +109,10 @@ cmd/playground
 		output += "*.sqlite\n"
 	}
 
-	return []byte(output)
+	return output
 }
 
-func gitlabCIDotYAML(project *models.Project) []byte {
+func gitlabCIDotYAML(project *models.Project) string {
 	projRoot := project.OutputPath
 	projParts := strings.Split(projRoot, "/")
 
@@ -349,10 +348,10 @@ gitlabcr:
     - master
 `, ciPath, ciBuildPath, ciPath, projRoot, projRoot, projRoot)
 
-	return []byte(f)
+	return f
 }
 
-func golancCILintDotYAML(project *models.Project) []byte {
+func golancCILintDotYAML(project *models.Project) string {
 	projRoot := project.OutputPath
 	f := fmt.Sprintf(`# options for analysis running
 run:
@@ -680,5 +679,5 @@ issues:
   #
 `, projRoot)
 
-	return []byte(f)
+	return f
 }

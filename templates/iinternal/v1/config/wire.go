@@ -18,7 +18,31 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 	)
 
+	code.Add(buildProvideConfigServerSettings()...)
+
+	code.Add(buildProvideConfigAuthSettings()...)
+
+	code.Add(buildProvideConfigDatabaseSettings()...)
+
+	code.Add(buildProvideConfigFrontendSettings()...)
+
+	if proj.SearchEnabled() {
+		code.Add(buildProvideSearchSettings()...)
+	}
+
 	code.Add(
+		jen.Line(),
+		jen.Comment("END it'd be neat if wire could do this for me one day."),
+		jen.Line(),
+	)
+
+	code.Add(buildWireProviders(proj)...)
+
+	return code
+}
+
+func buildProvideConfigServerSettings() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideConfigServerSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -29,9 +53,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideConfigAuthSettings() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideConfigAuthSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -42,9 +70,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideConfigDatabaseSettings() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideConfigDatabaseSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -55,9 +87,13 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideConfigFrontendSettings() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideConfigFrontendSettings is an obligatory function that"),
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
@@ -68,30 +104,30 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
-
-	if proj.SearchEnabled() {
-		code.Add(
-			jen.Comment("ProvideSearchSettings is an obligatory function that"),
-			jen.Line(),
-			jen.Comment("we're required to have because wire doesn't do it for us."),
-			jen.Line(),
-			jen.Func().ID("ProvideSearchSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("SearchSettings")).Block(
-				jen.Return().ID("c").Dot(
-					"Search",
-				),
-			),
-			jen.Line(),
-		)
 	}
 
-	code.Add(
-		jen.Line(),
-		jen.Comment("END it'd be neat if wire could do this for me one day."),
-		jen.Line(),
-	)
+	return lines
+}
 
-	code.Add(
+func buildProvideSearchSettings() []jen.Code {
+	lines := []jen.Code{
+		jen.Comment("ProvideSearchSettings is an obligatory function that"),
+		jen.Line(),
+		jen.Comment("we're required to have because wire doesn't do it for us."),
+		jen.Line(),
+		jen.Func().ID("ProvideSearchSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("SearchSettings")).Block(
+			jen.Return().ID("c").Dot(
+				"Search",
+			),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildWireProviders(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("Providers represents this package's offering to the dependency manager."),
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
@@ -109,7 +145,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

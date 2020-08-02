@@ -12,42 +12,49 @@ import (
 func databaseDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile("database")
 
-	modelsImp := fmt.Sprintf("%s/models/v1", proj.OutputPath)
-
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildVarDeclarations()...)
+	code.Add(buildTypeDeclarations(proj)...)
+
+	return code
+}
+
+func buildVarDeclarations() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Underscore().ID("Scanner").Equals().Parens(jen.PointerTo().Qual("database/sql", "Row")).Call(jen.Nil()),
 			jen.Underscore().ID("Querier").Equals().Parens(jen.PointerTo().Qual("database/sql", "DB")).Call(jen.Nil()),
 			jen.Underscore().ID("Querier").Equals().Parens(jen.PointerTo().Qual("database/sql", "Tx")).Call(jen.Nil()),
 		),
 		jen.Line(),
-	)
-
-	buildInterfaceLines := func() []jen.Code {
-		lines := []jen.Code{
-			jen.ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()),
-			jen.ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()),
-			jen.Line(),
-		}
-
-		for _, typ := range proj.DataTypes {
-			lines = append(lines,
-				jen.Qual(modelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())),
-			)
-		}
-
-		lines = append(lines,
-			jen.Qual(modelsImp, "UserDataManager"),
-			jen.Qual(modelsImp, "OAuth2ClientDataManager"),
-			jen.Qual(modelsImp, "WebhookDataManager"),
-		)
-
-		return lines
 	}
 
-	code.Add(
+	return lines
+}
+
+func buildTypeDeclarations(proj *models.Project) []jen.Code {
+	modelsImp := fmt.Sprintf("%s/models/v1", proj.OutputPath)
+
+	interfaceLines := []jen.Code{
+		jen.ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()),
+		jen.ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()),
+		jen.Line(),
+	}
+
+	for _, typ := range proj.DataTypes {
+		interfaceLines = append(interfaceLines,
+			jen.Qual(modelsImp, fmt.Sprintf("%sDataManager", typ.Name.Singular())),
+		)
+	}
+
+	interfaceLines = append(interfaceLines,
+		jen.Qual(modelsImp, "UserDataManager"),
+		jen.Qual(modelsImp, "OAuth2ClientDataManager"),
+		jen.Qual(modelsImp, "WebhookDataManager"),
+	)
+
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("Scanner represents any database response (i.e. sql.Row[s])"),
 			jen.ID("Scanner").Interface(
@@ -74,11 +81,11 @@ func databaseDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			jen.Comment("DataManager describes anything that stores data for our services."),
 			jen.ID("DataManager").Interface(
-				buildInterfaceLines()...,
+				interfaceLines...,
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

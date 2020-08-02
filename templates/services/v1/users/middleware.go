@@ -12,7 +12,17 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMiddlewareConstantDefs(proj)...)
+	code.Add(buildUserInputMiddleware(proj)...)
+	code.Add(buildPasswordUpdateInputMiddleware(proj)...)
+	code.Add(buildTOTPSecretVerificationInputMiddleware(proj)...)
+	code.Add(buildTOTPSecretRefreshInputMiddleware(proj)...)
+
+	return code
+}
+
+func buildMiddlewareConstantDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("userCreationMiddlewareCtxKey is the context key for creation input."),
 			jen.ID("userCreationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_creation_input"),
@@ -27,9 +37,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.ID("totpSecretRefreshMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("totp_refresh"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUserInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UserInputMiddleware fetches user input from requests."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -51,9 +65,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildPasswordUpdateInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("PasswordUpdateInputMiddleware fetches password update input from requests."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -75,9 +93,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTOTPSecretVerificationInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("TOTPSecretVerificationInputMiddleware fetches 2FA update input from requests."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -99,9 +121,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTOTPSecretRefreshInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("TOTPSecretRefreshInputMiddleware fetches 2FA update input from requests."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -123,7 +149,7 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
