@@ -12,7 +12,14 @@ func authTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildLoginUser(proj)...)
+	code.Add(buildTestAuth(proj)...)
+
+	return code
+}
+
+func buildLoginUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("loginUser").Params(
 			constants.CtxParam(),
 			jen.ID("t").PointerTo().Qual("testing", "T"),
@@ -62,9 +69,13 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestAuth(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -768,7 +779,7 @@ func authTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

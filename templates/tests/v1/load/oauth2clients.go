@@ -12,7 +12,15 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildFetchRandomOAuth2Client(proj)...)
+	code.Add(buildMustBuildCode()...)
+	code.Add(buildBuildOAuth2ClientActions(proj)...)
+
+	return code
+}
+
+func buildFetchRandomOAuth2Client(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients."),
 		jen.Line(),
 		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
@@ -31,9 +39,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("selectedClient"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildMustBuildCode() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("mustBuildCode").Params(jen.ID("totpSecret").String()).Params(jen.String()).Block(
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
 				jen.ID("totpSecret"),
@@ -44,9 +56,13 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Return(jen.ID("code")),
 		),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBuildOAuth2ClientActions(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(
 			jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("CreateOAuth2Client").MapAssign().Valuesln(
@@ -92,7 +108,7 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 					jen.ID("Weight").MapAssign().Lit(100))),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

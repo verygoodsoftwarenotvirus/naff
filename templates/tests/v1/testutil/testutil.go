@@ -12,14 +12,31 @@ func testutilDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildInit()...)
+	code.Add(buildDetermineServiceURL()...)
+	code.Add(buildEnsureServerIsUp()...)
+	code.Add(buildIsUp()...)
+	code.Add(buildCreateObligatoryUser(proj)...)
+	code.Add(buildBuildURL()...)
+	code.Add(buildGetLoginCookie(proj)...)
+	code.Add(buildCreateObligatoryClient(proj)...)
+
+	return code
+}
+
+func buildInit() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.Qual(constants.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDetermineServiceURL() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("DetermineServiceURL returns the URL, if properly configured."),
 		jen.Line(),
 		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
@@ -39,9 +56,13 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("svcAddr"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildEnsureServerIsUp() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other."),
 		jen.Line(),
 		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Block(
@@ -66,9 +87,13 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIsUp() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("IsUp can check if an instance of our server is alive."),
 		jen.Line(),
 		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Block(
@@ -90,9 +115,13 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID(constants.ResponseVarName).Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusOK"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
@@ -170,9 +199,13 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("u"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildBuildURL() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Spread().String()).Params(jen.String()).Block(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -187,9 +220,13 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("tu").Dot("ResolveReference").Call(jen.ID("u")).Dot("String").Call(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildGetLoginCookie(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		)).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Block(
@@ -236,9 +273,13 @@ func testutilDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.Nil(), utils.Error("no cookie found :(")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCreateObligatoryClient(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests."),
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
@@ -316,7 +357,7 @@ cookie problems!
 			jen.Return().List(jen.AddressOf().ID("o"), jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.ResponseVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("o"))),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

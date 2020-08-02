@@ -12,7 +12,18 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUsersTestsInit()...)
+	code.Add(buildUsersTestsRandString()...)
+	code.Add(buildUsersTestsBuildDummyUser(proj)...)
+	code.Add(buildUsersTestsCheckUserCreationEquality(proj)...)
+	code.Add(buildUsersTestsCheckUserEquality(proj)...)
+	code.Add(buildUsersTestsTestUsers(proj)...)
+
+	return code
+}
+
+func buildUsersTestsInit() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -20,9 +31,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersTestsRandString() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -37,9 +52,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.Qual("encoding/base32", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b")), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersTestsBuildDummyUser(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildDummyUser").Params(
 			constants.CtxParam(),
 			jen.ID("t").PointerTo().Qual("testing", "T"),
@@ -87,9 +106,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("user"), jen.ID("userInput"), jen.ID("cookie")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersTestsCheckUserCreationEquality(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("checkUserCreationEquality").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
@@ -109,9 +132,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.AssertNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersTestsCheckUserEquality(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("checkUserEquality").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
@@ -130,9 +157,13 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			utils.AssertNil(jen.ID("actual").Dot("ArchivedOn"), nil),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersTestsTestUsers(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 				utils.BuildSubTestWithoutContext(
@@ -248,7 +279,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

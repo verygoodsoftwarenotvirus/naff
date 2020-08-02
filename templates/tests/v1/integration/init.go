@@ -12,23 +12,41 @@ func initDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildInitConstDefs()...)
+	code.Add(buildInitVarDefs(proj)...)
+	code.Add(buildInitInit(proj)...)
+	code.Add(buildInitBuildHTTPClient()...)
+	code.Add(buildInitInitializeClient(proj)...)
+
+	return code
+}
+
+func buildInitConstDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("debug").Equals().True(),
 			jen.ID("nonexistentID").Equals().Lit(999999999),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildInitVarDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("urlToUse").String(),
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildInitInit(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.ID("urlToUse").Equals().Qual(proj.TestUtilV1Package(), "DetermineServiceURL").Call(),
 			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
@@ -54,9 +72,13 @@ func initDotGo(proj *models.Project) *jen.File {
 			jen.Qual("fmt", "Printf").Call(jen.Lit("%s\tRunning tests%s"), jen.ID("fiftySpaces"), jen.ID("fiftySpaces")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildInitBuildHTTPClient() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildHTTPClient").Params().Params(jen.PointerTo().Qual("net/http", "Client")).Block(
 			jen.Return(
 				jen.AddressOf().Qual("net/http", "Client").Valuesln(
@@ -66,9 +88,13 @@ func initDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildInitInitializeClient(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Block(
 			jen.List(jen.ID("uri"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -90,7 +116,7 @@ func initDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("c"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
