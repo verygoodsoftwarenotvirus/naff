@@ -14,13 +14,26 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	sn := typ.Name.Singular()
+	code.Add(buildSomethingServiceConstantDefs(proj, typ)...)
+	code.Add(buildSomethingServiceVarDefs(proj, typ)...)
+	code.Add(buildServiceTypeDecls(proj, typ)...)
+	code.Add(buildProvideServiceFuncDecl(proj, typ)...)
+
+	if typ.SearchEnabled {
+		code.Add(buildProvideServiceSearchIndexFuncDecl(proj, typ)...)
+	}
+
+	return code
+}
+
+func buildSomethingServiceConstantDefs(proj *models.Project, typ models.DataType) []jen.Code {
+
 	cn := typ.Name.SingularCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
 	srn := typ.Name.RouteName()
 	prn := typ.Name.PluralRouteName()
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Commentf("createMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts.", cn),
 			jen.ID("createMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
@@ -33,22 +46,22 @@ func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("serviceName").String().Equals().Lit(fmt.Sprintf("%s_service", prn)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildSomethingServiceVarDefs(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
-	)
-
-	code.Add(buildServiceTypeDecls(proj, typ)...)
-	code.Add(buildProvideServiceFuncDecl(proj, typ)...)
-	if typ.SearchEnabled {
-		code.Add(buildProvideServiceSearchIndexFuncDecl(proj, typ)...)
 	}
 
-	return code
+	return lines
 }
 
 func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code {

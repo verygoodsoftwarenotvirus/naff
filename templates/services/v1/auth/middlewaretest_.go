@@ -12,7 +12,17 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestService_CookieAuthenticationMiddleware(proj)...)
+	code.Add(buildTestService_AuthenticationMiddleware(proj)...)
+	code.Add(buildTest_parseLoginInputFromForm(proj)...)
+	code.Add(buildTestService_UserLoginInputMiddleware(proj)...)
+	code.Add(buildTestService_AdminMiddleware(proj)...)
+
+	return code
+}
+
+func buildTestService_CookieAuthenticationMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -121,9 +131,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_AuthenticationMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -484,9 +498,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTest_parseLoginInputFromForm(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -530,9 +548,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_UserLoginInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -651,9 +673,13 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_AdminMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -749,7 +775,7 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

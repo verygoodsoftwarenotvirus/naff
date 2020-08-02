@@ -12,7 +12,16 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	// if proj.EnableNewsman {
-	code.Add(
+	code.Add(buildTestProvideUserDataManager(proj)...)
+	// }
+
+	code.Add(buildTestProvideUserDataServer()...)
+
+	return code
+}
+
+func buildTestProvideUserDataManager(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideUserDataManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -23,10 +32,13 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
-	// }
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideUserDataServer() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideUserDataServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -35,7 +47,7 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

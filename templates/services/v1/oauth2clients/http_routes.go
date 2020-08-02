@@ -12,7 +12,19 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildOAuth2ClientHTTPRoutesConstantDefs(proj)...)
+	code.Add(buildOAuth2ClientHTTPRoutesRandString()...)
+	code.Add(buildOAuth2ClientHTTPRoutesFetchUserID(proj)...)
+	code.Add(buildOAuth2ClientHTTPRoutesListHandler(proj)...)
+	code.Add(buildOAuth2ClientHTTPRoutesCreateHandler(proj)...)
+	code.Add(buildOAuth2ClientHTTPRoutesReadHandler(proj)...)
+	code.Add(buildOAuth2ClientHTTPRoutesArchiveHandler(proj)...)
+
+	return code
+}
+
+func buildOAuth2ClientHTTPRoutesConstantDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("URIParamKey is used for referring to OAuth2 client IDs in router params."),
 			jen.ID("URIParamKey").Equals().Lit("oauth2ClientID"),
@@ -21,9 +33,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("clientIDKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("client_id"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientHTTPRoutesRandString() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("randString produces a random string."),
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
@@ -38,9 +54,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Return().Qual("encoding/base32", "StdEncoding").Dot("WithPadding").Call(jen.Qual("encoding/base32", "NoPadding")).Dot("EncodeToString").Call(jen.ID("b")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientHTTPRoutesFetchUserID(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("fetchUserID grabs a userID out of the request context."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserID").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
@@ -53,9 +73,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Return().Zero(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientHTTPRoutesListHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ListHandler is a handler that returns a list of OAuth2 clients."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -91,9 +115,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateHandler is our OAuth2 client creation route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -168,9 +196,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ReadHandler is a route handler for retrieving an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -207,9 +239,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ArchiveHandler is a route handler for archiving an OAuth2 client."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -244,7 +280,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

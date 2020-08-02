@@ -12,7 +12,14 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBuildTestService(proj)...)
+	code.Add(buildTestProvideWebhooksService(proj)...)
+
+	return code
+}
+
+func buildBuildTestService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
 			jen.Return().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -25,9 +32,13 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -77,7 +88,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

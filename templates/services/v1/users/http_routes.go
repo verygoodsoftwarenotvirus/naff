@@ -12,7 +12,22 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUsersHTTPRoutesVarDeclarations(proj)...)
+	code.Add(buildUsersHTTPRoutesValidateCredentialChangeRequest(proj)...)
+	code.Add(buildUsersHTTPRoutesListHandler(proj)...)
+	code.Add(buildUsersHTTPRoutesCreateHandler(proj)...)
+	code.Add(buildUsersHTTPRoutesBuildQRCode(proj)...)
+	code.Add(buildUsersHTTPRoutesReadHandler(proj)...)
+	code.Add(buildUsersHTTPRoutesTOTPSecretVerificationHandler(proj)...)
+	code.Add(buildUsersHTTPRoutesNewTOTPSecretHandler(proj)...)
+	code.Add(buildUsersHTTPRoutesUpdatePasswordHandler(proj)...)
+	code.Add(buildUsersHTTPRoutesArchiveHandler(proj)...)
+
+	return code
+}
+
+func buildUsersHTTPRoutesVarDeclarations(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("URIParamKey is used to refer to user IDs in router params."),
 			jen.ID("URIParamKey").Equals().Lit("userID"),
@@ -21,9 +36,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.ID("base64ImagePrefix").Equals().Lit("data:image/jpeg;base64,"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesValidateCredentialChangeRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("validateCredentialChangeRequest takes a user's credentials and determines"),
 		jen.Line(),
 		jen.Comment("if they match what is on record."),
@@ -68,9 +87,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("user"), jen.Qual("net/http", "StatusOK")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesListHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ListHandler is a handler for responding with a list of users."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -96,9 +119,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreateHandler is our user creation route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -205,9 +232,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesBuildQRCode(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("buildQRCode builds a QR code for a given username and secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildQRCode").Params(constants.CtxParam(), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).String()).Params(jen.String()).Block(
@@ -250,9 +281,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%s%s"), jen.ID("base64ImagePrefix"), jen.Qual("encoding/base64", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b").Dot("Bytes").Call())),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ReadHandler is our read route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -286,9 +321,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesTOTPSecretVerificationHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("TOTPSecretVerificationHandler accepts a TOTP token as input and returns 200 if the TOTP token"),
 		jen.Line(),
 		jen.Comment("is validated by the user's TOTP secret."),
@@ -350,9 +389,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesNewTOTPSecretHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("NewTOTPSecretHandler fetches a user, and issues them a new TOTP secret, after validating"),
 		jen.Line(),
 		jen.Comment("that information received from TOTPSecretRefreshInputContextMiddleware is valid."),
@@ -424,9 +467,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesUpdatePasswordHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("UpdatePasswordHandler updates a user's password, after validating that information received"),
 		jen.Line(),
 		jen.Comment("from PasswordUpdateInputContextMiddleware is valid."),
@@ -496,9 +543,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			utils.WriteXHeader(constants.ResponseVarName, "StatusAccepted"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildUsersHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ArchiveHandler is a handler for archiving a user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
@@ -531,7 +582,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

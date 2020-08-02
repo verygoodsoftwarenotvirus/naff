@@ -13,7 +13,15 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBuildRequest()...)
+	code.Add(buildTestService_StaticDir(proj)...)
+	code.Add(buildTestService_buildStaticFileServer(proj)...)
+
+	return code
+}
+
+func buildBuildRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -28,33 +36,9 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID(constants.RequestVarName),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(buildTestService_StaticDir(proj)...)
-
-	code.Add(
-		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			utils.BuildSubTestWithoutContext(
-				"obligatory",
-				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
-						jen.ID("CacheStaticFiles").MapAssign().True(),
-					),
-				),
-				jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
-				utils.RequireNoError(jen.Err(), nil),
-				jen.Line(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("buildStaticFileServer").Call(jen.ID("cwd")),
-				utils.AssertNotNil(jen.ID("actual"), nil),
-				utils.AssertNoError(jen.Err(), nil),
-			),
-		),
-		jen.Line(),
-	)
-
-	return code
+	return lines
 }
 
 func buildTestService_StaticDir(proj *models.Project) []jen.Code {
@@ -122,6 +106,32 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 
 	lines := []jen.Code{
 		jen.Func().ID("TestService_StaticDir").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(block...), jen.Line(),
+	}
+
+	return lines
+}
+
+func buildTestService_buildStaticFileServer(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
+		jen.Func().ID("TestService_buildStaticFileServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
+			utils.BuildSubTestWithoutContext(
+				"obligatory",
+				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
+					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
+						jen.ID("CacheStaticFiles").MapAssign().True(),
+					),
+				),
+				jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
+				utils.RequireNoError(jen.Err(), nil),
+				jen.Line(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("s").Dot("buildStaticFileServer").Call(jen.ID("cwd")),
+				utils.AssertNotNil(jen.ID("actual"), nil),
+				utils.AssertNoError(jen.Err(), nil),
+			),
+		),
+		jen.Line(),
 	}
 
 	return lines

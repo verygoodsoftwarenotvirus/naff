@@ -12,7 +12,14 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildBuildTestService(proj)...)
+	code.Add(buildTestProvideUsersService(proj)...)
+
+	return code
+}
+
+func buildBuildTestService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -48,9 +55,13 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideUsersService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideUsersService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -127,7 +138,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -12,14 +12,25 @@ func frontendServiceDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildFrontendConstantDefs()...)
+	code.Add(buildFrontendTypeDefs(proj)...)
+	code.Add(buildProvideFrontendService(proj)...)
+
+	return code
+}
+
+func buildFrontendConstantDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("serviceName").Equals().Lit("frontend_service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+func buildFrontendTypeDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("Service is responsible for serving HTML (and other static resources)"),
 			jen.ID("Service").Struct(
@@ -28,9 +39,13 @@ func frontendServiceDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideFrontendService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection."),
 		jen.Line(),
 		jen.Func().ID("ProvideFrontendService").Params(constants.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Block(
@@ -41,7 +56,7 @@ func frontendServiceDotGo(proj *models.Project) *jen.File {
 			jen.Return().ID("svc"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

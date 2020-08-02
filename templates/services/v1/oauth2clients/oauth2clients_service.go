@@ -12,7 +12,22 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildServiceInit()...)
+	code.Add(buildServiceConstDefs(proj)...)
+	code.Add(buildServiceVarDefs(proj)...)
+	code.Add(buildServiceTypeDefs(proj)...)
+	code.Add(buildServiceNewClientStore(proj)...)
+	code.Add(buildServiceGetByID()...)
+	code.Add(buildServiceProvideOAuth2ClientsService(proj)...)
+	code.Add(buildServiceInitializeOAuth2Handler()...)
+	code.Add(buildServiceHandleAuthorizeRequest()...)
+	code.Add(buildServiceHandleTokenRequest()...)
+
+	return code
+}
+
+func buildServiceInit() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("init").Params().Block(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
@@ -20,9 +35,13 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceConstDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("creationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data."),
 			jen.ID("creationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
@@ -32,17 +51,25 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.ID("serviceName").String().Equals().Lit("oauth2_clients_service"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceVarDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 			jen.Underscore().Qual("gopkg.in/oauth2.v3", "ClientStore").Equals().Parens(jen.PointerTo().ID("clientStore")).Call(jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceTypeDefs(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.ID("oauth2Handler").Interface(
 				jen.ID("SetAllowGetAccessRequest").Params(jen.Bool()),
@@ -78,18 +105,26 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceNewClientStore(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Block(
 			jen.ID("cs").Assign().AddressOf().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceGetByID() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").String()).Params(jen.Qual("gopkg.in/oauth2.v3", "ClientInfo"), jen.Error()).Block(
@@ -104,9 +139,13 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("client"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideOAuth2ClientsService builds a new OAuth2ClientsService."),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
@@ -144,9 +183,13 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceInitializeOAuth2Handler() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("initializeOAuth2Handler."),
 		jen.Line(),
 		jen.Func().ID("initializeOAuth2Handler").Params(
@@ -173,9 +216,13 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceHandleAuthorizeRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("HandleAuthorizeRequest is a simple wrapper around the internal server's HandleAuthorizeRequest."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
@@ -186,9 +233,13 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceHandleTokenRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("HandleTokenRequest is a simple wrapper around the internal server's HandleTokenRequest."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
@@ -199,7 +250,7 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

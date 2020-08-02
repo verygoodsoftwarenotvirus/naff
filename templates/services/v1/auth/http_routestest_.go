@@ -12,7 +12,23 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildAttachCookieToRequestForTest(proj)...)
+	code.Add(buildTestService_DecodeCookieFromRequest(proj)...)
+	code.Add(buildTestService_WebsocketAuthFunction(proj)...)
+	code.Add(buildTestService_fetchUserFromCookie(proj)...)
+	code.Add(buildTestService_LoginHandler(proj)...)
+	code.Add(buildTestService_LogoutHandler(proj)...)
+	code.Add(buildTestService_fetchLoginDataFromRequest(proj)...)
+	code.Add(buildTestService_validateLogin(proj)...)
+	code.Add(buildTestService_StatusHandler(proj)...)
+	code.Add(buildTestService_CycleSecretHandler(proj)...)
+	code.Add(buildTestService_buildCookie()...)
+
+	return code
+}
+
+func buildAttachCookieToRequestForTest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("attachCookieToRequestForTest").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("s").PointerTo().ID("Service"),
@@ -62,9 +78,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_DecodeCookieFromRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_DecodeCookieFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -131,9 +151,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_WebsocketAuthFunction(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_WebsocketAuthFunction").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"with valid oauth2 client",
@@ -216,9 +240,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_fetchUserFromCookie(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_fetchUserFromCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -303,9 +331,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_LoginHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_LoginHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -603,9 +635,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_LogoutHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_LogoutHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -675,9 +711,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_fetchLoginDataFromRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_fetchLoginDataFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -773,9 +813,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_validateLogin(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_validateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTest(
 				"happy path",
@@ -996,9 +1040,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_StatusHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_StatusHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"normal operation",
@@ -1120,9 +1168,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_CycleSecretHandler(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_CycleSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"normal operation",
@@ -1165,9 +1217,13 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestService_buildCookie() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestService_buildCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
 			utils.BuildSubTestWithoutContext(
 				"happy path",
@@ -1198,7 +1254,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

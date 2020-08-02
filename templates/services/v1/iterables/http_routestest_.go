@@ -15,9 +15,11 @@ func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(buildTestServiceListFuncDecl(proj, typ)...)
+
 	if typ.SearchEnabled {
 		code.Add(buildTestServiceSearchFuncDecl(proj, typ)...)
 	}
+
 	code.Add(buildTestServiceCreateFuncDecl(proj, typ)...)
 	code.Add(buildTestServiceExistenceFuncDecl(proj, typ)...)
 	code.Add(buildTestServiceReadFuncDecl(proj, typ)...)

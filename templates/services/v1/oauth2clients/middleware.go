@@ -12,15 +12,32 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildMiddlewareConstantDefs()...)
+	code.Add(buildCreationInputMiddleware(proj)...)
+	code.Add(buildExtractOAuth2ClientFromRequest(proj)...)
+	code.Add(buildDetermineScope()...)
+	code.Add(buildOAuth2TokenAuthenticationMiddleware(proj)...)
+	code.Add(buildOAuth2ClientInfoMiddleware(proj)...)
+	code.Add(buildServiceFetchOAuth2ClientFromRequest(proj)...)
+	code.Add(buildServiceFetchOAuth2ClientIDFromRequest()...)
+
+	return code
+}
+
+func buildMiddlewareConstantDefs() []jen.Code {
+	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("scopesSeparator").Equals().Lit(","),
 			jen.ID("apiPathPrefix").Equals().Lit("/api/v1/"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildCreationInputMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("CreationInputMiddleware is a middleware for attaching OAuth2 client info to a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -41,9 +58,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildExtractOAuth2ClientFromRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ExtractOAuth2ClientFromRequest extracts OAuth2 client data from a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
@@ -81,9 +102,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.Return().List(jen.ID("c"), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDetermineScope() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("determineScope determines the scope of a request by its URL."),
 		jen.Line(),
 		jen.Func().ID("determineScope").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.String()).Block(
@@ -99,9 +124,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			jen.Return().EmptyString(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2TokenAuthenticationMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("OAuth2TokenAuthenticationMiddleware authenticates Oauth tokens."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2TokenAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -127,9 +156,13 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildOAuth2ClientInfoMiddleware(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("OAuth2ClientInfoMiddleware fetches clientOAuth2Client info from requests and attaches it explicitly to a request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
@@ -160,25 +193,33 @@ func middlewareDotGo(proj *models.Project) *jen.File {
 			)),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceFetchOAuth2ClientFromRequest(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchOAuth2ClientFromRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
 			jen.List(jen.ID("client"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
 			jen.Underscore().Equals().ID("ok").Comment("we don't really care, but the linters do"),
 			jen.Return().ID("client"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildServiceFetchOAuth2ClientIDFromRequest() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchOAuth2ClientIDFromRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.String()).Block(
 			jen.List(jen.ID("clientID"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.ID("clientIDKey")).Assert(jen.String()),
 			jen.Underscore().Equals().ID("ok").Comment("we don't really care, but the linters do"),
 			jen.Return().ID("clientID"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -12,49 +12,63 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	buildProviderSet := func() []jen.Code {
-		lines := []jen.Code{
-			jen.ID("ProvideAuthService"),
-		}
+	code.Add(buildWireProviders()...)
 
-		// if proj.EnableNewsman {
-		lines = append(lines, jen.ID("ProvideWebsocketAuthFunc"))
-		// }
+	// if proj.EnableNewsman {
+	code.Add(buildWireProvideWebsocketAuthFunc()...)
+	// }
 
-		lines = append(lines, jen.ID("ProvideOAuth2ClientValidator"))
+	code.Add(buildWireProvideOAuth2ClientValidator(proj)...)
 
-		return lines
+	return code
+}
+
+func buildWireProviders() []jen.Code {
+	providersLines := []jen.Code{
+		jen.ID("ProvideAuthService"),
 	}
 
-	code.Add(
+	// if proj.EnableNewsman {
+	providersLines = append(providersLines, jen.ID("ProvideWebsocketAuthFunc"))
+	// }
+
+	providersLines = append(providersLines, jen.ID("ProvideOAuth2ClientValidator"))
+
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("Providers is our collection of what we provide to other services."),
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
-				buildProviderSet()...,
+				providersLines...,
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	// if proj.EnableNewsman {
-	code.Add(
+	return lines
+}
+
+func buildWireProvideWebsocketAuthFunc() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").PointerTo().ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Block(
 			jen.Return().ID("svc").Dot("WebsocketAuthFunction"),
 		),
 		jen.Line(),
-	)
-	// }
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWireProvideOAuth2ClientValidator(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").PointerTo().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
