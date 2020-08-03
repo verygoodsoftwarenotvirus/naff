@@ -11,7 +11,14 @@ func runtimeTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTestRecordRuntimeStats()...)
+	code.Add(buildTestRegisterDefaultViews()...)
+
+	return code
+}
+
+func buildTestRecordRuntimeStats() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestRecordRuntimeStats").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -23,9 +30,13 @@ func runtimeTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("sf").Call(),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestRegisterDefaultViews() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
@@ -33,7 +44,7 @@ func runtimeTestDotGo(proj *models.Project) *jen.File {
 			utils.RequireNoError(jen.ID("RegisterDefaultViews").Call(), nil),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1105,6 +1106,105 @@ func TestV1Client_GetItems(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildTestV1Client_GetListOfSomething(proj, proj.DataTypes[2])
+
+		expected := `
+package example
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	assert "github.com/stretchr/testify/assert"
+	require "github.com/stretchr/testify/require"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestV1Client_GetYetAnotherThings(T *testing.T) {
+	T.Parallel()
+
+	const expectedPath = fmt.Sprintf("/api/v1/things/%d/another_things/%d/yet_another_things", exampleThing.ID, exampleAnotherThing.ID)
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		filter := (*v1.QueryFilter)(nil)
+
+		exampleYetAnotherThingList := fake.BuildFakeYetAnotherThingList()
+
+		ts := httptest.NewTLSServer(
+			http.HandlerFunc(
+				func(res http.ResponseWriter, req *http.Request) {
+					assert.Equal(t, req.URL.Path, expectedPath, "expected and actual paths do not match")
+					assert.Equal(t, req.Method, http.MethodGet)
+					require.NoError(t, json.NewEncoder(res).Encode(exampleYetAnotherThingList))
+				},
+			),
+		)
+
+		c := buildTestClient(t, ts)
+		actual, err := c.GetYetAnotherThings(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
+
+		require.NotNil(t, actual)
+		assert.NoError(t, err, "no error should be returned")
+		assert.Equal(t, exampleYetAnotherThingList, actual)
+	})
+
+	T.Run("with invalid client URL", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		filter := (*v1.QueryFilter)(nil)
+
+		c := buildTestClientWithInvalidURL(t)
+		actual, err := c.GetYetAnotherThings(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
+
+		assert.Nil(t, actual)
+		assert.Error(t, err, "error should be returned")
+	})
+
+	T.Run("with invalid response", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		filter := (*v1.QueryFilter)(nil)
+
+		ts := httptest.NewTLSServer(
+			http.HandlerFunc(
+				func(res http.ResponseWriter, req *http.Request) {
+					assert.Equal(t, req.URL.Path, expectedPath, "expected and actual paths do not match")
+					assert.Equal(t, req.Method, http.MethodGet)
+					require.NoError(t, json.NewEncoder(res).Encode("BLAH"))
+				},
+			),
+		)
+
+		c := buildTestClient(t, ts)
+		actual, err := c.GetYetAnotherThings(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
+
+		assert.Nil(t, actual)
+		assert.Error(t, err, "error should be returned")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestV1Client_BuildCreateSomethingRequest(T *testing.T) {
@@ -1114,8 +1214,8 @@ func Test_buildTestV1Client_BuildCreateSomethingRequest(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.BuildTodoApp()
-		typ := proj.DataTypes[0]
-		x := buildTestV1Client_BuildCreateSomethingRequest(proj, typ)
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildTestV1Client_BuildCreateSomethingRequest(proj, proj.DataTypes[2])
 
 		expected := `
 package example
@@ -1130,22 +1230,24 @@ import (
 	"testing"
 )
 
-func TestV1Client_BuildCreateItemRequest(T *testing.T) {
+func TestV1Client_BuildCreateYetAnotherThingRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
-		exampleUser := fake.BuildFakeUser()
-		exampleItem := fake.BuildFakeItem()
-		exampleItem.BelongsToUser = exampleUser.ID
-		exampleInput := fake.BuildFakeItemCreationInputFromItem(exampleItem)
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleAnotherThing.BelongsToThing = exampleThing.ID
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
 
 		expectedMethod := http.MethodPost
 		ts := httptest.NewTLSServer(nil)
 
 		c := buildTestClient(t, ts)
-		actual, err := c.BuildCreateItemRequest(ctx, exampleInput)
+		actual, err := c.BuildCreateYetAnotherThingRequest(ctx, exampleThing.ID, exampleInput)
 
 		require.NotNil(t, actual)
 		assert.NoError(t, err, "no error should be returned")
@@ -1228,6 +1330,89 @@ func TestV1Client_CreateItem(T *testing.T) {
 
 		c := buildTestClientWithInvalidURL(t)
 		actual, err := c.CreateItem(ctx, exampleInput)
+
+		assert.Nil(t, actual)
+		assert.Error(t, err, "error should be returned")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildTestV1Client_CreateSomething(proj, proj.DataTypes[2])
+
+		expected := `
+package example
+
+import (
+	"context"
+	"encoding/json"
+	assert "github.com/stretchr/testify/assert"
+	require "github.com/stretchr/testify/require"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestV1Client_CreateYetAnotherThing(T *testing.T) {
+	T.Parallel()
+
+	const expectedPath = "/api/v1/things/%d/another_things/%d/yet_another_things"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		ts := httptest.NewTLSServer(
+			http.HandlerFunc(
+				func(res http.ResponseWriter, req *http.Request) {
+					assert.Equal(t, req.URL.Path, expectedPath, "expected and actual paths do not match")
+					assert.Equal(t, req.Method, http.MethodPost)
+
+					var x *v1.YetAnotherThingCreationInput
+					require.NoError(t, json.NewDecoder(req.Body).Decode(&x))
+
+					exampleInput.BelongsToAnotherThing = 0
+					assert.Equal(t, exampleInput, x)
+
+					require.NoError(t, json.NewEncoder(res).Encode(exampleYetAnotherThing))
+				},
+			),
+		)
+
+		c := buildTestClient(t, ts)
+		actual, err := c.CreateYetAnotherThing(ctx, exampleThing.ID, exampleInput)
+
+		require.NotNil(t, actual)
+		assert.NoError(t, err, "no error should be returned")
+		assert.Equal(t, exampleYetAnotherThing, actual)
+	})
+
+	T.Run("with invalid client URL", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		c := buildTestClientWithInvalidURL(t)
+		actual, err := c.CreateYetAnotherThing(ctx, exampleThing.ID, exampleInput)
 
 		assert.Nil(t, actual)
 		assert.Error(t, err, "error should be returned")

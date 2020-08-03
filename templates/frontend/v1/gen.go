@@ -1,7 +1,7 @@
 package frontendmisc
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -21,18 +21,16 @@ func RenderPackage(project *models.Project) error {
 		fname := utils.BuildTemplatePath(project.OutputPath, filename)
 
 		if mkdirErr := os.MkdirAll(filepath.Dir(fname), os.ModePerm); mkdirErr != nil {
-			log.Printf("error making directory: %v\n", mkdirErr)
+			return fmt.Errorf("error making directory: %v\n", mkdirErr)
 		}
 
 		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			log.Printf("error opening file: %v", err)
 			return err
 		}
 
 		bytes := file()
 		if _, err := f.Write(bytes); err != nil {
-			log.Printf("error writing to file: %v", err)
 			return err
 		}
 	}

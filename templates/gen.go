@@ -143,7 +143,7 @@ func renderTask(proj *naffmodels.Project, wg *sync.WaitGroup, renderer renderHel
 	wg.Add(1)
 	start := time.Now()
 	if err := renderer.renderFunc(proj); err != nil {
-		log.Fatalf("error rendering %q after %s: %v\n", renderer.name, time.Since(start), err)
+		log.Panicf("error rendering %q after %s: %v\n", renderer.name, time.Since(start), err)
 	}
 	progressBar.Incr()
 	wg.Done()

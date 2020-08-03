@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
@@ -62,6 +63,9 @@ const (
 	testingEnv     = "testing"
 
 	// database providers
+	postgres = "postgres"
+	sqlite   = "sqlite"
+	mariadb  = "mariadb"
 
 	// search index paths
 	defaultItemsSearchIndexPath = "items.bleve"
@@ -71,9 +75,12 @@ type configFunc func(filePath string) error
 
 var (
 	files = map[string]configFunc{
-		"environments/local/config.toml":                        developmentConfig,
-		"environments/testing/config_files/frontend-tests.toml": frontendTestsConfig,
-		"environments/testing/config_files/coverage.toml":       coverageConfig,
+		"environments/local/config.toml":                                    developmentConfig,
+		"environments/testing/config_files/frontend-tests.toml":             frontendTestsConfig,
+		"environments/testing/config_files/coverage.toml":                   coverageConfig,
+		"environments/testing/config_files/integration-tests-postgres.toml": buildIntegrationTestForDBImplementation(postgres, postgresDBConnDetails),
+		"environments/testing/config_files/integration-tests-sqlite.toml":   buildIntegrationTestForDBImplementation(sqlite, "/tmp/db"),
+		"environments/testing/config_files/integration-tests-mariadb.toml":  buildIntegrationTestForDBImplementation(mariadb, "dbuser:hunter2@tcp(database:3306)/todo"),
 	}
 )
 
@@ -191,6 +198,9 @@ func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configF
 		cfg.Set(metaDebug, false)
 
 		sd := time.Minute
+		if dbVendor == mariadb {
+			sd = 5 * time.Minute
+		}
 		cfg.Set(metaStartupDeadline, sd)
 
 		cfg.Set(serverHTTPPort, defaultPort)
@@ -237,6 +247,36 @@ func Test_renderFileMap(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.BuildTodoApp()
+		x := renderFileMap(proj)
+
+		expected := `
+package example
+
+import ()
+
+var (
+	files = map[string]configFunc{
+		"environments/local/config.toml":                                    developmentConfig,
+		"environments/testing/config_files/frontend-tests.toml":             frontendTestsConfig,
+		"environments/testing/config_files/coverage.toml":                   coverageConfig,
+		"environments/testing/config_files/integration-tests-postgres.toml": buildIntegrationTestForDBImplementation(postgres, postgresDBConnDetails),
+		"environments/testing/config_files/integration-tests-sqlite.toml":   buildIntegrationTestForDBImplementation(sqlite, "/tmp/db"),
+		"environments/testing/config_files/integration-tests-mariadb.toml":  buildIntegrationTestForDBImplementation(mariadb, "dbuser:hunter2@tcp(database:3306)/todo"),
+	}
+)
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, actual, expected, "expected and actual output do not match")
+	})
+
+	T.Run("with no databases enabled", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DisableDatabase(models.Postgres)
+		proj.DisableDatabase(models.Sqlite)
+		proj.DisableDatabase(models.MariaDB)
 		x := renderFileMap(proj)
 
 		expected := `
@@ -308,6 +348,9 @@ const (
 	testingEnv     = "testing"
 
 	// database providers
+	postgres = "postgres"
+	sqlite   = "sqlite"
+	mariadb  = "mariadb"
 
 	// search index paths
 	defaultItemsSearchIndexPath = "items.bleve"
@@ -500,6 +543,63 @@ func Test_buildBuildIntegrationTestForDBImplementation(T *testing.T) {
 		t.Parallel()
 
 		proj := testprojects.BuildTodoApp()
+		x := buildBuildIntegrationTestForDBImplementation(proj)
+
+		expected := `
+package example
+
+import (
+	"fmt"
+	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
+	"time"
+)
+
+func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configFunc {
+	return func(filePath string) error {
+		cfg := config.BuildConfig()
+
+		cfg.Set(metaRunMode, testingEnv)
+		cfg.Set(metaDebug, false)
+
+		sd := time.Minute
+		if dbVendor == mariadb {
+			sd = 5 * time.Minute
+		}
+		cfg.Set(metaStartupDeadline, sd)
+
+		cfg.Set(serverHTTPPort, defaultPort)
+		cfg.Set(serverDebug, true)
+
+		cfg.Set(frontendStaticFilesDir, defaultFrontendFilepath)
+		cfg.Set(authCookieSecret, debugCookieSecret)
+
+		cfg.Set(metricsProvider, "prometheus")
+		cfg.Set(metricsTracer, "jaeger")
+
+		cfg.Set(dbDebug, false)
+		cfg.Set(dbProvider, dbVendor)
+		cfg.Set(dbDeets, dbDetails)
+
+		cfg.Set(itemsSearchIndexPath, defaultItemsSearchIndexPath)
+
+		if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
+			return fmt.Errorf("error writing integration test config for %s: %w", dbVendor, writeErr)
+		}
+
+		return nil
+	}
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, actual, expected, "expected and actual output do not match")
+	})
+
+	T.Run("without MariaDB", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DisableDatabase(models.MariaDB)
 		x := buildBuildIntegrationTestForDBImplementation(proj)
 
 		expected := `

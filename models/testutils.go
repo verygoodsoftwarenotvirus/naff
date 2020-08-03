@@ -38,7 +38,7 @@ func renderCallArgsToString(t *testing.T, args []jen.Code) string {
 	return b.String()
 }
 
-// buildOwnershipChain takes a series of names and returns a slice of datatypes with ownership between them.
+// BuildOwnershipChain takes a series of names and returns a slice of datatypes with ownership between them.
 // So for instance, if you provided `Forum`, `Subforum`, and `Post` as input, the output would be:
 // 		[]DataType{
 //			{
@@ -53,7 +53,7 @@ func renderCallArgsToString(t *testing.T, args []jen.Code) string {
 //				BelongsToStruct: wordsmith.FromSingularPascalCase("Subforum"),
 //			},
 //		}
-func buildOwnershipChain(names ...string) (out []DataType) {
+func BuildOwnershipChain(names ...string) (out []DataType) {
 	for i, name := range names {
 		if i == 0 {
 			out = append(out,

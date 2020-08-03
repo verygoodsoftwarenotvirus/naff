@@ -12,7 +12,16 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildTest_opencensusCounter_Increment()...)
+	code.Add(buildTest_opencensusCounter_IncrementBy()...)
+	code.Add(buildTest_opencensusCounter_Decrement()...)
+	code.Add(buildTestProvideUnitCounterProvider()...)
+
+	return code
+}
+
+func buildTest_opencensusCounter_Increment() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_opencensusCounter_Increment").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -32,9 +41,13 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTest_opencensusCounter_IncrementBy() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_opencensusCounter_IncrementBy").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -54,9 +67,13 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTest_opencensusCounter_Decrement() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("Test_opencensusCounter_Decrement").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
@@ -79,9 +96,13 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestProvideUnitCounterProvider() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestProvideUnitCounterProvider").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
@@ -89,7 +110,7 @@ func counterTestDotGo(proj *models.Project) *jen.File {
 			utils.AssertNotNil(jen.ID("ProvideUnitCounterProvider").Call(), nil),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

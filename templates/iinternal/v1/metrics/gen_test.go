@@ -1,11 +1,12 @@
-package v1
+package metrics
 
 import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRenderPackage(T *testing.T) {

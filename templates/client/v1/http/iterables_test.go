@@ -1,6 +1,7 @@
 package client
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -303,6 +304,37 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, proj.DataTypes[2])
+
+		expected := `
+package main
+
+import (
+	"strconv"
+)
+
+func main() {
+	exampleFunction(
+		nil,
+		thingsBasePath,
+		strconv.FormatUint(thingID, 10),
+		anotherThingsBasePath,
+		strconv.FormatUint(anotherThingID, 10),
+		yetAnotherThingsBasePath,
+		strconv.FormatUint(yetAnotherThingID, 10),
+	)
+}
+`
+		actual := testutils.RenderCallArgsPerLineToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildV1ClientURLBuildingParamsForCreatingSomething(T *testing.T) {
@@ -328,6 +360,36 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildV1ClientURLBuildingParamsForCreatingSomething(proj, proj.DataTypes[2])
+
+		expected := `
+package main
+
+import (
+	"strconv"
+)
+
+func main() {
+	exampleFunction(
+		nil,
+		thingsBasePath,
+		strconv.FormatUint(thingID, 10),
+		anotherThingsBasePath,
+		strconv.FormatUint(input.BelongsToAnotherThing, 10),
+		yetAnotherThingsBasePath,
+	)
+}
+`
+		actual := testutils.RenderCallArgsPerLineToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildV1ClientURLBuildingParamsForListOfSomething(T *testing.T) {
@@ -350,6 +412,36 @@ func main() {
 }
 `
 		actual := testutils.RenderCallArgsToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildV1ClientURLBuildingParamsForListOfSomething(proj, proj.DataTypes[2])
+
+		expected := `
+package main
+
+import (
+	"strconv"
+)
+
+func main() {
+	exampleFunction(
+		filter.ToValues(),
+		thingsBasePath,
+		strconv.FormatUint(thingID, 10),
+		anotherThingsBasePath,
+		strconv.FormatUint(anotherThingID, 10),
+		yetAnotherThingsBasePath,
+	)
+}
+`
+		actual := testutils.RenderCallArgsPerLineToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -402,6 +494,37 @@ func main() {
 }
 `
 		actual := testutils.RenderCallArgsToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, proj.DataTypes[2])
+
+		expected := `
+package main
+
+import (
+	"strconv"
+)
+
+func main() {
+	exampleFunction(
+		nil,
+		thingsBasePath,
+		strconv.FormatUint(thingID, 10),
+		anotherThingsBasePath,
+		strconv.FormatUint(yetAnotherThing.BelongsToAnotherThing, 10),
+		yetAnotherThingsBasePath,
+		strconv.FormatUint(yetAnotherThing.ID, 10),
+	)
+}
+`
+		actual := testutils.RenderCallArgsPerLineToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

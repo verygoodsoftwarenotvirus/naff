@@ -12,7 +12,14 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildWireProviders()...)
+	code.Add(buildWireProvideUnitCounterProvider()...)
+
+	return code
+}
+
+func buildWireProviders() []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.Comment("Providers represents what this library offers to external users in the form of dependencies."),
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
@@ -21,16 +28,20 @@ func wireDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildWireProvideUnitCounterProvider() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideUnitCounterProvider provides UnitCounter providers."),
 		jen.Line(),
 		jen.Func().ID("ProvideUnitCounterProvider").Params().Params(jen.ID("UnitCounterProvider")).Body(
 			jen.Return().ID("ProvideUnitCounter"),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
