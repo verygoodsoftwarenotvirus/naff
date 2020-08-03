@@ -65,12 +65,11 @@ func buildBuildMockRowsFromSomething(proj *models.Project, typ models.DataType) 
 			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
 		).Params(
 			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
-		).Block(
+		).Body(
 			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
-			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
-			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Block(
+			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Body(
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
@@ -96,7 +95,7 @@ func buildBuildErroneousMockRowFromSomething(proj *models.Project, typ models.Da
 			jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn),
 		).Params(
 			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
-		).Block(
+		).Body(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.IDf("%sTableColumns", puvn)).Dot("AddRow").Callln(badFields...),
 			jen.Line(),
 			jen.Return().ID("exampleRows"),
@@ -285,7 +284,7 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 	dbfl := strings.ToLower(string([]byte(dbv)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_Scan%s", dbv, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Scan%s", dbv, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -422,7 +421,7 @@ func buildTestDBSomethingExists(proj *models.Project, dbvendor wordsmith.SuperPa
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_%sExists", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_%sExists", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(query),
@@ -517,7 +516,7 @@ func buildTestDBGetSomething(proj *models.Project, dbvendor wordsmith.SuperPalab
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_Get%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Get%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			func() jen.Code {
@@ -559,7 +558,7 @@ func buildTestDBGetAllSomethingCount(dbvendor wordsmith.SuperPalabra, typ models
 	tableName := typ.Name.PluralRouteName()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAll%sCount", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAll%sCount", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -683,16 +682,16 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 			utils.AssertNoError(jen.Err(), nil),
 			jen.Line(),
 			jen.Var().ID("stillQuerying").Equals().True(),
-			jen.For(jen.ID("stillQuerying")).Block(
-				jen.Select().Block(
-					jen.Case(jen.ID("batch").Assign().ReceiveFromChannel().ID("out")).Block(
+			jen.For(jen.ID("stillQuerying")).Body(
+				jen.Select().Body(
+					jen.Case(jen.ID("batch").Assign().ReceiveFromChannel().ID("out")).Body(
 						utils.AssertNotEmpty(jen.ID("batch"), nil),
 						jen.ID("doneChan").ReceiveFromChannel().True(),
 					),
-					jen.Case(jen.ReceiveFromChannel().Qual("time", "After").Call(jen.Qual("time", "Second"))).Block(
+					jen.Case(jen.ReceiveFromChannel().Qual("time", "After").Call(jen.Qual("time", "Second"))).Body(
 						jen.ID("t").Dot("FailNow").Call(),
 					),
-					jen.Case(jen.ReceiveFromChannel().ID("doneChan")).Block(
+					jen.Case(jen.ReceiveFromChannel().ID("doneChan")).Body(
 						jen.ID("stillQuerying").Equals().False(),
 					),
 				),
@@ -840,7 +839,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_GetAll%s", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAll%s", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedCountQuery").Assign().Litf("SELECT COUNT(%s.id) FROM %s WHERE %s.archived_on IS NULL", tableName, tableName, tableName),
@@ -1071,7 +1070,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_Get%s", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Get%s", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			func() jen.Code {
@@ -1160,10 +1159,10 @@ func buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj *models.Project, dbv
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_buildGet%sWithIDsQuery", dbvendor.Singular(), pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_buildGet%sWithIDsQuery", dbvendor.Singular(), pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				func() jen.Code {
@@ -1340,7 +1339,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			jen.Line(),
 			utils.BuildFakeVar(proj, fmt.Sprintf("%sList", sn)),
 			jen.Var().IDf("example%sIDs", sn).Index().Uint64(),
-			jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Block(
+			jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 				jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
 			),
 			jen.Line(),
@@ -1422,7 +1421,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Block(
+					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 						jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
 					)
 				}
@@ -1508,7 +1507,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Block(
+					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 						jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
 					)
 				}
@@ -1608,7 +1607,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Block(
+					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 						jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
 					)
 				}
@@ -1655,7 +1654,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_Get%sWithIDs", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Get%sWithIDs", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			func() jen.Code {
@@ -1873,7 +1872,7 @@ func buildTestDBCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_Create%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Create%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(expectedQueryVarName).Assign().Lit(expectedQuery),
@@ -2035,7 +2034,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 		return lines
 	}
 	return []jen.Code{
-		jen.Func().IDf("Test%s_Update%s", dbvendor.Singular(), typ.Name.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Update%s", dbvendor.Singular(), typ.Name.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -2188,7 +2187,7 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_Archive%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_Archive%s", dbvsn, sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(dbQuery),

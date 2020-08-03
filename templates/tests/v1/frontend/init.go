@@ -41,7 +41,7 @@ func buildInitConstDefs() []jen.Code {
 
 func buildInitInit(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.ID("urlToUse").Equals().ID("testutil").Dot("DetermineServiceURL").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),

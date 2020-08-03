@@ -23,7 +23,7 @@ func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildTestService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("manager").Assign().Qual("gopkg.in/oauth2.v3/manage", "NewDefaultManager").Call(),
@@ -52,7 +52,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 
 func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideOAuth2ClientsService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideOAuth2ClientsService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -69,7 +69,7 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 				).Params(
 					jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
-				).Block(
+				).Body(
 					jen.Return(jen.Nil(), jen.Nil()),
 				),
 				jen.Line(),
@@ -100,7 +100,7 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 				).Params(
 					jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
-				).Block(
+				).Body(
 					jen.Return(jen.Nil(), constants.ObligatoryError()),
 				),
 				jen.Line(),
@@ -126,7 +126,7 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 
 func buildTest_clientStore_GetByID(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_clientStore_GetByID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_clientStore_GetByID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -200,7 +200,7 @@ func buildTest_clientStore_GetByID(proj *models.Project) []jen.Code {
 
 func buildTestService_HandleAuthorizeRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_HandleAuthorizeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_HandleAuthorizeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -229,7 +229,7 @@ func buildTestService_HandleAuthorizeRequest() []jen.Code {
 
 func buildTestService_HandleTokenRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_HandleTokenRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_HandleTokenRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

@@ -142,7 +142,7 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("RegisterDefaultViews registers default runtime views."),
 		jen.Line(),
-		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Block(
+		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Body(
 			jen.Return().Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("DefaultRuntimeViews").Spread()),
 		),
 		jen.Line(),
@@ -153,17 +153,17 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("Returns a stop function and an error."),
 		jen.Line(),
-		jen.Func().ID("RecordRuntimeStats").Params(jen.ID("interval").Qual("time", "Duration")).Params(jen.ID("stopFn").Func().Params()).Block(
+		jen.Func().ID("RecordRuntimeStats").Params(jen.ID("interval").Qual("time", "Duration")).Params(jen.ID("stopFn").Func().Params()).Body(
 			jen.Var().Defs(
 				jen.ID("closeOnce").Qual("sync", "Once"),
 				jen.ID("ticker").Equals().Qual("time", "NewTicker").Call(jen.ID("interval")),
 				jen.ID("done").Equals().ID("make").Call(jen.Chan().Struct()),
 			),
 			jen.Line(),
-			jen.Go().Func().Params().Block(
-				jen.For().Block(
-					jen.Select().Block(
-						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Block(
+			jen.Go().Func().Params().Body(
+				jen.For().Body(
+					jen.Select().Body(
+						jen.Case(jen.Op("<-").ID("ticker").Dot("C")).Body(
 							constants.CreateCtx(),
 							jen.Line(),
 							jen.ID("startTime").Assign().Qual("time", "Now").Call(),
@@ -202,16 +202,16 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 								jen.ID("MetricAggregationMeasurement").Dot("M").Call(jen.Qual("time", "Since").Call(jen.ID("startTime")).Dot("Nanoseconds").Call()),
 							),
 						),
-						jen.Case(jen.Op("<-").ID("done")).Block(jen.ID("ticker").Dot("Stop").Call(), jen.Return()),
+						jen.Case(jen.Op("<-").ID("done")).Body(jen.ID("ticker").Dot("Stop").Call(), jen.Return()),
 					),
 				),
 			).Call(),
 			jen.Line(),
-			jen.Return().Func().Params().Block(
+			jen.Return().Func().Params().Body(
 				jen.ID("closeOnce").Dot(
 					"Do",
 				).Call(
-					jen.Func().Params().Block(
+					jen.Func().Params().Body(
 						jen.ID("close").Call(
 							jen.ID("done"),
 						),

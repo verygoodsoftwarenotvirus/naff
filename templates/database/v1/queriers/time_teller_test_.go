@@ -15,7 +15,7 @@ func timeTellerTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 	utils.AddImports(proj, code)
 
 	code.Add(
-		utils.OuterTestFunc("_stdLibTimeTeller_Now").Block(
+		utils.OuterTestFunc("_stdLibTimeTeller_Now").Body(
 			utils.ParallelTest(jen.ID("T")),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

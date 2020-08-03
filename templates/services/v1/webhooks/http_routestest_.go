@@ -24,7 +24,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhooksService_List").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_List").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -35,7 +35,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -75,7 +75,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				"with no rows returned",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -114,7 +114,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				"with error fetching webhooks from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -148,7 +148,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -192,7 +192,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 
 func buildTestValidateWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestValidateWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestValidateWebhook").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -234,7 +234,7 @@ func buildTestValidateWebhook(proj *models.Project) []jen.Code {
 
 func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhooksService_Create").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Create").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -251,7 +251,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -297,7 +297,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("URL").Equals().Lit("%zzzzz"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -320,7 +320,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				"without input attached",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -345,7 +345,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -386,7 +386,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -431,7 +431,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 
 func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhooksService_Read").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Read").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -443,11 +443,11 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -488,11 +488,11 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -523,11 +523,11 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID")),
 				jen.Line(),
 				jen.ID("wd").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
@@ -557,11 +557,11 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -601,7 +601,7 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 
 func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhooksService_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -614,11 +614,11 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -687,11 +687,11 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -729,11 +729,11 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -771,11 +771,11 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -819,11 +819,11 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookUpdateInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -874,7 +874,7 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 
 func buildTestWebhooksService_Archive(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhooksService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhooksService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -890,11 +890,11 @@ func buildTestWebhooksService_Archive(proj *models.Project) []jen.Code {
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -929,11 +929,11 @@ func buildTestWebhooksService_Archive(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),
@@ -968,11 +968,11 @@ func buildTestWebhooksService_Archive(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("webhookIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID("exampleWebhook").Dot("ID"),
 				),
 				jen.Line(),

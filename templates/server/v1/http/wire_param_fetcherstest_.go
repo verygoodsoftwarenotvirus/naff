@@ -45,7 +45,7 @@ func buildTestProvideSomethingServiceUserIDFetcher(typ models.DataType) []jen.Co
 	n := typ.Name
 
 	lines := []jen.Code{
-		jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Plural()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%sServiceUserIDFetcher", n.Plural()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -63,7 +63,7 @@ func buildTestProvideSomethingServiceSomethingIDFetcher(typ models.DataType) []j
 	n := typ.Name
 
 	lines := []jen.Code{
-		jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), n.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -81,7 +81,7 @@ func buildTestProvideSomethingServiceOwnerTypeIDFetcher(typ models.DataType, ot 
 	n := typ.Name
 
 	lines := []jen.Code{
-		jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -97,7 +97,7 @@ func buildTestProvideSomethingServiceOwnerTypeIDFetcher(typ models.DataType, ot 
 
 func buildTestProvideUsersServiceUserIDFetcher() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideUsersServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUsersServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -113,7 +113,7 @@ func buildTestProvideUsersServiceUserIDFetcher() []jen.Code {
 
 func buildTestProvideWebhooksServiceUserIDFetcher() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideWebhooksServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -129,7 +129,7 @@ func buildTestProvideWebhooksServiceUserIDFetcher() []jen.Code {
 
 func buildTestProvideWebhooksServiceWebhookIDFetcher() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideWebhooksServiceWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksServiceWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -145,7 +145,7 @@ func buildTestProvideWebhooksServiceWebhookIDFetcher() []jen.Code {
 
 func buildTestProvideOAuth2ClientsServiceClientIDFetcher() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideOAuth2ClientsServiceClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideOAuth2ClientsServiceClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -161,7 +161,7 @@ func buildTestProvideOAuth2ClientsServiceClientIDFetcher() []jen.Code {
 
 func buildTest_userIDFetcherFromRequestContext(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_userIDFetcherFromRequestContext").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_userIDFetcherFromRequestContext").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -198,7 +198,7 @@ func buildTest_userIDFetcherFromRequestContext(proj *models.Project) []jen.Code 
 
 func buildTest_buildRouteParamUserIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_buildRouteParamUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildRouteParamUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -259,7 +259,7 @@ func buildTest_buildRouteParamSomethingIDFetcher(proj *models.Project, typ model
 	sn := n.Singular()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test_buildRouteParam%sIDFetcher", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test_buildRouteParam%sIDFetcher", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -316,7 +316,7 @@ func buildTest_buildRouteParamSomethingIDFetcher(proj *models.Project, typ model
 
 func buildTest_buildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_buildRouteParamWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildRouteParamWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -374,7 +374,7 @@ func buildTest_buildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code 
 
 func buildTest_buildRouteParamOAuth2ClientIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_buildRouteParamOAuth2ClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildRouteParamOAuth2ClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

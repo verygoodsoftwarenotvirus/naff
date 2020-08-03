@@ -114,7 +114,7 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 	codes = append(codes, jen.Return().ID("ret"))
 	// add the patch function to the output file
 	file.Add(
-		jen.Func().ID("genFile").Params().Op("*").Qual(jenImp, "File").Block(codes...),
+		jen.Func().ID("genFile").Params().Op("*").Qual(jenImp, "File").Body(codes...),
 	)
 	// if main then generate a main function that prints out the output of the
 	// patch function
@@ -130,7 +130,7 @@ func genNewJenFile(name string) jen.Code {
 }
 
 func genMainFunc() jen.Code {
-	return jen.Func().ID("main").Params().Block(
+	return jen.Func().ID("main").Params().Body(
 		jen.ID("ret").Op(":=").ID("genFile").Call(),
 		jen.Qual("fmt", "Printf").Call(
 			jen.Lit("%#v"),
@@ -156,7 +156,7 @@ func makeJenCode(s ast.Decl) (jen.Code, string) {
 }
 
 func makeJenFileFunc(name string, block jen.Code) jen.Code {
-	return jen.Func().ID(name).Params().Qual(jenImp, "Code").Block(
+	return jen.Func().ID(name).Params().Qual(jenImp, "Code").Body(
 		jen.Return().Add(block),
 	)
 }

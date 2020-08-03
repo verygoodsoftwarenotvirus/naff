@@ -242,7 +242,6 @@ func CreateObligatoryClient(serviceURL string, u *v1.User) (*v1.OAuth2Client, er
 		"username": %q,
 		"password": %q,
 		"totpToken": %q,
-
 		"belongsToUser": %d,
 		"scopes": ["*"]
 	}
@@ -688,7 +687,6 @@ func CreateObligatoryClient(serviceURL string, u *v1.User) (*v1.OAuth2Client, er
 		"username": %q,
 		"password": %q,
 		"totpToken": %q,
-
 		"belongsToUser": %d,
 		"scopes": ["*"]
 	}

@@ -22,10 +22,10 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestProvideUserDataManager(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideUserDataManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUserDataManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.AssertNotNil(jen.ID("ProvideUserDataManager").Call(
 					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 				), nil),
@@ -39,10 +39,10 @@ func buildTestProvideUserDataManager(proj *models.Project) []jen.Code {
 
 func buildTestProvideUserDataServer() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideUserDataServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUserDataServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.AssertNotNil(jen.ID("ProvideUserDataServer").Call(jen.ID("buildTestService").Call(jen.ID("t"))), nil),
 			)),
 		),

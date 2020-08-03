@@ -24,7 +24,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	code.Add(buildDBVendorTestVarDecls(dbvendor)...)
 
 	code.Add(
-		jen.Func().ID("formatQueryForSQLMock").Params(jen.ID("query").String()).Params(jen.String()).Block(
+		jen.Func().ID("formatQueryForSQLMock").Params(jen.ID("query").String()).Params(jen.String()).Body(
 			jen.Return().ID("sqlMockReplacer").Dot("Replace").Call(jen.ID("query")),
 		),
 		jen.Line(),
@@ -68,7 +68,7 @@ func buildBuildTestService(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Body(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.Err()).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "New").Call(),
 			utils.RequireNoError(jen.Err(), nil),
 			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.True(), jen.ID("db"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -124,14 +124,14 @@ func buildEnsureArgCountMatchesQuery() []jen.Code {
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("query").String(),
 			jen.ID("args").Index().Interface(),
-		).Block(
+		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("queryArgCount").Assign().Len(jen.ID("queryArgRegexp").Dot("FindAllString").Call(jen.ID("query"), jen.Minus().One())),
 			jen.Line(),
-			jen.If(jen.Len(jen.ID("args")).GreaterThan().Zero()).Block(
+			jen.If(jen.Len(jen.ID("args")).GreaterThan().Zero()).Body(
 				utils.AssertEqual(jen.ID("queryArgCount"), jen.Len(jen.ID("args")), nil),
-			).Else().Block(
+			).Else().Body(
 				utils.AssertZero(jen.ID("queryArgCount"), nil),
 			),
 		),
@@ -143,8 +143,8 @@ func buildEnsureArgCountMatchesQuery() []jen.Code {
 
 func buildInterfacesToDriverValues() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("interfacesToDriverValues").Params(jen.ID("in").Index().Interface()).Params(jen.ID("out").Index().Qual("database/sql/driver", "Value")).Block(
-			jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Block(
+		jen.Func().ID("interfacesToDriverValues").Params(jen.ID("in").Index().Interface()).Params(jen.ID("out").Index().Qual("database/sql/driver", "Value")).Body(
+			jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Body(
 				jen.ID("out").Equals().Append(jen.ID("out"), jen.Qual("database/sql/driver", "Value").Call(jen.ID("x"))),
 			),
 			jen.Return(jen.ID("out")),
@@ -158,7 +158,7 @@ func buildDBVendorProviderTest(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 
 	lines := []jen.Code{
-		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -177,7 +177,7 @@ func buildTestDBVendor_IsReady(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_IsReady", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -197,7 +197,7 @@ func buildTestDBVendor_logQueryBuildingError(dbvendor wordsmith.SuperPalabra) []
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_logQueryBuildingError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_logQueryBuildingError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -217,7 +217,7 @@ func buildTestDBVendor_logIDRetrievalError(dbvendor wordsmith.SuperPalabra) []je
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_logIDRetrievalError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_logIDRetrievalError", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -233,11 +233,11 @@ func buildTestDBVendor_logIDRetrievalError(dbvendor wordsmith.SuperPalabra) []je
 }
 
 func buildTest_joinUint64s() jen.Code {
-	return jen.Func().ID("Test_joinUint64s").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+	return jen.Func().ID("Test_joinUint64s").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(
-			jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Index().Uint64().Values(
 					jen.Lit(123),
 					jen.Lit(456),
@@ -271,11 +271,11 @@ func buildTestProviderFunc(dbvendor wordsmith.SuperPalabra) jen.Code {
 		log.Panicf("invalid dbvendor: %q", dbvendor.Singular())
 	}
 
-	return jen.Func().IDf("Test%s", providerFuncName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+	return jen.Func().IDf("Test%s", providerFuncName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 		jen.ID("T").Dot("Parallel").Call(),
 		jen.Line(),
 		jen.ID("T").Dot("Run").Call(
-			jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID(providerFuncName).Call(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.EmptyString(),

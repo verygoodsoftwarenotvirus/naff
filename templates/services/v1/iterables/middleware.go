@@ -26,18 +26,18 @@ func buildCreationInputMiddleware(proj *models.Project, typ models.DataType) []j
 	lines := []jen.Code{
 		jen.Commentf("CreationInputMiddleware is a middleware for fetching, parsing, and attaching an %sInput struct from a request.", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(
 				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-			).Block(
+			).Body(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
 				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -65,15 +65,15 @@ func buildUpdateInputMiddleware(proj *models.Project, typ models.DataType) []jen
 			jen.ID("next").Qual("net/http", "Handler"),
 		).Params(
 			jen.Qual("net/http", "Handler"),
-		).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		).Body(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
 				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 				jen.Line(),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),

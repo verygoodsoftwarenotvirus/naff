@@ -46,14 +46,14 @@ func buildUserInputMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("UserInputMiddleware fetches user input from requests."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "UserCreationInput")),
 				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -74,14 +74,14 @@ func buildPasswordUpdateInputMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("PasswordUpdateInputMiddleware fetches password update input from requests."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "PasswordUpdateInput")),
 				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("PasswordUpdateInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -102,14 +102,14 @@ func buildTOTPSecretVerificationInputMiddleware(proj *models.Project) []jen.Code
 	lines := []jen.Code{
 		jen.Comment("TOTPSecretVerificationInputMiddleware fetches 2FA update input from requests."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "TOTPSecretVerificationInput")),
 				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretVerificationInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -130,14 +130,14 @@ func buildTOTPSecretRefreshInputMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("TOTPSecretRefreshInputMiddleware fetches 2FA update input from requests."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "TOTPSecretRefreshInput")),
 				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretRefreshInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
-				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),

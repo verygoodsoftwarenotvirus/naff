@@ -94,7 +94,7 @@ func buildDBDotGoInit(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.Commentf("Explicitly wrap the %s driver with ocsql.", sn),
 			jen.ID("driver").Assign().Qual("contrib.go.opencensus.io/integrations/ocsql", "Wrap").Callln(
 				driverInit,
@@ -166,7 +166,7 @@ func buildProvideDatabaseConn(proj *models.Project, dbvendor wordsmith.SuperPala
 	lines := []jen.Code{
 		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Block(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Body(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
@@ -194,7 +194,7 @@ func buildProvideDatabaseClient(proj *models.Project, dbvendor wordsmith.SuperPa
 	lines := []jen.Code{
 		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Block(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Body(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),
@@ -227,7 +227,7 @@ func buildIsReady(dbvendor wordsmith.SuperPalabra) []jen.Code {
 				}
 				return jen.Underscore().Qual("context", "Context")
 			}(),
-		).Params(jen.ID("ready").Bool()).Block(
+		).Params(jen.ID("ready").Bool()).Body(
 			func() []jen.Code {
 				if isSqlite(dbvendor) {
 					return []jen.Code{jen.Return(jen.True())}
@@ -240,17 +240,17 @@ func buildIsReady(dbvendor wordsmith.SuperPalabra) []jen.Code {
 							jen.Lit("max_attempts").MapAssign().Lit(50)),
 						).Dot("Debug").Call(jen.Lit("IsReady called")),
 						jen.Line(),
-						jen.For(jen.Not().ID("ready")).Block(
+						jen.For(jen.Not().ID("ready")).Body(
 							jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
-							jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+							jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 								jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 								jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 								jen.Line(),
 								jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
-								jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
+								jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Body(
 									jen.Return().False(),
 								),
-							).Else().Block(
+							).Else().Body(
 								jen.ID("ready").Equals().True(),
 								jen.Return().ID("ready"),
 							),
@@ -266,17 +266,17 @@ func buildIsReady(dbvendor wordsmith.SuperPalabra) []jen.Code {
 							jen.Lit("max_attempts").MapAssign().Lit(50)),
 						).Dot("Debug").Call(jen.Lit("IsReady called")),
 						jen.Line(),
-						jen.For(jen.Not().ID("ready")).Block(
+						jen.For(jen.Not().ID("ready")).Body(
 							jen.Err().Assign().ID(dbfl).Dot("db").Dot("PingContext").Call(constants.CtxVar()),
-							jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+							jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 								jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ping failed, waiting for db")),
 								jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 								jen.Line(),
 								jen.ID("numberOfUnsuccessfulAttempts").Op("++"),
-								jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Block(
+								jen.If(jen.ID("numberOfUnsuccessfulAttempts").Op(">=").Lit(50)).Body(
 									jen.Return().False(),
 								),
-							).Else().Block(
+							).Else().Body(
 								jen.ID("ready").Equals().True(),
 								jen.Return().ID("ready"),
 							),
@@ -308,8 +308,8 @@ func buildLogQueryBuildingError(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logQueryBuildingError").Params(jen.Err().Error()).Block(
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logQueryBuildingError").Params(jen.Err().Error()).Body(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("QUERY_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("building query")),
 			),
 		),
@@ -334,8 +334,8 @@ func buildLogIDRetrievalError(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("with the utmost priority."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logIDRetrievalError").Params(jen.Err().Error()).Block(
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("logIDRetrievalError").Params(jen.Err().Error()).Body(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("ROW_ID_ERROR")).Dot("Error").Call(jen.Err(), jen.Lit("fetching row ID")),
 			),
 		),
@@ -351,12 +351,12 @@ func buildBuildError() []jen.Code {
 		jen.Line(),
 		jen.Comment("IS NOT sql.ErrNoRows, which we want to preserve and surface to the services."),
 		jen.Line(),
-		jen.Func().ID("buildError").Params(jen.Err().Error(), jen.ID("msg").String()).Params(jen.Error()).Block(
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+		jen.Func().ID("buildError").Params(jen.Err().Error(), jen.ID("msg").String()).Params(jen.Error()).Body(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.Return().Err(),
 			),
 			jen.Line(),
-			jen.If(jen.Not().Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Block(
+			jen.If(jen.Not().Qual("strings", "Contains").Call(jen.ID("msg"), jen.RawString(`%w`))).Body(
 				jen.ID("msg").Op("+=").Lit(": %w"),
 			),
 			jen.Line(),
@@ -369,10 +369,10 @@ func buildBuildError() []jen.Code {
 }
 
 func buildJoinUint64s() jen.Code {
-	return jen.Func().ID("joinUint64s").Params(jen.ID("in").Index().Uint64()).Params(jen.String()).Block(
+	return jen.Func().ID("joinUint64s").Params(jen.ID("in").Index().Uint64()).Params(jen.String()).Body(
 		jen.ID("out").Assign().Index().String().Values(),
 		jen.Line(),
-		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Block(
+		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().ID("in")).Body(
 			jen.ID("out").Equals().Append(
 				jen.ID("out"), jen.Qual("strconv", "FormatUint").Call(
 					jen.ID("x"),

@@ -8,7 +8,7 @@ import (
 
 // FakeSeedFunc builds a consistent fake library seed init function
 func FakeSeedFunc() jen.Code {
-	return jen.Func().ID("init").Params().Block(
+	return jen.Func().ID("init").Params().Body(
 		InlineFakeSeedFunc(),
 	)
 }

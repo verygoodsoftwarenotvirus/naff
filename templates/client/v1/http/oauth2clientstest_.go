@@ -26,7 +26,7 @@ func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 
 func buildV1Client_BuildGetOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -86,7 +86,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 				jen.Func().Params(
 					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				).Block(
+				).Body(
 					utils.AssertTrue(
 						jen.Qual("strings", "HasSuffix").Call(
 							jen.ID(constants.RequestVarName).Dot("URL").Dot("String").Call(),
@@ -143,7 +143,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_GetOAuth2Client").Block(
+		utils.OuterTestFunc("V1Client_GetOAuth2Client").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
@@ -158,7 +158,7 @@ func buildV1Client_GetOAuth2Client(proj *models.Project) []jen.Code {
 
 func buildV1Client_BuildGetOAuth2ClientsRequest() []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientsRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildGetOAuth2ClientsRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -206,7 +206,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 				jen.Func().Params(
 					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				).Block(
+				).Body(
 					utils.AssertEqual(
 						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						jen.Lit("/api/v1/oauth2/clients"),
@@ -257,7 +257,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_GetOAuth2Clients").Block(
+		utils.OuterTestFunc("V1Client_GetOAuth2Clients").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
@@ -272,7 +272,7 @@ func buildV1Client_GetOAuth2Clients(proj *models.Project) []jen.Code {
 
 func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildCreateOAuth2ClientRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildCreateOAuth2ClientRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -314,7 +314,7 @@ func buildV1Client_BuildCreateOAuth2ClientRequest(proj *models.Project) []jen.Co
 
 func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_CreateOAuth2Client").Block(
+		utils.OuterTestFunc("V1Client_CreateOAuth2Client").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -328,7 +328,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 						jen.Func().Params(
 							jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 							jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-						).Block(
+						).Body(
 							utils.AssertEqual(
 								jen.Lit("/oauth2/client"),
 								jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
@@ -383,7 +383,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 						jen.Func().Params(
 							jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 							jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-						).Block(
+						).Body(
 							utils.AssertEqual(
 								jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 								jen.Lit("/oauth2/client"),
@@ -432,7 +432,7 @@ func buildV1Client_CreateOAuth2Client(proj *models.Project) []jen.Code {
 
 func buildV1Client_BuildArchiveOAuth2ClientRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildArchiveOAuth2ClientRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildArchiveOAuth2ClientRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -488,7 +488,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 				jen.Func().Params(
 					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				).Block(
+				).Body(
 					utils.AssertEqual(
 						jen.ID(constants.RequestVarName).Dot("URL").Dot("Path"),
 						utils.FormatString(
@@ -526,7 +526,7 @@ func buildV1Client_ArchiveOAuth2Client(proj *models.Project) []jen.Code {
 	}
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_ArchiveOAuth2Client").Block(
+		utils.OuterTestFunc("V1Client_ArchiveOAuth2Client").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),

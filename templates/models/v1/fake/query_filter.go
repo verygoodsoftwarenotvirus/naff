@@ -23,7 +23,7 @@ func buildBuildFleshedOutQueryFilter(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), "QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(10),

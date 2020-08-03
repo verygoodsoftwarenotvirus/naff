@@ -30,7 +30,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestV1ClientBuildGetUserRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildGetUserRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildGetUserRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -82,7 +82,7 @@ func buildTestV1ClientBuildGetUserRequest(proj *models.Project) []jen.Code {
 
 func buildTestV1ClientGetUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_GetUser").Block(
+		utils.OuterTestFunc("V1Client_GetUser").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -155,7 +155,7 @@ func buildTestV1ClientGetUser(proj *models.Project) []jen.Code {
 
 func buildTestV1ClientBuildGetUsersRequest() []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildGetUsersRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildGetUsersRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -197,7 +197,7 @@ func buildTestV1ClientBuildGetUsersRequest() []jen.Code {
 
 func buildTestV1ClientGetUsers(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_GetUsers").Block(
+		utils.OuterTestFunc("V1Client_GetUsers").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -265,7 +265,7 @@ func buildTestV1ClientGetUsers(proj *models.Project) []jen.Code {
 
 func buildTestV1ClientBuildCreateUserRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildCreateUserRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildCreateUserRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -310,7 +310,7 @@ func buildTestV1ClientCreateUser(proj *models.Project) []jen.Code {
 	fmp := proj.FakeModelsPackage()
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_CreateUser").Block(
+		utils.OuterTestFunc("V1Client_CreateUser").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -379,7 +379,7 @@ func buildTestV1ClientCreateUser(proj *models.Project) []jen.Code {
 
 func buildTestV1ClientBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildArchiveUserRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildArchiveUserRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -431,7 +431,7 @@ func buildTestV1ClientBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 
 func buildTestV1ClientArchiveUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_ArchiveUser").Block(
+		utils.OuterTestFunc("V1Client_ArchiveUser").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -480,7 +480,7 @@ func buildTestV1ClientBuildLoginRequest(proj *models.Project) []jen.Code {
 	fmp := proj.FakeModelsPackage()
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildLoginRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildLoginRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -524,7 +524,7 @@ func buildTestV1ClientLogin(proj *models.Project) []jen.Code {
 	fmp := proj.FakeModelsPackage()
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_Login").Block(
+		utils.OuterTestFunc("V1Client_Login").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			jen.Const().ID("expectedPath").Equals().Lit("/users/login"),
@@ -680,7 +680,7 @@ func buildTestV1ClientBuildValidateTOTPSecretRequest(proj *models.Project) []jen
 	fmp := proj.FakeModelsPackage()
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_BuildValidateTOTPSecretRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildValidateTOTPSecretRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -711,7 +711,7 @@ func buildTestV1ClientValidateTOTPSecret(proj *models.Project) []jen.Code {
 	fmp := proj.FakeModelsPackage()
 
 	lines := []jen.Code{
-		utils.OuterTestFunc("V1Client_ValidateTOTPSecret").Block(
+		utils.OuterTestFunc("V1Client_ValidateTOTPSecret").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			jen.Const().ID("expectedPath").Equals().Lit("/users/totp_secret/verify"),

@@ -22,7 +22,7 @@ func authServiceTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildTestService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -59,7 +59,9 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 
 func buildTestProvideAuthService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideAuthService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("cfg").Assign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(

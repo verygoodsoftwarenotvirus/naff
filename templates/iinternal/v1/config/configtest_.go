@@ -20,7 +20,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 
 func buildTest_randString() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_randString").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("actual").Assign().ID("randString").Call(jen.ID("randStringSize")),
@@ -35,7 +35,7 @@ func buildTest_randString() []jen.Code {
 
 func buildTestBuildConfig() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBuildConfig").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBuildConfig").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("actual").Assign().ID("BuildConfig").Call(),
@@ -49,7 +49,7 @@ func buildTestBuildConfig() []jen.Code {
 
 func buildTestParseConfigFile(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestParseConfigFile").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

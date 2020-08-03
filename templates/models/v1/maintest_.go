@@ -19,7 +19,7 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestErrorResponse_Error() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestErrorResponse_Error").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

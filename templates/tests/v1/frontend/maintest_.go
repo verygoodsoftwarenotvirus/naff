@@ -20,12 +20,12 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 
 func buildRunTestOnAllSupportedBrowsers() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Block(
-			jen.For(jen.List(jen.Underscore(), jen.ID("bn")).Assign().Range().Index().String().Values(jen.Lit("firefox"), jen.Lit("chrome"))).Block(
+		jen.Func().ID("runTestOnAllSupportedBrowsers").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("tp").ID("testProvider")).Body(
+			jen.For(jen.List(jen.Underscore(), jen.ID("bn")).Assign().Range().Index().String().Values(jen.Lit("firefox"), jen.Lit("chrome"))).Body(
 				jen.ID("browserName").Assign().ID("bn"),
 				jen.ID("caps").Assign().Qual("github.com/tebeka/selenium", "Capabilities").Values(jen.Lit("browserName").MapAssign().ID("browserName")),
 				jen.List(jen.ID("wd"), jen.Err()).Assign().Qual("github.com/tebeka/selenium", "NewRemote").Call(jen.ID("caps"), jen.ID("seleniumHubAddr")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("panic").Call(jen.Err()),
 				),
 				jen.Line(),
@@ -50,15 +50,15 @@ func buildTestProvider() []jen.Code {
 
 func buildTestLoginPage() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestLoginPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
-				jen.Return().Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestLoginPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("runTestOnAllSupportedBrowsers").Call(jen.ID("T"), jen.Func().Params(jen.ID("driver").Qual("github.com/tebeka/selenium", "WebDriver")).Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
+				jen.Return().Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.Comment("Navigate to the login page."),
 					utils.RequireNoError(jen.ID("driver").Dot("Get").Call(jen.ID("urlToUse").Plus().Lit("/login")), nil),
 					jen.Line(),
 					jen.Comment("fetch the button."),
 					jen.List(jen.ID("elem"), jen.Err()).Assign().ID("driver").Dot("FindElement").Call(jen.Qual("github.com/tebeka/selenium", "ByID"), jen.Lit("loginButton")),
-					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID("panic").Call(jen.Err()),
 					),
 					jen.Line(),

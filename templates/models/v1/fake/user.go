@@ -34,7 +34,7 @@ func buildBuildFakeUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().Uint64().Call(utils.FakeUint32Func()),
@@ -81,7 +81,7 @@ func buildBuildDatabaseCreationResponse(proj *models.Project) []jen.Code {
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().ID("user").Dot("ID"),
@@ -109,7 +109,7 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.ID(utils.BuildFakeVarName("User1")).Assign().ID("BuildFakeUser").Call(),
 			jen.ID(utils.BuildFakeVarName("User2")).Assign().ID("BuildFakeUser").Call(),
 			jen.ID(utils.BuildFakeVarName("User3")).Assign().ID("BuildFakeUser").Call(),
@@ -142,7 +142,7 @@ func buildBuildFakeUserCreationInput(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.ID(utils.BuildFakeVarName("User")).Assign().ID("BuildFakeUser").Call(),
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
@@ -167,7 +167,7 @@ func buildBuildFakeUserCreationInputFromUser(proj *models.Project) []jen.Code {
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
@@ -191,7 +191,7 @@ func buildBuildFakeUserDatabaseCreationInputFromUser(proj *models.Project) []jen
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
@@ -216,7 +216,7 @@ func buildBuildFakeUserLoginInputFromUser(proj *models.Project) []jen.Code {
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
@@ -239,7 +239,7 @@ func buildBuildFakePasswordUpdateInput(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("NewPassword").MapAssign().Add(utils.FakePasswordFunc()),
@@ -262,7 +262,7 @@ func buildBuildFakeTOTPSecretRefreshInput(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
@@ -286,12 +286,12 @@ func buildBuildFakeTOTPSecretValidationInputForUser(proj *models.Project) []jen.
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
 				jen.ID("user").Dot("TwoFactorSecret"),
 				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Panicf").Call(
 					jen.Lit("error generating TOTP token for fake user: %v"),
 					jen.Err(),

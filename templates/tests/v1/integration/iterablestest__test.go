@@ -168,6 +168,7 @@ func TestItems(test *testing.T) {
 				true,
 			)
 			checkValueAndError(test, clientA, err)
+
 			// Create items for user A.
 			exampleItemA := fake.BuildFakeItem()
 			var createdForA []*v1.Item
@@ -175,6 +176,7 @@ func TestItems(test *testing.T) {
 				// Create item.
 				exampleItemInputA := fake.BuildFakeItemCreationInputFromItem(exampleItemA)
 				exampleItemInputA.Name = fmt.Sprintf("%s %d", exampleItemInputA.Name, i)
+
 				createdItem, itemCreationErr := clientA.CreateItem(ctx, exampleItemInputA)
 				checkValueAndError(t, createdItem, itemCreationErr)
 
@@ -202,6 +204,7 @@ func TestItems(test *testing.T) {
 				true,
 			)
 			checkValueAndError(test, clientB, err)
+
 			// Create items for user B.
 			exampleItemB := fake.BuildFakeItem()
 			exampleItemB.Name = reverse(exampleItemA.Name)
@@ -210,6 +213,7 @@ func TestItems(test *testing.T) {
 				// Create item.
 				exampleItemInputB := fake.BuildFakeItemCreationInputFromItem(exampleItemB)
 				exampleItemInputB.Name = fmt.Sprintf("%s %d", exampleItemInputB.Name, i)
+
 				createdItem, itemCreationErr := clientB.CreateItem(ctx, exampleItemInputB)
 				checkValueAndError(t, createdItem, itemCreationErr)
 
@@ -637,6 +641,7 @@ func TestItems(test *testing.T) {
 				true,
 			)
 			checkValueAndError(test, clientA, err)
+
 			// Create items for user A.
 			exampleItemA := fake.BuildFakeItem()
 			var createdForA []*v1.Item
@@ -644,6 +649,7 @@ func TestItems(test *testing.T) {
 				// Create item.
 				exampleItemInputA := fake.BuildFakeItemCreationInputFromItem(exampleItemA)
 				exampleItemInputA.Name = fmt.Sprintf("%s %d", exampleItemInputA.Name, i)
+
 				createdItem, itemCreationErr := clientA.CreateItem(ctx, exampleItemInputA)
 				checkValueAndError(t, createdItem, itemCreationErr)
 
@@ -671,6 +677,7 @@ func TestItems(test *testing.T) {
 				true,
 			)
 			checkValueAndError(test, clientB, err)
+
 			// Create items for user B.
 			exampleItemB := fake.BuildFakeItem()
 			exampleItemB.Name = reverse(exampleItemA.Name)
@@ -679,6 +686,7 @@ func TestItems(test *testing.T) {
 				// Create item.
 				exampleItemInputB := fake.BuildFakeItemCreationInputFromItem(exampleItemB)
 				exampleItemInputB.Name = fmt.Sprintf("%s %d", exampleItemInputB.Name, i)
+
 				createdItem, itemCreationErr := clientB.CreateItem(ctx, exampleItemInputB)
 				checkValueAndError(t, createdItem, itemCreationErr)
 
@@ -964,7 +972,7 @@ func main() {
 	assert.NotZero(t, actual.CreatedOn)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1174,7 +1182,7 @@ func main() {
 	}
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1239,7 +1247,7 @@ func main() {
 	}
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1293,6 +1301,7 @@ func main() {
 		true,
 	)
 	checkValueAndError(test, clientA, err)
+
 	// Create items for user A.
 	exampleItemA := fake.BuildFakeItem()
 	var createdForA []*v1.Item
@@ -1300,6 +1309,7 @@ func main() {
 		// Create item.
 		exampleItemInputA := fake.BuildFakeItemCreationInputFromItem(exampleItemA)
 		exampleItemInputA.Name = fmt.Sprintf("%s %d", exampleItemInputA.Name, i)
+
 		createdItem, itemCreationErr := clientA.CreateItem(ctx, exampleItemInputA)
 		checkValueAndError(t, createdItem, itemCreationErr)
 
@@ -1327,6 +1337,7 @@ func main() {
 		true,
 	)
 	checkValueAndError(test, clientB, err)
+
 	// Create items for user B.
 	exampleItemB := fake.BuildFakeItem()
 	exampleItemB.Name = reverse(exampleItemA.Name)
@@ -1335,6 +1346,7 @@ func main() {
 		// Create item.
 		exampleItemInputB := fake.BuildFakeItemCreationInputFromItem(exampleItemB)
 		exampleItemInputB.Name = fmt.Sprintf("%s %d", exampleItemInputB.Name, i)
+
 		createdItem, itemCreationErr := clientB.CreateItem(ctx, exampleItemInputB)
 		checkValueAndError(t, createdItem, itemCreationErr)
 
@@ -1366,7 +1378,7 @@ func main() {
 	}
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1401,7 +1413,7 @@ func main() {
 	assert.False(t, actual)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1446,7 +1458,7 @@ func main() {
 	assert.NoError(t, todoClient.ArchiveItem(ctx, createdItem.ID))
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1480,7 +1492,7 @@ func main() {
 	assert.Error(t, err)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1527,7 +1539,7 @@ func main() {
 	assert.NoError(t, todoClient.ArchiveItem(ctx, createdItem.ID))
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1715,7 +1727,7 @@ func main() {
 	})
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, []jen.Code{x})
+		actual := testutils.RenderFunctionBodyToString(t, []jen.Code{x})
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1768,7 +1780,7 @@ func main() {
 	assert.NoError(t, todoClient.ArchiveItem(ctx, createdItem.ID))
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1804,7 +1816,7 @@ func main() {
 	assert.Error(t, todoClient.UpdateItem(ctx, exampleItem))
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1989,7 +2001,7 @@ func main() {
 	assert.NoError(t, todoClient.ArchiveItem(ctx, createdItem.ID))
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -2021,7 +2033,7 @@ func main() {
 	assert.Error(t, todoClient.ArchiveItem(ctx, nonexistentID))
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

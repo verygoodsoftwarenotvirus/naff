@@ -24,7 +24,7 @@ func buildLoginUser(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpSecret")).String(),
-		).Params(jen.PointerTo().Qual("net/http", "Cookie")).Block(
+		).Params(jen.PointerTo().Qual("net/http", "Cookie")).Body(
 			jen.ID("loginURL").Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s://%s:%s/users/login"),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL").Dot("Scheme"),
@@ -53,14 +53,14 @@ func buildLoginUser(proj *models.Project) []jen.Code {
 				jen.ID("body"),
 			),
 			jen.List(jen.ID("resp"), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
 			utils.AssertEqual(jen.Qual("net/http", "StatusNoContent"), jen.ID("resp").Dot("StatusCode"), jen.Lit("login should be successful"), nil),
 			jen.Line(),
 			jen.ID("cookies").Assign().ID("resp").Dot("Cookies").Call(),
-			jen.If(jen.Len(jen.ID("cookies")).IsEqualTo().One()).Block(
+			jen.If(jen.Len(jen.ID("cookies")).IsEqualTo().One()).Body(
 				jen.Return().ID("cookies").Index(jen.Zero()),
 			),
 			jen.ID("t").Dot("Logf").Call(jen.Lit("wrong number of cookies found: %d"), jen.Len(jen.ID("cookies"))),
@@ -76,8 +76,8 @@ func buildLoginUser(proj *models.Project) []jen.Code {
 
 func buildTestAuth(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestAuth").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to login"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user."),
@@ -144,7 +144,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertLength(jen.ID("cookies"), jen.One(), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to logout"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
@@ -229,7 +229,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("login request without body fails"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("login request without body fails"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("BuildURL").Call(jen.Nil())),
 				utils.RequireNoError(jen.Err(), nil),
@@ -249,7 +249,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID(constants.ResponseVarName).Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to log in with the wrong password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to log in with the wrong password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user."),
@@ -270,7 +270,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.Comment("create login request."),
 				jen.Var().ID("badPassword").String(),
-				jen.For(jen.List(jen.Underscore(), jen.ID("v")).Assign().Range().ID(utils.BuildFakeVarName("UserCreationInput")).Dot("Password")).Block(
+				jen.For(jen.List(jen.Underscore(), jen.ID("v")).Assign().Range().ID(utils.BuildFakeVarName("UserCreationInput")).Dot("Password")).Body(
 					jen.ID("badPassword").Equals().String().Call(jen.ID("v")).Plus().ID("badPassword"),
 				),
 				jen.Line(),
@@ -304,7 +304,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID(constants.ResponseVarName).Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login as someone that doesn't exist"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login as someone that doesn't exist"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, utils.BuildFakeVarName("UserCreationInput"), "UserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
@@ -342,7 +342,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertLength(jen.ID("cookies"), jen.Zero(), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login without validating TOTP secret"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should not be able to login without validating TOTP secret"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create a user."),
@@ -394,7 +394,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertLength(jen.ID("cookies"), jen.Zero(), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should reject an unauthenticated request"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should reject an unauthenticated request"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequestWithContext").Call(
 					constants.CtxVar(),
@@ -409,7 +409,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.Qual("net/http", "StatusUnauthorized"), jen.ID(constants.ResponseVarName).Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change password"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Comment("create user."),
 				jen.List(jen.ID("user"), jen.ID("ui"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(
@@ -420,7 +420,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.Comment("create login request."),
 				jen.Var().ID("backwardsPass").String(),
-				jen.For(jen.List(jen.Underscore(), jen.ID("v")).Assign().Range().ID("ui").Dot("Password")).Block(
+				jen.For(jen.List(jen.Underscore(), jen.ID("v")).Assign().Range().ID("ui").Dot("Password")).Body(
 					jen.ID("backwardsPass").Equals().String().Call(jen.ID("v")).Plus().ID("backwardsPass"),
 				),
 				jen.Line(),
@@ -506,7 +506,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertNotEqual(jen.ID("cookie"), jen.ID("cookies").Index(jen.Zero()), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to validate a 2FA token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to validate a 2FA token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Comment("create user."),
 				jen.ID("userInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
@@ -533,7 +533,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should reject attempt to validate an invalid 2FA token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should reject attempt to validate an invalid 2FA token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Comment("create user."),
 				jen.ID("userInput").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
@@ -554,7 +554,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change 2FA Token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should be able to change 2FA Token"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Comment("create user."),
 				jen.List(jen.ID("user"), jen.ID("ui"), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(
@@ -664,7 +664,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertNotEqual(jen.ID("cookie"), jen.ID("cookies").Index(jen.Zero()), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should accept a login cookie if a token is missing"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should accept a login cookie if a token is missing"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Comment("create user."),
 				jen.List(jen.Underscore(), jen.Underscore(), jen.ID("cookie")).Assign().ID("buildDummyUser").Call(
@@ -687,7 +687,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("StatusCode"), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow users to see their own content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow users to see their own content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user and oauth2 client A."),
@@ -743,7 +743,7 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				utils.AssertNoError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookB").Dot("ID")), nil),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("should only allow clients with a given scope to see that scope's content"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 				jen.Line(),
 				jen.Comment("create user."),

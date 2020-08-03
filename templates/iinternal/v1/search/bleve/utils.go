@@ -35,12 +35,12 @@ func buildUtilsVarDeclarations() []jen.Code {
 		jen.Func().ID("ensureQueryIsRestrictedToUser").Params(
 			jen.ID("query").String(),
 			constants.UserIDParam(),
-		).String().Block(
-			jen.Switch().Block(
-				jen.Case(jen.ID("belongsToUserWithMandatedRestrictionRegexp").Dot("MatchString").Call(jen.ID("query"))).Block(
+		).String().Body(
+			jen.Switch().Body(
+				jen.Case(jen.ID("belongsToUserWithMandatedRestrictionRegexp").Dot("MatchString").Call(jen.ID("query"))).Body(
 					jen.Return(jen.ID("query")),
 				),
-				jen.Case(jen.ID("belongsToUserWithoutMandatedRestrictionRegexp").Dot("MatchString").Call(jen.ID("query"))).Block(
+				jen.Case(jen.ID("belongsToUserWithoutMandatedRestrictionRegexp").Dot("MatchString").Call(jen.ID("query"))).Body(
 					jen.ID("query").Equals().ID("belongsToUserWithoutMandatedRestrictionRegexp").Dot("ReplaceAllString").Call(
 						jen.ID("query"),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -49,7 +49,7 @@ func buildUtilsVarDeclarations() []jen.Code {
 						),
 					),
 				),
-				jen.Case(jen.Not().ID("belongsToUserWithMandatedRestrictionRegexp").Dot("MatchString").Call(jen.ID("query"))).Block(
+				jen.Case(jen.Not().ID("belongsToUserWithMandatedRestrictionRegexp").Dot("MatchString").Call(jen.ID("query"))).Body(
 					jen.ID("query").Equals().Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s +belongsToUser:%d"),
 						jen.ID("query"),

@@ -32,9 +32,9 @@ func buildWireVarDeclarations(proj *models.Project) []jen.Code {
 				jen.ID("ProvideServer"),
 				jen.ID("ProvideNamespace"),
 				func() jen.Code {
-					if proj.EnableNewsman {
-						return jen.ID("ProvideNewsmanTypeNameManipulationFunc")
-					}
+					//if proj.EnableNewsman {
+					return jen.ID("ProvideNewsmanTypeNameManipulationFunc")
+					//}
 					return jen.Null()
 				}(),
 			),
@@ -49,7 +49,7 @@ func buildProvideNamespace(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideNamespace provides a namespace."),
 		jen.Line(),
-		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(proj.InternalMetricsV1Package(), "Namespace")).Block(
+		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(proj.InternalMetricsV1Package(), "Namespace")).Body(
 			jen.Return().ID("serverNamespace"),
 		),
 		jen.Line(),
@@ -62,8 +62,8 @@ func buildProvideNewsmanTypeNameManipulationFunc() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideNewsmanTypeNameManipulationFunc provides an WebhookIDFetcher."),
 		jen.Line(),
-		jen.Func().ID("ProvideNewsmanTypeNameManipulationFunc").Params().Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "TypeNameManipulationFunc")).Block(
-			jen.Return().Func().Params(jen.ID("s").String()).Params(jen.String()).Block(
+		jen.Func().ID("ProvideNewsmanTypeNameManipulationFunc").Params().Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "TypeNameManipulationFunc")).Body(
+			jen.Return().Func().Params(jen.ID("s").String()).Params(jen.String()).Body(
 				jen.Return().ID("s"),
 			),
 		),

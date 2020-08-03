@@ -30,7 +30,7 @@ func buildRandTestMockSecretGenerator() []jen.Code {
 
 func buildRandTestMockSecretGeneratorGenerateTwoFactorSecret() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockSecretGenerator")).ID("GenerateTwoFactorSecret").Params().Params(jen.String(), jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockSecretGenerator")).ID("GenerateTwoFactorSecret").Params().Params(jen.String(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Line(),
 			jen.Return(jen.ID("args").Dot("String").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
@@ -43,7 +43,7 @@ func buildRandTestMockSecretGeneratorGenerateTwoFactorSecret() []jen.Code {
 
 func buildRandTestMockSecretGeneratorGenerateSalt() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockSecretGenerator")).ID("GenerateSalt").Params().Params(jen.Index().Byte(), jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockSecretGenerator")).ID("GenerateSalt").Params().Params(jen.Index().Byte(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(),
 			jen.Line(),
 			jen.Return(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().Byte()), jen.ID("args").Dot("Error").Call(jen.One())),

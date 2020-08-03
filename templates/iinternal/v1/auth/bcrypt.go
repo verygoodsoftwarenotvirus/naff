@@ -84,7 +84,7 @@ func buildProvideBcryptAuthenticator() []jen.Code {
 		jen.Func().ID("ProvideBcryptAuthenticator").Params(
 			jen.ID("hashCost").ID("BcryptHashCost"),
 			jen.ID(constants.LoggerVarName).Qual(loggingImport, "Logger"),
-		).Params(jen.ID("Authenticator")).Block(
+		).Params(jen.ID("Authenticator")).Body(
 			jen.ID("ba").Assign().AddressOf().ID("BcryptAuthenticator").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("bcrypt")),
 				jen.ID("hashCost").MapAssign().ID("uint").Call(jen.Qual("math", "Min").Call(jen.ID("float64").Call(jen.ID("DefaultBcryptHashCost")), jen.ID("float64").Call(jen.ID("hashCost")))),
@@ -105,7 +105,7 @@ func buildHashPassword(proj *models.Project) []jen.Code {
 		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("HashPassword").Params(
 			constants.CtxParam(),
 			jen.ID("password").String(),
-		).Params(jen.String(), jen.Error()).Block(
+		).Params(jen.String(), jen.Error()).Body(
 			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
 				constants.CtxVar(),
 				jen.Lit("HashPassword"),
@@ -138,14 +138,14 @@ func buildValidateLogin(proj *models.Project) []jen.Code {
 				jen.ID("twoFactorSecret"),
 				jen.ID("twoFactorCode")).String(),
 			jen.Underscore().Index().Byte(),
-		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Block(
+		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),
 			jen.ID("tooWeak").Assign().ID("b").Dot("hashedPasswordIsTooWeak").Call(constants.CtxVar(), jen.ID("hashedPassword")),
 			jen.Line(),
-			jen.If(jen.Not().Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Block(
+			jen.If(jen.Not().Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("twoFactorCode"), jen.ID("twoFactorSecret"))).Body(
 				jen.ID("b").Dot(constants.LoggerVarName).Dot("WithValues").Call(
 					jen.Map(jen.String()).Interface().Valuesln(
 						jen.Lit("password_matches").MapAssign().ID("passwordMatches"),
@@ -157,7 +157,7 @@ func buildValidateLogin(proj *models.Project) []jen.Code {
 				jen.Return().List(jen.ID("passwordMatches"), jen.ID("ErrInvalidTwoFactorCode")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("tooWeak")).Block(
+			jen.If(jen.ID("tooWeak")).Body(
 				jen.Comment("NOTE: this can end up with a return set where passwordMatches is true and the err is not nil."),
 				jen.Comment("This is the valid case in the event the user has logged in with a valid password, but the"),
 				jen.Comment("bcrypt cost has been raised since they last logged in."),
@@ -176,7 +176,7 @@ func buildPasswordMatches(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("PasswordMatches validates whether or not a bcrypt-hashed password matches a provided password"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordMatches").Params(constants.CtxParam(), jen.List(jen.ID("hashedPassword"), jen.ID("providedPassword")).String(), jen.Underscore().Index().Byte()).Params(jen.Bool()).Body(
 			utils.StartSpan(proj, false, "PasswordMatches"),
 			jen.Return().Qual("golang.org/x/crypto/bcrypt", "CompareHashAndPassword").Call(jen.Index().Byte().Call(jen.ID("hashedPassword")), jen.Index().Byte().Call(jen.ID("providedPassword"))).IsEqualTo().ID("nil"),
 		),
@@ -195,7 +195,7 @@ func buildHashedPasswordIsTooWeak(proj *models.Project) []jen.Code {
 			jen.ID("hashedPassword").String(),
 		).Params(
 			jen.Bool(),
-		).Block(
+		).Body(
 			utils.StartSpan(proj, false, "hashedPasswordIsTooWeak"),
 			jen.List(jen.ID("cost"), jen.Err()).Assign().Qual("golang.org/x/crypto/bcrypt", "Cost").Call(jen.Index().Byte().Call(jen.ID("hashedPassword"))),
 			jen.Line(),
@@ -211,7 +211,7 @@ func buildPasswordIsAcceptable() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("PasswordIsAcceptable takes a password and returns whether or not it satisfies the authenticator."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").String()).Params(jen.Bool()).Block(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("BcryptAuthenticator")).ID("PasswordIsAcceptable").Params(jen.ID("pass").String()).Params(jen.Bool()).Body(
 			jen.Return().ID("uint").Call(jen.Len(jen.ID("pass"))).Op(">=").ID("b").Dot("minimumPasswordSize"),
 		),
 		jen.Line(),

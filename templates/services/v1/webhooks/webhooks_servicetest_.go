@@ -20,7 +20,7 @@ func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildTestService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Body(
 			jen.Return().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("webhookCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
@@ -39,7 +39,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 
 func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebhooksService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -47,7 +47,7 @@ func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
 					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
@@ -69,7 +69,7 @@ func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
+				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
 					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
 				),
 				jen.Line(),

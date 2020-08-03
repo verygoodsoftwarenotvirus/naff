@@ -36,7 +36,7 @@ func buildHelperTestingType() []jen.Code {
 
 func buildTestArgIsNotPointerOrNil() []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("ArgIsNotPointerOrNil").Block(
+		utils.OuterTestFunc("ArgIsNotPointerOrNil").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -80,7 +80,7 @@ func buildTestArgIsNotPointerOrNil() []jen.Code {
 
 func buildTestArgIsNotPointer() []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("ArgIsNotPointer").Block(
+		utils.OuterTestFunc("ArgIsNotPointer").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -145,7 +145,7 @@ func buildTestArgIsNotPointer() []jen.Code {
 
 func buildTestArgIsNotNil() []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("ArgIsNotNil").Block(
+		utils.OuterTestFunc("ArgIsNotNil").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -210,7 +210,7 @@ func buildTestArgIsNotNil() []jen.Code {
 
 func buildTestUnmarshalBody(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("UnmarshalBody").Block(
+		utils.OuterTestFunc("UnmarshalBody").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -273,7 +273,7 @@ func buildTestUnmarshalBody(proj *models.Project) []jen.Code {
 						jen.Qual("strings", "NewReader").Callln(
 							jen.Func().Params().Params(
 								jen.String(),
-							).Block(
+							).Body(
 								jen.List(
 									jen.ID("bs"),
 									jen.Err(),
@@ -400,7 +400,7 @@ func buildHelperTestBreakableStruct() []jen.Code {
 
 func buildTestCreateBodyFromStruct() []jen.Code {
 	lines := []jen.Code{
-		utils.OuterTestFunc("CreateBodyFromStruct").Block(
+		utils.OuterTestFunc("CreateBodyFromStruct").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

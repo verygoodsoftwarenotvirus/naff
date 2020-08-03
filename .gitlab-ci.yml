@@ -16,7 +16,7 @@ formatting:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
     - if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then exit 1; fi
 
-template_tests:
+coverage:
   stage: quality
   image: golang:stretch
   variables:
@@ -24,24 +24,34 @@ template_tests:
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-    - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/templates/...
+    - make coverage
 
-models_tests:
-  stage: quality
-  image: golang:stretch
-  variables:
-    GOPATH: "/go"
-  script:
-    - apt-get update -y && apt-get install -y make git gcc musl-dev
-    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-    - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/models/...
-
-lib_tests:
-  stage: quality
-  image: golang:stretch
-  variables:
-    GOPATH: "/go"
-  script:
-    - apt-get update -y && apt-get install -y make git gcc musl-dev
-    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-    - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/lib/...
+# template_tests:
+#   stage: quality
+#   image: golang:stretch
+#   variables:
+#     GOPATH: "/go"
+#   script:
+#     - apt-get update -y && apt-get install -y make git gcc musl-dev
+#     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+#     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/templates/...
+#
+# models_tests:
+#   stage: quality
+#   image: golang:stretch
+#   variables:
+#     GOPATH: "/go"
+#   script:
+#     - apt-get update -y && apt-get install -y make git gcc musl-dev
+#     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+#     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/models/...
+#
+# lib_tests:
+#   stage: quality
+#   image: golang:stretch
+#   variables:
+#     GOPATH: "/go"
+#   script:
+#     - apt-get update -y && apt-get install -y make git gcc musl-dev
+#     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+#     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/lib/...

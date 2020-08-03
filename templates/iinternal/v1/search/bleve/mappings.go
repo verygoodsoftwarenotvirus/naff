@@ -69,7 +69,7 @@ func buildSomethingMapper(typ models.DataType) []jen.Code {
 				"github.com/blevesearch/bleve/mapping",
 				"IndexMappingImpl",
 			),
-		).Block(
+		).Body(
 			block...,
 		),
 		jen.Line(),

@@ -49,7 +49,7 @@ func TestNewBleveIndexManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		exampleIndexPath := search.IndexPath("constructor_test.bleve")
+		exampleIndexPath := search.IndexPath("constructor_test_happy_path.bleve")
 
 		_, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
@@ -65,9 +65,9 @@ func TestNewBleveIndexManager(T *testing.T) {
 	})
 
 	T.Run("invalid name", func(t *testing.T) {
-		exampleIndexPath := search.IndexPath("")
+		exampleIndexPath := search.IndexPath("constructor_test_invalid_name.bleve")
 
-		_, err := NewBleveIndexManager(exampleIndexPath, "testing", noop.ProvideNoopLogger())
+		_, err := NewBleveIndexManager(exampleIndexPath, "invalid", noop.ProvideNoopLogger())
 		assert.Error(t, err)
 	})
 }
@@ -81,7 +81,7 @@ func TestBleveIndexManager_Index(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "index_test"
-		exampleIndexPath := search.IndexPath("index_test.bleve")
+		exampleIndexPath := search.IndexPath("index_test_obligatory.bleve")
 
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
@@ -107,7 +107,8 @@ func TestBleveIndexManager_Search(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "search_test"
-		exampleIndexPath := search.IndexPath("search_test_1.bleve")
+		exampleIndexPath := search.IndexPath("search_test_obligatory.bleve")
+
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
 		require.NotNil(t, im)
@@ -129,7 +130,7 @@ func TestBleveIndexManager_Search(T *testing.T) {
 	T.Run("with empty index and search", func(t *testing.T) {
 		ctx := context.Background()
 
-		exampleIndexPath := search.IndexPath("search_test_2.bleve")
+		exampleIndexPath := search.IndexPath("search_test_empty_index.bleve")
 
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
@@ -146,7 +147,8 @@ func TestBleveIndexManager_Search(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "search_test"
-		exampleIndexPath := search.IndexPath("search_test_3.bleve")
+		exampleIndexPath := search.IndexPath("search_test_closed_index.bleve")
+
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
 		require.NotNil(t, im)
@@ -171,7 +173,8 @@ func TestBleveIndexManager_Search(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "search_test"
-		exampleIndexPath := search.IndexPath("search_test_4.bleve")
+		exampleIndexPath := search.IndexPath("search_test_invalid_id.bleve")
+
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
 		require.NotNil(t, im)
@@ -282,7 +285,7 @@ func TestNewBleveIndexManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		exampleIndexPath := search.IndexPath("constructor_test.bleve")
+		exampleIndexPath := search.IndexPath("constructor_test_happy_path.bleve")
 
 		_, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
@@ -298,9 +301,9 @@ func TestNewBleveIndexManager(T *testing.T) {
 	})
 
 	T.Run("invalid name", func(t *testing.T) {
-		exampleIndexPath := search.IndexPath("")
+		exampleIndexPath := search.IndexPath("constructor_test_invalid_name.bleve")
 
-		_, err := NewBleveIndexManager(exampleIndexPath, "testing", noop.ProvideNoopLogger())
+		_, err := NewBleveIndexManager(exampleIndexPath, "invalid", noop.ProvideNoopLogger())
 		assert.Error(t, err)
 	})
 }
@@ -343,7 +346,7 @@ func TestBleveIndexManager_Index(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "index_test"
-		exampleIndexPath := search.IndexPath("index_test.bleve")
+		exampleIndexPath := search.IndexPath("index_test_obligatory.bleve")
 
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
@@ -398,7 +401,8 @@ func TestBleveIndexManager_Search(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "search_test"
-		exampleIndexPath := search.IndexPath("search_test_1.bleve")
+		exampleIndexPath := search.IndexPath("search_test_obligatory.bleve")
+
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
 		require.NotNil(t, im)
@@ -420,7 +424,7 @@ func TestBleveIndexManager_Search(T *testing.T) {
 	T.Run("with empty index and search", func(t *testing.T) {
 		ctx := context.Background()
 
-		exampleIndexPath := search.IndexPath("search_test_2.bleve")
+		exampleIndexPath := search.IndexPath("search_test_empty_index.bleve")
 
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
@@ -437,7 +441,8 @@ func TestBleveIndexManager_Search(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "search_test"
-		exampleIndexPath := search.IndexPath("search_test_3.bleve")
+		exampleIndexPath := search.IndexPath("search_test_closed_index.bleve")
+
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
 		require.NotNil(t, im)
@@ -462,7 +467,8 @@ func TestBleveIndexManager_Search(T *testing.T) {
 		ctx := context.Background()
 
 		const exampleQuery = "search_test"
-		exampleIndexPath := search.IndexPath("search_test_4.bleve")
+		exampleIndexPath := search.IndexPath("search_test_invalid_id.bleve")
+
 		im, err := NewBleveIndexManager(exampleIndexPath, testingSearchIndexName, noop.ProvideNoopLogger())
 		assert.NoError(t, err)
 		require.NotNil(t, im)

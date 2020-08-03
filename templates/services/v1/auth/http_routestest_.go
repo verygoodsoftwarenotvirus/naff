@@ -37,7 +37,7 @@ func buildAttachCookieToRequestForTest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.Qual("context", "Context"),
 			jen.PointerTo().Qual("net/http", "Request"),
-		).Block(
+		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID(constants.ContextVarName), jen.ID("sessionErr")).Assign().ID("s").Dot("sessionManager").Dot("Load").Call(
@@ -85,7 +85,9 @@ func buildAttachCookieToRequestForTest(proj *models.Project) []jen.Code {
 
 func buildTestService_DecodeCookieFromRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_DecodeCookieFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_DecodeCookieFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -158,7 +160,9 @@ func buildTestService_DecodeCookieFromRequest(proj *models.Project) []jen.Code {
 
 func buildTestService_WebsocketAuthFunction(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_WebsocketAuthFunction").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_WebsocketAuthFunction").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with valid oauth2 client",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -247,7 +251,9 @@ func buildTestService_WebsocketAuthFunction(proj *models.Project) []jen.Code {
 
 func buildTestService_fetchUserFromCookie(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_fetchUserFromCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_fetchUserFromCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -338,7 +344,9 @@ func buildTestService_fetchUserFromCookie(proj *models.Project) []jen.Code {
 
 func buildTestService_LoginHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_LoginHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_LoginHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -642,7 +650,9 @@ func buildTestService_LoginHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_LogoutHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_LogoutHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_LogoutHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -718,7 +728,9 @@ func buildTestService_LogoutHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_fetchLoginDataFromRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_fetchLoginDataFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_fetchLoginDataFromRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -820,7 +832,9 @@ func buildTestService_fetchLoginDataFromRequest(proj *models.Project) []jen.Code
 
 func buildTestService_validateLogin(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_validateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_validateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1047,7 +1061,9 @@ func buildTestService_validateLogin(proj *models.Project) []jen.Code {
 
 func buildTestService_StatusHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_StatusHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_StatusHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"normal operation",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1175,7 +1191,9 @@ func buildTestService_StatusHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_CycleSecretHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_CycleSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CycleSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"normal operation",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -1204,6 +1222,7 @@ func buildTestService_CycleSecretHandler(proj *models.Project) []jen.Code {
 					),
 					nil,
 				),
+				jen.Line(),
 				jen.ID("s").Dot("CycleSecretHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 				jen.Line(),
 				utils.AssertError(
@@ -1224,7 +1243,9 @@ func buildTestService_CycleSecretHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_buildCookie() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_buildCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_buildCookie").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),

@@ -25,7 +25,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 func buildTest_randString() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_randString").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_randString").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -42,7 +42,7 @@ func buildTest_randString() []jen.Code {
 
 func buildBuildRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -63,7 +63,7 @@ func buildBuildRequest() []jen.Code {
 
 func buildTest_fetchUserID(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_fetchUserID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_fetchUserID").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -104,7 +104,7 @@ func buildTest_fetchUserID(proj *models.Project) []jen.Code {
 
 func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
@@ -262,7 +262,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -628,7 +628,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -639,7 +639,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -682,7 +682,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -717,7 +717,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -752,7 +752,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -797,7 +797,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ArchiveHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ArchiveHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildFakeVar(proj, "User"),
@@ -808,7 +808,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -847,7 +847,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
@@ -882,7 +882,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 				jen.Line(),
-				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("urlClientIDExtractor").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),

@@ -32,6 +32,7 @@ var (
 		paramFetcherProviders,
 		ProvideServer,
 		ProvideNamespace,
+		ProvideNewsmanTypeNameManipulationFunc,
 	)
 )
 
@@ -75,6 +76,7 @@ var (
 		paramFetcherProviders,
 		ProvideServer,
 		ProvideNamespace,
+		ProvideNewsmanTypeNameManipulationFunc,
 	)
 )
 `

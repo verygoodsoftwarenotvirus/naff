@@ -49,7 +49,7 @@ func buildOAuth2ClientListHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ListHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -65,7 +65,7 @@ func buildOAuth2ClientCreateHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreateHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -81,7 +81,7 @@ func buildOAuth2ClientReadHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ReadHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -97,7 +97,7 @@ func buildOAuth2ClientArchiveHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ArchiveHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -110,7 +110,7 @@ func buildOAuth2ClientCreationInputMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreationInputMiddleware is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -124,7 +124,7 @@ func buildOAuth2ClientInfoMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("OAuth2ClientInfoMiddleware is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("OAuth2ClientInfoMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -139,7 +139,7 @@ func buildExtractOAuth2ClientFromRequest(proj *models.Project) []jen.Code {
 		jen.Comment("ExtractOAuth2ClientFromRequest is the obligatory implementation for our interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
@@ -153,7 +153,7 @@ func buildOAuth2ClientHandleAuthorizeRequest() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("HandleAuthorizeRequest is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),
@@ -167,7 +167,7 @@ func buildOAuth2ClientHandleTokenRequest() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("HandleTokenRequest is the obligatory implementation for our interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataServer")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 			jen.Return().ID("args").Dot("Error").Call(jen.Zero()),
 		),

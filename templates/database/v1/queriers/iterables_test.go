@@ -151,7 +151,6 @@ func (p *Postgres) buildGetItemQuery(itemID, userID uint64) (query string, args 
 // GetItem fetches an item from the database.
 func (p *Postgres) GetItem(ctx context.Context, itemID, userID uint64) (*v11.Item, error) {
 	query, args := p.buildGetItemQuery(itemID, userID)
-
 	row := p.db.QueryRowContext(ctx, query, args...)
 	return p.scanItem(row)
 }
@@ -590,7 +589,6 @@ func (s *Sqlite) buildGetItemQuery(itemID, userID uint64) (query string, args []
 // GetItem fetches an item from the database.
 func (s *Sqlite) GetItem(ctx context.Context, itemID, userID uint64) (*v11.Item, error) {
 	query, args := s.buildGetItemQuery(itemID, userID)
-
 	row := s.db.QueryRowContext(ctx, query, args...)
 	return s.scanItem(row)
 }
@@ -742,7 +740,6 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []uin
 	var err error
 
 	var whenThenStatement string
-
 	for i, id := range ids {
 		if i != 0 {
 			whenThenStatement += " "
@@ -750,6 +747,7 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []uin
 		whenThenStatement += fmt.Sprintf("WHEN %d THEN %d", id, i)
 	}
 	whenThenStatement += " END"
+
 	builder := s.sqlBuilder.
 		Select(itemsTableColumns...).
 		From(itemsTableName).
@@ -1043,7 +1041,6 @@ func (m *MariaDB) buildGetItemQuery(itemID, userID uint64) (query string, args [
 // GetItem fetches an item from the database.
 func (m *MariaDB) GetItem(ctx context.Context, itemID, userID uint64) (*v11.Item, error) {
 	query, args := m.buildGetItemQuery(itemID, userID)
-
 	row := m.db.QueryRowContext(ctx, query, args...)
 	return m.scanItem(row)
 }
@@ -1195,7 +1192,6 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []ui
 	var err error
 
 	var whenThenStatement string
-
 	for i, id := range ids {
 		if i != 0 {
 			whenThenStatement += " "
@@ -1203,6 +1199,7 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []ui
 		whenThenStatement += fmt.Sprintf("WHEN %d THEN %d", id, i)
 	}
 	whenThenStatement += " END"
+
 	builder := m.sqlBuilder.
 		Select(itemsTableColumns...).
 		From(itemsTableName).
@@ -2134,7 +2131,6 @@ import (
 // GetItem fetches an item from the database.
 func (p *Postgres) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, error) {
 	query, args := p.buildGetItemQuery(itemID, userID)
-
 	row := p.db.QueryRowContext(ctx, query, args...)
 	return p.scanItem(row)
 }
@@ -2163,7 +2159,6 @@ import (
 // GetItem fetches an item from the database.
 func (s *Sqlite) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, error) {
 	query, args := s.buildGetItemQuery(itemID, userID)
-
 	row := s.db.QueryRowContext(ctx, query, args...)
 	return s.scanItem(row)
 }
@@ -2192,7 +2187,6 @@ import (
 // GetItem fetches an item from the database.
 func (m *MariaDB) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, error) {
 	query, args := m.buildGetItemQuery(itemID, userID)
-
 	row := m.db.QueryRowContext(ctx, query, args...)
 	return m.scanItem(row)
 }
@@ -3101,7 +3095,6 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []uin
 	var err error
 
 	var whenThenStatement string
-
 	for i, id := range ids {
 		if i != 0 {
 			whenThenStatement += " "
@@ -3109,6 +3102,7 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []uin
 		whenThenStatement += fmt.Sprintf("WHEN %d THEN %d", id, i)
 	}
 	whenThenStatement += " END"
+
 	builder := s.sqlBuilder.
 		Select(itemsTableColumns...).
 		From(itemsTableName).
@@ -3158,7 +3152,6 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []ui
 	var err error
 
 	var whenThenStatement string
-
 	for i, id := range ids {
 		if i != 0 {
 			whenThenStatement += " "
@@ -3166,6 +3159,7 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []ui
 		whenThenStatement += fmt.Sprintf("WHEN %d THEN %d", id, i)
 	}
 	whenThenStatement += " END"
+
 	builder := m.sqlBuilder.
 		Select(itemsTableColumns...).
 		From(itemsTableName).

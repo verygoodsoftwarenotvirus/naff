@@ -28,7 +28,7 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestClient_GetUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -63,7 +63,7 @@ func buildTestClient_GetUser(proj *models.Project) []jen.Code {
 
 func buildTestClient_GetUserWithUnverifiedTwoFactorSecret(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetUserWithUnverifiedTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUserWithUnverifiedTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -98,7 +98,7 @@ func buildTestClient_GetUserWithUnverifiedTwoFactorSecret(proj *models.Project) 
 
 func buildTestClient_VerifyUserTwoFactorSecret(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_VerifyUserTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_VerifyUserTwoFactorSecret").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -131,7 +131,7 @@ func buildTestClient_VerifyUserTwoFactorSecret(proj *models.Project) []jen.Code 
 
 func buildTestClient_GetUserByUsername(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUserByUsername").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -162,7 +162,7 @@ func buildTestClient_GetUserByUsername(proj *models.Project) []jen.Code {
 
 func buildTestClient_GetAllUsersCount(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetAllUsersCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetAllUsersCount").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -192,7 +192,7 @@ func buildTestClient_GetAllUsersCount(proj *models.Project) []jen.Code {
 
 func buildTestClient_GetUsers(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_GetUsers").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -247,7 +247,7 @@ func buildTestClient_GetUsers(proj *models.Project) []jen.Code {
 
 func buildTestClient_CreateUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_CreateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -280,7 +280,7 @@ func buildTestClient_CreateUser(proj *models.Project) []jen.Code {
 
 func buildTestClient_UpdateUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_UpdateUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -311,7 +311,7 @@ func buildTestClient_UpdateUser(proj *models.Project) []jen.Code {
 
 func buildTestClient_UpdateUserPassword(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_UpdateUserPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_UpdateUserPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -347,7 +347,7 @@ func buildTestClient_UpdateUserPassword(proj *models.Project) []jen.Code {
 
 func buildTestClient_ArchiveUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestClient_ArchiveUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

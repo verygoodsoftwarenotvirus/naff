@@ -36,7 +36,7 @@ func Test_ctxParam(T *testing.T) {
 		out.Add(
 			jen.Func().ID("test").Params(
 				ctxParam(),
-			).Block(),
+			).Body(),
 		)
 
 		var b bytes.Buffer
@@ -65,7 +65,7 @@ func Test_ctxVar(T *testing.T) {
 
 		out := jen.NewFile("main")
 		out.Add(
-			jen.Func().ID("test").Params().Block(
+			jen.Func().ID("test").Params().Body(
 				ctxVar(),
 			),
 		)

@@ -1064,7 +1064,6 @@ func TestService_TOTPSecretValidationHandler(T *testing.T) {
 
 		mock.AssertExpectationsForObjects(t, mockDB)
 	})
-
 }
 
 func TestService_UpdatePasswordHandler(T *testing.T) {
@@ -2576,7 +2575,6 @@ func TestService_TOTPSecretValidationHandler(T *testing.T) {
 
 		mock.AssertExpectationsForObjects(t, mockDB)
 	})
-
 }
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

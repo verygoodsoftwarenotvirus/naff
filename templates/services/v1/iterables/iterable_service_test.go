@@ -52,6 +52,7 @@ var (
 type (
 	// SearchIndex is a type alias for dependency injection's sake
 	SearchIndex search.IndexManager
+
 	// Service handles to-do list items
 	Service struct {
 		logger          v11.Logger
@@ -213,6 +214,7 @@ import (
 type (
 	// SearchIndex is a type alias for dependency injection's sake
 	SearchIndex search.IndexManager
+
 	// Service handles to-do list items
 	Service struct {
 		logger          v1.Logger

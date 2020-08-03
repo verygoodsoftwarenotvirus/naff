@@ -15,7 +15,6 @@ func wireDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers represents what this library offers to external users in the form of dependencies."),
-			jen.Line(),
 			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				jen.ID("ProvideBleveIndexManagerProvider"),
 			),
@@ -23,7 +22,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("ProvideBleveIndexManagerProvider is a wrapper around NewBleveIndexManager"),
 		jen.Line(),
-		jen.Func().ID("ProvideBleveIndexManagerProvider").Params().Params(jen.Qual(proj.InternalSearchV1Package(), "IndexManagerProvider")).Block(
+		jen.Func().ID("ProvideBleveIndexManagerProvider").Params().Params(jen.Qual(proj.InternalSearchV1Package(), "IndexManagerProvider")).Body(
 			jen.Return().ID("NewBleveIndexManager"),
 		),
 	)

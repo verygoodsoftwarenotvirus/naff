@@ -49,7 +49,7 @@ func buildUserLoginInputMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("UserLoginInputMiddleware is a mock method to satisfy our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -63,7 +63,7 @@ func buildUserInputMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("UserInputMiddleware is a mock method to satisfy our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -77,7 +77,7 @@ func buildUserPasswordUpdateInputMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("PasswordUpdateInputMiddleware is a mock method to satisfy our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -91,7 +91,7 @@ func buildUserTOTPSecretVerificationInputMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("TOTPSecretVerificationInputMiddleware is a mock method to satisfy our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -105,7 +105,7 @@ func buildUserTOTPSecretRefreshInputMiddleware() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("TOTPSecretRefreshInputMiddleware is a mock method to satisfy our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -122,7 +122,7 @@ func buildUserListHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("ListHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),
@@ -141,7 +141,7 @@ func buildUserCreateHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("CreateHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),
@@ -160,7 +160,7 @@ func buildUserReadHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("ReadHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),
@@ -179,7 +179,7 @@ func buildUserTOTPSecretVerificationHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("TOTPSecretVerificationHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),
@@ -198,7 +198,7 @@ func buildUserNewTOTPSecretHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("NewTOTPSecretHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),
@@ -217,7 +217,7 @@ func buildUserUpdatePasswordHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("UpdatePasswordHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),
@@ -236,7 +236,7 @@ func buildUserArchiveHandler() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataServer")).ID("ArchiveHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(
 				jen.ID(constants.ResponseVarName),
 				jen.ID(constants.RequestVarName),

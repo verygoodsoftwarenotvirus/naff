@@ -29,13 +29,13 @@ func buildArgIsNotPointer() []jen.Code {
 		jen.Func().ID("argIsNotPointer").Params(jen.ID("i").Interface()).Params(
 			jen.ID("notAPointer").Bool(),
 			jen.Err().Error(),
-		).Block(
+		).Body(
 			jen.If(
 				jen.ID("i").IsEqualTo().ID("nil").Or().
 					Qual("reflect", "TypeOf").Call(
 					jen.ID("i"),
 				).Dot("Kind").Call().DoesNotEqual().Qual("reflect", "Ptr"),
-			).Block(
+			).Body(
 				jen.Return().List(jen.True(), utils.Error("value is not a pointer")),
 			),
 			jen.Return().List(jen.False(),
@@ -54,8 +54,8 @@ func buildArgIsNotNil() []jen.Code {
 		jen.Func().ID("argIsNotNil").Params(jen.ID("i").Interface()).Params(
 			jen.ID("isNil").Bool(),
 			jen.Err().Error(),
-		).Block(
-			jen.If(jen.ID("i").IsEqualTo().ID("nil")).Block(
+		).Body(
+			jen.If(jen.ID("i").IsEqualTo().ID("nil")).Body(
 				jen.Return().List(
 					jen.True(),
 					utils.Error("value is nil"),
@@ -78,16 +78,16 @@ func buildArgIsNotPointerOrNil() []jen.Code {
 		jen.Line(),
 		jen.Comment("before decoding an HTTP response, for instance."),
 		jen.Line(),
-		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Block(
+		jen.Func().ID("argIsNotPointerOrNil").Params(jen.ID("i").Interface()).Params(jen.Error()).Body(
 			jen.If(
 				jen.List(jen.ID("nn"), jen.Err()).Assign().ID("argIsNotNil").Call(jen.ID("i")),
 				jen.ID("nn").Or().Err().DoesNotEqual().ID("nil"),
-			).Block(jen.Return().Err()),
+			).Body(jen.Return().Err()),
 			jen.Line(),
 			jen.If(
 				jen.List(jen.ID("np"), jen.Err()).Assign().ID("argIsNotPointer").Call(jen.ID("i")),
 				jen.ID("np").Or().Err().DoesNotEqual().ID("nil"),
-			).Block(jen.Return().Err()),
+			).Body(jen.Return().Err()),
 			jen.Line(),
 			jen.Return().ID("nil"),
 		),
@@ -115,9 +115,9 @@ func buildUnmarshalBody(proj *models.Project) []jen.Code {
 			jen.ID("dest").Interface(),
 		).Params(
 			jen.Error(),
-		).Block(
+		).Body(
 			utils.StartSpan(proj, false, "unmarshalBody"),
-			jen.If(jen.Err().Assign().ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("argIsNotPointerOrNil").Call(jen.ID("dest")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Err(),
 			),
 			jen.Line(),
@@ -126,18 +126,18 @@ func buildUnmarshalBody(proj *models.Project) []jen.Code {
 				jen.Err(),
 			).Assign().Qual("io/ioutil", "ReadAll").
 				Call(jen.ID(constants.ResponseVarName).Dot("Body")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Err(),
 			),
 			jen.Line(),
-			jen.If(jen.ID(constants.ResponseVarName).Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Block(
+			jen.If(jen.ID(constants.ResponseVarName).Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Body(
 				jen.ID("apiErr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
 				jen.If(jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.AddressOf().ID("apiErr"),
 				),
 					jen.Err().DoesNotEqual().ID("nil"),
-				).Block(
+				).Body(
 					jen.Return().Qual("fmt", "Errorf").Call(
 						jen.Lit("unmarshaling error: %w"),
 						jen.Err(),
@@ -152,7 +152,7 @@ func buildUnmarshalBody(proj *models.Project) []jen.Code {
 					jen.AddressOf().ID("dest"),
 				),
 				jen.Err().DoesNotEqual().ID("nil"),
-			).Block(
+			).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("unmarshaling body: %w"),
 					jen.Err(),
@@ -178,14 +178,14 @@ func buildCreateBodyFromStruct() []jen.Code {
 		).Params(
 			jen.Qual("io", "Reader"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.List(
 				jen.ID("out"),
 				jen.Err(),
 			).Assign().Qual("encoding/json", "Marshal").Call(
 				jen.ID("in"),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(),
 					jen.Err()),
 			),

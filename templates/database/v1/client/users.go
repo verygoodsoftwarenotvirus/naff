@@ -48,7 +48,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -70,7 +70,7 @@ func buildGetUserWithUnverifiedTwoFactorSecret(proj *models.Project) []jen.Code 
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUserWithUnverifiedTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
 		),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetUserWithUnverifiedTwoFactorSecret")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -89,7 +89,7 @@ func buildVerifyUserTwoFactorSecret(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("VerifyUserTwoFactorSecret marks a user's two factor secret as validated."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("VerifyUserTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("VerifyUserTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("VerifyUserTwoFactorSecret")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -108,7 +108,7 @@ func buildGetUserByUsername(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetUserByUsername fetches a user by their username."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetUserByUsername")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -127,7 +127,7 @@ func buildGetAllUsersCount(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetAllUsersCount fetches a count of users from the database that meet a particular filter."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllUsersCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetAllUsersCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetAllUsersCount")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -145,7 +145,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetUsers fetches a list of users from the database that meet a particular filter."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"), jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("GetUsers")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -170,7 +170,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("CreateUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -191,7 +191,7 @@ func buildUpdateUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Comment("NOTE: this function uses the ID provided in the input to make its query."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("UpdateUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -214,7 +214,7 @@ func buildUpdateUserPassword(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			jen.ID("userID").Uint64(),
 			jen.ID("newHash").String(),
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("UpdateUserPassword")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -237,7 +237,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ArchiveUser archives a user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID("ArchiveUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ArchiveUser")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),

@@ -25,7 +25,7 @@ func buildMockHTTPHandler() []jen.Code {
 		jen.Line(),
 		jen.Type().ID("MockHTTPHandler").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
@@ -38,7 +38,7 @@ func buildMockHTTPHandler() []jen.Code {
 
 func buildTestService_CreationInputMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CreationInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -95,7 +95,7 @@ func buildTestService_CreationInputMiddleware(proj *models.Project) []jen.Code {
 
 func buildTestService_UpdateInputMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_UpdateInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_UpdateInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

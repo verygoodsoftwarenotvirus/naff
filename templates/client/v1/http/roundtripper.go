@@ -48,7 +48,7 @@ func buildNewDefaultRoundTripper() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("newDefaultRoundTripper constructs a new http.RoundTripper."),
 		jen.Line(),
-		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.PointerTo().ID("defaultRoundTripper")).Block(
+		jen.Func().ID("newDefaultRoundTripper").Params().Params(jen.PointerTo().ID("defaultRoundTripper")).Body(
 			jen.Return(
 				jen.AddressOf().ID("defaultRoundTripper").Valuesln(
 					jen.ID("baseTransport").MapAssign().ID("buildDefaultTransport").Call(),
@@ -70,7 +70,7 @@ func buildRoundTrip() []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Response"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.ID(constants.RequestVarName).Dot("Header").Dot("Set").Call(
 				jen.ID("userAgentHeader"),
 				jen.ID("userAgent"),
@@ -89,7 +89,7 @@ func buildBuildDefaultTransport() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("buildDefaultTransport constructs a new http.Transport."),
 		jen.Line(),
-		jen.Func().ID("buildDefaultTransport").Params().Params(jen.PointerTo().Qual("net/http", "Transport")).Block(
+		jen.Func().ID("buildDefaultTransport").Params().Params(jen.PointerTo().Qual("net/http", "Transport")).Body(
 			jen.Return().AddressOf().Qual("net/http", "Transport").Valuesln(
 				jen.ID("Proxy").MapAssign().Qual("net/http", "ProxyFromEnvironment"),
 				jen.ID("DialContext").MapAssign().Parens(jen.AddressOf().Qual("net", "Dialer").Valuesln(

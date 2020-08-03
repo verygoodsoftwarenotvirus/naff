@@ -83,7 +83,7 @@ func buildBuildTestServer(proj *models.Project) []jen.Code {
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Block(
+		jen.Func().ID("buildTestServer").Params().Params(jen.PointerTo().ID("Server")).Body(
 			jen.ID("s").Assign().AddressOf().ID("Server").Valuesln(
 				buildServerLines...,
 			),
@@ -97,7 +97,7 @@ func buildBuildTestServer(proj *models.Project) []jen.Code {
 }
 func buildTestProvideServer(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideServer").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

@@ -27,7 +27,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("Increment implements our UnitCounter interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(constants.CtxParam()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(constants.CtxParam()).Body(
 			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
@@ -36,7 +36,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("IncrementBy implements our UnitCounter interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()).Body(
 			jen.ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("val")),
 		),
 		jen.Line(),
@@ -45,7 +45,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("Decrement implements our UnitCounter interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(constants.CtxParam()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(constants.CtxParam()).Body(
 			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),

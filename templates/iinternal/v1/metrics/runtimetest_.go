@@ -12,7 +12,7 @@ func runtimeTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(
-		jen.Func().ID("TestRecordRuntimeStats").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestRecordRuntimeStats").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.Comment("this is sort of an obligatory test for coverage's sake."),
@@ -26,7 +26,7 @@ func runtimeTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestRegisterDefaultViews").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.Comment("obligatory"),

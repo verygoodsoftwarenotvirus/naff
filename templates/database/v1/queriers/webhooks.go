@@ -98,7 +98,7 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.Var().Defs(
 				jen.ID("x").Equals().AddressOf().Qual(proj.ModelsV1Package(), "Webhook").Values(),
 				jen.Listln(
@@ -123,17 +123,17 @@ func buildScanWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 				jen.AddressOf().ID("x").Dot(constants.UserOwnershipFieldName),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.ID("events").Assign().Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.Len(jen.ID("events")).Op(">=").One().And().ID("events").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("events").Assign().Qual("strings", "Split").Call(jen.ID("eventsStr"), jen.ID("eventsSeparator")), jen.Len(jen.ID("events")).Op(">=").One().And().ID("events").Index(jen.Zero()).DoesNotEqual().EmptyString()).Body(
 				jen.ID("x").Dot("Events").Equals().ID("events"),
 			),
-			jen.If(jen.ID("dataTypes").Assign().Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.Len(jen.ID("dataTypes")).Op(">=").One().And().ID("dataTypes").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("dataTypes").Assign().Qual("strings", "Split").Call(jen.ID("dataTypesStr"), jen.ID("typesSeparator")), jen.Len(jen.ID("dataTypes")).Op(">=").One().And().ID("dataTypes").Index(jen.Zero()).DoesNotEqual().EmptyString()).Body(
 				jen.ID("x").Dot("DataTypes").Equals().ID("dataTypes"),
 			),
-			jen.If(jen.ID("topics").Assign().Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.Len(jen.ID("topics")).Op(">=").One().And().ID("topics").Index(jen.Zero()).DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("topics").Assign().Qual("strings", "Split").Call(jen.ID("topicsStr"), jen.ID("topicsSeparator")), jen.Len(jen.ID("topics")).Op(">=").One().And().ID("topics").Index(jen.Zero()).DoesNotEqual().EmptyString()).Body(
 				jen.ID("x").Dot("Topics").Equals().ID("topics"),
 			),
 			jen.Line(),
@@ -157,24 +157,24 @@ func buildScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []
 		).Params(
 			jen.Index().Qual(proj.ModelsV1Package(), "Webhook"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.Var().Defs(
 				jen.ID("list").Index().Qual(proj.ModelsV1Package(), "Webhook"),
 			),
 			jen.Line(),
-			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
+			jen.For(jen.ID("rows").Dot("Next").Call()).Body(
 				jen.List(jen.ID("webhook"), jen.Err()).Assign().ID(dbfl).Dot("scanWebhook").Call(jen.ID("rows")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Return().List(jen.Nil(), jen.Err()),
 				),
 				jen.Line(),
 				jen.ID("list").Equals().ID("append").Call(jen.ID("list"), jen.PointerTo().ID("webhook")),
 			),
-			jen.If(jen.Err().Assign().ID("rows").Dot("Err").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("rows").Dot("Err").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("rows").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("rows").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("closing rows")),
 			),
 			jen.Line(),
@@ -193,7 +193,7 @@ func buildBuildGetWebhookQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("buildGetWebhookQuery returns a SQL query (and arguments) for retrieving a given webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
@@ -224,12 +224,12 @@ func build_GetWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 		jen.Comment("GetWebhook fetches a webhook from the database."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhookQuery").Call(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
 			jen.List(jen.ID("webhook"), jen.Err()).Assign().ID(dbfl).Dot("scanWebhook").Call(jen.ID("row")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Lit("querying for webhook"))),
 			),
 			jen.Line(),
@@ -254,8 +254,8 @@ func buildBuildGetAllWebhooksCountQuery(dbvendor wordsmith.SuperPalabra) []jen.C
 		jen.Line(),
 		jen.Comment("buildGetAllWebhooksCountQuery returns a query which would return the count of webhooks regardless of ownership."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllWebhooksCountQuery").Params().Params(jen.String()).Block(
-			jen.ID("getAllWebhooksCountQueryBuilder").Dot("Do").Call(jen.Func().Params().Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllWebhooksCountQuery").Params().Params(jen.String()).Body(
+			jen.ID("getAllWebhooksCountQueryBuilder").Dot("Do").Call(jen.Func().Params().Body(
 				jen.Var().Err().Error(),
 				jen.Line(),
 				jen.List(jen.ID("getAllWebhooksCountQuery"), jen.Underscore(), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
@@ -283,7 +283,7 @@ func build_GetAllWebhooksCount(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetAllWebhooksCount will fetch the count of every active webhook in the database."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooksCount").Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Body(
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksCountQuery").Call()).Dot("Scan").Call(jen.AddressOf().ID("count")),
 			jen.Return().List(jen.ID("count"), jen.Err()),
 		),
@@ -306,8 +306,8 @@ func buildBuildGetAllWebhooksQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("buildGetAllWebhooksQuery returns a SQL query which will return all webhooks, regardless of ownership."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllWebhooksQuery").Params().Params(jen.String()).Block(
-			jen.ID("getAllWebhooksQueryBuilder").Dot("Do").Call(jen.Func().Params().Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetAllWebhooksQuery").Params().Params(jen.String()).Body(
+			jen.ID("getAllWebhooksQueryBuilder").Dot("Do").Call(jen.Func().Params().Body(
 				jen.Var().Err().Error(),
 				jen.Line(),
 				jen.List(jen.ID("getAllWebhooksQuery"), jen.Underscore(), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
@@ -335,17 +335,17 @@ func build_GetAllWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 	lines := []jen.Code{
 		jen.Comment("GetAllWebhooks fetches a list of all webhooks from the database."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllWebhooks").Params(constants.CtxParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Body(
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID(dbfl).Dot("buildGetAllWebhooksQuery").Call()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 					jen.Return().List(jen.Nil(), jen.Err()),
 				),
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for webhooks: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.List(jen.ID("list"), jen.Err()).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("rows")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -374,7 +374,7 @@ func buildBuildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetWebhooksQuery").Params(
 			constants.UserIDParam(),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
@@ -389,7 +389,7 @@ func buildBuildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			).
 				Dotln("OrderBy").Call(utils.FormatString("%s.%s", jen.ID("webhooksTableName"), jen.ID("idColumn"))),
 			jen.Line(),
-			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().ID("nil")).Body(
 				jen.ID("builder").Equals().ID(constants.FilterVarName).Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.ID("webhooksTableName")),
 			),
 			jen.Line(),
@@ -415,19 +415,19 @@ func buildGetWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra) []j
 			constants.CtxParam(),
 			constants.UserIDParam(),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Block(
+		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList"), jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetWebhooksQuery").Call(jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
-				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 					jen.Return().List(jen.Nil(), jen.Err()),
 				),
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying database: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.List(jen.ID("list"), jen.Err()).Assign().ID(dbfl).Dot("scanWebhooks").Call(jen.ID("rows")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -489,7 +489,7 @@ func buildBuildWebhookCreationQuery(proj *models.Project, dbvendor wordsmith.Sup
 	lines := []jen.Code{
 		jen.Comment("buildWebhookCreationQuery returns a SQL query (and arguments) that would create a given webhook"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildWebhookCreationQuery").Params(jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildWebhookCreationQuery").Params(jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			buildWebhookCreationQueryQuery(),
@@ -526,14 +526,14 @@ func buildCreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 
 		if isPostgres(dbvendor) {
 			out = append(out,
-				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("x").Dot("ID"), jen.AddressOf().ID("x").Dot("CreatedOn")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing webhook creation query: %w"), jen.Err())),
 				),
 			)
 		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 			out = append(out,
 				jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error executing webhook creation query: %w"), jen.Err()))),
 				),
 				jen.Line(),
@@ -559,7 +559,7 @@ func buildCreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 	lines := []jen.Code{
 		jen.Comment("CreateWebhook creates a webhook in the database."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook"), jen.Error()).Body(
 			buildCreateWebhookQuery()...,
 		),
 		jen.Line(),
@@ -600,7 +600,7 @@ func buildBuildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 	lines := []jen.Code{
 		jen.Comment("buildUpdateWebhookQuery takes a given webhook and returns a SQL query to update."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildUpdateWebhookQuery").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildUpdateWebhookQuery").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			buildUpdateWebhookQueryQuery(),
@@ -638,7 +638,7 @@ func buildUpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 	lines := []jen.Code{
 		jen.Comment("UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateWebhook").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.Error()).Body(
 			buildUpdateWebhookBody()...,
 		),
 		jen.Line(),
@@ -674,7 +674,7 @@ func buildBuildArchiveWebhookQuery(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("buildArchiveWebhookQuery returns a SQL query (and arguments) that will mark a webhook as archived."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildArchiveWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildArchiveWebhookQuery").Params(jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			buildArchiveWebhookQueryQuery(),
@@ -696,7 +696,7 @@ func buildArchiveWebhook(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ArchiveWebhook archives a webhook from the database by its ID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("ArchiveWebhook").Params(constants.CtxParam(), jen.List(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildArchiveWebhookQuery").Call(jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
 			jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Return().Err(),

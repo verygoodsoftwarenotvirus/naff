@@ -38,7 +38,7 @@ func buildConstDefinitions() []jen.Code {
 
 func buildTestBcrypt_HashPassword(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBcrypt_HashPassword").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -61,7 +61,7 @@ func buildTestBcrypt_HashPassword(proj *models.Project) []jen.Code {
 
 func buildTestBcrypt_PasswordMatches(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBcrypt_PasswordMatches").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBcrypt_PasswordMatches").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -92,7 +92,7 @@ func buildTestBcrypt_PasswordMatches(proj *models.Project) []jen.Code {
 
 func buildTestBcrypt_PasswordIsAcceptable(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBcrypt_PasswordIsAcceptable").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBcrypt_PasswordIsAcceptable").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -113,7 +113,7 @@ func buildTestBcrypt_PasswordIsAcceptable(proj *models.Project) []jen.Code {
 
 func buildTestBcrypt_ValidateLogin(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBcrypt_ValidateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBcrypt_ValidateLogin").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("x").Assign().Qual(proj.InternalAuthV1Package(), "ProvideBcryptAuthenticator").Call(jen.Qual(proj.InternalAuthV1Package(), "DefaultBcryptHashCost"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
@@ -210,7 +210,7 @@ func buildTestBcrypt_ValidateLogin(proj *models.Project) []jen.Code {
 
 func buildTestProvideBcrypt(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideBcrypt").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideBcrypt").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

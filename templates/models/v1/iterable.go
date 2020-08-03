@@ -31,7 +31,7 @@ func buildUpdateSomething(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Block(buildUpdateFunctionLogic(typ.Fields)...),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Body(buildUpdateFunctionLogic(typ.Fields)...),
 		jen.Line(),
 	}
 
@@ -46,7 +46,6 @@ func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
-			jen.Line(),
 			jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
 		),
 		jen.Line(),
@@ -138,7 +137,7 @@ func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(
 			jen.PointerTo().IDf("%sUpdateInput", sn),
-		).Block(
+		).Body(
 			func() jen.Code {
 				lines := []jen.Code{}
 
@@ -274,14 +273,14 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			} else {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
@@ -302,14 +301,14 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.Pointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
 			} else {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Block(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)

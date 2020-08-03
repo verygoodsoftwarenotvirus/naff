@@ -25,7 +25,7 @@ import (
 	"testing"
 )
 
-func buildTestProvideBcryptHashCost(T *testing.T) {
+func TestProvideBcryptHashCost(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
@@ -56,7 +56,7 @@ import (
 	"testing"
 )
 
-func buildTestProvideBcryptHashCost(T *testing.T) {
+func TestProvideBcryptHashCost(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {

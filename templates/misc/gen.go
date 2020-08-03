@@ -585,6 +585,10 @@ issues:
         - lll
         - bodyclose
 
+    - path: tests/v1
+      linters:
+        - gosec
+
     # Exclude routers from gocyclo
     - path: server/v1/http/routes.go
       linters:

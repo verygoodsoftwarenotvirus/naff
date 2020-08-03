@@ -29,7 +29,6 @@ import (
 
 const (
 	// ItemsSearchIndexName is the name of the index used to search through items.
-
 	ItemsSearchIndexName search.IndexName = "items"
 )
 
@@ -169,7 +168,6 @@ import (
 
 const (
 	// ItemsSearchIndexName is the name of the index used to search through items.
-
 	ItemsSearchIndexName search.IndexName = "items"
 )
 `
@@ -436,7 +434,7 @@ func main() {
 	}
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

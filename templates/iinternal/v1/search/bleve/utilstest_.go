@@ -18,7 +18,7 @@ func utilsTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestEnsureQueryIsRestrictedToUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestEnsureQueryIsRestrictedToUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestEnsureQueryIsRestrictedToUser").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("leaves good queries alone",

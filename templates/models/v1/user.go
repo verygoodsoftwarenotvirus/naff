@@ -162,16 +162,16 @@ func buildUserUpdate() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Update accepts a User as input and merges those values if they're set."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Block(
-			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().EmptyString().And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Block(
+		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Body(
+			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().EmptyString().And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Body(
 				jen.ID("u").Dot("Username").Equals().ID("input").Dot("Username"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().EmptyString().And().ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Block(
+			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().EmptyString().And().ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Body(
 				jen.ID("u").Dot("HashedPassword").Equals().ID("input").Dot("HashedPassword"),
 			),
 			jen.Line(),
-			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().EmptyString().And().ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Block(
+			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().EmptyString().And().ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Body(
 				jen.ID("u").Dot("TwoFactorSecret").Equals().ID("input").Dot("TwoFactorSecret"),
 			),
 		),
@@ -184,7 +184,7 @@ func buildUserToSessionInfo() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ToSessionInfo accepts a User as input and merges those values if they're set."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("ToSessionInfo").Params().PointerTo().ID("SessionInfo").Block(
+		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("ToSessionInfo").Params().PointerTo().ID("SessionInfo").Body(
 			jen.Return(jen.AddressOf().ID("SessionInfo").Valuesln(
 				jen.ID(constants.UserIDFieldName).MapAssign().ID("u").Dot("ID"),
 				jen.ID("UserIsAdmin").MapAssign().ID("u").Dot("IsAdmin"),

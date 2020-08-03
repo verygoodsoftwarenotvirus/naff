@@ -95,9 +95,9 @@ func buildProvideWebhooksService(proj *models.Project) []jen.Code {
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("webhookCounterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("em").PointerTo().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Newsman"),
-		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.List(jen.ID("webhookCounter"), jen.Err()).Assign().ID("webhookCounterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),

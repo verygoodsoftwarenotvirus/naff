@@ -34,7 +34,7 @@ func RenderFunctionParamsToString(t *testing.T, params []jen.Code) string {
 	t.Helper()
 
 	f := jen.NewFile("main")
-	f.Add(jen.Func().ID("example").Params(params...).Block())
+	f.Add(jen.Func().ID("example").Params(params...).Body())
 	b := bytes.NewBufferString("\n")
 	require.NoError(t, f.Render(b))
 
@@ -151,7 +151,7 @@ func RenderMapEntriesWithStringKeysToString(t *testing.T, values []jen.Code) str
 	return b.String()
 }
 
-func RenderVariableDeclarationsToString(t *testing.T, vars []jen.Code) string {
+func RenderFunctionBodyToString(t *testing.T, vars []jen.Code) string {
 	t.Helper()
 
 	f := jen.NewFile("main")

@@ -61,7 +61,7 @@ func buildBuildGetUserRequest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -80,7 +80,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 			constants.CtxVar(),
 			jen.ID(constants.UserIDVarName),
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
@@ -110,7 +110,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 		).Params(
 			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
 			jen.Err().Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -144,7 +144,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -165,7 +165,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 			constants.CtxVar(),
 			jen.ID(constants.FilterVarName),
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
@@ -192,7 +192,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -226,7 +226,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -247,7 +247,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 			constants.CtxVar(),
 			jen.ID("input"),
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
@@ -274,7 +274,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -312,7 +312,7 @@ func buildBuildArchiveUserRequest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -331,7 +331,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 			constants.CtxVar(),
 			jen.ID(constants.UserIDVarName),
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("building request: %w"),
 				jen.Err(),
@@ -351,7 +351,7 @@ func buildArchiveUser(proj *models.Project) []jen.Code {
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
 			constants.UserIDParam(),
-		).Params(jen.Error()).Block(block...),
+		).Params(jen.Error()).Body(block...),
 		jen.Line(),
 	}
 
@@ -364,12 +364,12 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
-		jen.If(jen.ID("input").IsEqualTo().Nil()).Block(
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Body(
 			jen.Return(jen.Nil(), utils.Error("nil input provided")),
 		),
 		jen.Line(),
 		jen.List(jen.ID("body"), jen.Err()).Assign().ID("createBodyFromStruct").Call(jen.AddressOf().ID("input")),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
@@ -401,7 +401,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -414,12 +414,12 @@ func buildLogin(proj *models.Project) []jen.Code {
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.Line(),
-		jen.If(jen.ID("input").IsEqualTo().Nil()).Block(
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Body(
 			jen.Return(jen.Nil(), utils.Error("nil input provided")),
 		),
 		jen.Line(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildLoginRequest").Call(constants.CtxVar(), jen.ID("input")),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(jen.Lit("error building login request: %w"), jen.Err()),
@@ -432,7 +432,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		).Assign().ID("c").Dot("plainClient").Dot("Do").Call(
 			jen.ID(constants.RequestVarName),
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
@@ -447,7 +447,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.If(jen.Len(
 			jen.ID("cookies"),
 		).GreaterThan().Zero(),
-		).Block(
+		).Body(
 			jen.Return().List(jen.ID("cookies").Index(
 				jen.Zero(),
 			),
@@ -470,7 +470,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Cookie"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -512,7 +512,7 @@ func buildBuildVerifyTOTPSecretRequest(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -530,7 +530,7 @@ func buildVerifyTOTPSecret(proj *models.Project) []jen.Code {
 			constants.UserIDVar(),
 			jen.ID("token"),
 		),
-		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("error building TOTP validation request: %w"), jen.Err())),
 		),
 		jen.Line(),
@@ -539,14 +539,14 @@ func buildVerifyTOTPSecret(proj *models.Project) []jen.Code {
 			jen.ID("c").Dot("plainClient"),
 			jen.ID("req"),
 		),
-		jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("executing request: %w"), jen.Err())),
 		),
 		jen.ID("c").Dot("closeResponseBody").Call(jen.ID("res")),
 		jen.Line(),
-		jen.If(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusBadRequest")).Block(
+		jen.If(jen.ID("res").Dot("StatusCode").IsEqualTo().Qual("net/http", "StatusBadRequest")).Body(
 			jen.Return(jen.ID("ErrInvalidTOTPToken")),
-		).Else().If(jen.ID("res").Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusAccepted")).Block(
+		).Else().If(jen.ID("res").Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusAccepted")).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("erroneous response code when validating TOTP secret: %d"), jen.ID("res").Dot("StatusCode"))),
 		),
 		jen.Line(),
@@ -560,7 +560,7 @@ func buildVerifyTOTPSecret(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			constants.UserIDParam(),
 			jen.ID("token").String(),
-		).Params(jen.Error()).Block(block...),
+		).Params(jen.Error()).Body(block...),
 		jen.Line(),
 	}
 

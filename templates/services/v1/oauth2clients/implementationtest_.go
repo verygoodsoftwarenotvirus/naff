@@ -36,7 +36,7 @@ func buildImplementationTestConstantDefs() []jen.Code {
 
 func buildTestService_OAuth2InternalErrorHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_OAuth2InternalErrorHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_OAuth2InternalErrorHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -56,7 +56,7 @@ func buildTestService_OAuth2InternalErrorHandler() []jen.Code {
 
 func buildTestService_OAuth2ResponseErrorHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_OAuth2ResponseErrorHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_OAuth2ResponseErrorHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -73,7 +73,7 @@ func buildTestService_OAuth2ResponseErrorHandler() []jen.Code {
 
 func buildTestService_AuthorizeScopeHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_AuthorizeScopeHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_AuthorizeScopeHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -243,7 +243,7 @@ func buildTestService_AuthorizeScopeHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_UserAuthorizationHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_UserAuthorizationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_UserAuthorizationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -305,7 +305,7 @@ func buildTestService_UserAuthorizationHandler(proj *models.Project) []jen.Code 
 
 func buildTestService_ClientAuthorizedHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ClientAuthorizedHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ClientAuthorizedHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -392,7 +392,7 @@ func buildTestService_ClientAuthorizedHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_ClientScopeHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ClientScopeHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ClientScopeHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

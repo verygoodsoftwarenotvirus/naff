@@ -26,7 +26,7 @@ func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -58,7 +58,7 @@ func buildBuildFakeOAuth2ClientList(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
-		).Block(
+		).Body(
 			jen.ID(utils.BuildFakeVarName("OAuth2Client1")).Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client2")).Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client3")).Assign().ID("BuildFakeOAuth2Client").Call(),
@@ -92,7 +92,7 @@ func buildBuildFakeOAuth2ClientCreationInputFromClient(proj *models.Project) []j
 			jen.ID("client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
 					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(

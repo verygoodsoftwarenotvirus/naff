@@ -24,7 +24,7 @@ func queryFilterTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestFromParams() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestFromParams").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestFromParams").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -67,7 +67,7 @@ func buildTestFromParams() []jen.Code {
 
 func buildTestQueryFilter_SetPage() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestQueryFilter_SetPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_SetPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -86,7 +86,7 @@ func buildTestQueryFilter_SetPage() []jen.Code {
 
 func buildTestQueryFilter_QueryPage() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestQueryFilter_QueryPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_QueryPage").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -105,7 +105,7 @@ func buildTestQueryFilter_QueryPage() []jen.Code {
 
 func buildTestQueryFilter_ToValues() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestQueryFilter_ToValues").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_ToValues").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -149,7 +149,7 @@ func buildTestQueryFilter_ToValues() []jen.Code {
 
 func buildTestQueryFilter_ApplyToQueryBuilder() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestQueryFilter_ApplyToQueryBuilder").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("TableName")).Assign().Lit("stuff"),
@@ -247,7 +247,7 @@ func buildTestQueryFilter_ApplyToQueryBuilder() []jen.Code {
 
 func buildTestExtractQueryFilter() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestExtractQueryFilter").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestExtractQueryFilter").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

@@ -48,7 +48,7 @@ func buildProvideFrontendService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection."),
 		jen.Line(),
-		jen.Func().ID("ProvideFrontendService").Params(constants.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Block(
+		jen.Func().ID("ProvideFrontendService").Params(constants.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),

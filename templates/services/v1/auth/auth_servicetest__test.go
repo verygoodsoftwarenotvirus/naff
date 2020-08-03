@@ -64,6 +64,8 @@ func buildTestService(t *testing.T) *Service {
 }
 
 func TestProvideAuthService(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		cfg := config.AuthSettings{
 			CookieSecret: "BLAHBLAHBLAHPRETENDTHISISSECRET!",
@@ -178,6 +180,8 @@ import (
 )
 
 func TestProvideAuthService(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		cfg := config.AuthSettings{
 			CookieSecret: "BLAHBLAHBLAHPRETENDTHISISSECRET!",

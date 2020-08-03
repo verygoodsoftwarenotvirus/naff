@@ -64,9 +64,9 @@ func buildConfigVariableDeclarations() []jen.Code {
 
 func buildInit() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -312,9 +312,9 @@ func buildEncodeToFile() []jen.Code {
 			Params(
 				jen.ID("path").String(),
 				jen.ID("marshaler").Func().Params(jen.ID("v").Interface()).Params(jen.Index().Byte(), jen.Error()),
-			).Params(jen.Error()).Block(
+			).Params(jen.Error()).Body(
 			jen.List(jen.ID("byteSlice"), jen.Err()).Assign().ID("marshaler").Call(jen.PointerTo().ID("cfg")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Err(),
 			),
 			jen.Line(),
@@ -330,7 +330,7 @@ func buildBuildConfig() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("BuildConfig is a constructor function that initializes a viper config."),
 		jen.Line(),
-		jen.Func().ID("BuildConfig").Params().Params(jen.PointerTo().Qual("github.com/spf13/viper", "Viper")).Block(
+		jen.Func().ID("BuildConfig").Params().Params(jen.PointerTo().Qual("github.com/spf13/viper", "Viper")).Body(
 			jen.ID("cfg").Assign().ID("viper").Dot("New").Call(),
 			jen.Line(),
 			jen.Comment("meta stuff."),
@@ -360,16 +360,16 @@ func buildParseConfigFile() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ParseConfigFile parses a configuration file."),
 		jen.Line(),
-		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").String()).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Block(
+		jen.Func().ID("ParseConfigFile").Params(jen.ID("filename").String()).Params(jen.PointerTo().ID("ServerConfig"), jen.Error()).Body(
 			jen.ID("cfg").Assign().ID("BuildConfig").Call(),
 			jen.ID("cfg").Dot("SetConfigFile").Call(jen.ID("filename")),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("ReadInConfig").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("ReadInConfig").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to read the config file: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.Var().ID("serverConfig").PointerTo().ID("ServerConfig"),
-			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.AddressOf().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("cfg").Dot("Unmarshal").Call(jen.AddressOf().ID("serverConfig")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("trying to unmarshal the config: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -378,12 +378,12 @@ func buildParseConfigFile() []jen.Code {
 					jen.ID("serverConfig").Dot("Meta").Dot("RunMode"),
 				),
 				jen.Not().ID("ok"),
-			).Block(
+			).Body(
 				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("invalid run mode: %q"), jen.ID("serverConfig").Dot("Meta").Dot("RunMode"))),
 			),
 			jen.Line(),
 			jen.Comment("set the cookie secret to something (relatively) secure if not provided"),
-			jen.If(jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").IsEqualTo().EmptyString()).Block(
+			jen.If(jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").IsEqualTo().EmptyString()).Body(
 				jen.ID("serverConfig").Dot("Auth").Dot("CookieSecret").Equals().ID("randString").Call(jen.ID("randStringSize")),
 			),
 			jen.Line(),
@@ -401,9 +401,9 @@ func buildRandString() []jen.Code {
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
-		jen.Func().ID("randString").Params(jen.ID("size").Uint()).Params(jen.String()).Block(
+		jen.Func().ID("randString").Params(jen.ID("size").Uint()).Params(jen.String()).Body(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.ID("size")),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Return().Qual("encoding/base32", "StdEncoding").Dot("WithPadding").Call(jen.Qual("encoding/base32", "NoPadding")).Dot("EncodeToString").Call(jen.ID("b")),

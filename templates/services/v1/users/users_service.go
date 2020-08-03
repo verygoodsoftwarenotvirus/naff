@@ -94,8 +94,8 @@ func buildProvideUsersService(proj *models.Project) []jen.Code {
 			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
-		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
-			jen.If(jen.ID("userIDFetcher").IsEqualTo().ID("nil")).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
+			jen.If(jen.ID("userIDFetcher").IsEqualTo().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), utils.Error("userIDFetcher must be provided")),
 			),
 			jen.Line(),
@@ -103,7 +103,7 @@ func buildProvideUsersService(proj *models.Project) []jen.Code {
 				jen.ID("counterName"),
 				jen.ID("counterDescription"),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),

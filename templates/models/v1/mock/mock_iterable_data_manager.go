@@ -53,7 +53,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	lines := []jen.Code{
 		jen.Commentf("%s is a mock function.", funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
@@ -74,7 +74,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Commentf("Get%s is a mock function.", sn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
@@ -94,7 +94,7 @@ func buildGetAllSomethingsCount(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
 			constants.CtxParam(),
-		).Params(jen.Uint64(), jen.Error()).Block(
+		).Params(jen.Uint64(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
@@ -115,7 +115,7 @@ func buildGetAllSomethings(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%s", pn).Params(
 			constants.CtxParam(),
 			jen.ID("results").Chan().Index().Qual(proj.ModelsV1Package(), sn),
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("results")),
 			jen.Return().List(
 				jen.ID("args").Dot("Error").Call(jen.Zero()),
@@ -139,7 +139,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Commentf("Get%s is a mock function.", pn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
@@ -178,7 +178,7 @@ func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sWithIDs", pn).
 			Params(params...).
 			Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).
-			Block(
+			Body(
 				jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 				jen.Return().List(
 					jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
@@ -206,7 +206,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(
 			params...,
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				args...,
 			),
@@ -230,7 +230,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Update%s", sn).Params(
 			params...,
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(
 				args...,
 			).Dot("Error").Call(jen.Zero()),
@@ -251,7 +251,7 @@ func buildArchiveSomething(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Archive%s is a mock function.", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(callArgs...).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),

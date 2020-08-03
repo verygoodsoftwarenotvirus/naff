@@ -105,9 +105,9 @@ func returnStmt(t *ast.ReturnStmt) jen.Code {
 func caseClause(t *ast.CaseClause) jen.Code {
 	ret := jen.ID("jen")
 	if t.List == nil {
-		return ret.Dot("Default").Call().Dot("Block").Call(stmts(t.Body)...)
+		return ret.Dot("Default").Call().Dot("Body").Call(stmts(t.Body)...)
 	}
-	return ret.Dot("Case").Call(genExprsCode(t.List)...).Dot("Block").Call(stmts(t.Body)...)
+	return ret.Dot("Case").Call(genExprsCode(t.List)...).Dot("Body").Call(stmts(t.Body)...)
 }
 
 func typeSwitchStmt(t *ast.TypeSwitchStmt) jen.Code {
@@ -125,9 +125,9 @@ func typeSwitchStmt(t *ast.TypeSwitchStmt) jen.Code {
 func commClause(t *ast.CommClause) jen.Code {
 	ret := jen.ID("jen")
 	if t.Comm == nil {
-		return ret.Dot("Default").Call().Dot("Block").Call(stmts(t.Body)...)
+		return ret.Dot("Default").Call().Dot("Body").Call(stmts(t.Body)...)
 	}
-	return ret.Dot("Case").Call(stmt(t.Comm)).Dot("Block").Call(stmts(t.Body)...)
+	return ret.Dot("Case").Call(stmt(t.Comm)).Dot("Body").Call(stmts(t.Body)...)
 }
 
 func selectStmt(t *ast.SelectStmt) jen.Code {
@@ -239,7 +239,7 @@ func rangeStmt(t *ast.RangeStmt) jen.Code {
 
 func blockStmt(s *ast.BlockStmt) jen.Code {
 	ret := stmts(s.List)
-	return jen.Dot("Block").Callln(ret...)
+	return jen.Dot("Body").Callln(ret...)
 }
 
 func stmts(s []ast.Stmt) []jen.Code {

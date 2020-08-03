@@ -96,7 +96,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(
 			params...,
-		).Params(jen.Bool(), jen.Error()).Block(
+		).Params(jen.Bool(), jen.Error()).Body(
 			block...,
 		),
 	}
@@ -131,7 +131,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(block...),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(block...),
 		jen.Line(),
 	}
 }
@@ -144,7 +144,7 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 	return []jen.Code{
 		jen.Commentf("GetAll%sCount fetches the count of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sCount", pn)),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -170,7 +170,7 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("results").Chan().Index().Qual(proj.ModelsV1Package(), sn),
 		).Params(
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%s", pn)),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -220,7 +220,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	return []jen.Code{
 		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Block(block...),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Body(block...),
 		jen.Line(),
 	}
 }
@@ -287,7 +287,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			}(),
 			jen.ID("limit").Uint8(),
 			jen.ID("ids").Index().Uint64(),
-		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(block...),
+		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(block...),
 		jen.Line(),
 	}
 }
@@ -306,7 +306,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Create%s", sn).Params(
 			params...,
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Create%s", sn)),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -338,7 +338,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Update%s", sn).Params(
 			params...,
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("Update%s", sn)),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -398,7 +398,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	return []jen.Code{
 		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Block(block...),
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Body(block...),
 		jen.Line(),
 	}
 }
@@ -414,7 +414,7 @@ func buildGetAllSomethingForUser(proj *models.Project, typ models.DataType) []je
 		jen.Commentf("GetAll%sForUser fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("GetAll%sForUser", pn).Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Index().Qual(proj.ModelsV1Package(), sn),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Litf("GetAll%sForUser", pn)),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),

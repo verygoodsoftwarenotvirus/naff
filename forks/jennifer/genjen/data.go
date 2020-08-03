@@ -52,7 +52,7 @@ var groups = []struct {
 		parameters: []string{"items"},
 	},
 	{
-		name:       "Block",
+		name:       "Body",
 		comment:    "renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.",
 		variadic:   true,
 		opening:    "{",

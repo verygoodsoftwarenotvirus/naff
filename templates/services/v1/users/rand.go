@@ -31,12 +31,12 @@ func buildRandInit() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("this function tests that we have appropriate access to crypto/rand"),
 		jen.Line(),
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.ID("b").Assign().Make(jen.Index().Byte(), jen.ID("randomSecretSize")),
 			jen.If(
 				jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
 				jen.Err().DoesNotEqual().Nil(),
-			).Block(
+			).Body(
 				jen.Panic(jen.Err()),
 			),
 		),
@@ -52,15 +52,14 @@ func buildRandStandardSecretGeneratorGenerateTwoFactorSecret() []jen.Code {
 		jen.Line(),
 		jen.Type().ID("standardSecretGenerator").Struct(),
 		jen.Line(),
-		jen.Func().Params(jen.ID("g").PointerTo().ID("standardSecretGenerator")).ID("GenerateTwoFactorSecret").Params().Params(jen.String(), jen.Error()).Block(
+		jen.Func().Params(jen.ID("g").PointerTo().ID("standardSecretGenerator")).ID("GenerateTwoFactorSecret").Params().Params(jen.String(), jen.Error()).Body(
 			jen.ID("b").Assign().Make(jen.Index().Byte(), jen.ID("randomSecretSize")),
 			jen.Line(),
 			jen.Comment("Note that err == nil only if we read len(b) bytes."),
-			jen.Line(),
 			jen.If(
 				jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
 				jen.Err().DoesNotEqual().Nil(),
-			).Block(
+			).Body(
 				jen.Return(jen.EmptyString(), jen.Err()),
 			),
 			jen.Line(),
@@ -76,15 +75,14 @@ func buildRandStandardSecretGeneratorGenerateSalt() []jen.Code {
 		jen.Func().Params(jen.ID("g").PointerTo().ID("standardSecretGenerator")).ID("GenerateSalt").Params().Params(
 			jen.Index().Byte(),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.ID("b").Assign().Make(jen.Index().Byte(), jen.ID("saltSize")),
 			jen.Line(),
 			jen.Comment("Note that err == nil only if we read len(b) bytes."),
-			jen.Line(),
 			jen.If(
 				jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
 				jen.Err().DoesNotEqual().Nil(),
-			).Block(
+			).Body(
 				jen.Return(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),

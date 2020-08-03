@@ -52,7 +52,7 @@ func buildMockValidateLogin() []jen.Code {
 				jen.ID("providedPassword"),
 				jen.ID("twoFactorSecret"),
 				jen.ID("twoFactorCode")).String(),
-			jen.ID("salt").Index().Byte()).Params(jen.ID("valid").Bool(), jen.Err().Error()).Block(
+			jen.ID("salt").Index().Byte()).Params(jen.ID("valid").Bool(), jen.Err().Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Callln(
 				constants.CtxVar(),
 				jen.ID("hashedPassword"),
@@ -72,7 +72,7 @@ func buildMockValidateLogin() []jen.Code {
 func buildMockPasswordIsAcceptable() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("PasswordIsAcceptable satisfies our authenticator interface."), jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("PasswordIsAcceptable").Params(jen.ID("password").String()).Params(jen.Bool()).Body(
 			jen.Return().ID("m").Dot("Called").Call(jen.ID("password")).Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
@@ -84,7 +84,7 @@ func buildMockPasswordIsAcceptable() []jen.Code {
 func buildMockHashPassword() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("HashPassword satisfies our authenticator interface."), jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("Authenticator")).ID("HashPassword").Params(constants.CtxParam(), jen.ID("password").String()).Params(jen.String(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("password")),
 			jen.Return().List(jen.ID("args").Dot("String").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
@@ -102,7 +102,7 @@ func buildMockPasswordMatches() []jen.Code {
 			jen.Listln(jen.ID("hashedPassword"),
 				jen.ID("providedPassword"),
 			).String(),
-			jen.ID("salt").Index().Byte()).Params(jen.Bool()).Block(
+			jen.ID("salt").Index().Byte()).Params(jen.Bool()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Callln(
 				constants.CtxVar(),
 				jen.ID("hashedPassword"),

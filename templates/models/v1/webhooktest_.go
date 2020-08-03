@@ -21,7 +21,7 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestWebhook_Update() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhook_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -66,7 +66,7 @@ func buildTestWebhook_Update() []jen.Code {
 }
 func buildTestWebhook_ToListener() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -82,7 +82,7 @@ func buildTestWebhook_ToListener() []jen.Code {
 }
 func buildTest_buildErrorLogFunc() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

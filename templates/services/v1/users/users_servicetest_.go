@@ -20,7 +20,7 @@ func usersServiceTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildTestService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Block(
+		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("expectedUserCount").Assign().Uint64().Call(jen.Lit(123)),
@@ -35,7 +35,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 			jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
 				jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 				jen.ID("description").String(),
-			).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Block(
+			).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
 				jen.Return().List(jen.ID("uc"), jen.Nil()),
 			),
 			jen.Line(),
@@ -62,7 +62,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 
 func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideUsersService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideUsersService").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -71,7 +71,7 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
-				).Block(
+				).Body(
 					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
@@ -94,7 +94,7 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
-					jen.Error()).Block(
+					jen.Error()).Body(
 					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
@@ -118,7 +118,7 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
 					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
 					jen.Error(),
-				).Block(
+				).Body(
 					jen.Return().List(
 						jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
 						constants.ObligatoryError(),

@@ -23,7 +23,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(buildFrontendTestsConfig(proj)...)
 	code.Add(buildCoverageConfig(proj)...)
 	code.Add(buildBuildIntegrationTestForDBImplementation(proj)...)
-	code.Add(buildMain(proj)...)
+	code.Add(buildMain()...)
 
 	return code
 }
@@ -146,6 +146,7 @@ func buildDevelopmentConfig(proj *models.Project) []jen.Code {
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaRunMode"), jen.ID("developmentEnv")),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.True()),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
+		jen.Line(),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("serverDebug"), jen.True()),
 		jen.Line(),
@@ -181,16 +182,18 @@ func buildDevelopmentConfig(proj *models.Project) []jen.Code {
 
 	block = append(block,
 		jen.Line(),
-		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Block(
+		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("error writing developmentEnv config: %w"), jen.ID("writeErr"))),
 		),
+		jen.Line(),
 		jen.Return().Nil(),
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID("developmentConfig").Params(jen.ID("filePath").String()).Params(jen.Error()).Block(
+		jen.Func().ID("developmentConfig").Params(jen.ID("filePath").String()).Params(jen.Error()).Body(
 			block...,
 		),
+		jen.Line(),
 		jen.Line(),
 	}
 
@@ -203,6 +206,7 @@ func buildFrontendTestsConfig(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaRunMode"), jen.ID("developmentEnv")),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaStartupDeadline"), jen.Qual("time", "Minute")),
+		jen.Line(),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("serverHTTPPort"), jen.ID("defaultPort")),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("serverDebug"), jen.True()),
 		jen.Line(),
@@ -238,14 +242,15 @@ func buildFrontendTestsConfig(proj *models.Project) []jen.Code {
 
 	block = append(block,
 		jen.Line(),
-		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Block(
+		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("error writing developmentEnv config: %w"), jen.ID("writeErr"))),
 		),
+		jen.Line(),
 		jen.Return().Nil(),
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID("frontendTestsConfig").Params(jen.ID("filePath").String()).Params(jen.Error()).Block(
+		jen.Func().ID("frontendTestsConfig").Params(jen.ID("filePath").String()).Params(jen.Error()).Body(
 			block...,
 		),
 		jen.Line(),
@@ -281,19 +286,21 @@ func buildCoverageConfig(proj *models.Project) []jen.Code {
 		if typ.SearchEnabled {
 			block = append(block,
 				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
+				jen.Line(),
 			)
 		}
 	}
 
 	block = append(block,
-		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Block(
+		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("error writing coverage config: %w"), jen.ID("writeErr"))),
 		),
+		jen.Line(),
 		jen.Return().Nil(),
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID("coverageConfig").Params(jen.ID("filePath").String()).Params(jen.Error()).Block(
+		jen.Func().ID("coverageConfig").Params(jen.ID("filePath").String()).Params(jen.Error()).Body(
 			block...,
 		),
 		jen.Line(),
@@ -312,7 +319,7 @@ func buildBuildIntegrationTestForDBImplementation(proj *models.Project) []jen.Co
 		jen.ID("sd").Assign().Qual("time", "Minute"),
 		func() jen.Code {
 			if proj.DatabaseIsEnabled(models.MariaDB) {
-				return jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Block(
+				return jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
 					jen.ID("sd").Equals().Lit(5).Times().Qual("time", "Minute"),
 				)
 			}
@@ -339,20 +346,22 @@ func buildBuildIntegrationTestForDBImplementation(proj *models.Project) []jen.Co
 		if typ.SearchEnabled {
 			block = append(block,
 				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
+				jen.Line(),
 			)
 		}
 	}
 
 	block = append(block,
-		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Block(
+		jen.If(jen.ID("writeErr").Assign().ID("cfg").Dot("WriteConfigAs").Call(jen.ID("filePath")), jen.ID("writeErr").DoesNotEqual().Nil()).Body(
 			jen.Return(jen.Qual("fmt", "Errorf").Call(jen.Lit("error writing integration test config for %s: %w"), jen.ID("dbVendor"), jen.ID("writeErr"))),
 		),
+		jen.Line(),
 		jen.Return().Nil(),
 	)
 
 	lines := []jen.Code{
-		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbVendor"), jen.ID("dbDetails")).String()).Params(jen.ID("configFunc")).Block(
-			jen.Return().Func().Params(jen.ID("filePath").String()).Params(jen.Error()).Block(
+		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbVendor"), jen.ID("dbDetails")).String()).Params(jen.ID("configFunc")).Body(
+			jen.Return().Func().Params(jen.ID("filePath").String()).Params(jen.Error()).Body(
 				block...,
 			),
 		),
@@ -362,11 +371,11 @@ func buildBuildIntegrationTestForDBImplementation(proj *models.Project) []jen.Co
 	return lines
 }
 
-func buildMain(proj *models.Project) []jen.Code {
+func buildMain() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("main").Params().Block(
-			jen.For(jen.List(jen.ID("filePath"), jen.ID("fun")).Assign().Range().ID("files")).Block(
-				jen.If(jen.Err().Assign().ID("fun").Call(jen.ID("filePath")), jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.Func().ID("main").Params().Body(
+			jen.For(jen.List(jen.ID("filePath"), jen.ID("fun")).Assign().Range().ID("files")).Body(
+				jen.If(jen.Err().Assign().ID("fun").Call(jen.ID("filePath")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Qual("log", "Fatalf").Call(jen.Lit("error rendering %s: %v"), jen.ID("filePath"), jen.Err()),
 				),
 			),

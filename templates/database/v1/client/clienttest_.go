@@ -28,7 +28,7 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildTestClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Block(
+		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Body(
 			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
@@ -44,7 +44,7 @@ func buildBuildTestClient(proj *models.Project) []jen.Code {
 
 func buildTestMigrate(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestMigrate").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestMigrate").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -79,7 +79,7 @@ func buildTestMigrate(proj *models.Project) []jen.Code {
 
 func buildTestIsReady(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestIsReady").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestIsReady").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -101,7 +101,7 @@ func buildTestIsReady(proj *models.Project) []jen.Code {
 
 func buildTestProvideDatabaseClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideDatabaseClient").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(

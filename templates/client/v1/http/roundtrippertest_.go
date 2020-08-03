@@ -21,7 +21,7 @@ func roundtripperTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestBuildDefaultTransport() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_buildDefaultTransport").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_buildDefaultTransport").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -37,7 +37,7 @@ func buildTestBuildDefaultTransport() []jen.Code {
 
 func buildTestDefaultRoundTripperRoundTrip() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_defaultRoundTripper_RoundTrip").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_defaultRoundTripper_RoundTrip").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -65,7 +65,7 @@ func buildTestDefaultRoundTripperRoundTrip() []jen.Code {
 
 func buildTestNewDefaultRoundTripper() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_newDefaultRoundTripper").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_newDefaultRoundTripper").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

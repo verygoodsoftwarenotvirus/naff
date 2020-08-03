@@ -140,7 +140,7 @@ func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Cod
 	insts = append(insts, testInstructions...)
 
 	return jen.ID(T).Dot("Run").Call(
-		jen.Lit(name), jen.Func().Params(jen.ID(t).PointerTo().Qual("testing", T)).Block(insts...),
+		jen.Lit(name), jen.Func().Params(jen.ID(t).PointerTo().Qual("testing", T)).Body(insts...),
 	)
 }
 
@@ -151,7 +151,7 @@ func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
 			jen.Func().Params(
 				jen.ID("res").Qual("net/http", "ResponseWriter"),
 				jen.ID("req").PointerTo().Qual("net/http", "Request"),
-			).Block(handlerLines...),
+			).Body(handlerLines...),
 		),
 	)
 }

@@ -31,7 +31,7 @@ func buildServerMiddlewareVarDeclarations() []jen.Code {
 }
 func buildServerFormatSpanNameForRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.String()).Block(
+		jen.Func().ID("formatSpanNameForRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.String()).Body(
 			jen.Return().Qual("fmt", "Sprintf").Callln(
 				jen.Lit("%s %s"),
 				jen.ID(constants.RequestVarName).Dot("Method"),
@@ -45,8 +45,8 @@ func buildServerFormatSpanNameForRequest() []jen.Code {
 }
 func buildServerServerLoggingMiddleware() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
-			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("loggingMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
+			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("ww").Assign().Qual("github.com/go-chi/chi/middleware", "NewWrapResponseWriter").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName).Dot("ProtoMajor")),
 				jen.Line(),
 				jen.ID("start").Assign().Qual("time", "Now").Call(),

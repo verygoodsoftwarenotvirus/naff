@@ -77,7 +77,7 @@ func buildTestV1Client_BuildSomethingExistsRequest(proj *models.Project, typ mod
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Build%sExistsRequest", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Build%sExistsRequest", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", subtestLines...),
@@ -145,7 +145,7 @@ func buildTestV1Client_SomethingExists(proj *models.Project, typ models.DataType
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_%sExists", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_%sExists", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
@@ -200,7 +200,7 @@ func buildTestV1Client_BuildGetSomethingRequest(proj *models.Project, typ models
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", subtestLines...),
@@ -300,7 +300,7 @@ func buildTestV1Client_GetSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
@@ -344,7 +344,7 @@ func buildTestV1Client_BuildSearchSomethingRequest(proj *models.Project, typ mod
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildSearch%sRequest", tp)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildSearch%sRequest", tp)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", subtestLines...),
@@ -472,7 +472,7 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Search%s", tp)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Search%s", tp)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			jen.Const().ID("expectedPath").Equals().Lit(modelListRoute),
@@ -514,7 +514,7 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ 
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildGet%sRequest", tp)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", subtestLines...),
@@ -625,7 +625,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", pn)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", pn)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			jen.Const().ID("expectedPath").Equals().Add(uriDec),
@@ -676,7 +676,7 @@ func buildTestV1Client_BuildCreateSomethingRequest(proj *models.Project, typ mod
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildCreate%sRequest", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", subtestLines...),
@@ -750,7 +750,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			jen.Const().ID("expectedPath").Equals().Lit(modelListRoute),
@@ -791,7 +791,7 @@ func buildTestV1Client_BuildUpdateSomethingRequest(proj *models.Project, typ mod
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildUpdate%sRequest", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", subtestLines...),
@@ -843,7 +843,7 @@ func buildTestV1Client_UpdateSomething(proj *models.Project, typ models.DataType
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Update%s", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
@@ -895,7 +895,7 @@ func buildTestV1Client_BuildArchiveSomethingRequest(proj *models.Project, typ mo
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_BuildArchive%sRequest", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -949,7 +949,7 @@ func buildTestV1Client_ArchiveSomething(proj *models.Project, typ models.DataTyp
 	)
 
 	lines := []jen.Code{
-		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Block(
+		utils.OuterTestFunc(fmt.Sprintf("V1Client_Archive%s", ts)).Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),

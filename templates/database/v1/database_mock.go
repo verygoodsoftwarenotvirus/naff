@@ -50,7 +50,7 @@ func buildBuildMockDatabase(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("BuildMockDatabase builds a mock database."),
 		jen.Line(),
-		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Block(
+		jen.Func().ID("BuildMockDatabase").Params().Params(jen.PointerTo().ID("MockDatabase")).Body(
 			jen.Return().AddressOf().ID("MockDatabase").Valuesln(
 				mockDatabaseLines...,
 			),
@@ -95,7 +95,7 @@ func buildMigrate() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Migrate satisfies the DataManager interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
@@ -108,7 +108,7 @@ func buildIsReady() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("IsReady satisfies the DataManager interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockDatabase")).ID("IsReady").Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Body(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar()).Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
@@ -128,22 +128,22 @@ func buildResultIterator() []jen.Code {
 		),
 		jen.Line(),
 		jen.Comment("Scan satisfies the ResultIterator interface."), jen.Line(),
-		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Scan").Params(jen.ID("dest").Spread().Interface()).Params(jen.Error()).Block(
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Scan").Params(jen.ID("dest").Spread().Interface()).Params(jen.Error()).Body(
 			jen.Return(jen.ID("m").Dot("Called").Call(jen.ID("dest").Spread())).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 		jen.Comment("Next satisfies the ResultIterator interface."), jen.Line(),
-		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Next").Params().Params(jen.Bool()).Block(
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Next").Params().Params(jen.Bool()).Body(
 			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Bool").Call(jen.Zero()),
 		),
 		jen.Line(),
 		jen.Comment("Err satisfies the ResultIterator interface."), jen.Line(),
-		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Err").Params().Params(jen.Error()).Block(
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Err").Params().Params(jen.Error()).Body(
 			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),
 		jen.Comment("Close satisfies the ResultIterator interface."), jen.Line(),
-		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Close").Params().Params(jen.Error()).Block(
+		jen.Func().Parens(jen.ID("m").PointerTo().ID("MockResultIterator")).ID("Close").Params().Params(jen.Error()).Body(
 			jen.Return(jen.ID("m").Dot("Called").Call()).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),

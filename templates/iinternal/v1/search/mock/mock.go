@@ -41,7 +41,7 @@ func buildIndexManager() []jen.Code {
 			constants.CtxParam(),
 			jen.ID("id").Uint64(),
 			jen.ID("value").Interface(),
-		).Error().Block(
+		).Error().Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				constants.CtxVar(),
 				jen.ID("id"),
@@ -59,7 +59,7 @@ func buildIndexManager() []jen.Code {
 		).Params(
 			jen.ID("ids").Index().Uint64(),
 			jen.Err().Error(),
-		).Block(
+		).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				constants.CtxVar(),
 				jen.ID("query"),
@@ -76,7 +76,7 @@ func buildIndexManager() []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("IndexManager")).ID("Delete").Params(
 			constants.CtxParam(),
 			jen.ID("id").Uint64(),
-		).Error().Block(
+		).Error().Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				constants.CtxVar(),
 				jen.ID("id"),
