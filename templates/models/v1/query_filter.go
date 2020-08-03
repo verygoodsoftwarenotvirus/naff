@@ -74,7 +74,7 @@ func buildDefaultQueryFilter() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("DefaultQueryFilter builds the default query filter."),
 		jen.Line(),
-		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.PointerTo().ID("QueryFilter")).Block(
+		jen.Func().ID("DefaultQueryFilter").Params().Params(jen.PointerTo().ID("QueryFilter")).Body(
 			jen.Return().AddressOf().ID("QueryFilter").Valuesln(
 				jen.ID("Page").MapAssign().One(),
 				jen.ID("Limit").MapAssign().ID("DefaultLimit"),
@@ -91,36 +91,36 @@ func buildFromParams() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("FromParams overrides the core QueryFilter values with values retrieved from url.Params"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Block(
-			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("FromParams").Params(jen.ID("params").Qual("net/url", "Values")).Body(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("pageQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.One())),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("LimitQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("LimitQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.ID("qf").Dot("Limit").Equals().Uint8().Call(jen.Qual("math", "Min").Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero()), jen.ID("MaxLimit"))),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdBeforeQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdBeforeQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.ID("qf").Dot("CreatedBefore").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdAfterQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("createdAfterQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.ID("qf").Dot("CreatedAfter").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedBeforeQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedBeforeQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.ID("qf").Dot("UpdatedBefore").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
-			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedAfterQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("i"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.ID("params").Dot("Get").Call(jen.ID("updatedAfterQueryKey")), jen.Lit(10), jen.Lit(64)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.ID("qf").Dot("UpdatedAfter").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.ID("float64").Call(jen.ID("i")), jen.Zero())),
 			),
 			jen.Line(),
-			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.ID("params").Dot("Get").Call(jen.ID("sortByQueryKey")))).Block(
-				jen.Case(jen.String().Call(jen.ID("SortAscending"))).Block(
+			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.ID("params").Dot("Get").Call(jen.ID("sortByQueryKey")))).Body(
+				jen.Case(jen.String().Call(jen.ID("SortAscending"))).Body(
 					jen.ID("qf").Dot("SortBy").Equals().ID("SortAscending"),
 				),
-				jen.Case(jen.String().Call(jen.ID("SortDescending"))).Block(
+				jen.Case(jen.String().Call(jen.ID("SortDescending"))).Body(
 					jen.ID("qf").Dot("SortBy").Equals().ID("SortDescending"),
 				),
 			),
@@ -135,7 +135,7 @@ func buildSetPage() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("SetPage sets the current page with certain constraints."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").Uint64()).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("SetPage").Params(jen.ID("page").Uint64()).Body(
 			jen.ID("qf").Dot("Page").Equals().Uint64().Call(jen.Qual("math", "Max").Call(jen.One(), jen.ID("float64").Call(jen.ID("page")))),
 		),
 		jen.Line(),
@@ -148,7 +148,7 @@ func buildQueryPage() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("QueryPage calculates a query page from the current filter values."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("QueryPage").Params().Params(jen.Uint64()).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("QueryPage").Params().Params(jen.Uint64()).Body(
 			jen.Return().Uint64().Call(jen.ID("qf").Dot("Limit")).Times().Parens(jen.ID("qf").Dot("Page").Minus().One()),
 		),
 		jen.Line(),
@@ -161,31 +161,31 @@ func buildToValues() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ToValues returns a url.Values from a QueryFilter"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ToValues").Params().Params(jen.Qual("net/url", "Values")).Block(
-			jen.If(jen.ID("qf").IsEqualTo().ID("nil")).Block(
+		jen.Func().Params(jen.ID("qf").PointerTo().ID("QueryFilter")).ID("ToValues").Params().Params(jen.Qual("net/url", "Values")).Body(
+			jen.If(jen.ID("qf").IsEqualTo().ID("nil")).Body(
 				jen.Return().ID("DefaultQueryFilter").Call().Dot("ToValues").Call(),
 			),
 			jen.Line(),
 			jen.ID("v").Assign().Qual("net/url", "Values").Values(),
-			jen.If(jen.ID("qf").Dot("Page").DoesNotEqual().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("Page").DoesNotEqual().Zero()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("pageQueryKey"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("Page"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("Limit").DoesNotEqual().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("Limit").DoesNotEqual().Zero()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("LimitQueryKey"), jen.Qual("strconv", "FormatUint").Call(jen.Uint64().Call(jen.ID("qf").Dot("Limit")), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("SortBy").DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("qf").Dot("SortBy").DoesNotEqual().EmptyString()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("sortByQueryKey"), jen.String().Call(jen.ID("qf").Dot("SortBy"))),
 			),
-			jen.If(jen.ID("qf").Dot("CreatedBefore").DoesNotEqual().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("CreatedBefore").DoesNotEqual().Zero()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("createdBeforeQueryKey"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("CreatedBefore"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("CreatedAfter").DoesNotEqual().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("CreatedAfter").DoesNotEqual().Zero()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("createdAfterQueryKey"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("CreatedAfter"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("UpdatedBefore").DoesNotEqual().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedBefore").DoesNotEqual().Zero()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("updatedBeforeQueryKey"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("UpdatedBefore"), jen.Lit(10))),
 			),
-			jen.If(jen.ID("qf").Dot("UpdatedAfter").DoesNotEqual().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedAfter").DoesNotEqual().Zero()).Body(
 				jen.ID("v").Dot("Set").Call(jen.ID("updatedAfterQueryKey"), jen.Qual("strconv", "FormatUint").Call(jen.ID("qf").Dot("UpdatedAfter"), jen.Lit(10))),
 			),
 			jen.Line(),
@@ -206,8 +206,8 @@ func buildApplyToQueryBuilder() []jen.Code {
 			jen.ID("tableName").String(),
 		).Params(
 			jen.Qual("github.com/Masterminds/squirrel", "SelectBuilder"),
-		).Block(
-			jen.If(jen.ID("qf").IsEqualTo().ID("nil")).Block(
+		).Body(
+			jen.If(jen.ID("qf").IsEqualTo().ID("nil")).Body(
 				jen.Return().ID("queryBuilder"),
 			),
 			jen.Line(),
@@ -217,17 +217,17 @@ func buildApplyToQueryBuilder() []jen.Code {
 			),
 			jen.Line(),
 			jen.ID("qf").Dot("SetPage").Call(jen.ID("qf").Dot("Page")),
-			jen.If(jen.ID("qp").Assign().ID("qf").Dot("QueryPage").Call(), jen.ID("qp").GreaterThan().Zero()).Block(
+			jen.If(jen.ID("qp").Assign().ID("qf").Dot("QueryPage").Call(), jen.ID("qp").GreaterThan().Zero()).Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Offset").Call(jen.ID("qp")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("Limit").GreaterThan().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("Limit").GreaterThan().Zero()).Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Limit").Call(jen.Uint64().Call(jen.ID("qf").Dot("Limit"))),
-			).Else().Block(
+			).Else().Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Limit").Call(jen.ID("MaxLimit")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("CreatedAfter").GreaterThan().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("CreatedAfter").GreaterThan().Zero()).Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedAfter"),
@@ -235,7 +235,7 @@ func buildApplyToQueryBuilder() []jen.Code {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("CreatedBefore").GreaterThan().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("CreatedBefore").GreaterThan().Zero()).Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("createdOnKey")).MapAssign().ID("qf").Dot("CreatedBefore"),
@@ -243,7 +243,7 @@ func buildApplyToQueryBuilder() []jen.Code {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("UpdatedAfter").GreaterThan().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedAfter").GreaterThan().Zero()).Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Gt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedAfter"),
@@ -251,7 +251,7 @@ func buildApplyToQueryBuilder() []jen.Code {
 				),
 			),
 			jen.Line(),
-			jen.If(jen.ID("qf").Dot("UpdatedBefore").GreaterThan().Zero()).Block(
+			jen.If(jen.ID("qf").Dot("UpdatedBefore").GreaterThan().Zero()).Body(
 				jen.ID("queryBuilder").Equals().ID("queryBuilder").Dot("Where").Call(
 					jen.Qual("github.com/Masterminds/squirrel", "Lt").Values(
 						utils.FormatString("%s.%s", jen.ID("tableName"), jen.ID("updatedOnKey")).MapAssign().ID("qf").Dot("UpdatedBefore"),
@@ -271,7 +271,7 @@ func buildExtractQueryFilter() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ExtractQueryFilter can extract a QueryFilter from a request."),
 		jen.Line(),
-		jen.Func().ID("ExtractQueryFilter").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Block(
+		jen.Func().ID("ExtractQueryFilter").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("QueryFilter")).Body(
 			jen.ID("qf").Assign().AddressOf().ID("QueryFilter").Values(),
 			jen.ID("qf").Dot("FromParams").Call(jen.ID(constants.RequestVarName).Dot("URL").Dot("Query").Call()),
 			jen.Return().ID("qf"),

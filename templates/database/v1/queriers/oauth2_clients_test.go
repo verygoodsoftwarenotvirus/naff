@@ -138,7 +138,6 @@ func (p *Postgres) buildGetOAuth2ClientByClientIDQuery(clientID string) (query s
 func (p *Postgres) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*v11.OAuth2Client, error) {
 	query, args := p.buildGetOAuth2ClientByClientIDQuery(clientID)
 	row := p.db.QueryRowContext(ctx, query, args...)
-
 	return p.scanOAuth2Client(row)
 }
 
@@ -565,7 +564,6 @@ func (s *Sqlite) buildGetOAuth2ClientByClientIDQuery(clientID string) (query str
 func (s *Sqlite) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*v11.OAuth2Client, error) {
 	query, args := s.buildGetOAuth2ClientByClientIDQuery(clientID)
 	row := s.db.QueryRowContext(ctx, query, args...)
-
 	return s.scanOAuth2Client(row)
 }
 
@@ -998,7 +996,6 @@ func (m *MariaDB) buildGetOAuth2ClientByClientIDQuery(clientID string) (query st
 func (m *MariaDB) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*v11.OAuth2Client, error) {
 	query, args := m.buildGetOAuth2ClientByClientIDQuery(clientID)
 	row := m.db.QueryRowContext(ctx, query, args...)
-
 	return m.scanOAuth2Client(row)
 }
 
@@ -1814,7 +1811,6 @@ import (
 func (p *Postgres) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*v1.OAuth2Client, error) {
 	query, args := p.buildGetOAuth2ClientByClientIDQuery(clientID)
 	row := p.db.QueryRowContext(ctx, query, args...)
-
 	return p.scanOAuth2Client(row)
 }
 `
@@ -1842,7 +1838,6 @@ import (
 func (s *Sqlite) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*v1.OAuth2Client, error) {
 	query, args := s.buildGetOAuth2ClientByClientIDQuery(clientID)
 	row := s.db.QueryRowContext(ctx, query, args...)
-
 	return s.scanOAuth2Client(row)
 }
 `
@@ -1870,7 +1865,6 @@ import (
 func (m *MariaDB) GetOAuth2ClientByClientID(ctx context.Context, clientID string) (*v1.OAuth2Client, error) {
 	query, args := m.buildGetOAuth2ClientByClientIDQuery(clientID)
 	row := m.db.QueryRowContext(ctx, query, args...)
-
 	return m.scanOAuth2Client(row)
 }
 `

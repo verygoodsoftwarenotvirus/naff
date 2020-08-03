@@ -181,7 +181,7 @@ func main() {
 	tracing.AttachUserIDToSpan(span, userID)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -209,7 +209,7 @@ func main() {
 	tracing.AttachUserIDToSpan(span, userID)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

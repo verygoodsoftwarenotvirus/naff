@@ -23,7 +23,9 @@ func middlewareTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestService_CookieAuthenticationMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CookieAuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -138,7 +140,9 @@ func buildTestService_CookieAuthenticationMiddleware(proj *models.Project) []jen
 
 func buildTestService_AuthenticationMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_AuthenticationMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
@@ -505,7 +509,9 @@ func buildTestService_AuthenticationMiddleware(proj *models.Project) []jen.Code 
 
 func buildTest_parseLoginInputFromForm(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_parseLoginInputFromForm").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(
@@ -555,7 +561,9 @@ func buildTest_parseLoginInputFromForm(proj *models.Project) []jen.Code {
 
 func buildTestService_UserLoginInputMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_UserLoginInputMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				utils.BuildFakeVar(proj, "User"),
@@ -680,7 +688,9 @@ func buildTestService_UserLoginInputMiddleware(proj *models.Project) []jen.Code 
 
 func buildTestService_AdminMiddleware(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_AdminMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("T").Dot("Parallel").Call(),
+			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(

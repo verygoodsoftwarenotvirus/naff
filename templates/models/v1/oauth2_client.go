@@ -136,7 +136,7 @@ func buildOAuth2ClientDotGetID() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetID returns the client ID. NOTE: I believe this is implemented for the above interface spec (oauth2.ClientInfo)"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetID").Params().Params(jen.String()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetID").Params().Params(jen.String()).Body(
 			jen.Return().ID("c").Dot("ClientID"),
 		),
 		jen.Line(),
@@ -149,7 +149,7 @@ func buildOAuth2ClientDotGetSecret() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetSecret returns the ClientSecret."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.String()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetSecret").Params().Params(jen.String()).Body(
 			jen.Return().ID("c").Dot("ClientSecret"),
 		),
 		jen.Line(),
@@ -162,7 +162,7 @@ func buildOAuth2ClientDotGetDomain() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetDomain returns the client's domain."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.String()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetDomain").Params().Params(jen.String()).Body(
 			jen.Return().ID("c").Dot("RedirectURI"),
 		),
 		jen.Line(),
@@ -175,7 +175,7 @@ func buildOAuth2ClientDotGetUserID() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetUserID returns the client's UserID."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.String()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("GetUserID").Params().Params(jen.String()).Body(
 			jen.Return().Qual("strconv", "FormatUint").Call(jen.ID("c").Dot(constants.UserOwnershipFieldName), jen.Lit(10)),
 		),
 		jen.Line(),
@@ -188,14 +188,14 @@ func buildOAuth2ClientDotHasScope() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("HasScope returns whether or not the provided scope is included in the scope list."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("OAuth2Client")).ID("HasScope").Params(jen.ID("scope").String()).Params(jen.ID("found").Bool()).Body(
 			jen.ID("scope").Equals().Qual("strings", "TrimSpace").Call(jen.ID("scope")),
-			jen.If(jen.ID("scope").IsEqualTo().EmptyString()).Block(
+			jen.If(jen.ID("scope").IsEqualTo().EmptyString()).Body(
 				jen.Return().False(),
 			),
-			jen.If(jen.ID("c").DoesNotEqual().ID("nil").And().ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Block(
-				jen.For(jen.List(jen.Underscore(), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Block(
-					jen.If(jen.Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("s"))).IsEqualTo().Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("scope"))).Or().Qual("strings", "TrimSpace").Call(jen.ID("s")).IsEqualTo().Lit("*")).Block(
+			jen.If(jen.ID("c").DoesNotEqual().ID("nil").And().ID("c").Dot("Scopes").DoesNotEqual().ID("nil")).Body(
+				jen.For(jen.List(jen.Underscore(), jen.ID("s")).Assign().Range().ID("c").Dot("Scopes")).Body(
+					jen.If(jen.Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("s"))).IsEqualTo().Qual("strings", "TrimSpace").Call(jen.Qual("strings", "ToLower").Call(jen.ID("scope"))).Or().Qual("strings", "TrimSpace").Call(jen.ID("s")).IsEqualTo().Lit("*")).Body(
 						jen.Return().True(),
 					),
 				),

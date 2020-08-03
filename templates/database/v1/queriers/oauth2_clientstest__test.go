@@ -39,7 +39,6 @@ import (
 
 func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows {
 	columns := oauth2ClientsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, c := range clients {
@@ -55,7 +54,6 @@ func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows 
 			c.ArchivedOn,
 			c.BelongsToUser,
 		}
-
 		exampleRows.AddRow(rowValues...)
 	}
 
@@ -799,7 +797,6 @@ import (
 
 func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows {
 	columns := oauth2ClientsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, c := range clients {
@@ -815,7 +812,6 @@ func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows 
 			c.ArchivedOn,
 			c.BelongsToUser,
 		}
-
 		exampleRows.AddRow(rowValues...)
 	}
 
@@ -1564,7 +1560,6 @@ import (
 
 func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows {
 	columns := oauth2ClientsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, c := range clients {
@@ -1580,7 +1575,6 @@ func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows 
 			c.ArchivedOn,
 			c.BelongsToUser,
 		}
-
 		exampleRows.AddRow(rowValues...)
 	}
 
@@ -2325,7 +2319,6 @@ import (
 
 func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows {
 	columns := oauth2ClientsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, c := range clients {
@@ -2341,7 +2334,6 @@ func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows 
 			c.ArchivedOn,
 			c.BelongsToUser,
 		}
-
 		exampleRows.AddRow(rowValues...)
 	}
 
@@ -2372,7 +2364,6 @@ import (
 
 func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows {
 	columns := oauth2ClientsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, c := range clients {
@@ -2388,7 +2379,6 @@ func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows 
 			c.ArchivedOn,
 			c.BelongsToUser,
 		}
-
 		exampleRows.AddRow(rowValues...)
 	}
 
@@ -2419,7 +2409,6 @@ import (
 
 func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows {
 	columns := oauth2ClientsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, c := range clients {
@@ -2435,7 +2424,6 @@ func buildMockRowsFromOAuth2Client(clients ...*v1.OAuth2Client) *gosqlmock.Rows 
 			c.ArchivedOn,
 			c.BelongsToUser,
 		}
-
 		exampleRows.AddRow(rowValues...)
 	}
 

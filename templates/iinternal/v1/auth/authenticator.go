@@ -41,7 +41,7 @@ func buildProvideBcryptHashCost() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideBcryptHashCost provides a BcryptHashCost."),
 		jen.Line(),
-		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Block(
+		jen.Func().ID("ProvideBcryptHashCost").Params().Params(jen.ID("BcryptHashCost")).Body(
 			jen.Return().ID("DefaultBcryptHashCost"),
 		),
 		jen.Line(),
@@ -86,9 +86,9 @@ func buildInit() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("we run this function to ensure that we have no problem reading from crypto/rand"),
 		jen.Line(),
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),

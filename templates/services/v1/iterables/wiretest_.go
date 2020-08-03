@@ -21,10 +21,10 @@ func buildTestProvideSomethingDataManager(proj *models.Project, typ models.DataT
 	sn := typ.Name.Singular()
 
 	lines := []jen.Code{
-		jen.Func().IDf("TestProvide%sDataManager", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%sDataManager", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.IDf("Provide%sDataManager", sn).Call(jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call()),
 			)),
 		),
@@ -37,10 +37,10 @@ func buildTestProvideSomethingDataServer(typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
 	lines := []jen.Code{
-		jen.Func().IDf("TestProvide%sDataServer", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestProvide%sDataServer", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.IDf("Provide%sDataServer", sn).Call(jen.ID("buildTestService").Call()),
 			)),
 		),

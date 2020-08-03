@@ -39,7 +39,7 @@ func buildMainSetup() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Setup implements hazana's Attacker interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.Underscore().Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Setup").Params(jen.Underscore().Qual("github.com/emicklei/hazana", "Config")).Params(jen.Error()).Body(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
@@ -54,14 +54,14 @@ func buildMainDo() []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Do").Params(
 			jen.Underscore().Qual("context", "Context"),
-		).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Block(
+		).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Body(
 			jen.Comment("Do performs one request and is executed in a separate goroutine."),
 			jen.Comment("The context is used to cancel the request on timeout."),
 			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
 			jen.Line(),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("act").Dot("Action").Call(),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID(constants.RequestVarName).IsEqualTo().ID("nil")).Block(
-				jen.If(jen.Err().IsEqualTo().ID("ErrUnavailableYet")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID(constants.RequestVarName).IsEqualTo().ID("nil")).Body(
+				jen.If(jen.Err().IsEqualTo().ID("ErrUnavailableYet")).Body(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Valuesln(
 						jen.ID("RequestLabel").MapAssign().ID("act").Dot("Name"),
 						jen.ID("Error").MapAssign().ID("nil"), jen.ID("StatusCode").MapAssign().Lit(200),
@@ -76,9 +76,9 @@ func buildMainDo() []jen.Code {
 				jen.ID("bo").ID("int64"),
 				jen.ID("bi").Index().Byte(),
 			),
-			jen.If(jen.ID(constants.RequestVarName).Dot("Body").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID(constants.RequestVarName).Dot("Body").DoesNotEqual().ID("nil")).Body(
 				jen.List(jen.ID("bi"), jen.Err()).Equals().Qual("io/ioutil", "ReadAll").Call(jen.ID(constants.RequestVarName).Dot("Body")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Return().Qual("github.com/emicklei/hazana", "DoResult").Values(jen.ID("Error").MapAssign().Err()),
 				),
 				jen.ID("rdr").Assign().Qual("io/ioutil", "NopCloser").Call(jen.Qual("bytes", "NewBuffer").Call(jen.ID("bi"))),
@@ -86,7 +86,7 @@ func buildMainDo() []jen.Code {
 			),
 			jen.Line(),
 			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID("a").Dot("todoClient").Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID(constants.RequestVarName)),
-			jen.If(jen.ID(constants.ResponseVarName).DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID(constants.ResponseVarName).DoesNotEqual().ID("nil")).Body(
 				jen.ID("sc").Equals().ID(constants.ResponseVarName).Dot("StatusCode"),
 				jen.ID("bo").Equals().ID(constants.ResponseVarName).Dot("ContentLength"),
 			),
@@ -109,7 +109,7 @@ func buildMainTeardown() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Teardown implements hazana's Attacker interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Teardown").Params().Params(jen.Error()).Body(
 			jen.Return().ID("nil"),
 		),
 		jen.Line(),
@@ -122,7 +122,7 @@ func buildMainClone() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Clone implements hazana's Attacker interface."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Block(
+		jen.Func().Params(jen.ID("a").PointerTo().ID("ServiceAttacker")).ID("Clone").Params().Params(jen.Qual("github.com/emicklei/hazana", "Attack")).Body(
 			jen.Return().ID("a"),
 		),
 		jen.Line(),
@@ -133,13 +133,13 @@ func buildMainClone() []jen.Code {
 
 func buildMainMain() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("main").Params().Block(
+		jen.Func().ID("main").Params().Body(
 			jen.ID("todoClient").Assign().ID("initializeClient").Call(jen.ID("oa2Client")),
 			jen.Line(),
 			jen.Var().ID("runTime").Equals().Lit(10).Times().Qual("time", "Minute"),
-			jen.If(jen.ID("rt").Assign().Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").DoesNotEqual().EmptyString()).Block(
+			jen.If(jen.ID("rt").Assign().Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").DoesNotEqual().EmptyString()).Body(
 				jen.List(jen.ID("_rt"), jen.Err()).Assign().Qual("time", "ParseDuration").Call(jen.ID("rt")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("panic").Call(jen.Err()),
 				),
 				jen.ID("runTime").Equals().ID("_rt"),

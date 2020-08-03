@@ -45,7 +45,7 @@ func buildNewMockReadCloser() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("newMockReadCloser returns a new mock io.ReadCloser."),
 		jen.Line(),
-		jen.Func().ID("newMockReadCloser").Params().Params(jen.PointerTo().ID("ReadCloser")).Block(
+		jen.Func().ID("newMockReadCloser").Params().Params(jen.PointerTo().ID("ReadCloser")).Body(
 			jen.Return().AddressOf().ID("ReadCloser").Values(),
 		),
 		jen.Line(),
@@ -58,7 +58,7 @@ func buildMockReadCloserReadHandler() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ReadHandler implements the ReadHandler part of our ReadCloser."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("ReadCloser")).ID("Read").Params(jen.ID("b").Index().Byte()).Params(jen.ID("i").ID("int"), jen.Err().Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("ReadCloser")).ID("Read").Params(jen.ID("b").Index().Byte()).Params(jen.ID("i").ID("int"), jen.Err().Error()).Body(
 			jen.ID("retVals").Assign().ID("m").Dot("Called").Call(jen.ID("b")),
 			jen.Return().List(jen.ID("retVals").Dot("Int").Call(jen.Zero()), jen.ID("retVals").Dot("Error").Call(jen.One())),
 		),
@@ -72,7 +72,7 @@ func buildMockReadCloserClose() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Close implements the Closer part of our ReadCloser."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("ReadCloser")).ID("Close").Params().Params(jen.Err().Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("ReadCloser")).ID("Close").Params().Params(jen.Err().Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call().Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),

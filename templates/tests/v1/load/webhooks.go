@@ -22,9 +22,9 @@ func buildFetchRandomWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks."),
 		jen.Line(),
-		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Block(
+		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Body(
 			jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("c").Dot("GetWebhooks").Call(constants.InlineCtx(), jen.Nil()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("webhooks").IsEqualTo().ID("nil").Or().ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).IsEqualTo().Zero()).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("webhooks").IsEqualTo().ID("nil").Or().ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).IsEqualTo().Zero()).Body(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
@@ -39,11 +39,11 @@ func buildFetchRandomWebhook(proj *models.Project) []jen.Code {
 
 func buildBuildWebhookActions(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildWebhookActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(
+		jen.Func().ID("buildWebhookActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Body(
 			jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("GetWebhooks").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("GetWebhooks"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 						constants.CreateCtx(),
 						jen.Return().ID("c").Dot("BuildGetWebhooksRequest").Call(constants.CtxVar(), jen.Nil()),
 					),
@@ -51,9 +51,9 @@ func buildBuildWebhookActions(proj *models.Project) []jen.Code {
 				),
 				jen.Lit("GetWebhook").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("GetWebhook"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 						constants.CreateCtx(),
-						jen.If(jen.ID("randomWebhook").Assign().ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").DoesNotEqual().ID("nil")).Block(
+						jen.If(jen.ID("randomWebhook").Assign().ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").DoesNotEqual().ID("nil")).Body(
 							jen.Return().ID("c").Dot("BuildGetWebhookRequest").Call(constants.CtxVar(), jen.ID("randomWebhook").Dot("ID")),
 						),
 						jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),
@@ -62,7 +62,7 @@ func buildBuildWebhookActions(proj *models.Project) []jen.Code {
 				),
 				jen.Lit("CreateWebhook").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateWebhook"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 						constants.CreateCtx(),
 						utils.BuildFakeVarWithCustomName(
 							proj,
@@ -75,9 +75,9 @@ func buildBuildWebhookActions(proj *models.Project) []jen.Code {
 				),
 				jen.Lit("UpdateWebhook").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("UpdateWebhook"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 						constants.CreateCtx(),
-						jen.If(jen.ID("randomWebhook").Assign().ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").DoesNotEqual().ID("nil")).Block(
+						jen.If(jen.ID("randomWebhook").Assign().ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").DoesNotEqual().ID("nil")).Body(
 							jen.ID("randomWebhook").Dot("Name").Equals().Qual(proj.FakeModelsPackage(), "BuildFakeWebhook").Call().Dot("Name"),
 							jen.Return().ID("c").Dot("BuildUpdateWebhookRequest").Call(constants.CtxVar(), jen.ID("randomWebhook")),
 						),
@@ -87,9 +87,9 @@ func buildBuildWebhookActions(proj *models.Project) []jen.Code {
 				),
 				jen.Lit("ArchiveWebhook").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("ArchiveWebhook"),
-					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+					jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 						constants.CreateCtx(),
-						jen.If(jen.ID("randomWebhook").Assign().ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").DoesNotEqual().ID("nil")).Block(
+						jen.If(jen.ID("randomWebhook").Assign().ID("fetchRandomWebhook").Call(jen.ID("c")), jen.ID("randomWebhook").DoesNotEqual().ID("nil")).Body(
 							jen.Return().ID("c").Dot("BuildArchiveWebhookRequest").Call(constants.CtxVar(), jen.ID("randomWebhook").Dot("ID")),
 						),
 						jen.Return().List(jen.Nil(), jen.ID("ErrUnavailableYet")),

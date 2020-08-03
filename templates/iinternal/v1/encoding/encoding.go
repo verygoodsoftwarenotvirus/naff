@@ -84,16 +84,16 @@ func buildEncodeResponse() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("EncodeResponse encodes responses."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("EncodeResponse").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID("v").Interface()).Params(jen.Error()).Body(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID(constants.ResponseVarName).Dot("Header").Call().Dot("Get").Call(jen.ID("ContentTypeHeader"))),
-			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Block(
+			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Body(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
 			),
 			jen.Line(),
 			jen.Var().ID("e").ID("encoder"),
-			jen.Switch(jen.ID("ct")).Block(
-				jen.Case(jen.ID("XMLContentType")).Block(jen.ID("e").Equals().Qual("encoding/xml", "NewEncoder").Call(jen.ID(constants.ResponseVarName))),
-				jen.Default().Block(jen.ID("e").Equals().Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName))),
+			jen.Switch(jen.ID("ct")).Body(
+				jen.Case(jen.ID("XMLContentType")).Body(jen.ID("e").Equals().Qual("encoding/xml", "NewEncoder").Call(jen.ID(constants.ResponseVarName))),
+				jen.Default().Body(jen.ID("e").Equals().Qual("encoding/json", "NewEncoder").Call(jen.ID(constants.ResponseVarName))),
 			),
 			jen.Line(),
 			jen.ID(constants.ResponseVarName).Dot("Header").Call().Dot("Set").Call(jen.ID("ContentTypeHeader"), jen.ID("ct")),
@@ -109,18 +109,18 @@ func buildDecodeRequest() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("DecodeRequest decodes responses."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("ed").PointerTo().ID("ServerEncoderDecoder")).ID("DecodeRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"), jen.ID("v").Interface()).Params(jen.Error()).Body(
 			jen.Var().ID("ct").Equals().Qual("strings", "ToLower").Call(jen.ID(constants.RequestVarName).Dot("Header").Dot("Get").Call(jen.ID("ContentTypeHeader"))),
-			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Block(
+			jen.If(jen.ID("ct").IsEqualTo().EmptyString()).Body(
 				jen.ID("ct").Equals().ID("DefaultContentType"),
 			),
 			jen.Line(),
 			jen.Var().ID("d").ID("decoder"),
-			jen.Switch(jen.ID("ct")).Block(
-				jen.Case(jen.ID("XMLContentType")).Block(
+			jen.Switch(jen.ID("ct")).Body(
+				jen.Case(jen.ID("XMLContentType")).Body(
 					jen.ID("d").Equals().Qual("encoding/xml", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")),
 				),
-				jen.Default().Block(
+				jen.Default().Body(
 					jen.ID("d").Equals().Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")),
 				),
 			),
@@ -137,7 +137,7 @@ func buildProvideResponseEncoder() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideResponseEncoder provides a jsonResponseEncoder."),
 		jen.Line(),
-		jen.Func().ID("ProvideResponseEncoder").Params().Params(jen.ID("EncoderDecoder")).Block(
+		jen.Func().ID("ProvideResponseEncoder").Params().Params(jen.ID("EncoderDecoder")).Body(
 			jen.Return().AddressOf().ID("ServerEncoderDecoder").Values(),
 		),
 		jen.Line(),

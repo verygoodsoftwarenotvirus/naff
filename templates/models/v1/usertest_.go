@@ -18,7 +18,7 @@ func userTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestUser_Update() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestUser_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestUser_Update").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

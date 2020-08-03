@@ -74,11 +74,11 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 		).Params(
 			jen.PointerTo().Qual("database/sql", "DB"),
 			jen.Error(),
-		).Block(
-			jen.Switch(jen.ID("cfg").Dot("Database").Dot("Provider")).Block(
+		).Body(
+			jen.Switch(jen.ID("cfg").Dot("Database").Dot("Provider")).Body(
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Postgres) {
-						return jen.Case(jen.ID("PostgresProviderKey")).Block(
+						return jen.Case(jen.ID("PostgresProviderKey")).Body(
 							jen.Return(jen.Qual(proj.DatabaseV1Package("queriers", "postgres"), "ProvidePostgresDB").Call(
 								jen.ID(constants.LoggerVarName),
 								jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"),
@@ -89,7 +89,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
-						return jen.Case(jen.ID("MariaDBProviderKey")).Block(
+						return jen.Case(jen.ID("MariaDBProviderKey")).Body(
 							jen.Return(jen.Qual(proj.DatabaseV1Package("queriers", "mariadb"), "ProvideMariaDBConnection").Call(
 								jen.ID(constants.LoggerVarName),
 								jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"),
@@ -100,7 +100,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Sqlite) {
-						return jen.Case(jen.ID("SqliteProviderKey")).Block(
+						return jen.Case(jen.ID("SqliteProviderKey")).Body(
 							jen.Return(jen.Qual(proj.DatabaseV1Package("queriers", "sqlite"), "ProvideSqliteDB").Call(
 								jen.ID(constants.LoggerVarName),
 								jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"),
@@ -109,7 +109,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 					}
 					return jen.Null()
 				}(),
-				jen.Default().Block(
+				jen.Default().Body(
 					jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("invalid database type selected: %q"),
 						jen.ID("cfg").Dot("Database").Dot("Provider"),
@@ -130,8 +130,8 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			constants.LoggerParam(),
 			jen.ID("rawDB").PointerTo().Qual("database/sql", "DB"),
-		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Block(
-			jen.If(jen.ID("rawDB").IsEqualTo().Nil()).Block(
+		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Body(
+			jen.If(jen.ID("rawDB").IsEqualTo().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil DB connection provided"))),
 			),
 			jen.Line(),
@@ -144,10 +144,10 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.Var().ID("dbc").Qual(proj.DatabaseV1Package(), "DataManager"),
-			jen.Switch(jen.ID("cfg").Dot("Database").Dot("Provider")).Block(
+			jen.Switch(jen.ID("cfg").Dot("Database").Dot("Provider")).Body(
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Postgres) {
-						return jen.Case(jen.ID("PostgresProviderKey")).Block(
+						return jen.Case(jen.ID("PostgresProviderKey")).Body(
 							jen.ID("dbc").Equals().Qual(proj.DatabaseV1Package("queriers", "postgres"), "ProvidePostgres").Call(
 								jen.ID("debug"),
 								jen.ID("rawDB"),
@@ -159,7 +159,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
-						return jen.Case(jen.ID("MariaDBProviderKey")).Block(
+						return jen.Case(jen.ID("MariaDBProviderKey")).Body(
 							jen.ID("dbc").Equals().Qual(proj.DatabaseV1Package("queriers", "mariadb"), "ProvideMariaDB").Call(
 								jen.ID("debug"),
 								jen.ID("rawDB"),
@@ -171,7 +171,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Sqlite) {
-						return jen.Case(jen.ID("SqliteProviderKey")).Block(
+						return jen.Case(jen.ID("SqliteProviderKey")).Body(
 							jen.ID("dbc").Equals().Qual(proj.DatabaseV1Package("queriers", "sqlite"), "ProvideSqlite").Call(
 								jen.ID("debug"),
 								jen.ID("rawDB"),
@@ -181,7 +181,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 					}
 					return jen.Null()
 				}(),
-				jen.Default().Block(
+				jen.Default().Body(
 					jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("invalid database type selected: %q"),
 						jen.ID("cfg").Dot("Database").Dot("Provider"),
@@ -217,13 +217,13 @@ func buildProvideSessionManager(proj *models.Project) []jen.Code {
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 		).Params(
 			jen.PointerTo().Qual("github.com/alexedwards/scs/v2", "SessionManager"),
-		).Block(
+		).Body(
 			jen.ID("sessionManager").Assign().Qual("github.com/alexedwards/scs/v2", "New").Call(),
 			jen.Line(),
-			jen.Switch(jen.ID("dbConf").Dot("Provider")).Block(
+			jen.Switch(jen.ID("dbConf").Dot("Provider")).Body(
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Postgres) {
-						return jen.Case(jen.ID("PostgresProviderKey")).Block(
+						return jen.Case(jen.ID("PostgresProviderKey")).Body(
 							jen.ID("sessionManager").Dot("Store").Equals().Qual(filepath.Join(SessionManagerLibrary, "postgresstore"), "New").Call(jen.ID("db")),
 						)
 					}
@@ -231,7 +231,7 @@ func buildProvideSessionManager(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
-						return jen.Case(jen.ID("MariaDBProviderKey")).Block(
+						return jen.Case(jen.ID("MariaDBProviderKey")).Body(
 							jen.ID("sessionManager").Dot("Store").Equals().Qual(filepath.Join(SessionManagerLibrary, "mysqlstore"), "New").Call(jen.ID("db")),
 						)
 					}
@@ -239,7 +239,7 @@ func buildProvideSessionManager(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Sqlite) {
-						return jen.Case(jen.ID("SqliteProviderKey")).Block(
+						return jen.Case(jen.ID("SqliteProviderKey")).Body(
 							jen.ID("sessionManager").Dot("Store").Equals().Qual(filepath.Join(SessionManagerLibrary, "sqlite3store"), "New").Call(jen.ID("db")),
 						)
 					}

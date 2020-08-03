@@ -43,12 +43,12 @@ func buildBleveTestTypeDefinitions() []jen.Code {
 
 func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestNewBleveIndexManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestNewBleveIndexManager").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("happy path",
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit("constructor_test.bleve"),
+					jen.Lit("constructor_test_happy_path.bleve"),
 				),
 				jen.Line(),
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
@@ -76,12 +76,12 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("invalid name",
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit(""),
+					jen.Lit("constructor_test_invalid_name.bleve"),
 				),
 				jen.Line(),
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
-					jen.Lit("testing"),
+					jen.Lit("invalid"),
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -94,7 +94,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 
 func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBleveIndexManager_Index").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBleveIndexManager_Index").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleUserID").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
@@ -102,7 +102,7 @@ func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 			utils.BuildSubTest("obligatory",
 				jen.Const().ID("exampleQuery").Equals().Lit("index_test"),
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit("index_test.bleve"),
+					jen.Lit("index_test_obligatory.bleve"),
 				),
 				jen.Line(),
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
@@ -137,7 +137,7 @@ func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 
 func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBleveIndexManager_Search").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBleveIndexManager_Search").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleUserID").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),
@@ -145,8 +145,9 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			utils.BuildSubTest("obligatory",
 				jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit("search_test_1.bleve"),
+					jen.Lit("search_test_obligatory.bleve"),
 				),
+				jen.Line(),
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
@@ -182,7 +183,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest("with empty index and search",
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit("search_test_2.bleve"),
+					jen.Lit("search_test_empty_index.bleve"),
 				),
 				jen.Line(),
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
@@ -207,8 +208,9 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			utils.BuildSubTest("with closed index",
 				jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit("search_test_3.bleve"),
+					jen.Lit("search_test_closed_index.bleve"),
 				),
+				jen.Line(),
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
@@ -250,8 +252,9 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			utils.BuildSubTest("with invalid ID",
 				jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
 				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
-					jen.Lit("search_test_4.bleve"),
+					jen.Lit("search_test_invalid_id.bleve"),
 				),
+				jen.Line(),
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
@@ -291,7 +294,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 
 func buildTestBleveIndexManager_Delete(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestBleveIndexManager_Delete").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestBleveIndexManager_Delete").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("exampleUserID").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call().Dot("ID"),

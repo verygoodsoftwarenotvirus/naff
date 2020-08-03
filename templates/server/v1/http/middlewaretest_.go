@@ -39,7 +39,7 @@ func buildMiddlewareTestTypeDefinitions() []jen.Code {
 
 func buildMockHTTPHandlerServeHTTP() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -50,7 +50,7 @@ func buildMockHTTPHandlerServeHTTP() []jen.Code {
 
 func buildBuildRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -72,7 +72,7 @@ func buildBuildRequest() []jen.Code {
 
 func buildTest_formatSpanNameForRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("Test_formatSpanNameForRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("Test_formatSpanNameForRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -95,7 +95,7 @@ func buildTest_formatSpanNameForRequest() []jen.Code {
 
 func buildTestServer_loggingMiddleware() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestServer_loggingMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestServer_loggingMiddleware").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

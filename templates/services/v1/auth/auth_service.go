@@ -75,7 +75,7 @@ func buildProvideAuthService(proj *models.Project) []jen.Code {
 			jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
 			jen.ID("sessionManager").PointerTo().Qual(constants.SessionManagerLibrary, "SessionManager"),
 			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("encoderDecoder").MapAssign().ID("encoder"),

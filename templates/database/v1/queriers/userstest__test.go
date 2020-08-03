@@ -40,7 +40,6 @@ import (
 
 func buildMockRowsFromUser(users ...*v1.User) *gosqlmock.Rows {
 	columns := usersTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, user := range users {
@@ -787,7 +786,6 @@ import (
 
 func buildMockRowsFromUser(users ...*v1.User) *gosqlmock.Rows {
 	columns := usersTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, user := range users {
@@ -1514,7 +1512,6 @@ import (
 
 func buildMockRowsFromUser(users ...*v1.User) *gosqlmock.Rows {
 	columns := usersTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, user := range users {
@@ -2236,7 +2233,6 @@ import (
 
 func buildMockRowsFromUser(users ...*v1.User) *gosqlmock.Rows {
 	columns := usersTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, user := range users {

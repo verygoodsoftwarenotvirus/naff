@@ -194,7 +194,7 @@ func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType)
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientExistenceRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -209,7 +209,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dotf("Build%sExistsRequest", ts).Call(typ.BuildArgsForHTTPClientExistenceRequestBuildingMethod(proj)...),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(
 				jen.False(),
 				jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err()),
@@ -225,7 +225,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientExistenceMethod(proj)...).Params(
 			jen.ID("exists").Bool(),
 			jen.Err().Error(),
-		).Block(block...,
+		).Body(block...,
 		),
 		jen.Line(),
 	}
@@ -259,7 +259,7 @@ func buildBuildGetSomethingRequestFuncDecl(proj *models.Project, typ models.Data
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -275,13 +275,13 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", ts)).Call(typ.BuildArgsForHTTPClientRetrievalRequestBuildingMethod(proj)...),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err()),
 			),
 		),
 		jen.Line(),
-		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(constants.CtxVar(), jen.ID(constants.RequestVarName), jen.AddressOf().ID(uvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(constants.CtxVar(), jen.ID(constants.RequestVarName), jen.AddressOf().ID(uvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(), jen.ID("retrieveErr")),
 		),
 		jen.Line(),
@@ -294,7 +294,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalMethod(proj, false)...).Params(
 			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().Error(),
-		).Block(block...,
+		).Body(block...,
 		),
 		jen.Line(),
 	}
@@ -345,7 +345,7 @@ func buildBuildSearchSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -366,13 +366,13 @@ func buildSearchSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.ID("query"),
 			jen.ID("limit"),
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err()),
 			),
 		),
 		jen.Line(),
-		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(constants.CtxVar(), jen.ID(constants.RequestVarName), jen.AddressOf().ID(puvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(constants.CtxVar(), jen.ID(constants.RequestVarName), jen.AddressOf().ID(puvn)), jen.ID("retrieveErr").DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(), jen.ID("retrieveErr")),
 		),
 		jen.Line(),
@@ -389,7 +389,7 @@ func buildSearchSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		).Params(
 			jen.ID(puvn).Index().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().Error(),
-		).Block(
+		).Body(
 			block...,
 		),
 		jen.Line(),
@@ -424,7 +424,7 @@ func buildBuildGetListOfSomethingRequestFuncDecl(proj *models.Project, typ model
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientListRequestMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -442,7 +442,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot(fmt.Sprintf("BuildGet%sRequest", tp)).Call(
 			typ.BuildArgsForHTTPClientListRequestMethod(proj)...,
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
@@ -454,7 +454,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.If(
 			jen.ID("retrieveErr").Assign().ID("c").Dot("retrieve").Call(constants.CtxVar(), jen.ID(constants.RequestVarName), jen.AddressOf().ID(pvn)),
 			jen.ID("retrieveErr").DoesNotEqual().ID("nil"),
-		).Block(
+		).Body(
 			jen.Return().List(jen.Nil(), jen.ID("retrieveErr")),
 		),
 		jen.Line(),
@@ -467,7 +467,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientMethodThatFetchesAList(proj)...).Params(
 			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
 			jen.Err().Error(),
-		).Block(block...,
+		).Body(block...,
 		),
 		jen.Line(),
 	}
@@ -503,7 +503,7 @@ func buildBuildCreateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(
+		).Body(
 			block...,
 		),
 		jen.Line(),
@@ -527,7 +527,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		).Assign().ID("c").Dot(fmt.Sprintf("BuildCreate%sRequest", ts)).Call(
 			typ.BuildArgsForHTTPClientCreateRequestBuildingMethod(proj)...,
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(),
 				jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("building request: %w"),
@@ -555,7 +555,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		).Params(
 			jen.ID(vn).PointerTo().Qual(proj.ModelsV1Package(), ts),
 			jen.Err().Error(),
-		).Block(block...,
+		).Body(block...,
 		),
 		jen.Line(),
 	}
@@ -591,7 +591,7 @@ func buildBuildUpdateSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...,
+		).Body(block...,
 		),
 		jen.Line(),
 	}
@@ -613,7 +613,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		).Assign().ID("c").Dot(fmt.Sprintf("BuildUpdate%sRequest", ts)).Call(
 			typ.BuildArgsForHTTPClientUpdateRequestBuildingMethod(proj)...,
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("building request: %w"),
 				jen.Err(),
@@ -632,7 +632,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			typ.BuildParamsForHTTPClientUpdateMethod(proj)...,
-		).Params(jen.Error()).Block(block...),
+		).Params(jen.Error()).Body(block...),
 		jen.Line(),
 	}
 
@@ -668,7 +668,7 @@ func buildBuildArchiveSomethingRequestFuncDecl(proj *models.Project, typ models.
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveRequestBuildingMethod(proj)...).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
-		).Block(block...),
+		).Body(block...),
 		jen.Line(),
 	}
 
@@ -689,7 +689,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, typ models.DataType) []
 		).Assign().ID("c").Dot(fmt.Sprintf("BuildArchive%sRequest", ts)).Call(
 			typ.BuildArgsForHTTPClientArchiveRequestBuildingMethod(proj)...,
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("building request: %w"),
 				jen.Err(),
@@ -706,7 +706,7 @@ func buildArchiveSomethingFuncDecl(proj *models.Project, typ models.DataType) []
 	lines := []jen.Code{
 		jen.Commentf("%s archives %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
-		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveMethod(proj)...).Params(jen.Error()).Block(block...),
+		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientArchiveMethod(proj)...).Params(jen.Error()).Body(block...),
 	}
 
 	return lines

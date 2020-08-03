@@ -110,6 +110,7 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 		typeDefs = append(typeDefs,
 			jen.Comment("SearchIndex is a type alias for dependency injection's sake"),
 			jen.ID("SearchIndex").Qual(proj.InternalSearchV1Package(), "IndexManager"),
+			jen.Line(),
 		)
 		structFields = append(structFields,
 			jen.ID("search").ID("SearchIndex"),
@@ -213,9 +214,9 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("Provide%sService builds a new %sService.", pn, pn),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
+		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.Err()).Assign().ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -240,7 +241,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 			jen.ID("searchSettings").Qual(proj.InternalConfigV1Package(), "SearchSettings"),
 			jen.ID("indexProvider").Qual(proj.InternalSearchV1Package(), "IndexManagerProvider"),
 			jen.ID(constants.LoggerVarName).Qual(constants.LoggingPkg, "Logger"),
-		).Params(jen.ID("SearchIndex"), jen.Error()).Block(
+		).Params(jen.ID("SearchIndex"), jen.Error()).Body(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(
 				jen.Lit("index_path"),
 				jen.ID("searchSettings").Dotf("%sIndexPath", pn),
@@ -251,7 +252,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 				jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sSearchIndexName", pn)),
 				jen.ID(constants.LoggerVarName),
 			),
-			jen.If(jen.ID("indexInitErr").DoesNotEqual().Nil()).Block(
+			jen.If(jen.ID("indexInitErr").DoesNotEqual().Nil()).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("indexInitErr"), jen.Litf("setting up %s search index", pcn)),
 				jen.Return(jen.Nil(), jen.ID("indexInitErr")),
 			),

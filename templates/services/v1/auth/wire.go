@@ -51,7 +51,7 @@ func buildWireProvideWebsocketAuthFunc() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideWebsocketAuthFunc provides a WebsocketAuthFunc."),
 		jen.Line(),
-		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").PointerTo().ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Block(
+		jen.Func().ID("ProvideWebsocketAuthFunc").Params(jen.ID("svc").PointerTo().ID("Service")).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebsocketAuthFunc")).Body(
 			jen.Return().ID("svc").Dot("WebsocketAuthFunction"),
 		),
 		jen.Line(),
@@ -64,7 +64,7 @@ func buildWireProvideOAuth2ClientValidator(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").PointerTo().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Block(
+		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").PointerTo().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Body(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

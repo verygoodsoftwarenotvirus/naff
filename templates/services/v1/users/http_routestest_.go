@@ -28,7 +28,7 @@ func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().ID("buildRequest").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -49,7 +49,7 @@ func buildBuildRequest() []jen.Code {
 
 func buildTestService_validateCredentialChangeRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_validateCredentialChangeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_validateCredentialChangeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -224,7 +224,7 @@ func buildTestService_validateCredentialChangeRequest(proj *models.Project) []je
 
 func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ListHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -315,7 +315,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_CreateHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -638,7 +638,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_ReadHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -646,7 +646,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -679,7 +679,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -704,7 +704,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -729,7 +729,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
@@ -765,7 +765,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_NewTOTPSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_NewTOTPSecretHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1084,7 +1084,7 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_TOTPSecretValidationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_TOTPSecretValidationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1287,7 +1287,6 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 				jen.Line(),
 				utils.AssertExpectationsFor("mockDB"),
 			),
-			jen.Line(),
 		),
 	}
 
@@ -1296,7 +1295,7 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 
 func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_UpdatePasswordHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_UpdatePasswordHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1558,7 +1557,7 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 
 func buildTestService_Archive(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_Archive").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -1566,7 +1565,7 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
@@ -1602,7 +1601,7 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
 				utils.BuildFakeVar(proj, "User"),
-				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Block(
+				jen.ID("s").Dot("userIDFetcher").Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
@@ -1627,10 +1626,10 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 
 func buildTestService_buildQRCode(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestService_buildQRCode").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestService_buildQRCode").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				constants.CreateCtx(),
 				jen.Line(),

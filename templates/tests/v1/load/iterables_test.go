@@ -400,7 +400,7 @@ func main() {
 	return c.BuildCreateItemRequest(ctx, itemInput)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -427,7 +427,7 @@ func main() {
 	ctx := context.Background()
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -462,7 +462,7 @@ func main() {
 	return c.BuildGetItemRequest(ctx, randomItem.ID)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -491,7 +491,7 @@ func main() {
 	return c.BuildGetItemsRequest(ctx, nil)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -528,7 +528,7 @@ func main() {
 	return nil, ErrUnavailableYet
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -563,7 +563,7 @@ func main() {
 	return c.BuildArchiveItemRequest(ctx, randomItem.ID)
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

@@ -4,12 +4,18 @@ INSTALL_PATH       := ~/.bin
 EMBEDDED_PACKAGE   := embedded
 GO_FORMAT          := gofmt -s -w
 THIS_PKG           := gitlab.com/verygoodsoftwarenotvirus/naff
+ARTIFACTS_DIR      := artifacts
+COVERAGE_OUT       := $(ARTIFACTS_DIR)/coverage.out
+PACKAGE_LIST       := `go list gitlab.com/verygoodsoftwarenotvirus/naff/... | grep -Ev '(cmd|testprojects|example_models|example_output|forks)'`
 EXAMPLE_OUTPUT_DIR := example_output
 CURRENT_PROJECT    := gamut
 NOW                := $(shell date +%s%N)
 VERSION            := $(shell git rev-parse HEAD)
 VERSION_FLAG       := -ldflags "-X main.Version=$(VERSION)_$(NOW)"
 EXAMPLE_APP        := cmd/example_proj/main.go
+
+$(ARTIFACTS_DIR):
+	@mkdir -p $(ARTIFACTS_DIR)
 
 ## Project prerequisites
 
@@ -35,9 +41,14 @@ revendor: vendor-clean vendor
 
 ## tests
 
-.PHONY: quicktest
-quicktest:
-	go test -race -failfast `go list gitlab.com/verygoodsoftwarenotvirus/naff/... | grep -Ev '(cmd|testprojects|example_models|example_output|forks)'`
+.PHONY: clean-coverage
+clean-coverage:
+	@rm -f $(COVERAGE_OUT) profile.out;
+
+.PHONY: coverage
+coverage: clean-coverage $(ARTIFACTS_DIR)
+	go test -coverprofile=$(COVERAGE_OUT) -covermode=atomic -race $(PACKAGE_LIST)
+	go tool cover -func=$(ARTIFACTS_DIR)/coverage.out | grep 'total:' | xargs | awk '{ print "COVERAGE: " $$3 }'
 
 .PHONY: install
 install:

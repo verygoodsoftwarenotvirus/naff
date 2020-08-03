@@ -52,8 +52,8 @@ func buildMainTypeDefs() []jen.Code {
 			jen.ID("CountResponse").Struct(
 				jen.ID("Count").Uint64().Tag(jsonTag("count")),
 			),
-			jen.Comment("ErrorResponse represents a response we might send to the user in the event of an error."),
 			jen.Line(),
+			jen.Comment("ErrorResponse represents a response we might send to the user in the event of an error."),
 			jen.ID("ErrorResponse").Struct(
 				jen.ID("Message").String().Tag(jsonTag("message")),
 				jen.ID("Code").ID("uint").Tag(jsonTag("code")),
@@ -76,7 +76,7 @@ func buildMainErrorInterfaceImplementation() []jen.Code {
 
 func buildMainErrorResponseDotError() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("er").PointerTo().ID("ErrorResponse")).ID("Error").Params().Params(jen.String()).Block(
+		jen.Func().Params(jen.ID("er").PointerTo().ID("ErrorResponse")).ID("Error").Params().Params(jen.String()).Body(
 			jen.Return().Qual("fmt", "Sprintf").Call(jen.Lit("%d: %s"), jen.ID("er").Dot("Code"), jen.ID("er").Dot("Message")),
 		),
 		jen.Line(),

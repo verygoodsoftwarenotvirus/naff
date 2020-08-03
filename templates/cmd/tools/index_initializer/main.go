@@ -98,7 +98,7 @@ func buildConstDeclarations() []jen.Code {
 
 func buildInit() []jen.Code {
 	return []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.Qual(constants.FlagParsingLibrary, "StringVarP").Call(
 				jen.AddressOf().ID("indexOutputPath"),
 				jen.ID("outputPathVerboseFlagName"),
@@ -152,7 +152,7 @@ func buildMain(proj *models.Project) []jen.Code {
 			searchTypeNames = append(searchTypeNames, fmt.Sprintf("'%s'", typ.Name.RouteName()))
 
 			switchCases = append(switchCases,
-				jen.Case(jen.Lit(typ.Name.RouteName())).Block(
+				jen.Case(jen.Lit(typ.Name.RouteName())).Body(
 					jen.ID("outputChan").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), typ.Name.Singular())),
 					jen.If(
 						jen.ID("queryErr").Assign().ID("dbClient").Dotf("GetAll%s", pn).Call(
@@ -160,14 +160,14 @@ func buildMain(proj *models.Project) []jen.Code {
 							jen.ID("outputChan"),
 						),
 						jen.ID("queryErr").DoesNotEqual().Nil(),
-					).Block(
+					).Body(
 						jen.Qual("log", "Fatalf").Call(jen.Lit("error fetching "+typ.Name.PluralCommonName()+" from database: %v"), jen.Err()),
 					),
 					jen.Line(),
-					jen.For().Block(
-						jen.Select().Block(
-							jen.Case(jen.ID(typ.Name.PluralUnexportedVarName()).Assign().ReceiveFromChannel().ID("outputChan")).Block(
-								jen.For(jen.List(jen.Underscore(), jen.ID("x").Assign().Range().ID(typ.Name.PluralUnexportedVarName()))).Block(
+					jen.For().Body(
+						jen.Select().Body(
+							jen.Case(jen.ID(typ.Name.PluralUnexportedVarName()).Assign().ReceiveFromChannel().ID("outputChan")).Body(
+								jen.For(jen.List(jen.Underscore(), jen.ID("x").Assign().Range().ID(typ.Name.PluralUnexportedVarName()))).Body(
 									jen.If(
 										jen.ID("searchIndexErr").Assign().ID("im").Dot("Index").Call(
 											constants.CtxVar(),
@@ -175,14 +175,14 @@ func buildMain(proj *models.Project) []jen.Code {
 											jen.ID("x"),
 										),
 										jen.ID("searchIndexErr").DoesNotEqual().Nil(),
-									).Block(
+									).Body(
 										jen.ID(constants.LoggerVarName).
 											Dot("WithValue").Call(jen.Lit("id"), jen.ID("x").Dot("ID")).
 											Dot("Error").Call(jen.ID("searchIndexErr"), jen.Lit("error adding to search index")),
 									),
 								),
 							),
-							jen.Case(jen.ReceiveFromChannel().Qual("time", "After").Call(jen.ID("deadline"))).Block(
+							jen.Case(jen.ReceiveFromChannel().Qual("time", "After").Call(jen.ID("deadline"))).Body(
 								jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("terminating")),
 								jen.Return(),
 							),
@@ -194,34 +194,34 @@ func buildMain(proj *models.Project) []jen.Code {
 	}
 
 	switchCases = append(switchCases,
-		jen.Default().Block(
+		jen.Default().Body(
 			jen.Qual("log", "Fatal").Call(jen.Lit("this should never occur")),
 		),
 	)
 
 	return []jen.Code{
-		jen.Func().ID("main").Params().Block(
+		jen.Func().ID("main").Params().Body(
 			jen.Qual(constants.FlagParsingLibrary, "Parse").Call(),
 			jen.ID(constants.LoggerVarName).Assign().Qual(filepath.Join(constants.LoggingPkg, "zerolog"), "NewZeroLogger").Call().Dot("WithName").Call(jen.Lit("search_index_initializer")),
 			constants.CreateCtx(),
 			jen.Line(),
-			jen.If(jen.ID("indexOutputPath").IsEqualTo().EmptyString()).Block(
+			jen.If(jen.ID("indexOutputPath").IsEqualTo().EmptyString()).Body(
 				jen.Qual("log", "Fatalf").Call(jen.Lit("No output path specified, please provide one via the --%s flag"), jen.ID("outputPathVerboseFlagName")),
 				jen.Return(),
-			).Else().If(jen.List(jen.Underscore(), jen.ID("ok")).Assign().ID("validTypeNames").Index(jen.ID("typeName")), jen.Not().ID("ok")).Block(
+			).Else().If(jen.List(jen.Underscore(), jen.ID("ok")).Assign().ID("validTypeNames").Index(jen.ID("typeName")), jen.Not().ID("ok")).Body(
 				jen.Qual("log", "Fatalf").Call(
 					jen.Lit("Invalid type name %q specified, one of [ "+strings.Join(searchTypeNames, ", ")+" ] expected"),
 					jen.ID("typeName"),
 				),
 				jen.Return(),
-			).Else().If(jen.ID("dbConnectionDetails").IsEqualTo().EmptyString()).Block(
+			).Else().If(jen.ID("dbConnectionDetails").IsEqualTo().EmptyString()).Body(
 				jen.Qual("log", "Fatalf").Call(
 					jen.Lit("No database connection details %q specified, please provide one via the --%s flag"),
 					jen.ID("dbConnectionDetails"),
 					jen.ID("dbConnectionVerboseFlagName"),
 				),
 				jen.Return(),
-			).Else().If(jen.List(jen.Underscore(), jen.ID("ok")).Assign().ID("validDatabaseTypes").Index(jen.ID("databaseType")), jen.Not().ID("ok")).Block(
+			).Else().If(jen.List(jen.Underscore(), jen.ID("ok")).Assign().ID("validDatabaseTypes").Index(jen.ID("databaseType")), jen.Not().ID("ok")).Body(
 				jen.Qual("log", "Fatalf").Call(
 					jen.Lit("Invalid database type %q specified, please provide one via the --%s flag"),
 					jen.ID("databaseType"),
@@ -235,7 +235,7 @@ func buildMain(proj *models.Project) []jen.Code {
 				jen.Qual(proj.InternalSearchV1Package(), "IndexName").Call(jen.ID("typeName")),
 				jen.ID(constants.LoggerVarName),
 			)),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
@@ -254,7 +254,7 @@ func buildMain(proj *models.Project) []jen.Code {
 			jen.List(jen.ID("rawDB"), jen.Err()).Assign().ID("cfg").Dot("ProvideDatabaseConnection").Call(
 				jen.ID(constants.LoggerVarName),
 			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Fatalf").Call(jen.Lit("error establishing connection to database: %v"), jen.Err()),
 			),
 			jen.Line(),
@@ -265,11 +265,11 @@ func buildMain(proj *models.Project) []jen.Code {
 				jen.ID(constants.LoggerVarName),
 				jen.ID("rawDB"),
 			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Fatalf").Call(jen.Lit("error initializing database client: %v"), jen.Err()),
 			),
 			jen.Line(),
-			jen.Switch(jen.ID("typeName")).Block(
+			jen.Switch(jen.ID("typeName")).Body(
 				switchCases...,
 			),
 		),

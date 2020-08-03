@@ -288,33 +288,19 @@ func (s *Statement) IndexFunc(f func(*Group)) *Statement {
 	return s
 }
 
-// Block renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
-func Block(statements ...Code) *Statement {
-	return newStatement().Block(statements...)
+// Body renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func Body(statements ...Code) *Statement {
+	return newStatement().Body(statements...)
 }
 
-// Block renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
-func (g *Group) Block(statements ...Code) *Statement {
-	s := Block(statements...)
+// Body renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func (g *Group) Body(statements ...Code) *Statement {
+	s := Body(statements...)
 	g.items = append(g.items, s)
 	return s
 }
 
-// Block renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
-func (s *Statement) Block(statements ...Code) *Statement {
-	g := &Group{
-		close:     "}",
-		items:     statements,
-		multi:     true,
-		name:      "block",
-		open:      "{",
-		separator: "",
-	}
-	*s = append(*s, g)
-	return s
-}
-
-// Body is an alias for block
+// Body renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
 func (s *Statement) Body(statements ...Code) *Statement {
 	g := &Group{
 		close:     "}",

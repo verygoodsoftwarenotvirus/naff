@@ -20,7 +20,7 @@ func timeTellerDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 	code.Add(jen.Type().ID("stdLibTimeTeller").Struct())
 
 	code.Add(
-		jen.Func().Receiver(jen.ID("t").PointerTo().ID("stdLibTimeTeller")).ID("Now").Params().Uint64().Block(
+		jen.Func().Receiver(jen.ID("t").PointerTo().ID("stdLibTimeTeller")).ID("Now").Params().Uint64().Body(
 			jen.Return(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call())),
 		),
 	)
@@ -32,7 +32,7 @@ func timeTellerDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 	)
 
 	code.Add(
-		jen.Func().Receiver(jen.ID("m").PointerTo().ID("mockTimeTeller")).ID("Now").Params().Uint64().Block(
+		jen.Func().Receiver(jen.ID("m").PointerTo().ID("mockTimeTeller")).ID("Now").Params().Uint64().Body(
 			jen.Return(jen.ID("m").Dot("Called").Call().Dot("Get").Call(jen.Zero()).Assert(jen.Uint64())),
 		),
 	)

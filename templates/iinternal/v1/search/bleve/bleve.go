@@ -33,7 +33,6 @@ func buildConstantDefinitions(proj *models.Project) []jen.Code {
 			jen.ID("bitSize").Equals().Lit(64),
 			jen.Line(),
 			jen.Comment("testingSearchIndexName is an index name that is only valid for testing's sake."),
-			jen.Line(),
 			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit("testing"),
 		),
 	}
@@ -66,12 +65,12 @@ func buildTypeDefinitions() []jen.Code {
 
 func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 	nameCases := []jen.Code{
-		jen.Case(jen.ID("testingSearchIndexName")).Block(
+		jen.Case(jen.ID("testingSearchIndexName")).Body(
 			jen.List(jen.ID("index"), jen.ID("newIndexErr")).Equals().Qual(searchPackage, "New").Call(
 				jen.String().Call(jen.ID("path")),
 				jen.Qual(searchPackage, "NewIndexMapping").Call(),
 			),
-			jen.If(jen.ID("newIndexErr").DoesNotEqual().Nil()).Block(
+			jen.If(jen.ID("newIndexErr").DoesNotEqual().Nil()).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(
 					jen.ID("newIndexErr"),
 					jen.Lit("failed to create new index"),
@@ -84,12 +83,12 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			nameCases = append(nameCases,
-				jen.Case(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Block(
+				jen.Case(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Body(
 					jen.List(jen.ID("index"), jen.ID("newIndexErr")).Equals().Qual(searchPackage, "New").Call(
 						jen.String().Call(jen.ID("path")),
 						jen.IDf("build%sMapping", typ.Name.Singular()).Call(),
 					),
-					jen.If(jen.ID("newIndexErr").DoesNotEqual().Nil()).Block(
+					jen.If(jen.ID("newIndexErr").DoesNotEqual().Nil()).Body(
 						jen.ID(constants.LoggerVarName).Dot("Error").Call(
 							jen.ID("newIndexErr"),
 							jen.Lit("failed to create new index"),
@@ -102,7 +101,7 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 	}
 
 	nameCases = append(nameCases,
-		jen.Default().Block(
+		jen.Default().Body(
 			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(
 				jen.Lit("invalid index name: %q"),
 				jen.ID("name"),
@@ -120,17 +119,17 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 		).Params(
 			jen.Qual(proj.InternalSearchV1Package(), "IndexManager"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.Var().ID("index").Qual(searchPackage, "Index"),
 			jen.Line(),
 			jen.List(jen.ID("preexistingIndex"), jen.ID("openIndexErr")).Assign().Qual(searchPackage, "Open").Call(
 				jen.String().Call(jen.ID("path")),
 			),
-			jen.Switch(jen.ID("openIndexErr")).Block(
-				jen.Case(jen.Nil()).Block(
+			jen.Switch(jen.ID("openIndexErr")).Body(
+				jen.Case(jen.Nil()).Body(
 					jen.ID("index").Equals().ID("preexistingIndex"),
 				),
-				jen.Case(jen.Qual(searchPackage, "ErrorIndexPathDoesNotExist")).Block(
+				jen.Case(jen.Qual(searchPackage, "ErrorIndexPathDoesNotExist")).Body(
 					jen.ID(constants.LoggerVarName).Dot("WithValue").Call(
 						jen.Lit("path"),
 						jen.ID("path"),
@@ -139,11 +138,11 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 					),
 					jen.Var().ID("newIndexErr").Error(),
 					jen.Line(),
-					jen.Switch(jen.ID("name")).Block(
+					jen.Switch(jen.ID("name")).Body(
 						nameCases...,
 					),
 				),
-				jen.Default().Block(
+				jen.Default().Body(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(
 						jen.ID("openIndexErr"),
 						jen.Lit("failed to open index"),
@@ -174,7 +173,7 @@ func buildNewBleveIndexManager_Index(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			jen.ID("id").Uint64(),
 			jen.ID("value").Interface(),
-		).Error().Block(
+		).Error().Body(
 			utils.StartSpan(proj, false, "Index"),
 			jen.ID("sm").Dot(constants.LoggerVarName).Dot("WithValue").Call(
 				jen.Lit("id"),
@@ -201,7 +200,7 @@ func buildNewBleveIndexManager_Search(proj *models.Project) []jen.Code {
 		).Params(
 			jen.ID("ids").Index().Uint64(),
 			jen.Err().Error(),
-		).Block(
+		).Body(
 			utils.StartSpan(proj, false, "Search"),
 			jen.ID("query").Equals().ID("ensureQueryIsRestrictedToUser").Call(jen.ID("query"), jen.ID(constants.UserIDVarName)),
 			jen.Qual(proj.InternalTracingV1Package(), "AttachSearchQueryToSpan").Call(jen.ID("span"), jen.ID("query")),
@@ -217,7 +216,7 @@ func buildNewBleveIndexManager_Search(proj *models.Project) []jen.Code {
 				constants.CtxVar(),
 				jen.ID("searchRequest"),
 			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.ID("sm").Dot(constants.LoggerVarName).Dot("Error").Call(
 					jen.Err(),
 					jen.Lit("performing search query"),
@@ -226,13 +225,13 @@ func buildNewBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.ID("out").Assign().Index().Uint64().Values(),
-			jen.For(jen.List(jen.Underscore(), jen.ID("result")).Assign().Range().ID("searchResults").Dot("Hits")).Block(
+			jen.For(jen.List(jen.Underscore(), jen.ID("result")).Assign().Range().ID("searchResults").Dot("Hits")).Body(
 				jen.List(jen.ID("x"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(
 					jen.ID("result").Dot("ID"),
 					jen.ID("base"),
 					jen.ID("bitSize"),
 				),
-				jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+				jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 					jen.Comment("this should literally never happen"),
 					jen.Return(jen.Nil(), jen.Err()),
 				),
@@ -253,7 +252,7 @@ func buildNewBleveIndexManager_Delete(proj *models.Project) []jen.Code {
 		jen.Func().Params(jen.ID("sm").PointerTo().ID("bleveIndexManager")).ID("Delete").Params(
 			constants.CtxParam(),
 			jen.ID("id").Uint64(),
-		).Error().Block(
+		).Error().Body(
 			utils.StartSpan(proj, false, "Delete"),
 			jen.ID("sm").Dot(constants.LoggerVarName).Dot("WithValue").Call(
 				jen.Lit("id"),

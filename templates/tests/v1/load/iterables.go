@@ -62,11 +62,11 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 	lines := []jen.Code{
 		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s.", sn, scn, pcn),
 		jen.Line(),
-		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Block(
+		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Body(
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().IDf("%sRes", puvn).IsEqualTo().ID("nil").Or().ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).IsEqualTo().Zero()).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().IDf("%sRes", puvn).IsEqualTo().ID("nil").Or().ID("len").Call(jen.IDf("%sRes", puvn).Dot(pn)).IsEqualTo().Zero()).Body(
 				jen.Return().ID("nil"),
 			),
 			jen.Line(),
@@ -121,7 +121,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) []jen
 			jen.List(jen.IDf("%s%s", createdVarPrefix, t.Name.Singular()), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
 				creationArgs...,
 			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
@@ -184,35 +184,35 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 			jen.Litf("Create%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Create%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 					buildCreateSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Get%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Get%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 					buildGetSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Get%s", pn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Get%s", pn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 					buildGetListOfSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Update%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Update%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 					buildUpdateChildBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(100),
 			),
 			jen.Litf("Archive%s", sn).MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Litf("Archive%s", sn),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 					buildArchiveSomethingBlock(proj, typ)...,
 				),
 				jen.ID("Weight").MapAssign().Lit(85),
@@ -221,7 +221,7 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Block(blockLines...),
+		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Body(blockLines...),
 		jen.Line(),
 	}
 }
@@ -271,7 +271,7 @@ func buildRandomDependentIDFetchers(proj *models.Project, typ models.DataType) [
 		lines = append(lines,
 			jen.Line(),
 			jen.IDf("random%s", pt.Name.Singular()).Assign().IDf("fetchRandom%s", pt.Name.Singular()).Call(callArgs...),
-			jen.If(jen.IDf("random%s", pt.Name.Singular()).IsEqualTo().Nil()).Block(
+			jen.If(jen.IDf("random%s", pt.Name.Singular()).IsEqualTo().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", pt.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
 			),
 		)
@@ -295,7 +295,7 @@ func buildGetSomethingBlock(proj *models.Project, typ models.DataType) []jen.Cod
 	lines = append(lines,
 		jen.Line(),
 		jen.IDf("random%s", typ.Name.Singular()).Assign().IDf("fetchRandom%s", typ.Name.Singular()).Call(callArgs...),
-		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Block(
+		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Body(
 			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", typ.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
 		),
 	)
@@ -373,7 +373,7 @@ func buildUpdateChildBlock(proj *models.Project, typ models.DataType) []jen.Code
 	}
 
 	lines = append(lines,
-		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.IDf("random%s", sn).Assign().IDf("fetchRandom%s", sn).Call(callArgs...), jen.IDf("random%s", sn).DoesNotEqual().ID("nil")).Body(
 			ifRandomExistsBlock...,
 		),
 		jen.Line(),
@@ -398,7 +398,7 @@ func buildArchiveSomethingBlock(proj *models.Project, typ models.DataType) []jen
 	lines = append(lines,
 		jen.Line(),
 		jen.IDf("random%s", typ.Name.Singular()).Assign().IDf("fetchRandom%s", typ.Name.Singular()).Call(callArgs...),
-		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Block(
+		jen.If(jen.IDf("random%s", typ.Name.Singular()).IsEqualTo().Nil()).Body(
 			jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("retrieving random %s", typ.Name.SingularCommonName())+": %w"), jen.ID("ErrUnavailableYet"))),
 		),
 	)

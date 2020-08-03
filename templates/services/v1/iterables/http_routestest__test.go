@@ -515,7 +515,6 @@ func TestItemsService_CreateHandler(T *testing.T) {
 
 		mock1.AssertExpectationsForObjects(t, itemDataManager, mc, r, si, ed)
 	})
-
 }
 
 func TestItemsService_ExistenceHandler(T *testing.T) {
@@ -1132,7 +1131,7 @@ func main() {
 
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1164,7 +1163,7 @@ func main() {
 
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1199,7 +1198,7 @@ func main() {
 
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -1795,7 +1794,6 @@ func TestItemsService_CreateHandler(T *testing.T) {
 
 		mock1.AssertExpectationsForObjects(t, itemDataManager, mc, r, si, ed)
 	})
-
 }
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
@@ -2407,7 +2405,7 @@ func main() {
 
 }
 `
-		actual := testutils.RenderVariableDeclarationsToString(t, x)
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

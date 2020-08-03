@@ -27,7 +27,7 @@ func buildStartSpan() []jen.Code {
 		).Params(
 			jen.Qual("context", "Context"),
 			jen.PointerTo().Qual("go.opencensus.io/trace", "Span"),
-		).Block(
+		).Body(
 			jen.Return(jen.Qual("go.opencensus.io/trace", "StartSpan").Call(
 				constants.CtxVar(),
 				jen.ID("funcName"),

@@ -42,7 +42,6 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -992,7 +991,6 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -1960,7 +1958,6 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -2922,7 +2919,6 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {

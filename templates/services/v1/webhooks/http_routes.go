@@ -41,14 +41,14 @@ func buildWebhookHTTPRoutesValidateWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("validateWebhook").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(),
 			"WebhookCreationInput",
-		)).Params(jen.Error()).Block(
+		)).Params(jen.Error()).Body(
 			jen.List(jen.Underscore(), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("input").Dot("URL")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("invalid URL provided: %w"), jen.Err()),
 			),
 			jen.Line(),
 			jen.ID("input").Dot("Method").Equals().Qual("strings", "ToUpper").Call(jen.ID("input").Dot("Method")),
-			jen.Switch(jen.ID("input").Dot("Method")).Block(
+			jen.Switch(jen.ID("input").Dot("Method")).Body(
 				jen.Comment("allowed methods."),
 				jen.Caseln(
 					jen.Qual("net/http", "MethodGet"),
@@ -57,10 +57,10 @@ func buildWebhookHTTPRoutesValidateWebhook(proj *models.Project) []jen.Code {
 					jen.Qual("net/http", "MethodPatch"),
 					jen.Qual("net/http", "MethodDelete"),
 					jen.Qual("net/http", "MethodHead"),
-				).Block(
+				).Body(
 					jen.Break(),
 				),
-				jen.Default().Block(
+				jen.Default().Body(
 					jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("invalid method provided: %q"), jen.ID("input").Dot(
 						"Method",
 					)),
@@ -79,7 +79,7 @@ func buildWebhookHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateHandler is our webhook creation route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreateHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -92,7 +92,7 @@ func buildWebhookHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("try to pluck the parsed input from the request context."),
 			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("createMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookCreationInput")),
-			jen.If(jen.Not().ID("ok")).Block(
+			jen.If(jen.Not().ID("ok")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 				jen.Return(),
@@ -100,7 +100,7 @@ func buildWebhookHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID(constants.UserIDVarName),
 			jen.Line(),
 			jen.Comment("ensure everythings on the up-and-up"),
-			jen.If(jen.Err().Assign().ID("validateWebhook").Call(jen.ID("input")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("validateWebhook").Call(jen.ID("input")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("invalid method provided")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 				jen.Return(),
@@ -108,7 +108,7 @@ func buildWebhookHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("create the webhook."),
 			jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("CreateWebhook").Call(constants.CtxVar(), jen.ID("input")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error creating webhook")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 				jen.Return(),
@@ -128,7 +128,7 @@ func buildWebhookHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("let everybody know we're good."),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 			),
 		),
@@ -142,7 +142,7 @@ func buildWebhookHTTPRoutesListHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ListHandler is our list route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ListHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -158,17 +158,17 @@ func buildWebhookHTTPRoutesListHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("find the webhooks."),
 			jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhooks").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.ID("webhooks").Equals().AddressOf().Qual(proj.ModelsV1Package(), "WebhookList").Valuesln(
 					jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Values()),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered fetching webhooks")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 				jen.Return(),
 			),
 			jen.Line(),
 			jen.Comment("encode the response."),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("webhooks")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("webhooks")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 			),
 		),
@@ -182,7 +182,7 @@ func buildWebhookHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ReadHandler returns a GET handler that returns an webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ReadHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -200,18 +200,18 @@ func buildWebhookHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("fetch the webhook from the database."),
 			jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("No rows found in webhook database")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 				jen.Return(),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("Error fetching webhook from webhook database")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 				jen.Return(),
 			),
 			jen.Line(),
 			jen.Comment("encode the response."),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 			),
 		),
@@ -225,7 +225,7 @@ func buildWebhookHTTPRoutesUpdateHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("UpdateHandler returns a handler that updates an webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdateHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -243,7 +243,7 @@ func buildWebhookHTTPRoutesUpdateHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("fetch parsed creation input from request context."),
 			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("updateMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookUpdateInput")),
-			jen.If(jen.Not().ID("ok")).Block(
+			jen.If(jen.Not().ID("ok")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("no input attached to request")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 				jen.Return(),
@@ -251,11 +251,11 @@ func buildWebhookHTTPRoutesUpdateHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("fetch the webhook in question."),
 			jen.List(jen.ID("wh"), jen.Err()).Assign().ID("s").Dot("webhookDataManager").Dot("GetWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no rows found for webhook")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 				jen.Return(),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered getting webhook")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 				jen.Return(),
@@ -265,7 +265,7 @@ func buildWebhookHTTPRoutesUpdateHandler(proj *models.Project) []jen.Code {
 			jen.ID("wh").Dot("Update").Call(jen.ID("input")),
 			jen.Line(),
 			jen.Comment("save the update in the database."),
-			jen.If(jen.Err().Equals().ID("s").Dot("webhookDataManager").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID("s").Dot("webhookDataManager").Dot("UpdateWebhook").Call(constants.CtxVar(), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered updating webhook")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 				jen.Return(),
@@ -279,7 +279,7 @@ func buildWebhookHTTPRoutesUpdateHandler(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.Comment("let everybody know we're good."),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("wh")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 			),
 		),
@@ -293,7 +293,7 @@ func buildWebhookHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ArchiveHandler returns a handler that archives an webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("delete_route")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
@@ -311,11 +311,11 @@ func buildWebhookHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("do the deed."),
 			jen.Err().Assign().ID("s").Dot("webhookDataManager").Dot("ArchiveWebhook").Call(constants.CtxVar(), jen.ID("webhookID"), jen.ID(constants.UserIDVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no rows found for webhook")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
 				jen.Return(),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered deleting webhook")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
 				jen.Return(),

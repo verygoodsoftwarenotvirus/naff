@@ -29,7 +29,7 @@ func buildBuildFakeWebhook(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
@@ -60,7 +60,7 @@ func buildBuildFakeWebhookList(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.ID(utils.BuildFakeVarName("Webhook1")).Assign().ID("BuildFakeWebhook").Call(),
 			jen.ID(utils.BuildFakeVarName("Webhook2")).Assign().ID("BuildFakeWebhook").Call(),
 			jen.ID(utils.BuildFakeVarName("Webhook3")).Assign().ID("BuildFakeWebhook").Call(),
@@ -94,7 +94,7 @@ func buildBuildFakeWebhookUpdateInputFromWebhook(proj *models.Project) []jen.Cod
 			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Name").MapAssign().ID("webhook").Dot("Name"),
@@ -122,7 +122,7 @@ func buildBuildFakeWebhookCreationInput(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.ID("webhook").Assign().ID("BuildFakeWebhook").Call(),
 			jen.Return(
 				jen.ID("BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID("webhook")),
@@ -144,7 +144,7 @@ func buildBuildFakeWebhookCreationInputFromWebhook(proj *models.Project) []jen.C
 			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
-		).Block(
+		).Body(
 			jen.Return(
 				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
 					jen.ID("Name").MapAssign().ID("webhook").Dot("Name"),

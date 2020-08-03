@@ -48,8 +48,8 @@ type (
 	CountResponse struct {
 		Count uint64 ` + "`" + `json:"count"` + "`" + `
 	}
-	// ErrorResponse represents a response we might send to the user in the event of an error.
 
+	// ErrorResponse represents a response we might send to the user in the event of an error.
 	ErrorResponse struct {
 		Message string ` + "`" + `json:"message"` + "`" + `
 		Code    uint   ` + "`" + `json:"code"` + "`" + `
@@ -124,8 +124,8 @@ type (
 	CountResponse struct {
 		Count uint64 ` + "`" + `json:"count"` + "`" + `
 	}
-	// ErrorResponse represents a response we might send to the user in the event of an error.
 
+	// ErrorResponse represents a response we might send to the user in the event of an error.
 	ErrorResponse struct {
 		Message string ` + "`" + `json:"message"` + "`" + `
 		Code    uint   ` + "`" + `json:"code"` + "`" + `

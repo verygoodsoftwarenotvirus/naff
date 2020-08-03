@@ -83,6 +83,7 @@ func developmentConfig(filePath string) error {
 	cfg.Set(metaRunMode, developmentEnv)
 	cfg.Set(metaDebug, true)
 	cfg.Set(metaStartupDeadline, time.Minute)
+
 	cfg.Set(serverHTTPPort, defaultPort)
 	cfg.Set(serverDebug, true)
 
@@ -111,6 +112,7 @@ func developmentConfig(filePath string) error {
 	if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 		return fmt.Errorf("error writing developmentEnv config: %w", writeErr)
 	}
+
 	return nil
 }
 
@@ -119,6 +121,7 @@ func frontendTestsConfig(filePath string) error {
 
 	cfg.Set(metaRunMode, developmentEnv)
 	cfg.Set(metaStartupDeadline, time.Minute)
+
 	cfg.Set(serverHTTPPort, defaultPort)
 	cfg.Set(serverDebug, true)
 
@@ -147,6 +150,7 @@ func frontendTestsConfig(filePath string) error {
 	if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 		return fmt.Errorf("error writing developmentEnv config: %w", writeErr)
 	}
+
 	return nil
 }
 
@@ -171,9 +175,11 @@ func coverageConfig(filePath string) error {
 	cfg.Set(dbDeets, postgresDBConnDetails)
 
 	cfg.Set(itemsSearchIndexPath, defaultItemsSearchIndexPath)
+
 	if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 		return fmt.Errorf("error writing coverage config: %w", writeErr)
 	}
+
 	return nil
 }
 
@@ -201,9 +207,11 @@ func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configF
 		cfg.Set(dbDeets, dbDetails)
 
 		cfg.Set(itemsSearchIndexPath, defaultItemsSearchIndexPath)
+
 		if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 			return fmt.Errorf("error writing integration test config for %s: %w", dbVendor, writeErr)
 		}
+
 		return nil
 	}
 }
@@ -334,6 +342,7 @@ func developmentConfig(filePath string) error {
 	cfg.Set(metaRunMode, developmentEnv)
 	cfg.Set(metaDebug, true)
 	cfg.Set(metaStartupDeadline, time.Minute)
+
 	cfg.Set(serverHTTPPort, defaultPort)
 	cfg.Set(serverDebug, true)
 
@@ -362,6 +371,7 @@ func developmentConfig(filePath string) error {
 	if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 		return fmt.Errorf("error writing developmentEnv config: %w", writeErr)
 	}
+
 	return nil
 }
 `
@@ -393,6 +403,7 @@ func frontendTestsConfig(filePath string) error {
 
 	cfg.Set(metaRunMode, developmentEnv)
 	cfg.Set(metaStartupDeadline, time.Minute)
+
 	cfg.Set(serverHTTPPort, defaultPort)
 	cfg.Set(serverDebug, true)
 
@@ -421,6 +432,7 @@ func frontendTestsConfig(filePath string) error {
 	if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 		return fmt.Errorf("error writing developmentEnv config: %w", writeErr)
 	}
+
 	return nil
 }
 `
@@ -467,9 +479,11 @@ func coverageConfig(filePath string) error {
 	cfg.Set(dbDeets, postgresDBConnDetails)
 
 	cfg.Set(itemsSearchIndexPath, defaultItemsSearchIndexPath)
+
 	if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 		return fmt.Errorf("error writing coverage config: %w", writeErr)
 	}
+
 	return nil
 }
 `
@@ -521,9 +535,11 @@ func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configF
 		cfg.Set(dbDeets, dbDetails)
 
 		cfg.Set(itemsSearchIndexPath, defaultItemsSearchIndexPath)
+
 		if writeErr := cfg.WriteConfigAs(filePath); writeErr != nil {
 			return fmt.Errorf("error writing integration test config for %s: %w", dbVendor, writeErr)
 		}
+
 		return nil
 	}
 }
@@ -540,8 +556,7 @@ func Test_buildMain(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		proj := testprojects.BuildTodoApp()
-		x := buildMain(proj)
+		x := buildMain()
 
 		expected := `
 package example

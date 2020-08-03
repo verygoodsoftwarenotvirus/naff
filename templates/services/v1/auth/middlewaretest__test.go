@@ -41,6 +41,8 @@ import (
 )
 
 func TestService_CookieAuthenticationMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService(t)
 		exampleUser := fake.BuildFakeUser()
@@ -106,6 +108,8 @@ func TestService_CookieAuthenticationMiddleware(T *testing.T) {
 }
 
 func TestService_AuthenticationMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService(t)
 
@@ -313,6 +317,8 @@ func TestService_AuthenticationMiddleware(T *testing.T) {
 }
 
 func Test_parseLoginInputFromForm(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, "http://todo.verygoodsoftwarenotvirus.ru", nil)
 		require.NoError(t, err)
@@ -346,6 +352,8 @@ func Test_parseLoginInputFromForm(T *testing.T) {
 }
 
 func TestService_UserLoginInputMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		exampleUser := fake.BuildFakeUser()
 		exampleInput := fake.BuildFakeUserLoginInputFromUser(exampleUser)
@@ -429,6 +437,8 @@ func TestService_UserLoginInputMiddleware(T *testing.T) {
 }
 
 func TestService_AdminMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodPost, "http://todo.verygoodsoftwarenotvirus.ru", nil)
 		require.NoError(t, err)
@@ -535,6 +545,8 @@ import (
 )
 
 func TestService_CookieAuthenticationMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService(t)
 		exampleUser := fake.BuildFakeUser()
@@ -630,6 +642,8 @@ import (
 )
 
 func TestService_AuthenticationMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService(t)
 
@@ -863,6 +877,8 @@ import (
 )
 
 func Test_parseLoginInputFromForm(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, "http://todo.verygoodsoftwarenotvirus.ru", nil)
 		require.NoError(t, err)
@@ -928,6 +944,8 @@ import (
 )
 
 func TestService_UserLoginInputMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		exampleUser := fake.BuildFakeUser()
 		exampleInput := fake.BuildFakeUserLoginInputFromUser(exampleUser)
@@ -1040,6 +1058,8 @@ import (
 )
 
 func TestService_AdminMiddleware(T *testing.T) {
+	T.Parallel()
+
 	T.Run("happy path", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodPost, "http://todo.verygoodsoftwarenotvirus.ru", nil)
 		require.NoError(t, err)

@@ -58,7 +58,7 @@ func buildRandomAction(proj *models.Project) []jen.Code {
 				jen.ID("Action").MapAssign().Func().Params().Params(
 					jen.PointerTo().Qual("net/http", "Request"),
 					jen.Error(),
-				).Block(
+				).Body(
 					constants.CreateCtx(),
 					jen.Return(jen.ID("c").Dot("BuildHealthCheckRequest").Call(constants.CtxVar())),
 				),
@@ -66,7 +66,7 @@ func buildRandomAction(proj *models.Project) []jen.Code {
 			),
 			jen.Lit("CreateUser").MapAssign().Valuesln(
 				jen.ID("Name").MapAssign().Lit("CreateUser"),
-				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Block(
+				jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(
 					constants.CreateCtx(),
 					jen.ID("ui").Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUserCreationInput").Call(),
 					jen.Return().ID("c").Dot("BuildCreateUserRequest").Call(constants.CtxVar(), jen.ID("ui")),
@@ -79,7 +79,7 @@ func buildRandomAction(proj *models.Project) []jen.Code {
 
 	for _, typ := range proj.DataTypes {
 		randomActionLines = append(randomActionLines,
-			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Assign().Range().IDf("build%sActions", typ.Name.Singular()).Call(jen.ID("c"))).Block(
+			jen.For(jen.List(jen.ID("k"), jen.ID("v")).Assign().Range().IDf("build%sActions", typ.Name.Singular()).Call(jen.ID("c"))).Body(
 				jen.ID("allActions").Index(jen.ID("k")).Equals().ID("v"),
 			),
 			jen.Line(),
@@ -87,25 +87,25 @@ func buildRandomAction(proj *models.Project) []jen.Code {
 	}
 
 	randomActionLines = append(randomActionLines,
-		jen.For(jen.List(jen.ID("k"), jen.ID("v")).Assign().Range().ID("buildWebhookActions").Call(jen.ID("c"))).Block(
+		jen.For(jen.List(jen.ID("k"), jen.ID("v")).Assign().Range().ID("buildWebhookActions").Call(jen.ID("c"))).Body(
 			jen.ID("allActions").Index(jen.ID("k")).Equals().ID("v"),
 		),
 		jen.Line(),
-		jen.For(jen.List(jen.ID("k"), jen.ID("v")).Assign().Range().ID("buildOAuth2ClientActions").Call(jen.ID("c"))).Block(
+		jen.For(jen.List(jen.ID("k"), jen.ID("v")).Assign().Range().ID("buildOAuth2ClientActions").Call(jen.ID("c"))).Body(
 			jen.ID("allActions").Index(jen.ID("k")).Equals().ID("v"),
 		),
 		jen.Line(),
 		jen.ID("totalWeight").Assign().Zero(),
-		jen.For(jen.List(jen.Underscore(), jen.ID("rb")).Assign().Range().ID("allActions")).Block(
+		jen.For(jen.List(jen.Underscore(), jen.ID("rb")).Assign().Range().ID("allActions")).Body(
 			jen.ID("totalWeight").Op("+=").ID("rb").Dot("Weight"),
 		),
 		jen.Line(),
 		jen.Qual("math/rand", "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 		jen.ID("r").Assign().Qual("math/rand", "Intn").Call(jen.ID("totalWeight")),
 		jen.Line(),
-		jen.For(jen.List(jen.Underscore(), jen.ID("rb")).Assign().Range().ID("allActions")).Block(
+		jen.For(jen.List(jen.Underscore(), jen.ID("rb")).Assign().Range().ID("allActions")).Body(
 			jen.ID("r").Op("-=").ID("rb").Dot("Weight"),
-			jen.If(jen.ID("r").Op("<=").Zero()).Block(
+			jen.If(jen.ID("r").Op("<=").Zero()).Body(
 				jen.Return().ID("rb"),
 			),
 		),
@@ -116,7 +116,7 @@ func buildRandomAction(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("RandomAction takes a client and returns a closure which is an action."),
 		jen.Line(),
-		jen.Func().ID("RandomAction").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().ID("Action")).Block(
+		jen.Func().ID("RandomAction").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().ID("Action")).Body(
 			randomActionLines...,
 		),
 		jen.Line(),

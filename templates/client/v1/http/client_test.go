@@ -15,7 +15,7 @@ func Test_newClientMethod(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		x := newClientMethod("Example").Params().Block()
+		x := newClientMethod("Example").Params().Body()
 
 		expected := `
 package example

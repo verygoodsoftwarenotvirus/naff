@@ -53,7 +53,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call.", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.Error()).Body(
 			utils.StartSpan(proj, true, funcName),
 			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(constants.CtxVar()),
 		),
@@ -69,7 +69,7 @@ func buildIsReady(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("%s is a simple wrapper around the core querier %s call.", funcName, funcName),
 		jen.Line(),
-		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Block(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).ID(funcName).Params(constants.CtxParam()).Params(jen.ID("ready").Bool()).Body(
 			utils.StartSpan(proj, true, funcName),
 			jen.Return().ID("c").Dot("querier").Dot(funcName).Call(constants.CtxVar()),
 		),
@@ -91,7 +91,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
 			jen.ID("debug").Bool(),
 			constants.LoggerParam(),
-		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Block(
+		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Body(
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),
@@ -99,12 +99,12 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.Lit("db_client")),
 			),
 			jen.Line(),
-			jen.If(jen.ID("debug")).Block(
+			jen.If(jen.ID("debug")).Body(
 				jen.ID("c").Dot(constants.LoggerVarName).Dot("SetLevel").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "DebugLevel")),
 			),
 			jen.Line(),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("migrating querier")),
-			jen.If(jen.Err().Assign().ID("c").Dot("querier").Dot("Migrate").Call(constants.CtxVar()), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("c").Dot("querier").Dot("Migrate").Call(constants.CtxVar()), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("querier migrated!")),

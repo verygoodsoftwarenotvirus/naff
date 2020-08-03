@@ -39,7 +39,7 @@ func buildProvideUserDataManager(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideUserDataManager is an arbitrary function for dependency injection's sake."),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.Qual(proj.ModelsV1Package(), "UserDataManager")).Block(
+		jen.Func().ID("ProvideUserDataManager").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.Qual(proj.ModelsV1Package(), "UserDataManager")).Body(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
@@ -52,7 +52,7 @@ func buildProvideUserDataServer(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideUserDataServer is an arbitrary function for dependency injection's sake."),
 		jen.Line(),
-		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "UserDataServer")).Block(
+		jen.Func().ID("ProvideUserDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "UserDataServer")).Body(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

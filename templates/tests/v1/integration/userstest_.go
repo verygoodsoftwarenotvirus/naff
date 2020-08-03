@@ -24,9 +24,9 @@ func usersTestDotGo(proj *models.Project) *jen.File {
 
 func buildUsersTestsInit() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -42,10 +42,10 @@ func buildUsersTestsRandString() []jen.Code {
 		jen.Line(),
 		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
 		jen.Line(),
-		jen.Func().ID("randString").Params().Params(jen.String(), jen.Error()).Block(
+		jen.Func().ID("randString").Params().Params(jen.String(), jen.Error()).Body(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
 			jen.Comment("Note that err == nil only if we read len(b) bytes"),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.EmptyString(), jen.Err()),
 			),
 			jen.Line(),
@@ -66,7 +66,7 @@ func buildUsersTestsBuildDummyUser(proj *models.Project) []jen.Code {
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
 			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 			jen.PointerTo().Qual("net/http", "Cookie"),
-		).Block(
+		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.Comment("build user creation route input."),
@@ -117,7 +117,7 @@ func buildUsersTestsCheckUserCreationEquality(proj *models.Project) []jen.Code {
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 			jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
-		).Block(
+		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -143,7 +143,7 @@ func buildUsersTestsCheckUserEquality(proj *models.Project) []jen.Code {
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
 			jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "User"),
-		).Block(
+		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -164,8 +164,8 @@ func buildUsersTestsCheckUserEquality(proj *models.Project) []jen.Code {
 
 func buildUsersTestsTestUsers(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestUsers").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Body(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"should be creatable",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -188,7 +188,7 @@ func buildUsersTestsTestUsers(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that doesn't exist",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -235,7 +235,7 @@ func buildUsersTestsTestUsers(proj *models.Project) []jen.Code {
 						constants.CtxVar(),
 						jen.ID("premade").Dot("ID"),
 					),
-					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID("t").Dot("Logf").Call(
 							jen.Lit("error encountered trying to fetch user %q: %v\n"),
 							jen.ID("premade").Dot("Username"),
@@ -253,7 +253,7 @@ func buildUsersTestsTestUsers(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -267,7 +267,7 @@ func buildUsersTestsTestUsers(proj *models.Project) []jen.Code {
 					utils.AssertNoError(jen.Err(), nil),
 					utils.AssertNotNil(jen.ID("u"), nil),
 					jen.Line(),
-					jen.If(jen.ID("u").IsEqualTo().ID("nil").Or().Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.ID("u").IsEqualTo().ID("nil").Or().Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID("t").Dot("Log").Call(jen.Lit("something has gone awry, user returned is nil")),
 						jen.ID("t").Dot("FailNow").Call(),
 					),

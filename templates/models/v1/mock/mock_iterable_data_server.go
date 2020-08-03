@@ -56,7 +56,7 @@ func buildIterableCreationInputMiddleware(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreationInputMiddleware implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -72,7 +72,7 @@ func buildIterableUpdateInputMiddleware(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("UpdateInputMiddleware implements our interface requirements."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID("next")),
 			jen.Return().ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("net/http", "Handler")),
 		),
@@ -91,7 +91,7 @@ func buildIterableSearchHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("SearchHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -109,7 +109,7 @@ func buildIterableListHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ListHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -127,7 +127,7 @@ func buildIterableCreateHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("CreateHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -145,7 +145,7 @@ func buildIterableExistenceHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ExistenceHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -163,7 +163,7 @@ func buildIterableReadHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ReadHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -181,7 +181,7 @@ func buildIterableUpdateHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("UpdateHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),
@@ -199,7 +199,7 @@ func buildIterableArchiveHandler(typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataServer", sn)).ID("ArchiveHandler").Params(
 			jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params().Block(
+		).Params().Body(
 			jen.ID("m").Dot("Called").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		),
 		jen.Line(),

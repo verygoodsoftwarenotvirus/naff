@@ -12,7 +12,6 @@ const routingLibrary = "github.com/go-chi/chi"
 func buildCORSHandlerDef() []jen.Code {
 	return []jen.Code{
 		jen.Comment("Basic CORS, for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing"),
-		jen.Line(),
 		jen.ID("ch").Assign().Qual("github.com/go-chi/cors", "New").Call(jen.Qual("github.com/go-chi/cors", "Options").Valuesln(
 			jen.Comment(`AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts`),
 			jen.ID("AllowedOrigins").MapAssign().Index().String().Values(jen.Lit("*")),
@@ -107,9 +106,9 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 			}(),
 			jen.IDf("%sRouter", "v1").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),
-				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Block(
+				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Body(
 					jen.IDf("%sRouter", puvn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("CreateHandler")),
-					jen.IDf("%sRouter", puvn).Dot("Route").Call(jen.IDf("%sRouteParam", uvn), jen.Func().Params(jen.IDf("single%sRouter", sn).Qual(routingLibrary, "Router")).Block(
+					jen.IDf("%sRouter", puvn).Dot("Route").Call(jen.IDf("%sRouteParam", uvn), jen.Func().Params(jen.IDf("single%sRouter", sn).Qual(routingLibrary, "Router")).Body(
 						jen.IDf("single%sRouter", sn).Dot("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler")),
 						jen.IDf("single%sRouter", sn).Dot("With").Call(jen.ID("s").Dotf("%sService", puvn).Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler")),
 						jen.IDf("single%sRouter", sn).Dot("Delete").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler")),
@@ -132,7 +131,7 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 }
 
 func buildSubRouterDecl(proj *models.Project, doneMap map[string]bool, routerPrefix string, typ models.DataType) jen.Code {
-	x := jen.IDf("%sRouter", routerPrefix).Dot("Route").Call(jen.Litf("/%s", typ.Name.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Block(
+	x := jen.IDf("%sRouter", routerPrefix).Dot("Route").Call(jen.Litf("/%s", typ.Name.PluralRouteName()), jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Body(
 		buildIterableAPIRoutesBlock(proj, doneMap, "", typ)...,
 	))
 
@@ -207,7 +206,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Comment("all middleware must be defined before routes on a mux."),
 		jen.Line(),
-		jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual(routingLibrary, "Router")).Block(
+		jen.ID("router").Dot("Route").Call(jen.Lit("/_meta_"), jen.Func().Params(jen.ID("metaRouter").Qual(routingLibrary, "Router")).Body(
 			jen.ID("health").Assign().Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
 			jen.Comment("Expose a liveness check on /live"),
 			jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/live"), jen.ID("health").Dot("LiveEndpoint")),
@@ -215,16 +214,16 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			jen.ID("metaRouter").Dot("Get").Call(jen.Lit("/ready"), jen.ID("health").Dot("ReadyEndpoint")),
 		)),
 		jen.Line(),
-		jen.If(jen.ID("metricsHandler").DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.ID("metricsHandler").DoesNotEqual().ID("nil")).Body(
 			jen.ID("s").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("establishing metrics handler")),
 			jen.ID("router").Dot("Handle").Call(jen.Lit("/metrics"), jen.ID("metricsHandler")),
 		),
 		jen.Line(),
 		jen.Comment("Frontend routes."),
-		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").DoesNotEqual().EmptyString()).Block(
+		jen.If(jen.ID("s").Dot("config").Dot("Frontend").Dot("StaticFilesDirectory").DoesNotEqual().EmptyString()).Body(
 			jen.ID("s").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("setting static file server")),
 			jen.List(jen.ID("staticFileServer"), jen.Err()).Assign().ID("s").Dot("frontendService").Dot("StaticDir").Call(jen.ID("frontendConfig").Dot("StaticFilesDirectory")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("establishing static file server")),
 			),
 			jen.ID("router").Dot("Get").Call(jen.Lit("/*"), jen.ID("staticFileServer")),
@@ -233,11 +232,11 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 		jen.ID("router").Dot("With").Callln(
 			jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True()),
 			jen.ID("s").Dot("authService").Dot("AdminMiddleware"),
-		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual(routingLibrary, "Router")).Block(
+		).Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").Qual(routingLibrary, "Router")).Body(
 			jen.ID("adminRouter").Dot("Post").Call(jen.Lit("/cycle_cookie_secret"), jen.ID("s").Dot("authService").Dot("CycleSecretHandler")),
 		)),
 		jen.Line(),
-		jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual(routingLibrary, "Router")).Block(
+		jen.ID("router").Dot("Route").Call(jen.Lit("/users"), jen.Func().Params(jen.ID("userRouter").Qual(routingLibrary, "Router")).Body(
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler")),
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler")),
 			jen.Line(),
@@ -268,29 +267,29 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			).Dot("Put").Call(jen.Lit("/password/new"), jen.ID("s").Dot("usersService").Dot("UpdatePasswordHandler")),
 		)),
 		jen.Line(),
-		jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual(routingLibrary, "Router")).Block(
+		jen.ID("router").Dot("Route").Call(jen.Lit("/oauth2"), jen.Func().Params(jen.ID("oauth2Router").Qual(routingLibrary, "Router")).Body(
 			jen.ID("oauth2Router").Dot("With").Callln(
 				jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware"),
 				jen.ID("s").Dot("oauth2ClientsService").Dot("CreationInputMiddleware"),
 			).Dot("Post").Call(jen.Lit("/client"), jen.ID("s").Dot("oauth2ClientsService").Dot("CreateHandler")),
 			jen.Line(),
 			jen.ID("oauth2Router").Dot("With").Call(jen.ID("s").Dot("oauth2ClientsService").Dot("OAuth2ClientInfoMiddleware")).
-				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+				Dotln("Post").Call(jen.Lit("/authorize"), jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 				jen.ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)).Dot("Debug").Call(jen.Lit("oauth2 authorize route hit")),
-				jen.If(jen.Err().Assign().ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().ID("s").Dot("oauth2ClientsService").Dot("HandleAuthorizeRequest").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Qual("net/http", "Error").Call(jen.ID(constants.ResponseVarName), jen.Err().Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
 				),
 			)),
 			jen.Line(),
-			jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
-				jen.If(jen.Err().Assign().ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.ID("oauth2Router").Dot("Post").Call(jen.Lit("/token"), jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
+				jen.If(jen.Err().Assign().ID("s").Dot("oauth2ClientsService").Dot("HandleTokenRequest").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Qual("net/http", "Error").Call(jen.ID(constants.ResponseVarName), jen.Err().Dot("Error").Call(), jen.Qual("net/http", "StatusBadRequest")),
 				),
 			)),
 		)),
 		jen.Line(),
 		jen.ID("router").Dot("With").Call(jen.ID("s").Dot("authService").Dot("AuthenticationMiddleware").Call(jen.True())).
-			Dotln("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual(routingLibrary, "Router")).Block(
+			Dotln("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").Qual(routingLibrary, "Router")).Body(
 			v1RouterBlock...,
 		)),
 		jen.Line(),
@@ -299,7 +298,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 
 	return []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(proj.InternalConfigV1Package(), "FrontendSettings"),
-			jen.ID("metricsHandler").Qual(proj.InternalMetricsV1Package(), "Handler")).Block(block...),
+			jen.ID("metricsHandler").Qual(proj.InternalMetricsV1Package(), "Handler")).Body(block...),
 		jen.Line(),
 	}
 }
@@ -310,7 +309,7 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 	g.Add(
 		jen.Comment("Webhooks."),
 		jen.Line(),
-		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual(routingLibrary, "Router")).Block(
+		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual(routingLibrary, "Router")).Body(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler")),
 			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler")),
@@ -326,7 +325,7 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 func buildOAuth2ClientsAPIRoutes(proj *models.Project) []jen.Code {
 	return []jen.Code{
 		jen.Comment("OAuth2 Clients."),
-		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual(routingLibrary, "Router")).Block(
+		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual(routingLibrary, "Router")).Body(
 			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token."),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),

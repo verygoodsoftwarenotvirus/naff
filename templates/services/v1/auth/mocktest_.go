@@ -57,7 +57,7 @@ func buildMockOAuth2ClientValidatorExtractOAuth2ClientFromRequest(proj *models.P
 			constants.CtxParam(),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-			jen.Error()).Block(
+			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
@@ -83,7 +83,7 @@ func buildMockCookieEncoderDecoder() []jen.Code {
 
 func buildMockCookieEncoderDecoderEncode() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockCookieEncoderDecoder")).ID("Encode").Params(jen.ID("name").String(), jen.ID("value").Interface()).Params(jen.String(), jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockCookieEncoderDecoder")).ID("Encode").Params(jen.ID("name").String(), jen.ID("value").Interface()).Params(jen.String(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value")),
@@ -100,7 +100,7 @@ func buildMockCookieEncoderDecoderEncode() []jen.Code {
 
 func buildMockCookieEncoderDecoderDecode() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockCookieEncoderDecoder")).ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).String(), jen.ID("dst").Interface()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockCookieEncoderDecoder")).ID("Decode").Params(jen.List(jen.ID("name"), jen.ID("value")).String(), jen.ID("dst").Interface()).Params(jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot(
 				"Called",
 			).Call(jen.ID("name"), jen.ID("value"), jen.ID("dst")),
@@ -125,7 +125,7 @@ func buildMockHTTPHandler() []jen.Code {
 
 func buildMockHTTPHandlerServeHTTP() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("MockHTTPHandler")).ID("ServeHTTP").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),

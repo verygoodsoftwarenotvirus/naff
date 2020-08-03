@@ -38,7 +38,6 @@ import (
 
 func buildMockRowsFromWebhook(webhooks ...*v1.Webhook) *gosqlmock.Rows {
 	columns := webhooksTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, w := range webhooks {
@@ -690,7 +689,6 @@ import (
 
 func buildMockRowsFromWebhook(webhooks ...*v1.Webhook) *gosqlmock.Rows {
 	columns := webhooksTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, w := range webhooks {
@@ -1347,7 +1345,6 @@ import (
 
 func buildMockRowsFromWebhook(webhooks ...*v1.Webhook) *gosqlmock.Rows {
 	columns := webhooksTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, w := range webhooks {
@@ -1981,12 +1978,11 @@ func TestMariaDB_ArchiveWebhook(T *testing.T) {
 func Test_buildBuildMockRowsFromWebhook(T *testing.T) {
 	T.Parallel()
 
-	T.Run("postgres", func(t *testing.T) {
+	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
-		x := buildBuildMockRowsFromWebhook(proj, dbvendor)
+		x := buildBuildMockRowsFromWebhook(proj)
 
 		expected := `
 package example
@@ -2000,105 +1996,6 @@ import (
 
 func buildMockRowsFromWebhook(webhooks ...*v1.Webhook) *gosqlmock.Rows {
 	columns := webhooksTableColumns
-
-	exampleRows := gosqlmock.NewRows(columns)
-
-	for _, w := range webhooks {
-		rowValues := []driver.Value{
-			w.ID,
-			w.Name,
-			w.ContentType,
-			w.URL,
-			w.Method,
-			strings.Join(w.Events, eventsSeparator),
-			strings.Join(w.DataTypes, typesSeparator),
-			strings.Join(w.Topics, topicsSeparator),
-			w.CreatedOn,
-			w.LastUpdatedOn,
-			w.ArchivedOn,
-			w.BelongsToUser,
-		}
-
-		exampleRows.AddRow(rowValues...)
-	}
-
-	return exampleRows
-}
-`
-		actual := testutils.RenderOuterStatementToString(t, x...)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-
-	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
-		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
-		proj := testprojects.BuildTodoApp()
-		x := buildBuildMockRowsFromWebhook(proj, dbvendor)
-
-		expected := `
-package example
-
-import (
-	"database/sql/driver"
-	gosqlmock "github.com/DATA-DOG/go-sqlmock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	"strings"
-)
-
-func buildMockRowsFromWebhook(webhooks ...*v1.Webhook) *gosqlmock.Rows {
-	columns := webhooksTableColumns
-
-	exampleRows := gosqlmock.NewRows(columns)
-
-	for _, w := range webhooks {
-		rowValues := []driver.Value{
-			w.ID,
-			w.Name,
-			w.ContentType,
-			w.URL,
-			w.Method,
-			strings.Join(w.Events, eventsSeparator),
-			strings.Join(w.DataTypes, typesSeparator),
-			strings.Join(w.Topics, topicsSeparator),
-			w.CreatedOn,
-			w.LastUpdatedOn,
-			w.ArchivedOn,
-			w.BelongsToUser,
-		}
-
-		exampleRows.AddRow(rowValues...)
-	}
-
-	return exampleRows
-}
-`
-		actual := testutils.RenderOuterStatementToString(t, x...)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-
-	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
-		dbvendor := buildMariaDBWord()
-		proj := testprojects.BuildTodoApp()
-		x := buildBuildMockRowsFromWebhook(proj, dbvendor)
-
-		expected := `
-package example
-
-import (
-	"database/sql/driver"
-	gosqlmock "github.com/DATA-DOG/go-sqlmock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	"strings"
-)
-
-func buildMockRowsFromWebhook(webhooks ...*v1.Webhook) *gosqlmock.Rows {
-	columns := webhooksTableColumns
-
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, w := range webhooks {

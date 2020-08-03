@@ -48,10 +48,10 @@ func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Commentf("migrate a %s database.", dbcn),
 		jen.Line(),
-		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").PointerTo().Qual("database/sql", "DB")).Params(jen.Func().Params()).Block(
-			jen.Return().Func().Params().Block(
+		jen.Func().ID("buildMigrationFunc").Params(jen.ID("db").PointerTo().Qual("database/sql", "DB")).Params(jen.Func().Params()).Body(
+			jen.Return().Func().Params().Body(
 				jen.ID("driver").Assign().Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
-				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID("panic").Call(jen.Err()),
 				),
 			),
@@ -69,9 +69,9 @@ func buildMigrate(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Line(),
 		jen.Comment("safe (as in idempotent, though not necessarily recommended) to call this function multiple times."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).ID("Migrate").Params(constants.CtxParam()).Params(jen.Error()).Body(
 			jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Info").Call(jen.Lit("migrating db")),
-			jen.If(jen.Not().ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Block(
+			jen.If(jen.Not().ID(dbfl).Dot("IsReady").Call(constants.CtxVar())).Body(
 				jen.Return().Qual("errors", "New").Call(jen.Lit("db is not ready yet")),
 			),
 			jen.Line(),

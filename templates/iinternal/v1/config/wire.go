@@ -47,7 +47,7 @@ func buildProvideConfigServerSettings() []jen.Code {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigServerSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("ServerSettings")).Block(
+		jen.Func().ID("ProvideConfigServerSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("ServerSettings")).Body(
 			jen.Return().ID("c").Dot(
 				"Server",
 			),
@@ -64,7 +64,7 @@ func buildProvideConfigAuthSettings() []jen.Code {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigAuthSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("AuthSettings")).Block(
+		jen.Func().ID("ProvideConfigAuthSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("AuthSettings")).Body(
 			jen.Return().ID("c").Dot(
 				"Auth",
 			),
@@ -81,7 +81,7 @@ func buildProvideConfigDatabaseSettings() []jen.Code {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigDatabaseSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("DatabaseSettings")).Block(
+		jen.Func().ID("ProvideConfigDatabaseSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("DatabaseSettings")).Body(
 			jen.Return().ID("c").Dot(
 				"Database",
 			),
@@ -98,7 +98,7 @@ func buildProvideConfigFrontendSettings() []jen.Code {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideConfigFrontendSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("FrontendSettings")).Block(
+		jen.Func().ID("ProvideConfigFrontendSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("FrontendSettings")).Body(
 			jen.Return().ID("c").Dot(
 				"Frontend",
 			),
@@ -115,7 +115,7 @@ func buildProvideSearchSettings() []jen.Code {
 		jen.Line(),
 		jen.Comment("we're required to have because wire doesn't do it for us."),
 		jen.Line(),
-		jen.Func().ID("ProvideSearchSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("SearchSettings")).Block(
+		jen.Func().ID("ProvideSearchSettings").Params(jen.ID("c").PointerTo().ID("ServerConfig")).Params(jen.ID("SearchSettings")).Body(
 			jen.Return().ID("c").Dot(
 				"Search",
 			),

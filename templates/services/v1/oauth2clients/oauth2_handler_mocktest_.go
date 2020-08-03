@@ -43,7 +43,7 @@ func buildOAuth2HandlerMockTestMockOAuth2Handler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetAllowGetAccessRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetAllowGetAccessRequest").Params(jen.ID("allowed").Bool()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetAllowGetAccessRequest").Params(jen.ID("allowed").Bool()).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("allowed")),
@@ -56,7 +56,7 @@ func buildOAuth2HandlerMockTestSetAllowGetAccessRequest() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetClientAuthorizedHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetClientAuthorizedHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetClientAuthorizedHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientAuthorizedHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -69,7 +69,7 @@ func buildOAuth2HandlerMockTestSetClientAuthorizedHandler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetClientScopeHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetClientScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetClientScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientScopeHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -82,7 +82,7 @@ func buildOAuth2HandlerMockTestSetClientScopeHandler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetClientInfoHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetClientInfoHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientInfoHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetClientInfoHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ClientInfoHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -95,7 +95,7 @@ func buildOAuth2HandlerMockTestSetClientInfoHandler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetUserAuthorizationHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetUserAuthorizationHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetUserAuthorizationHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "UserAuthorizationHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -108,7 +108,7 @@ func buildOAuth2HandlerMockTestSetUserAuthorizationHandler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetAuthorizeScopeHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetAuthorizeScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetAuthorizeScopeHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "AuthorizeScopeHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -121,7 +121,7 @@ func buildOAuth2HandlerMockTestSetAuthorizeScopeHandler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetResponseErrorHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetResponseErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetResponseErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "ResponseErrorHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -134,7 +134,7 @@ func buildOAuth2HandlerMockTestSetResponseErrorHandler() []jen.Code {
 
 func buildOAuth2HandlerMockTestSetInternalErrorHandler() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetInternalErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler")).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("SetInternalErrorHandler").Params(jen.ID("handler").Qual("gopkg.in/oauth2.v3/server", "InternalErrorHandler")).Body(
 			jen.ID("m").Dot(
 				"Called",
 			).Call(jen.ID("handler")),
@@ -152,7 +152,7 @@ func buildOAuth2HandlerMockTestValidationBearerToken() []jen.Code {
 		).Params(
 			jen.Qual("gopkg.in/oauth2.v3", "TokenInfo"),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(jen.ID(constants.RequestVarName)),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Qual("gopkg.in/oauth2.v3", "TokenInfo")),
@@ -167,7 +167,7 @@ func buildOAuth2HandlerMockTestValidationBearerToken() []jen.Code {
 
 func buildOAuth2HandlerMockTestHandleAuthorizeRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot(
 				"Called",
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Dot("Error").Call(jen.Zero()),
@@ -180,7 +180,7 @@ func buildOAuth2HandlerMockTestHandleAuthorizeRequest() []jen.Code {
 
 func buildOAuth2HandlerMockTestHandleTokenRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2Handler")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot(
 				"Called",
 			).Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Dot("Error").Call(jen.Zero()),

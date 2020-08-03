@@ -30,7 +30,7 @@ func Test_formattingDotDockerfile(T *testing.T) {
 
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
-		expected := `FROM golang:stretc
+		expected := `FROM golang:stretch
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 

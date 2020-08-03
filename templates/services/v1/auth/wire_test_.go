@@ -22,10 +22,10 @@ func wireTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestProvideWebsocketAuthFunc() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideWebsocketAuthFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideWebsocketAuthFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.AssertNotNil(jen.ID("ProvideWebsocketAuthFunc").Call(jen.ID("buildTestService").Call(jen.ID("t"))), nil),
 			)),
 		),
@@ -37,10 +37,10 @@ func buildTestProvideWebsocketAuthFunc() []jen.Code {
 
 func buildTestProvideOAuth2ClientValidator(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestProvideOAuth2ClientValidator").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestProvideOAuth2ClientValidator").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.AssertNotNil(jen.ID("ProvideOAuth2ClientValidator").Call(jen.AddressOf().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values()), nil),
 			)),
 		),

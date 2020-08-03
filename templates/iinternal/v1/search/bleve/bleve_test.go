@@ -36,7 +36,6 @@ const (
 	bitSize = 64
 
 	// testingSearchIndexName is an index name that is only valid for testing's sake.
-
 	testingSearchIndexName search.IndexName = "testing"
 )
 
@@ -167,7 +166,6 @@ const (
 	bitSize = 64
 
 	// testingSearchIndexName is an index name that is only valid for testing's sake.
-
 	testingSearchIndexName search.IndexName = "testing"
 )
 `

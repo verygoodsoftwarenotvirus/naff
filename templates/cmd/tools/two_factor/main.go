@@ -91,11 +91,11 @@ func buildVarDeclarations() []jen.Code {
 
 func buildLimitSlice() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().String()).Params(jen.ID("out").Index(jen.Lit(5)).String()).Block(
-			jen.If(jen.Len(jen.ID("in")).DoesNotEqual().Lit(5)).Block(
+		jen.Func().ID("limitSlice").Params(jen.ID("in").Index().String()).Params(jen.ID("out").Index(jen.Lit(5)).String()).Body(
+			jen.If(jen.Len(jen.ID("in")).DoesNotEqual().Lit(5)).Body(
 				jen.ID("panic").Call(jen.Lit("wut")),
 			),
-			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 				jen.ID("out").Index(jen.ID("i")).Equals().ID("in").Index(jen.ID("i")),
 			),
 			jen.Return(),
@@ -108,8 +108,8 @@ func buildLimitSlice() []jen.Code {
 
 func buildMustnt() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("mustnt").Params(jen.Err().Error()).Block(
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.Func().ID("mustnt").Params(jen.Err().Error()).Body(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -121,7 +121,7 @@ func buildMustnt() []jen.Code {
 
 func buildClearTheScreen() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("clearTheScreen").Params().Block(
+		jen.Func().ID("clearTheScreen").Params().Body(
 			jen.Qual("fmt", "Println").Call(jen.Lit("\033[2J")),
 			jen.Qual("fmt", "Printf").Call(jen.Lit("\033[0;0H")),
 		),
@@ -133,15 +133,15 @@ func buildClearTheScreen() []jen.Code {
 
 func buildBuildTheThing() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTheThing").Params(jen.ID("token").String()).Params(jen.String()).Block(
+		jen.Func().ID("buildTheThing").Params(jen.ID("token").String()).Params(jen.String()).Body(
 			jen.Var().ID("out").String(),
-			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
-				jen.If(jen.ID("i").DoesNotEqual().Zero()).Block(
+			jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
+				jen.If(jen.ID("i").DoesNotEqual().Zero()).Body(
 					jen.ID("out").Op("+=").Lit("\n"),
 				),
-				jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().Qual("strings", "Split").Call(jen.ID("token"), jen.EmptyString())).Block(
+				jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().Qual("strings", "Split").Call(jen.ID("token"), jen.EmptyString())).Body(
 					jen.List(jen.ID("y"), jen.Err()).Assign().Qual("strconv", "Atoi").Call(jen.ID("x")),
-					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID("panic").Call(jen.Err()),
 					),
 					jen.ID("out").Op("+=").Lit("  "),
@@ -162,18 +162,18 @@ func buildBuildTheThing() []jen.Code {
 
 func buildDoTheThing() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("doTheThing").Params(jen.ID("secret").String()).Block(
+		jen.Func().ID("doTheThing").Params(jen.ID("secret").String()).Body(
 			jen.ID("t").Assign().Qual("strings", "ToUpper").Call(jen.ID("secret")),
 			jen.ID("n").Assign().Qual("time", "Now").Call().Dot("UTC").Call(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("t"), jen.ID("n")),
 			jen.ID("mustnt").Call(jen.Err()),
 			jen.Line(),
-			jen.If(jen.ID("code").DoesNotEqual().ID("currentCode")).Block(
+			jen.If(jen.ID("code").DoesNotEqual().ID("currentCode")).Body(
 				jen.ID("lastChange").Equals().Qual("time", "Now").Call(),
 				jen.ID("currentCode").Equals().ID("code"),
 			),
 			jen.Line(),
-			jen.If(jen.Not().Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("code"), jen.ID("t"))).Block(
+			jen.If(jen.Not().Qual("github.com/pquerna/otp/totp", "Validate").Call(jen.ID("code"), jen.ID("t"))).Body(
 				jen.ID("panic").Call(jen.Lit("this shouldn't happen")),
 			),
 			jen.Line(),
@@ -188,18 +188,18 @@ func buildDoTheThing() []jen.Code {
 
 func buildRequestTOTPSecret() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("requestTOTPSecret").Params().Params(jen.String()).Block(
+		jen.Func().ID("requestTOTPSecret").Params().Params(jen.String()).Body(
 			jen.Var().Defs(
 				jen.ID("token").String(),
 				jen.Err().Error(),
 			),
 			jen.Line(),
-			jen.If(jen.Len(jen.Qual("os", "Args")).IsEqualTo().One()).Block(
+			jen.If(jen.Len(jen.Qual("os", "Args")).IsEqualTo().One()).Body(
 				jen.ID("reader").Assign().Qual("bufio", "NewReader").Call(jen.Qual("os", "Stdin")),
 				jen.Qual("fmt", "Print").Call(jen.Lit("token: ")),
 				jen.List(jen.ID("token"), jen.Err()).Equals().ID("reader").Dot("ReadString").Call(jen.ID(`'\n'`)),
 				jen.ID("mustnt").Call(jen.Err()),
-			).Else().Block(
+			).Else().Body(
 				jen.ID("token").Equals().Qual("os", "Args").Index(jen.One()),
 			),
 			jen.Line(),
@@ -213,14 +213,14 @@ func buildRequestTOTPSecret() []jen.Code {
 
 func buildMain() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("main").Params().Block(
+		jen.Func().ID("main").Params().Body(
 			jen.ID("secret").Assign().ID("requestTOTPSecret").Call(),
 			jen.ID("clearTheScreen").Call(),
 			jen.ID("doTheThing").Call(jen.ID("secret")),
 			jen.ID("every").Assign().Qual("time", "Tick").Call(jen.One().Times().Qual("time", "Second")),
 			jen.ID("lastChange").Equals().Qual("time", "Now").Call(),
 			jen.Line(),
-			jen.For().Range().ID("every").Block(
+			jen.For().Range().ID("every").Body(
 				jen.ID("doTheThing").Call(jen.ID("secret")),
 			),
 		),

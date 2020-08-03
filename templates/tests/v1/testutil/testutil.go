@@ -26,7 +26,7 @@ func testutilDotGo(proj *models.Project) *jen.File {
 
 func buildInit() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.Qual(constants.FakeLibrary, "Seed").Call(jen.Qual("time", "Now").Call().Dot("UnixNano").Call()),
 		),
 		jen.Line(),
@@ -39,14 +39,14 @@ func buildDetermineServiceURL() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("DetermineServiceURL returns the URL, if properly configured."),
 		jen.Line(),
-		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Block(
+		jen.Func().ID("DetermineServiceURL").Params().Params(jen.String()).Body(
 			jen.ID("ta").Assign().Qual("os", "Getenv").Call(jen.Lit("TARGET_ADDRESS")),
-			jen.If(jen.ID("ta").IsEqualTo().EmptyString()).Block(
+			jen.If(jen.ID("ta").IsEqualTo().EmptyString()).Body(
 				jen.ID("panic").Call(jen.Lit("must provide target address!")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("u"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("ta")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
@@ -65,7 +65,7 @@ func buildEnsureServerIsUp() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("EnsureServerIsUp checks that a server is up and doesn't return until it's certain one way or the other."),
 		jen.Line(),
-		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Block(
+		jen.Func().ID("EnsureServerIsUp").Params(jen.ID("address").String()).Body(
 			jen.Var().Defs(
 				jen.ID("isDown").Equals().True(),
 				jen.ID("interval").Equals().Qual("time", "Second"),
@@ -73,15 +73,15 @@ func buildEnsureServerIsUp() []jen.Code {
 				jen.ID("numberOfAttempts").Equals().Zero(),
 			),
 			jen.Line(),
-			jen.For(jen.ID("isDown")).Block(
-				jen.If(jen.Not().ID("IsUp").Call(jen.ID("address"))).Block(
+			jen.For(jen.ID("isDown")).Body(
+				jen.If(jen.Not().ID("IsUp").Call(jen.ID("address"))).Body(
 					jen.Qual("log", "Print").Call(jen.Lit("waiting before pinging again")),
 					jen.Qual("time", "Sleep").Call(jen.ID("interval")),
 					jen.ID("numberOfAttempts").Op("++"),
-					jen.If(jen.ID("numberOfAttempts").Op(">=").ID("maxAttempts")).Block(
+					jen.If(jen.ID("numberOfAttempts").Op(">=").ID("maxAttempts")).Body(
 						jen.Qual("log", "Fatal").Call(jen.Lit("Maximum number of attempts made, something's gone awry")),
 					),
-				).Else().Block(
+				).Else().Body(
 					jen.ID("isDown").Equals().False(),
 				),
 			),
@@ -96,19 +96,19 @@ func buildIsUp() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("IsUp can check if an instance of our server is alive."),
 		jen.Line(),
-		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Block(
+		jen.Func().ID("IsUp").Params(jen.ID("address").String()).Params(jen.Bool()).Body(
 			jen.ID("uri").Assign().Qual("fmt", "Sprintf").Call(jen.Lit("%s/_meta_/ready"), jen.ID("address")),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Call(jen.Qual("net/http", "MethodGet"), jen.ID("uri"), jen.Nil()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().False(),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
@@ -126,15 +126,15 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
-		), jen.Error()).Block(
+		), jen.Error()).Body(
 			constants.CreateCtx(),
 			jen.List(jen.ID("tu"), jen.ID("parseErr")).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
-			jen.If(jen.ID("parseErr").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("parseErr").DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("parseErr")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("c"), jen.ID("clientInitErr")).Assign().Qual(proj.HTTPClientV1Package(), "NewSimpleClient").Call(constants.CtxVar(), jen.ID("tu"), jen.ID("debug")),
-			jen.If(jen.ID("clientInitErr").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("clientInitErr").DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("clientInitErr")),
 			),
 			jen.Line(),
@@ -147,9 +147,9 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.List(jen.ID("ucr"), jen.ID("userCreationErr")).Assign().ID("c").Dot("CreateUser").Call(constants.CtxVar(), jen.ID("in")),
-			jen.If(jen.ID("userCreationErr").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("userCreationErr").DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("userCreationErr")),
-			).Else().If(jen.ID("ucr").IsEqualTo().ID("nil")).Block(
+			).Else().If(jen.ID("ucr").IsEqualTo().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), utils.Error("something happened")),
 			),
 			jen.Line(),
@@ -157,7 +157,7 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 				jen.ID("ucr").Dot("TwoFactorSecret"),
 				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 			),
-			jen.If(jen.ID("tokenErr").DoesNotEqual().Nil()).Block(
+			jen.If(jen.ID("tokenErr").DoesNotEqual().Nil()).Body(
 				jen.Return(
 					jen.Nil(),
 					jen.Qual("fmt", "Errorf").Call(
@@ -174,7 +174,7 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 					jen.ID("token"),
 				),
 				jen.ID("validationErr").DoesNotEqual().Nil(),
-			).Block(
+			).Body(
 				jen.Return(
 					jen.Nil(),
 					jen.Qual("fmt", "Errorf").Call(
@@ -206,14 +206,14 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 
 func buildBuildURL() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Spread().String()).Params(jen.String()).Block(
+		jen.Func().ID("buildURL").Params(jen.ID("address").String(), jen.ID("parts").Spread().String()).Params(jen.String()).Body(
 			jen.List(jen.ID("tu"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("address")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
 			jen.List(jen.ID("u"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.Qual("strings", "Join").Call(jen.ID("parts"), jen.Lit("/"))),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
@@ -229,10 +229,10 @@ func buildGetLoginCookie(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
 			"User",
-		)).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Block(
+		)).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Body(
 			jen.ID("uri").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("generating totp token: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -252,21 +252,21 @@ func buildGetLoginCookie(proj *models.Project) []jen.Code {
 					),
 				),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("building request: %w"), jen.Err())),
 			),
 			jen.Line(),
 			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("executing request: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Qual("log", "Println").Call(jen.Lit("error closing body")),
 			),
 			jen.Line(),
 			jen.ID("cookies").Assign().ID(constants.ResponseVarName).Dot("Cookies").Call(),
-			jen.If(jen.Len(jen.ID("cookies")).GreaterThan().Zero()).Block(
+			jen.If(jen.Len(jen.ID("cookies")).GreaterThan().Zero()).Body(
 				jen.Return().List(jen.ID("cookies").Index(jen.Zero()), jen.Nil()),
 			),
 			jen.Line(),
@@ -282,8 +282,8 @@ func buildCreateObligatoryClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests."),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Block(
-			jen.If(jen.ID("u").IsEqualTo().Nil()).Block(
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Body(
+			jen.If(jen.ID("u").IsEqualTo().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("user is nil"))),
 			),
 			jen.Line(),
@@ -293,7 +293,7 @@ func buildCreateObligatoryClient(proj *models.Project) []jen.Code {
 				jen.Qual("strings", "ToUpper").Call(jen.ID("u").Dot("TwoFactorSecret")),
 				jen.Qual("time", "Now").Call().Dot("UTC").Call(),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
@@ -304,7 +304,6 @@ func buildCreateObligatoryClient(proj *models.Project) []jen.Code {
 		"username": %q,
 		"password": %q,
 		"totpToken": %q,
-
 		"belongsToUser": %d,
 		"scopes": ["*"]
 	}
@@ -316,12 +315,12 @@ func buildCreateObligatoryClient(proj *models.Project) []jen.Code {
 					),
 				),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
 			jen.List(jen.ID("cookie"), jen.Err()).Assign().ID("getLoginCookie").Call(jen.ID("serviceURL"), jen.ID("u")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cookie").IsEqualTo().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("cookie").IsEqualTo().ID("nil")).Body(
 				jen.Qual("log", "Fatalf").Call(jen.Lit(`
 cookie problems!
 	cookie == nil: %v
@@ -332,25 +331,25 @@ cookie problems!
 			jen.Var().ID("o").Qual(proj.ModelsV1Package(), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
-			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID(constants.RequestVarName)), jen.Err().IsEqualTo().ID("nil")).Block(
+			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID(constants.RequestVarName)), jen.Err().IsEqualTo().ID("nil")).Body(
 				jen.Qual("log", "Println").Call(jen.ID("command").Dot("String").Call()),
 			),
 			jen.Line(),
 			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().Qual("net/http", "DefaultClient").Dot("Do").Call(jen.ID(constants.RequestVarName)),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
-			).Else().If(jen.ID(constants.ResponseVarName).Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusCreated")).Block(
+			).Else().If(jen.ID(constants.ResponseVarName).Dot("StatusCode").DoesNotEqual().Qual("net/http", "StatusCreated")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("bad status: %d"), jen.ID(constants.ResponseVarName).Dot("StatusCode"))),
 			),
 			jen.Line(),
-			jen.Defer().Func().Params().Block(
-				jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.Defer().Func().Params().Body(
+				jen.If(jen.Err().Equals().ID(constants.ResponseVarName).Dot("Body").Dot("Close").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Qual("log", "Fatal").Call(jen.Err()),
 				),
 			).Call(),
 			jen.Line(),
 			jen.List(jen.ID("bdump"), jen.Err()).Assign().ID("httputil").Dot("DumpResponse").Call(jen.ID(constants.ResponseVarName), jen.True()),
-			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID(constants.RequestVarName).Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Block(
+			jen.If(jen.Err().IsEqualTo().ID("nil").And().ID(constants.RequestVarName).Dot("Method").DoesNotEqual().Qual("net/http", "MethodGet")).Body(
 				jen.Qual("log", "Println").Call(jen.String().Call(jen.ID("bdump"))),
 			),
 			jen.Line(),

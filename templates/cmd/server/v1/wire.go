@@ -29,7 +29,7 @@ func buildProvideReporter() []jen.Code {
 	return []jen.Code{
 		jen.Comment("ProvideReporter is an obligatory function that hopefully wire will eliminate for me one day."),
 		jen.Line(),
-		jen.Func().ID("ProvideReporter").Params(jen.ID("n").PointerTo().Qual(newsmanImp, "Newsman")).Params(jen.Qual(newsmanImp, "Reporter")).Block(
+		jen.Func().ID("ProvideReporter").Params(jen.ID("n").PointerTo().Qual(newsmanImp, "Newsman")).Params(jen.Qual(newsmanImp, "Reporter")).Body(
 			jen.Return().ID("n"),
 		),
 		jen.Line(),
@@ -51,7 +51,7 @@ func buildBuildServer(proj *models.Project) []jen.Code {
 			jen.ID(constants.LoggerVarName).Qual(loggingImp, "Logger"),
 			jen.ID("database").Qual(databaseClientImp, "DataManager"),
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
-		).Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Block(
+		).Params(jen.PointerTo().Qual(serverImp, "Server"), jen.Error()).Body(
 			jen.Qual(constants.DependencyInjectionPkg, "Build").Callln(
 				buildWireBuildCallArgs(proj)...,
 			),

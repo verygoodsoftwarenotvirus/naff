@@ -16,7 +16,7 @@ func renderFunctionParamsToString(t *testing.T, params []jen.Code) string {
 	t.Helper()
 
 	f := jen.NewFile("main")
-	f.Add(jen.Func().ID("example").Params(params...).Block())
+	f.Add(jen.Func().ID("example").Params(params...).Body())
 	b := bytes.NewBufferString("\n")
 	require.NoError(t, f.Render(b))
 

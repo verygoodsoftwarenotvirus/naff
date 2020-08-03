@@ -28,9 +28,9 @@ func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 
 func buildServiceInit() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("init").Params().Block(
+		jen.Func().ID("init").Params().Body(
 			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(64)),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 		),
@@ -112,7 +112,7 @@ func buildServiceTypeDefs(proj *models.Project) []jen.Code {
 
 func buildServiceNewClientStore(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Block(
+		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Body(
 			jen.ID("cs").Assign().AddressOf().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
@@ -127,12 +127,12 @@ func buildServiceGetByID() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetByID implements oauth2.ClientStorage"),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").String()).Params(jen.Qual("gopkg.in/oauth2.v3", "ClientInfo"), jen.Error()).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("clientStore")).ID("GetByID").Params(jen.ID("id").String()).Params(jen.Qual("gopkg.in/oauth2.v3", "ClientInfo"), jen.Error()).Body(
 			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientByClientID").Call(constants.InlineCtx(), jen.ID("id")),
 			jen.Line(),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.Return().List(jen.Nil(), utils.Error("invalid client")),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("querying for client: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -154,7 +154,7 @@ func buildServiceProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
 			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
-		).Params(jen.PointerTo().ID("Service"), jen.Error()).Block(
+		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.ID("manager").Assign().Qual("gopkg.in/oauth2.v3/manage", "NewDefaultManager").Call(),
 			jen.ID("clientStore").Assign().ID("newClientStore").Call(jen.ID("db")),
 			jen.ID("manager").Dot("MapClientStorage").Call(jen.ID("clientStore")),
@@ -176,7 +176,7 @@ func buildServiceProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 			jen.ID("initializeOAuth2Handler").Call(jen.ID("svc")),
 			jen.Line(),
 			jen.Var().Err().Error(),
-			jen.If(jen.List(jen.ID("svc").Dot("oauth2ClientCounter"), jen.Err()).Equals().ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")), jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.List(jen.ID("svc").Dot("oauth2ClientCounter"), jen.Err()).Equals().ID("counterProvider").Call(jen.ID("counterName"), jen.ID("counterDescription")), jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -194,7 +194,7 @@ func buildServiceInitializeOAuth2Handler() []jen.Code {
 		jen.Line(),
 		jen.Func().ID("initializeOAuth2Handler").Params(
 			jen.ID("svc").PointerTo().ID("Service"),
-		).Block(
+		).Body(
 			jen.ID("svc").Dot("oauth2Handler").Dot("SetAllowGetAccessRequest").Call(jen.True()),
 			jen.ID("svc").Dot("oauth2Handler").Dot("SetClientAuthorizedHandler").Call(jen.ID("svc").Dot("ClientAuthorizedHandler")),
 			jen.ID("svc").Dot("oauth2Handler").Dot("SetClientScopeHandler").Call(jen.ID("svc").Dot("ClientScopeHandler")),
@@ -206,7 +206,7 @@ func buildServiceInitializeOAuth2Handler() []jen.Code {
 			jen.Line(),
 			jen.Comment("this sad type cast is here because I have an arbitrary."),
 			jen.Comment("test-only interface for OAuth2 interactions."),
-			jen.If(jen.List(jen.ID("x"), jen.ID("ok")).Assign().ID("svc").Dot("oauth2Handler").Assert(jen.PointerTo().Qual("gopkg.in/oauth2.v3/server", "Server")), jen.ID("ok")).Block(
+			jen.If(jen.List(jen.ID("x"), jen.ID("ok")).Assign().ID("svc").Dot("oauth2Handler").Assert(jen.PointerTo().Qual("gopkg.in/oauth2.v3/server", "Server")), jen.ID("ok")).Body(
 				jen.ID("x").Dot("Config").Dot("AllowedGrantTypes").Equals().Index().Qual("gopkg.in/oauth2.v3", "GrantType").Valuesln(
 					jen.Qual("gopkg.in/oauth2.v3", "ClientCredentials"),
 					jen.Comment("oauth2.AuthorizationCode"),
@@ -225,7 +225,7 @@ func buildServiceHandleAuthorizeRequest() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("HandleAuthorizeRequest is a simple wrapper around the internal server's HandleAuthorizeRequest."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleAuthorizeRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Body(
 			jen.Return().ID("s").Dot(
 				"oauth2Handler",
 			).Dot(
@@ -242,7 +242,7 @@ func buildServiceHandleTokenRequest() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("HandleTokenRequest is a simple wrapper around the internal server's HandleTokenRequest."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("HandleTokenRequest").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Error()).Body(
 			jen.Return().ID("s").Dot(
 				"oauth2Handler",
 			).Dot(

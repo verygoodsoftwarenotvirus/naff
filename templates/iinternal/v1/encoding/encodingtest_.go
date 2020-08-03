@@ -32,7 +32,7 @@ func buildEncodingTestTypeDeclarations() []jen.Code {
 
 func buildTestServerEncoderDecoder_EncodeResponse() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerEncoderDecoder_EncodeResponse").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -70,7 +70,7 @@ func buildTestServerEncoderDecoder_EncodeResponse() []jen.Code {
 
 func buildTestServerEncoderDecoder_DecodeRequest() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestServerEncoderDecoder_DecodeRequest").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(

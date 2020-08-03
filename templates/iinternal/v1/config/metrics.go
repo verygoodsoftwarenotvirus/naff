@@ -81,27 +81,27 @@ func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 			constants.LoggerParam(),
 		).Params(
 			jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"),
-		).Block(
+		).Body(
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("metrics_provider"), jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")),
 			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("setting metrics provider")),
 			jen.Line(),
-			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")).Block(
-				jen.Case(jen.ID("Prometheus")).Block(
+			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")).Body(
+				jen.Case(jen.ID("Prometheus")).Body(
 					jen.List(jen.ID("p"), jen.Err()).Assign().Qual("contrib.go.opencensus.io/exporter/prometheus", "NewExporter").Callln(
 						jen.Qual("contrib.go.opencensus.io/exporter/prometheus", "Options").Valuesln(
-							jen.ID("OnError").MapAssign().Func().Params(jen.Err().Error()).Block(
+							jen.ID("OnError").MapAssign().Func().Params(jen.Err().Error()).Body(
 								jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("setting up prometheus export")),
 							),
 							jen.ID("Namespace").MapAssign().ID("MetricsNamespace"),
 						),
 					),
-					jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("failed to create Prometheus exporter")),
 						jen.Return(jen.Nil()),
 					),
 					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Line(),
-					jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("registering default metric views")),
 						jen.Return(jen.Nil()),
 					),
@@ -115,7 +115,7 @@ func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 					),
 					jen.Line(),
 					jen.Return(jen.ID("p")),
-					jen.Default().Block(jen.Return(jen.Nil())),
+					jen.Default().Body(jen.Return(jen.Nil())),
 				),
 			),
 		),
@@ -131,24 +131,24 @@ func buildProvideTracing() []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(
 			constants.LoggerParam(),
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").MapAssign().Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.One()))),
 			jen.Line(),
 			jen.ID("log").Assign().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("tracing_provider"), jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")),
 			jen.ID("log").Dot("Info").Call(jen.Lit("setting tracing provider")),
 			jen.Line(),
-			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")).Block(
-				jen.Case(jen.ID("Jaeger")).Block(
+			jen.Switch(jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")).Body(
+				jen.Case(jen.ID("Jaeger")).Body(
 					jen.ID("ah").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_AGENT_HOST")),
 					jen.ID("ap").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_AGENT_PORT")),
 					jen.ID("sn").Assign().Qual("os", "Getenv").Call(jen.Lit("JAEGER_SERVICE_NAME")),
 					jen.Line(),
-					jen.If(jen.ID("ah").DoesNotEqual().EmptyString().And().ID("ap").DoesNotEqual().EmptyString().And().ID("sn").DoesNotEqual().EmptyString()).Block(
+					jen.If(jen.ID("ah").DoesNotEqual().EmptyString().And().ID("ap").DoesNotEqual().EmptyString().And().ID("sn").DoesNotEqual().EmptyString()).Body(
 						jen.List(jen.ID("je"), jen.Err()).Assign().Qual("contrib.go.opencensus.io/exporter/jaeger", "NewExporter").Call(jen.Qual("contrib.go.opencensus.io/exporter/jaeger", "Options").Valuesln(
 							jen.ID("AgentEndpoint").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit("%s:%s"), jen.ID("ah"), jen.ID("ap")),
 							jen.ID("Process").MapAssign().Qual("contrib.go.opencensus.io/exporter/jaeger", "Process").Values(jen.ID("ServiceName").MapAssign().ID("sn")),
 						)),
-						jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+						jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 							jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("failed to create Jaeger exporter: %w"), jen.Err()),
 						),
 						jen.Line(),

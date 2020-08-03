@@ -23,7 +23,7 @@ func oauth2TestDotGo(proj *models.Project) *jen.File {
 
 func buildOAuth2TestMustBuildCode() []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("mustBuildCode").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("totpSecret").String()).Params(jen.String()).Block(
+		jen.Func().ID("mustBuildCode").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.ID("totpSecret").String()).Params(jen.String()).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.List(jen.ID("code"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(jen.ID("totpSecret"), jen.Qual("time", "Now").Call().Dot("UTC").Call()),
 			utils.RequireNoError(jen.Err(), nil),
@@ -37,7 +37,7 @@ func buildOAuth2TestMustBuildCode() []jen.Code {
 
 func buildOAuth2TestBuildDummyOAuth2ClientInput(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Block(
+		jen.Func().ID("buildDummyOAuth2ClientInput").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("username"), jen.ID("password"), jen.ID("totpToken")).String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
@@ -60,7 +60,7 @@ func buildOAuth2TestBuildDummyOAuth2ClientInput(proj *models.Project) []jen.Code
 
 func buildOAuth2TestConvertInputToClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("convertInputToClient").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
+		jen.Func().ID("convertInputToClient").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Body(
 			jen.Return().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
 				jen.ID("ClientID").MapAssign().ID("input").Dot("ClientID"),
 				jen.ID("ClientSecret").MapAssign().ID("input").Dot("ClientSecret"),
@@ -76,7 +76,7 @@ func buildOAuth2TestConvertInputToClient(proj *models.Project) []jen.Code {
 
 func buildOAuth2TestCheckOAuth2ClientEquality(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Block(
+		jen.Func().ID("checkOAuth2ClientEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -95,7 +95,7 @@ func buildOAuth2TestCheckOAuth2ClientEquality(proj *models.Project) []jen.Code {
 
 func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().ID("TestOAuth2Clients").Params(jen.ID("test").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("_ctx").Assign().Add(constants.InlineCtx()),
 			jen.Line(),
 			jen.Comment("create user."),
@@ -126,7 +126,7 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 			),
 			jen.Qual("github.com/stretchr/testify/require", "NoError").Call(jen.ID("test"), jen.Err(), jen.Lit("error setting up auxiliary client")),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Creating"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"should be creatable",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -144,7 +144,7 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read one that doesn't exist",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -176,7 +176,7 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Deleting"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be deleted",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
@@ -231,14 +231,14 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 				),
 			)),
 			jen.Line(),
-			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"should be able to be read in a list",
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create oauth2Clients."),
 					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
-					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Block(
+					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 						jen.ID("input").Assign().ID("buildDummyOAuth2ClientInput").Call(
 							jen.ID("t"),
 							jen.ID("x").Dot("Username"),
@@ -261,10 +261,10 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 						jen.Len(jen.ID("expected")),
 					),
 					jen.Line(),
-					jen.For(jen.List(jen.Underscore(), jen.ID("oAuth2Client")).Assign().Range().ID("expected")).Block(
+					jen.For(jen.List(jen.Underscore(), jen.ID("oAuth2Client")).Assign().Range().ID("expected")).Body(
 						jen.ID("clientFound").Assign().False(),
-						jen.For(jen.List(jen.Underscore(), jen.ID("c")).Assign().Range().ID("actual").Dot("Clients")).Block(
-							jen.If(jen.ID("c").Dot("ID").IsEqualTo().ID("oAuth2Client").Dot("ID")).Block(
+						jen.For(jen.List(jen.Underscore(), jen.ID("c")).Assign().Range().ID("actual").Dot("Clients")).Body(
+							jen.If(jen.ID("c").Dot("ID").IsEqualTo().ID("oAuth2Client").Dot("ID")).Body(
 								jen.ID("clientFound").Equals().True(),
 								jen.Break(),
 							),
@@ -273,7 +273,7 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 					),
 					jen.Line(),
 					jen.Comment("Clean up."),
-					jen.For(jen.List(jen.Underscore(), jen.ID("oa2c")).Assign().Range().ID("expected")).Block(
+					jen.For(jen.List(jen.Underscore(), jen.ID("oa2c")).Assign().Range().ID("expected")).Body(
 						jen.Err().Equals().ID("testClient").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("oa2c").Dot("ID")),
 						utils.AssertNoError(
 							jen.Err(),

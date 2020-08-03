@@ -50,7 +50,7 @@ func RenderPackage(project *models.Project) error {
 }
 
 func formattingDotDockerfile(projRoot, _ string) string {
-	return fmt.Sprintf(`FROM golang:stretc
+	return fmt.Sprintf(`FROM golang:stretch
 
 WORKDIR /go/src/%s
 

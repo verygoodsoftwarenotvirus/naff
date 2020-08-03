@@ -143,7 +143,7 @@ func buildServerProvideServer(proj *models.Project) []jen.Code {
 	serverDecLines = append(serverDecLines, jen.ID("oauth2ClientsService").MapAssign().ID("oauth2Service"))
 
 	provideServerLines := []jen.Code{
-		jen.If(jen.Len(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).LessThan().Lit(32)).Block(
+		jen.If(jen.Len(jen.ID("cfg").Dot("Auth").Dot("CookieSecret")).LessThan().Lit(32)).Body(
 			jen.Err().Assign().Qual("errors", "New").Call(jen.Lit("cookie secret is too short, must be at least 32 characters in length")),
 			jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("cookie secret failure")),
 			jen.Return().List(jen.Nil(), jen.Err()),
@@ -153,7 +153,7 @@ func buildServerProvideServer(proj *models.Project) []jen.Code {
 			serverDecLines...,
 		),
 		jen.Line(),
-		jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID(constants.LoggerVarName)), jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Block(
+		jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID(constants.LoggerVarName)), jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Body(
 			jen.Return().List(jen.Nil(), jen.Err()),
 		),
 		jen.Line(),
@@ -170,11 +170,11 @@ func buildServerProvideServer(proj *models.Project) []jen.Code {
 	// if proj.EnableNewsman {
 	provideServerLines = append(provideServerLines,
 		jen.List(jen.ID("allWebhooks"), jen.Err()).Assign().ID("db").Dot("GetAllWebhooks").Call(constants.CtxVar()),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("initializing webhooks: %w"), jen.Err())),
 		),
 		jen.Line(),
-		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Block(
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().ID("len").Call(jen.ID("allWebhooks").Dot("Webhooks")), jen.ID("i").Op("++")).Body(
 			jen.ID("wh").Assign().ID("allWebhooks").Dot("Webhooks").Index(jen.ID("i")),
 			jen.Comment("NOTE: we must guarantee that whatever is stored in the database is valid, otherwise"),
 			jen.Comment("newsman will try (and fail) to execute requests constantly"),
@@ -194,7 +194,7 @@ func buildServerProvideServer(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("ProvideServer").Paramsln(
 			provideServerParams...,
-		).Params(jen.PointerTo().ID("Server"), jen.Error()).Block(
+		).Params(jen.PointerTo().ID("Server"), jen.Error()).Body(
 			provideServerLines...,
 		),
 		jen.Line(),
@@ -228,14 +228,14 @@ func buildServerServe() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Serve serves HTTP traffic."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Block(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("Serve").Params().Body(
 			jen.ID("s").Dot("httpServer").Dot("Addr").Equals().Qual("fmt", "Sprintf").Call(jen.Lit(":%d"), jen.ID("s").Dot("config").Dot("Server").Dot("HTTPPort")),
 			jen.ID("s").Dot(constants.LoggerVarName).Dot("Debug").Call(utils.FormatString("Listening for HTTP requests on %q", jen.ID("s").Dot("httpServer").Dot("Addr"))),
 			jen.Line(),
 			jen.Comment("returns ErrServerClosed on graceful close."),
-			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("s").Dot("httpServer").Dot("ListenAndServe").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("server shutting down")),
-				jen.If(jen.Err().IsEqualTo().Qual("net/http", "ErrServerClosed")).Block(
+				jen.If(jen.Err().IsEqualTo().Qual("net/http", "ErrServerClosed")).Body(
 					jen.Comment("NOTE: there is a chance that next line won't have time to run,"),
 					jen.Comment("as main() doesn't wait for this goroutine to stop."),
 					jen.Qual("os", "Exit").Call(jen.Zero()),
@@ -252,7 +252,7 @@ func buildServerProvideHTTPServer() []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("provideHTTPServer provides an HTTP httpServer."),
 		jen.Line(),
-		jen.Func().ID("provideHTTPServer").Params().Params(jen.PointerTo().Qual("net/http", "Server")).Block(
+		jen.Func().ID("provideHTTPServer").Params().Params(jen.PointerTo().Qual("net/http", "Server")).Body(
 			jen.Comment("heavily inspired by https://blog.cloudflare.com/exposing-go-on-the-internet/"),
 			jen.ID("srv").Assign().AddressOf().Qual("net/http", "Server").Valuesln(
 				jen.ID("ReadTimeout").MapAssign().Lit(5).Times().Qual("time", "Second"),

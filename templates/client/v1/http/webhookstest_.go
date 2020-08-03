@@ -33,7 +33,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 
 func buildTestV1ClientBuildGetWebhookRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildGetWebhookRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildGetWebhookRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -85,7 +85,7 @@ func buildTestV1ClientBuildGetWebhookRequest(proj *models.Project) []jen.Code {
 func buildTestV1ClientGetWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_GetWebhook").Block(
+		utils.OuterTestFunc("V1Client_GetWebhook").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -167,7 +167,7 @@ func buildTestV1ClientGetWebhook(proj *models.Project) []jen.Code {
 func buildTestV1ClientBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildGetWebhooksRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildGetWebhooksRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -209,7 +209,7 @@ func buildTestV1ClientBuildGetWebhooksRequest(proj *models.Project) []jen.Code {
 func buildTestV1ClientGetWebhooks(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_GetWebhooks").Block(
+		utils.OuterTestFunc("V1Client_GetWebhooks").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -272,7 +272,7 @@ func buildTestV1ClientGetWebhooks(proj *models.Project) []jen.Code {
 func buildTestV1ClientBuildCreateWebhookRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildCreateWebhookRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildCreateWebhookRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -317,7 +317,7 @@ func buildTestV1ClientBuildCreateWebhookRequest(proj *models.Project) []jen.Code
 func buildTestV1ClientCreateWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_CreateWebhook").Block(
+		utils.OuterTestFunc("V1Client_CreateWebhook").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -377,7 +377,7 @@ func buildTestV1ClientCreateWebhook(proj *models.Project) []jen.Code {
 func buildTestV1ClientBuildUpdateWebhookRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildUpdateWebhookRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildUpdateWebhookRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -411,7 +411,7 @@ func buildTestV1ClientBuildUpdateWebhookRequest(proj *models.Project) []jen.Code
 func buildTestV1ClientUpdateWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_UpdateWebhook").Block(
+		utils.OuterTestFunc("V1Client_UpdateWebhook").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -461,7 +461,7 @@ func buildTestV1ClientUpdateWebhook(proj *models.Project) []jen.Code {
 func buildTestV1ClientBuildArchiveWebhookRequest(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_BuildArchiveWebhookRequest").Block(
+		utils.OuterTestFunc("V1Client_BuildArchiveWebhookRequest").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -517,7 +517,7 @@ func buildTestV1ClientBuildArchiveWebhookRequest(proj *models.Project) []jen.Cod
 func buildTestV1ClientArchiveWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Line(),
-		utils.OuterTestFunc("V1Client_ArchiveWebhook").Block(
+		utils.OuterTestFunc("V1Client_ArchiveWebhook").Body(
 			utils.ParallelTest(nil),
 			jen.Line(),
 			utils.BuildSubTest(

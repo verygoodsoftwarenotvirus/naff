@@ -44,7 +44,6 @@ func (g *standardSecretGenerator) GenerateTwoFactorSecret() (string, error) {
 	b := make([]byte, randomSecretSize)
 
 	// Note that err == nil only if we read len(b) bytes.
-
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
@@ -56,7 +55,6 @@ func (g *standardSecretGenerator) GenerateSalt() ([]byte, error) {
 	b := make([]byte, saltSize)
 
 	// Note that err == nil only if we read len(b) bytes.
-
 	if _, err := rand.Read(b); err != nil {
 		return nil, err
 	}
@@ -147,7 +145,6 @@ func (g *standardSecretGenerator) GenerateTwoFactorSecret() (string, error) {
 	b := make([]byte, randomSecretSize)
 
 	// Note that err == nil only if we read len(b) bytes.
-
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
@@ -180,7 +177,6 @@ func (g *standardSecretGenerator) GenerateSalt() ([]byte, error) {
 	b := make([]byte, saltSize)
 
 	// Note that err == nil only if we read len(b) bytes.
-
 	if _, err := rand.Read(b); err != nil {
 		return nil, err
 	}

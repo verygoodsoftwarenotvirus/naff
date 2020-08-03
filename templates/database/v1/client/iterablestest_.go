@@ -53,7 +53,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_%sExists", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_%sExists", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("obligatory", block...)),
@@ -87,7 +87,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Get%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Get%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest("obligatory", block...),
@@ -102,7 +102,7 @@ func buildTestClientGetAllOfSomethingCount(proj *models.Project, typ models.Data
 	pn := n.Plural()
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_GetAll%sCount", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_GetAll%sCount", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -129,7 +129,7 @@ func buildTestClientGetAllOfSomething(proj *models.Project, typ models.DataType)
 	pn := n.Plural()
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_GetAll%s", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_GetAll%s", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -195,7 +195,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Get%s", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			func() jen.Code {
@@ -221,7 +221,7 @@ func buildTestClientGetListOfSomethingWithIDs(proj *models.Project, typ models.D
 	subtest := []jen.Code{
 		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
 		jen.Var().ID("exampleIDs").Index().Uint64(),
-		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Block(
+		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID("x").Dot("ID")),
 		),
 		jen.Line(),
@@ -257,7 +257,7 @@ func buildTestClientGetListOfSomethingWithIDs(proj *models.Project, typ models.D
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Get%sWithIDs", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Get%sWithIDs", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			func() jen.Code {
@@ -309,7 +309,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Create%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Create%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("obligatory", lines...),
@@ -348,7 +348,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Update%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Update%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("obligatory", lines...),
@@ -382,7 +382,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestClient_Archive%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("TestClient_Archive%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("obligatory", block...)),

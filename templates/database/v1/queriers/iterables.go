@@ -169,14 +169,14 @@ func buildScanSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPa
 		).Params(
 			jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
 			jen.Error(),
-		).Block(
+		).Body(
 			func() []jen.Code {
 				body := []jen.Code{
 					jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(),
 					jen.Line(),
 					jen.ID("targetVars").Assign().Index().Interface().Valuesln(buildScanFields(typ)...),
 					jen.Line(),
-					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Block(
+					jen.If(jen.Err().Assign().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.Return().List(jen.Nil(), jen.Err()),
 					),
 					jen.Line(),
@@ -209,25 +209,25 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.S
 		).Params(
 			jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error(),
-		).Block(
+		).Body(
 			jen.Var().Defs(
 				jen.ID("list").Index().Qual(proj.ModelsV1Package(), sn),
 			),
 			jen.Line(),
-			jen.For(jen.ID("rows").Dot("Next").Call()).Block(
+			jen.For(jen.ID("rows").Dot("Next").Call()).Body(
 				jen.List(jen.ID("x"), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("rows")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Return().List(jen.Nil(), jen.Err()),
 				),
 				jen.Line(),
 				jen.ID("list").Equals().ID("append").Call(jen.ID("list"), jen.PointerTo().ID("x")),
 			),
 			jen.Line(),
-			jen.If(jen.Err().Assign().ID("rows").Dot("Err").Call(), jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().Assign().ID("rows").Dot("Err").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Err()),
 			),
 			jen.Line(),
-			jen.If(jen.ID("closeErr").Assign().ID("rows").Dot("Close").Call(), jen.ID("closeErr").DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID("closeErr").Assign().ID("rows").Dot("Close").Call(), jen.ID("closeErr").DoesNotEqual().ID("nil")).Body(
 				jen.ID(dbfl).Dot(constants.LoggerVarName).Dot("Error").Call(jen.ID("closeErr"), jen.Lit("closing database rows")),
 			),
 			jen.Line(),
@@ -275,7 +275,7 @@ func buildSomethingExistsQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 	return []jen.Code{
 		jen.Comment(comment),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("build%sExistsQuery", sn).Params(params...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("build%sExistsQuery", sn).Params(params...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			qbStmt,
@@ -307,11 +307,11 @@ func buildSomethingExistsFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 		).Params(
 			jen.ID(existenceVarName).Bool(),
 			jen.Err().Error(),
-		).Block(
+		).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("build%sExistsQuery", sn).Call(buildQueryParams...),
 			jen.Line(),
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID(existenceVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.Return(jen.False(), jen.Nil()),
 			),
 			jen.Line(),
@@ -362,7 +362,7 @@ func buildGetSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 		).Params(
 			jen.ID("query").String(),
 			jen.ID("args").Index().Interface(),
-		).Block(
+		).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			qbStmt,
@@ -388,9 +388,8 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", sn).Params(params...).
-			Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(
+			Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", sn).Call(buildQueryParams...),
-			jen.Line(),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Return(jen.ID(dbfl).Dotf("scan%s", sn).Call(jen.ID("row"))),
 		),
@@ -415,8 +414,8 @@ func buildSomethingAllCountQueryDecls(dbvendor wordsmith.SuperPalabra, typ model
 		jen.Line(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGetAll%sCountQuery", pn).Params().Params(jen.String()).Block(
-			jen.IDf("all%sCountQueryBuilder", pn).Dot("Do").Call(jen.Func().Params().Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGetAll%sCountQuery", pn).Params().Params(jen.String()).Body(
+			jen.IDf("all%sCountQueryBuilder", pn).Dot("Do").Call(jen.Func().Params().Body(
 				jen.Var().Err().Error(),
 				jen.Line(),
 				jen.List(jen.IDf("all%sCountQuery", pn), jen.Underscore(), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
@@ -445,7 +444,7 @@ func buildGetAllSomethingCountFuncDecl(dbvendor wordsmith.SuperPalabra, typ mode
 	return []jen.Code{
 		jen.Commentf("GetAll%sCount will fetch the count of %s from the database.", pn, pcn),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Block(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.ID("count").Uint64(), jen.Err().Error()).Body(
 			jen.Err().Equals().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(
 				constants.CtxVar(),
 				jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
@@ -469,7 +468,7 @@ func buildGetBatchOfSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ 
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGetBatchOf%sQuery", pn).Params(
 			jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64(),
-		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Assign().ID(dbfl).Dot("sqlBuilder").
 				Dotln("Select").Call(jen.IDf("%sTableColumns", puvn).Spread()).
 				Dotln("From").Call(jen.IDf("%sTableName", puvn)).
@@ -506,9 +505,9 @@ func buildGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%s", pn).Params(
 			constants.CtxParam(),
 			jen.ID("resultChannel").Chan().Index().Qual(proj.ModelsV1Package(), sn),
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.List(jen.ID("count"), jen.Err()).Assign().ID(dbfl).Dotf("GetAll%sCount", pn).Call(constants.CtxVar()),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Return(jen.Err()),
 			),
 			jen.Line(),
@@ -516,9 +515,9 @@ func buildGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 				jen.ID("beginID").Assign().Uint64().Call(jen.One()),
 				jen.ID("beginID").LessThanOrEqual().ID("count"),
 				jen.ID("beginID").PlusEquals().ID("defaultBucketSize"),
-			).Block(
+			).Body(
 				jen.ID("endID").Assign().ID("beginID").Plus().ID("defaultBucketSize"),
-				jen.Go().Func().Params(jen.List(jen.ID("begin"), jen.ID("end")).Uint64()).Block(
+				jen.Go().Func().Params(jen.List(jen.ID("begin"), jen.ID("end")).Uint64()).Body(
 					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGetBatchOf%sQuery", pn).Call(jen.ID("begin"), jen.ID("end")),
 					jen.ID(constants.LoggerVarName).Assign().ID(dbfl).Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 						jen.Lit("query").MapAssign().ID("query"),
@@ -527,15 +526,15 @@ func buildGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 					)),
 					jen.Line(),
 					jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("Query").Call(jen.ID("query"), jen.ID("args").Spread()),
-					jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Block(
+					jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 						jen.Return(),
-					).Else().If(jen.Err().DoesNotEqual().Nil()).Block(
+					).Else().If(jen.Err().DoesNotEqual().Nil()).Body(
 						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("querying for database rows")),
 						jen.Return(),
 					),
 					jen.Line(),
 					jen.List(jen.ID(puvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
-					jen.If(jen.Err().DoesNotEqual().Nil()).Block(
+					jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("scanning database rows")),
 						jen.Return(),
 					),
@@ -589,12 +588,12 @@ func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmi
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGet%sQuery", pn).Params(
 			params...,
-		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			qbStmt,
 			jen.Line(),
-			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().ID("nil")).Body(
 				jen.ID("builder").Equals().ID(constants.FilterVarName).Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.IDf("%sTableName", puvn)),
 			),
 			jen.Line(),
@@ -623,16 +622,16 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", pn).Params(
 			params...,
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Block(
+		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(queryBuildingParams...),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Litf("querying database for %s", pcn))),
 			),
 			jen.Line(),
 			jen.List(jen.ID(puvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -735,7 +734,7 @@ func buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor wordsmith.SuperPalabra
 			}(),
 			jen.ID("limit").Uint8(),
 			jen.ID("ids").Index().Uint64(),
-		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			func() jen.Code {
@@ -751,14 +750,8 @@ func buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor wordsmith.SuperPalabra
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.Line()
-				}
-				return jen.Null()
-			}(),
-			func() jen.Code {
-				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.For(jen.List(jen.ID("i"), jen.ID("id")).Assign().Range().ID("ids")).Block(
-						jen.If(jen.ID("i").DoesNotEqual().Zero()).Block(
+					return jen.For(jen.List(jen.ID("i"), jen.ID("id")).Assign().Range().ID("ids")).Body(
+						jen.If(jen.ID("i").DoesNotEqual().Zero()).Body(
 							jen.ID("whenThenStatement").PlusEquals().Lit(" "),
 						),
 						jen.ID("whenThenStatement").PlusEquals().Qual("fmt", "Sprintf").Call(
@@ -773,6 +766,12 @@ func buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor wordsmith.SuperPalabra
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("whenThenStatement").PlusEquals().Lit(" END")
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return jen.Line()
 				}
 				return jen.Null()
 			}(),
@@ -817,8 +816,8 @@ func buildGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor words
 		).Params(
 			jen.Index().Qual(proj.ModelsV1Package(), sn),
 			jen.Error(),
-		).Block(
-			jen.If(jen.ID("limit").IsEqualTo().Zero()).Block(
+		).Body(
+			jen.If(jen.ID("limit").IsEqualTo().Zero()).Body(
 				jen.ID("limit").Equals().Uint8().Call(jen.Qual(proj.ModelsV1Package(), "DefaultLimit")),
 			),
 			jen.Line(),
@@ -840,12 +839,12 @@ func buildGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor words
 			),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("buildError").Call(jen.Err(), jen.Litf("querying database for %s", pcn))),
 			),
 			jen.Line(),
 			jen.List(jen.ID(puvn), jen.Err()).Assign().ID(dbfl).Dotf("scan%s", pn).Call(jen.ID("rows")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
@@ -931,7 +930,7 @@ func buildCreateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildCreate%sQuery", sn).Params(
 			params...,
-		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			createQueryFuncBody...,
 		),
 		jen.Line(),
@@ -990,7 +989,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	}
 
 	baseCreateFuncBody = append(baseCreateFuncBody,
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Block(
+		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 			jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("error executing %s creation query: ", scn)+"%w"), jen.Err())),
 		),
 		jen.Line(),
@@ -1014,7 +1013,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Create%s", sn).Params(
 			params...,
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Block(
+		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(
 			baseCreateFuncBody...,
 		),
 		jen.Line(),
@@ -1046,7 +1045,7 @@ func buildUpdateSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildUpdate%sQuery", sn).Params(
 			params...,
-		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			func(typ models.DataType) jen.Code {
@@ -1119,7 +1118,7 @@ func buildUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Update%s", sn).Params(params...).Params(jen.Error()).Block(block...),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Update%s", sn).Params(params...).Params(jen.Error()).Body(block...),
 	}
 }
 
@@ -1187,7 +1186,7 @@ func buildArchiveSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ mod
 		jen.Comment(comment),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildArchive%sQuery", sn).Params(
-			jen.List(paramsList...)).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Block(
+			jen.List(paramsList...)).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			archiveFuncBody...,
 		),
 		jen.Line(),
@@ -1208,17 +1207,17 @@ func buildArchiveSomethingFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.D
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Archive%s", sn).Params(
 			params...,
-		).Params(jen.Error()).Block(
+		).Params(jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildArchive%sQuery", sn).Call(
 				queryBuildingArgs...,
 			),
 			jen.Line(),
 			jen.List(jen.ID("res"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-			jen.If(jen.ID("res").DoesNotEqual().Nil()).Block(
+			jen.If(jen.ID("res").DoesNotEqual().Nil()).Body(
 				jen.If(
 					jen.List(jen.ID("rowCount"), jen.ID("rowCountErr")).Assign().ID("res").Dot("RowsAffected").Call(),
 					jen.ID("rowCountErr").IsEqualTo().Nil().And().ID("rowCount").IsEqualTo().Zero(),
-				).Block(
+				).Body(
 					jen.Return(jen.Qual("database/sql", "ErrNoRows")),
 				),
 			),

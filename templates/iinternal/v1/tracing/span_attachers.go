@@ -72,8 +72,8 @@ func buildAttachUint64ToSpan() []jen.Code {
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID("attachmentKey").String(),
 			jen.ID("id").Uint64(),
-		).Block(
-			jen.If(jen.ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
+		).Body(
+			jen.If(jen.ID(utils.SpanVarName).DoesNotEqual().Nil()).Body(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Call(
 					jen.Qual(constants.TracingLibrary, "StringAttribute").Call(
 						jen.ID("attachmentKey"),
@@ -93,8 +93,8 @@ func buildAttachStringToSpan() []jen.Code {
 		jen.Func().ID("attachStringToSpan").Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.List(jen.ID("key"), jen.ID("str").String()),
-		).Block(
-			jen.If(jen.ID(utils.SpanVarName).Op("!=").Nil()).Block(
+		).Body(
+			jen.If(jen.ID(utils.SpanVarName).Op("!=").Nil()).Body(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Call(jen.Qual(constants.TracingLibrary, "StringAttribute").Call(jen.ID("key"), jen.ID("str"))),
 			),
 		),
@@ -111,8 +111,8 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 		jen.Func().ID("AttachFilterToSpan").Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Block(
-			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().Nil().And().ID(utils.SpanVarName).DoesNotEqual().Nil()).Block(
+		).Body(
+			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().Nil().And().ID(utils.SpanVarName).DoesNotEqual().Nil()).Body(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Callln(
 					jen.Qual(constants.TracingLibrary, "StringAttribute").Call(
 						jen.ID("filterPageSpanAttachmentKey"),
@@ -145,7 +145,7 @@ func buildAttachSomethingIDToSpan(typ models.DataType) []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).Uint64(),
-		).Block(
+		).Body(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.IDf("%sIDSpanAttachmentKey", uvn), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -166,7 +166,7 @@ func buildAttachUserIDToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).Uint64(),
-		).Block(
+		).Body(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("userIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -187,7 +187,7 @@ func buildAttachOAuth2ClientDatabaseIDToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).Uint64(),
-		).Block(
+		).Body(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientDatabaseIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -208,7 +208,7 @@ func buildAttachOAuth2ClientIDToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).String(),
-		).Block(
+		).Body(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("oauth2ClientIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -229,7 +229,7 @@ func buildAttachUsernameToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).String(),
-		).Block(
+		).Body(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("usernameSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -250,7 +250,7 @@ func buildAttachWebhookIDToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).Uint64(),
-		).Block(
+		).Body(
 			jen.ID("attachUint64ToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("webhookIDSpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -271,7 +271,7 @@ func buildAttachRequestURIToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).String(),
-		).Block(
+		).Body(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("requestURISpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),
@@ -292,7 +292,7 @@ func buildAttachSearchQueryToSpan() []jen.Code {
 		jen.Func().ID(funcName).Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
 			jen.ID(paramName).String(),
-		).Block(
+		).Body(
 			jen.ID("attachStringToSpan").Call(jen.ID(utils.SpanVarName), jen.ID("searchQuerySpanAttachmentKey"), jen.ID(paramName)),
 		),
 		jen.Line(),

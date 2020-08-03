@@ -74,14 +74,13 @@ func buildBuildMockRowsFromUser(proj *models.Project) []jen.Code {
 			jen.ID("users").Spread().PointerTo().Qual(proj.ModelsV1Package(), "User"),
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
-		).Block(
+		).Body(
 			jen.ID("columns").Assign().ID("usersTableColumns"),
-			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For(
 				jen.List(jen.Underscore(), jen.ID("user")).Assign().Range().ID("users"),
-			).Block(
+			).Body(
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(
 					jen.ID("user").Dot("ID"),
 					jen.ID("user").Dot("Username"),
@@ -110,7 +109,7 @@ func buildBuildMockRowsFromUser(proj *models.Project) []jen.Code {
 
 func buildBuildErroneousMockRowFromUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Block(
+		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ArchivedOn"),
 				jen.ID("user").Dot("ID"),
@@ -139,7 +138,7 @@ func buildTestScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_ScanUsers", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_ScanUsers", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
@@ -221,7 +220,7 @@ func buildTestDB_GetUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) 
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -304,7 +303,7 @@ func buildTestDB_GetUserWithUnverifiedTwoFactorSecret(proj *models.Project, dbve
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetUserWithUnverifiedTwoFactorSecret", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUserWithUnverifiedTwoFactorSecret", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -386,7 +385,7 @@ func buildTestDB_GetUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetUsers", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUsers", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedUsersQuery").Assign().Lit(expectedQuery),
@@ -511,7 +510,7 @@ func buildTestDB_GetUserByUsername(proj *models.Project, dbvendor wordsmith.Supe
 		ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetUserByUsername", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -598,7 +597,7 @@ func buildTestDB_GetAllUsersCount(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		}).ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_GetAllUsersCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_GetAllUsersCount", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -744,7 +743,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_CreateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -928,7 +927,7 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 	}
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -1011,7 +1010,7 @@ func buildTestDB_UpdateUserPassword(proj *models.Project, dbvendor wordsmith.Sup
 	expectedQuery, _, _ := qb.ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_UpdateUserPassword", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_UpdateUserPassword", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -1078,7 +1077,7 @@ func buildTestDB_VerifyUserTwoFactorSecret(proj *models.Project, dbvendor wordsm
 	expectedQuery, _, _ := qb.ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_VerifyUserTwoFactorSecret", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_VerifyUserTwoFactorSecret", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
@@ -1152,7 +1151,7 @@ func buildTestDB_ArchiveUser(proj *models.Project, dbvendor wordsmith.SuperPalab
 	expectedQuery, _, _ := qb.ToSql()
 
 	lines := []jen.Code{
-		jen.Func().IDf("Test%s_ArchiveUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Block(
+		jen.Func().IDf("Test%s_ArchiveUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTest(
