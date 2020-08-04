@@ -1,6 +1,7 @@
 package iterables
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,8 +13,6 @@ func Test_httpRoutesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := httpRoutesDotGo(proj, typ)
@@ -342,8 +341,6 @@ func Test_buildHTTPRoutesConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildHTTPRoutesConstantDefs(typ)
@@ -368,22 +365,66 @@ func Test_buildRequisiteLoggerAndTracingStatementsForListOfEntities(T *testing.T
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj, typ)
 
 		expected := `
-package example
+package main
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
 )
 
-// determine user ID. userID := s . userIDFetcher (req)  tracing.AttachUserIDToSpan  (span,userID) logger = logger . WithValue ("user_id",userID)
+func main() {
+	// determine user ID.
+	userID := s.userIDFetcher(req)
+	tracing.AttachUserIDToSpan(span, userID)
+	logger = logger.WithValue("user_id", userID)
+
+}
 `
-		actual := testutils.RenderOuterStatementToString(t, x...)
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range proj.DataTypes {
+			proj.DataTypes[i].BelongsToUser = true
+			proj.DataTypes[i].RestrictedToUser = true
+		}
+		typ := proj.LastDataType()
+		x := buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj, typ)
+
+		expected := `
+package main
+
+import (
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+)
+
+func main() {
+	// determine user ID.
+	userID := s.userIDFetcher(req)
+	tracing.AttachUserIDToSpan(span, userID)
+	logger = logger.WithValue("user_id", userID)
+
+	// determine thing ID.
+	thingID := s.thingIDFetcher(req)
+	tracing.AttachThingIDToSpan(span, thingID)
+	logger = logger.WithValue("thing_id", thingID)
+
+	// determine another thing ID.
+	anotherThingID := s.anotherThingIDFetcher(req)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+	logger = logger.WithValue("another_thing_id", anotherThingID)
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -393,23 +434,76 @@ func Test_buildRequisiteLoggerAndTracingStatementsForSingleEntity(T *testing.T) 
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj, typ)
 
 		expected := `
-package example
+package main
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
 )
 
-// determine user ID. userID := s . userIDFetcher (req)  tracing.AttachUserIDToSpan  (span,userID) logger = logger . WithValue ("user_id",userID)
-// determine item ID. itemID := s . itemIDFetcher (req)  tracing.AttachItemIDToSpan  (span,itemID) logger = logger . WithValue ("item_id",itemID)
+func main() {
+	// determine user ID.
+	userID := s.userIDFetcher(req)
+	tracing.AttachUserIDToSpan(span, userID)
+	logger = logger.WithValue("user_id", userID)
+
+	// determine item ID.
+	itemID := s.itemIDFetcher(req)
+	tracing.AttachItemIDToSpan(span, itemID)
+	logger = logger.WithValue("item_id", itemID)
+
+}
 `
-		actual := testutils.RenderOuterStatementToString(t, x...)
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range proj.DataTypes {
+			proj.DataTypes[i].BelongsToUser = true
+			proj.DataTypes[i].RestrictedToUser = true
+		}
+		typ := proj.LastDataType()
+		x := buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj, typ)
+
+		expected := `
+package main
+
+import (
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+)
+
+func main() {
+	// determine user ID.
+	userID := s.userIDFetcher(req)
+	tracing.AttachUserIDToSpan(span, userID)
+	logger = logger.WithValue("user_id", userID)
+
+	// determine thing ID.
+	thingID := s.thingIDFetcher(req)
+	tracing.AttachThingIDToSpan(span, thingID)
+	logger = logger.WithValue("thing_id", thingID)
+
+	// determine another thing ID.
+	anotherThingID := s.anotherThingIDFetcher(req)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+	logger = logger.WithValue("another_thing_id", anotherThingID)
+
+	// determine yet another thing ID.
+	yetAnotherThingID := s.yetAnotherThingIDFetcher(req)
+	tracing.AttachYetAnotherThingIDToSpan(span, yetAnotherThingID)
+	logger = logger.WithValue("yet_another_thing_id", yetAnotherThingID)
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -419,8 +513,6 @@ func Test_buildSearchHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSearchHandlerFuncDecl(proj, typ)
@@ -486,8 +578,6 @@ func Test_buildListHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildListHandlerFuncDecl(proj, typ)
@@ -546,8 +636,6 @@ func Test_buildRequisiteLoggerAndTracingStatementsForModification(T *testing.T) 
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		includeExistenceChecks := true
 		includeSelf := true
 		assignToUser := true
@@ -555,19 +643,97 @@ func Test_buildRequisiteLoggerAndTracingStatementsForModification(T *testing.T) 
 
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
+
 		x := buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, includeExistenceChecks, includeSelf, assignToUser, assignToInput)
 
 		expected := `
-package example
+package main
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
 )
 
-// determine user ID. userID := s . userIDFetcher (req) logger = logger . WithValue ("user_id",userID)  tracing.AttachUserIDToSpan  (span,userID) input . BelongsToUser = userID
-// determine item ID. itemID := s . itemIDFetcher (req) logger = logger . WithValue ("item_id",itemID)  tracing.AttachItemIDToSpan  (span,itemID)
+func main() {
+	// determine user ID.
+	userID := s.userIDFetcher(req)
+	logger = logger.WithValue("user_id", userID)
+	tracing.AttachUserIDToSpan(span, userID)
+	input.BelongsToUser = userID
+
+	// determine item ID.
+	itemID := s.itemIDFetcher(req)
+	logger = logger.WithValue("item_id", itemID)
+	tracing.AttachItemIDToSpan(span, itemID)
+
+}
 `
-		actual := testutils.RenderOuterStatementToString(t, x...)
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		includeExistenceChecks := true
+		includeSelf := true
+		assignToUser := true
+		assignToInput := true
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+
+		x := buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, includeExistenceChecks, includeSelf, assignToUser, assignToInput)
+
+		expected := `
+package main
+
+import (
+	"database/sql"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	"net/http"
+)
+
+func main() {
+	// determine thing ID.
+	thingID := s.thingIDFetcher(req)
+	logger = logger.WithValue("thing_id", thingID)
+	tracing.AttachThingIDToSpan(span, thingID)
+
+	thingExists, err := s.thingDataManager.ThingExists(ctx, thingID)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Error(err, "error checking thing existence")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !thingExists {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// determine another thing ID.
+	anotherThingID := s.anotherThingIDFetcher(req)
+	logger = logger.WithValue("another_thing_id", anotherThingID)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+
+	input.BelongsToAnotherThing = anotherThingID
+
+	anotherThingExists, err := s.anotherThingDataManager.AnotherThingExists(ctx, thingID, anotherThingID)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Error(err, "error checking another thing existence")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !anotherThingExists {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// determine yet another thing ID.
+	yetAnotherThingID := s.yetAnotherThingIDFetcher(req)
+	logger = logger.WithValue("yet_another_thing_id", yetAnotherThingID)
+	tracing.AttachYetAnotherThingIDToSpan(span, yetAnotherThingID)
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -577,8 +743,6 @@ func Test_buildCreateHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCreateHandlerFuncDecl(proj, typ)
@@ -653,8 +817,6 @@ func Test_buildExistenceHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildExistenceHandlerFuncDecl(proj, typ)
@@ -710,8 +872,6 @@ func Test_buildReadHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildReadHandlerFuncDecl(proj, typ)
@@ -769,8 +929,6 @@ func Test_buildUpdateHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateHandlerFuncDecl(proj, typ)
@@ -859,8 +1017,6 @@ func Test_buildArchiveHandlerFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildArchiveHandlerFuncDecl(proj, typ)

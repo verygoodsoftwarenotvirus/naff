@@ -12,8 +12,6 @@ func Test_queryFilterDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := queryFilterDotGo(proj)
 
@@ -48,8 +46,6 @@ func Test_buildBuildFleshedOutQueryFilter(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFleshedOutQueryFilter(proj)
 

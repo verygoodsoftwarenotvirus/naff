@@ -12,8 +12,6 @@ func Test_metaTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := metaTestDotGo(proj)
 
@@ -53,8 +51,6 @@ func Test_buildTestHoldOnForever(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestHoldOnForever()
 
 		expected := `
@@ -85,8 +81,6 @@ func Test_buildCheckValueAndError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildCheckValueAndError()
 
 		expected := `

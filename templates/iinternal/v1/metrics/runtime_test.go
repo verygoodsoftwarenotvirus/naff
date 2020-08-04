@@ -12,8 +12,6 @@ func Test_float64Metric(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		varName := "example"
 		description := "obligated description"
 		measurementName := "measurement name"
@@ -56,8 +54,6 @@ func Test_int64Metric(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		varName := "example"
 		description := "obligated description"
 		measurementName := "measurement name"
@@ -100,8 +96,6 @@ func Test_viewDotView(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		viewName := "example"
 		description := "obligated description"
 		measurementName := "measurement name"
@@ -136,8 +130,6 @@ func Test_statsDotFloat64(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		varName := "example"
 		measurementName := "measurement name"
 		description := "obligated description"
@@ -169,8 +161,6 @@ func Test_statsDotInt64(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		varName := "example"
 		measurementName := "measurement name"
 		description := "obligated description"
@@ -202,8 +192,6 @@ func Test_runtimeDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := runtimeDotGo(proj)
 
@@ -735,8 +723,6 @@ func Test_buildRuntimeVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRuntimeVarDeclarations()
 
 		expected := `
@@ -1191,8 +1177,6 @@ func Test_buildRuntimeRegisterDefaultViews(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRuntimeRegisterDefaultViews()
 
 		expected := `
@@ -1217,8 +1201,6 @@ func Test_buildRuntimeRecordRuntimeStats(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRuntimeRecordRuntimeStats()
 
 		expected := `

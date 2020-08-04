@@ -12,8 +12,6 @@ func Test_httpRoutesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesTestDotGo(proj)
 
@@ -944,8 +942,6 @@ func Test_buildTestWebhooksService_List(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestWebhooksService_List(proj)
 
@@ -1122,8 +1118,6 @@ func Test_buildTestValidateWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestValidateWebhook(proj)
 
@@ -1178,8 +1172,6 @@ func Test_buildTestWebhooksService_Create(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestWebhooksService_Create(proj)
 
@@ -1388,8 +1380,6 @@ func Test_buildTestWebhooksService_Read(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestWebhooksService_Read(proj)
 
@@ -1586,8 +1576,6 @@ func Test_buildTestWebhooksService_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestWebhooksService_Update(proj)
 
@@ -1872,8 +1860,6 @@ func Test_buildTestWebhooksService_Archive(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestWebhooksService_Archive(proj)
 

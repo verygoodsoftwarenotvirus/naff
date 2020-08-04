@@ -1,6 +1,7 @@
 package queriers
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,6 @@ func Test_migrationsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := migrationsDotGo(proj, dbvendor)
@@ -151,8 +150,6 @@ func (p *Postgres) Migrate(ctx context.Context) error {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := migrationsDotGo(proj, dbvendor)
@@ -289,8 +286,6 @@ func (s *Sqlite) Migrate(ctx context.Context) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := migrationsDotGo(proj, dbvendor)
@@ -495,8 +490,6 @@ func Test_buildMigrationVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildMigrationVarDeclarations(proj, dbvendor)
@@ -606,8 +599,6 @@ var (
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildMigrationVarDeclarations(proj, dbvendor)
@@ -717,8 +708,6 @@ var (
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildMigrationVarDeclarations(proj, dbvendor)
@@ -896,8 +885,6 @@ func Test_buildBuildMigrationFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildMigrationFuncDecl(dbvendor)
@@ -927,8 +914,6 @@ func buildMigrationFunc(db *sql.DB) func() {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildMigrationFuncDecl(dbvendor)
@@ -958,8 +943,6 @@ func buildMigrationFunc(db *sql.DB) func() {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildMigrationFuncDecl(dbvendor)
@@ -993,8 +976,6 @@ func Test_buildMigrate(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildMigrate(dbvendor)
@@ -1026,8 +1007,6 @@ func (p *Postgres) Migrate(ctx context.Context) error {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildMigrate(dbvendor)
@@ -1059,8 +1038,6 @@ func (s *Sqlite) Migrate(ctx context.Context) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildMigrate(dbvendor)
@@ -1127,16 +1104,12 @@ func Test_typeToPostgresType(T *testing.T) {
 	}
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		for _, typ := range allTypes {
 			assert.NotEmpty(t, typeToPostgresType(typ))
 		}
 	})
 
 	T.Run("panics on unknown type", func(t *testing.T) {
-		t.Parallel()
-
 		typ := "fart"
 
 		assert.Panics(t, func() { typeToPostgresType(typ) })
@@ -1178,16 +1151,12 @@ func Test_typeToSqliteType(T *testing.T) {
 	}
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		for _, typ := range allTypes {
 			assert.NotEmpty(t, typeToSqliteType(typ))
 		}
 	})
 
 	T.Run("panics on unknown type", func(t *testing.T) {
-		t.Parallel()
-
 		typ := "fart"
 
 		assert.Panics(t, func() { typeToSqliteType(typ) })
@@ -1229,16 +1198,12 @@ func Test_typeToMariaDBType(T *testing.T) {
 	}
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		for _, typ := range allTypes {
 			assert.NotEmpty(t, typeToMariaDBType(typ))
 		}
 	})
 
 	T.Run("panics on unknown type", func(t *testing.T) {
-		t.Parallel()
-
 		typ := "fart"
 
 		assert.Panics(t, func() { typeToMariaDBType(typ) })
@@ -1248,10 +1213,16 @@ func Test_typeToMariaDBType(T *testing.T) {
 func Test_makePostgresMigrations(T *testing.T) {
 	T.Parallel()
 
-	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
+	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
+		x := makePostgresMigrations(proj)
+
+		assert.NotEmpty(t, x)
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := makePostgresMigrations(proj)
 
 		assert.NotEmpty(t, x)
@@ -1261,10 +1232,16 @@ func Test_makePostgresMigrations(T *testing.T) {
 func Test_makeMariaDBMigrations(T *testing.T) {
 	T.Parallel()
 
-	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
+	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
+		x := makeMariaDBMigrations(proj)
+
+		assert.NotEmpty(t, x)
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := makeMariaDBMigrations(proj)
 
 		assert.NotEmpty(t, x)
@@ -1274,10 +1251,16 @@ func Test_makeMariaDBMigrations(T *testing.T) {
 func Test_makeSqliteMigrations(T *testing.T) {
 	T.Parallel()
 
-	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
+	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
+		x := makeSqliteMigrations(proj)
+
+		assert.NotEmpty(t, x)
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := makeSqliteMigrations(proj)
 
 		assert.NotEmpty(t, x)
@@ -1288,8 +1271,6 @@ func Test_makeMigrations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := makeMigrations(proj, dbvendor)
@@ -1399,8 +1380,6 @@ var (
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := makeMigrations(proj, dbvendor)
@@ -1510,8 +1489,6 @@ var (
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := makeMigrations(proj, dbvendor)

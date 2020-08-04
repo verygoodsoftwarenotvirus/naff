@@ -12,8 +12,6 @@ func Test_oauth2ClientDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientDotGo(proj)
 
@@ -149,8 +147,6 @@ func Test_buildOAuth2ClientsConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientsConstantDefs()
 
 		expected := `
@@ -173,8 +169,6 @@ func Test_buildOAuth2ClientsTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientsTypeDefs()
 
 		expected := `
@@ -263,8 +257,6 @@ func Test_buildOAuth2PkgInterfaceImplementationStatement(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2PkgInterfaceImplementationStatement()
 
 		expected := `
@@ -286,8 +278,6 @@ func Test_buildOAuth2ClientDotGetID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDotGetID()
 
 		expected := `
@@ -310,8 +300,6 @@ func Test_buildOAuth2ClientDotGetSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDotGetSecret()
 
 		expected := `
@@ -334,8 +322,6 @@ func Test_buildOAuth2ClientDotGetDomain(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDotGetDomain()
 
 		expected := `
@@ -358,8 +344,6 @@ func Test_buildOAuth2ClientDotGetUserID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDotGetUserID()
 
 		expected := `
@@ -384,8 +368,6 @@ func Test_buildOAuth2ClientDotHasScope(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDotHasScope()
 
 		expected := `

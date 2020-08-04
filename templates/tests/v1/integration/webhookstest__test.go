@@ -12,8 +12,6 @@ func Test_webhooksTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := webhooksTestDotGo(proj)
 
@@ -206,8 +204,6 @@ func Test_buildCheckWebhookEquality(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCheckWebhookEquality(proj)
 
@@ -241,8 +237,6 @@ func Test_buildReverse(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildReverse()
 
 		expected := `
@@ -268,8 +262,6 @@ func Test_buildTestWebhooks(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestWebhooks(proj)
 

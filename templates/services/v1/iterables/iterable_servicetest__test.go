@@ -12,8 +12,6 @@ func Test_iterableServiceTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterableServiceTestDotGo(proj, typ)
@@ -101,8 +99,6 @@ func Test_buildbuildTestServiceFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildbuildTestServiceFuncDecl(proj, typ)
@@ -142,8 +138,6 @@ func Test_buildTestProvideServiceFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestProvideServiceFuncDecl(proj, typ)

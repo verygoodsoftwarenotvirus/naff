@@ -12,8 +12,6 @@ func Test_makefile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 
 		expected := `PWD                      := $(shell pwd)

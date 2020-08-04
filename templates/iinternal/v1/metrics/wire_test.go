@@ -12,8 +12,6 @@ func Test_wireDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := wireDotGo(proj)
 
@@ -47,8 +45,6 @@ func Test_buildWireProviders(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildWireProviders()
 
 		expected := `
@@ -76,8 +72,6 @@ func Test_buildWireProvideUnitCounterProvider(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildWireProvideUnitCounterProvider()
 
 		expected := `

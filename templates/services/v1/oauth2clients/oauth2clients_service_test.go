@@ -12,8 +12,6 @@ func Test_oauth2ClientsServiceDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsServiceDotGo(proj)
 
@@ -194,8 +192,6 @@ func Test_buildServiceInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceInit()
 
 		expected := `
@@ -222,8 +218,6 @@ func Test_buildServiceConstDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServiceConstDefs(proj)
 
@@ -254,8 +248,6 @@ func Test_buildServiceVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServiceVarDefs(proj)
 
@@ -282,8 +274,6 @@ func Test_buildServiceTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServiceTypeDefs(proj)
 
@@ -345,8 +335,6 @@ func Test_buildServiceNewClientStore(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServiceNewClientStore(proj)
 
@@ -374,8 +362,6 @@ func Test_buildServiceGetByID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceGetByID()
 
 		expected := `
@@ -412,8 +398,6 @@ func Test_buildServiceProvideOAuth2ClientsService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServiceProvideOAuth2ClientsService(proj)
 
@@ -479,8 +463,6 @@ func Test_buildServiceInitializeOAuth2Handler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceInitializeOAuth2Handler()
 
 		expected := `
@@ -524,8 +506,6 @@ func Test_buildServiceHandleAuthorizeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceHandleAuthorizeRequest()
 
 		expected := `
@@ -550,8 +530,6 @@ func Test_buildServiceHandleTokenRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceHandleTokenRequest()
 
 		expected := `

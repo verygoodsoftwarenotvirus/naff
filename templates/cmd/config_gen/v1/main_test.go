@@ -14,8 +14,6 @@ func Test_mainDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainDotGo(proj)
 
@@ -244,8 +242,6 @@ func Test_renderFileMap(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := renderFileMap(proj)
 
@@ -271,8 +267,6 @@ var (
 	})
 
 	T.Run("with no databases enabled", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DisableDatabase(models.Postgres)
 		proj.DisableDatabase(models.Sqlite)
@@ -302,8 +296,6 @@ func Test_determineConstants(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := determineConstants(proj)
 
@@ -366,8 +358,6 @@ func Test_buildDevelopmentConfig(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildDevelopmentConfig(proj)
 
@@ -428,8 +418,6 @@ func Test_buildFrontendTestsConfig(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildFrontendTestsConfig(proj)
 
@@ -489,8 +477,6 @@ func Test_buildCoverageConfig(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCoverageConfig(proj)
 
@@ -540,8 +526,6 @@ func Test_buildBuildIntegrationTestForDBImplementation(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildIntegrationTestForDBImplementation(proj)
 
@@ -596,8 +580,6 @@ func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configF
 	})
 
 	T.Run("without MariaDB", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DisableDatabase(models.MariaDB)
 		x := buildBuildIntegrationTestForDBImplementation(proj)
@@ -654,8 +636,6 @@ func Test_buildMain(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMain()
 
 		expected := `

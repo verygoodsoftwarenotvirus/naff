@@ -12,8 +12,6 @@ func Test_counterTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := counterTestDotGo(proj)
 
@@ -104,8 +102,6 @@ func Test_buildTest_opencensusCounter_Increment(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_opencensusCounter_Increment()
 
 		expected := `
@@ -147,8 +143,6 @@ func Test_buildTest_opencensusCounter_IncrementBy(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_opencensusCounter_IncrementBy()
 
 		expected := `
@@ -190,8 +184,6 @@ func Test_buildTest_opencensusCounter_Decrement(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_opencensusCounter_Decrement()
 
 		expected := `
@@ -236,8 +228,6 @@ func Test_buildTestProvideUnitCounterProvider(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvideUnitCounterProvider()
 
 		expected := `

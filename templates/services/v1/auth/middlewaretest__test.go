@@ -12,8 +12,6 @@ func Test_middlewareTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareTestDotGo(proj)
 
@@ -524,8 +522,6 @@ func Test_buildTestService_CookieAuthenticationMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_CookieAuthenticationMiddleware(proj)
 
@@ -621,8 +617,6 @@ func Test_buildTestService_AuthenticationMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_AuthenticationMiddleware(proj)
 
@@ -860,8 +854,6 @@ func Test_buildTest_parseLoginInputFromForm(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_parseLoginInputFromForm(proj)
 
@@ -921,8 +913,6 @@ func Test_buildTestService_UserLoginInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_UserLoginInputMiddleware(proj)
 
@@ -1038,8 +1028,6 @@ func Test_buildTestService_AdminMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_AdminMiddleware(proj)
 

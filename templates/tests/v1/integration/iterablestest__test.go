@@ -13,8 +13,6 @@ func Test_iterablesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesTestDotGo(proj, typ)
@@ -382,8 +380,6 @@ func Test_buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)
@@ -405,8 +401,6 @@ func Test_buildCreationArguments(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		varPrefix := "example"
@@ -433,8 +427,6 @@ func Test_buildListArguments(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		varPrefix := "example"
@@ -461,8 +453,6 @@ func Test_buildCheckSomethingEquality(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCheckSomethingEquality(proj, typ)
@@ -495,8 +485,6 @@ func Test_buildTestSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestSomething(proj, typ)
@@ -855,8 +843,6 @@ func Test_buildRequisiteCreationCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRequisiteCreationCode(proj, typ)
@@ -880,8 +866,6 @@ func Test_buildRequisiteCreationCodeWithoutType(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRequisiteCreationCodeWithoutType(proj, typ)
@@ -901,8 +885,6 @@ func Test_buildRequisiteCleanupCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		includeSelf := true
@@ -927,8 +909,6 @@ func Test_buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(T *test
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)
@@ -950,8 +930,6 @@ func Test_buildEqualityCheckLines(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildEqualityCheckLines(typ)
@@ -982,8 +960,6 @@ func Test_buildRequisiteCreationCodeFor404Tests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		indexToStop := 1
@@ -1004,8 +980,6 @@ func Test_buildRequisiteCleanupCodeFor404s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		indexToStop := 1
@@ -1026,8 +1000,6 @@ func Test_buildCreationArgumentsFor404s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		varPrefix := "example"
@@ -1055,8 +1027,6 @@ func Test_buildSubtestsForCreation404Tests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSubtestsForCreation404Tests(proj, typ)
@@ -1076,8 +1046,6 @@ func Test_buildTestCreating(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestCreating(proj, typ)
@@ -1131,8 +1099,6 @@ func Test_buildTestListing(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestListing(proj, typ)
@@ -1192,8 +1158,6 @@ func Test_buildTestSearching(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestSearching(proj, typ)
@@ -1257,8 +1221,6 @@ func Test_buildTestSearchingForOnlyYourOwnItems(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestSearchingForOnlyYourOwnItems(proj, typ)
@@ -1388,8 +1350,6 @@ func Test_buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesN
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)
@@ -1423,8 +1383,6 @@ func Test_buildTestExistenceCheckingShouldBeReadable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestExistenceCheckingShouldBeReadable(proj, typ)
@@ -1468,8 +1426,6 @@ func Test_buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(T 
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)
@@ -1502,8 +1458,6 @@ func Test_buildTestReadingShouldBeReadable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestReadingShouldBeReadable(proj, typ)
@@ -1549,8 +1503,6 @@ func Test_buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(T 
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildParamsForCheckingATypeThatDoesNotExistButIncludesPredecessorID(proj, typ)
@@ -1572,8 +1524,6 @@ func Test_buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(T *t
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildParamsForCheckingATypeThatDoesNotExistAndIncludesItsOwnerVar(proj, typ)
@@ -1595,8 +1545,6 @@ func Test_buildRequisiteCreationCodeForUpdate404Tests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		nonexistentArgIndex := 1
@@ -1623,8 +1571,6 @@ func Test_buildRequisiteCleanupCodeForUpdate404s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRequisiteCleanupCodeForUpdate404s(proj, typ)
@@ -1648,8 +1594,6 @@ func Test_buildSubtestsForUpdate404Tests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSubtestsForUpdate404Tests(proj, typ)
@@ -1669,8 +1613,6 @@ func Test_buildTestUpdating(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestUpdating(proj, typ)
@@ -1737,8 +1679,6 @@ func Test_buildTestUpdatingShouldBeUpdatable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestUpdatingShouldBeUpdatable(proj, typ)
@@ -1790,8 +1730,6 @@ func Test_buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)
@@ -1826,8 +1764,6 @@ func Test_buildRequisiteCreationCodeFor404DeletionTests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		nonexistentArgIndex := 1
@@ -1848,8 +1784,6 @@ func Test_buildRequisiteCleanupCodeFor404DeletionTests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		indexToStop := 1
@@ -1874,8 +1808,6 @@ func Test_buildParamsForDeletionWithNonexistentID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		indexToNotExist := 1
@@ -1898,8 +1830,6 @@ func Test_buildSubtestsForDeletion404Tests(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSubtestsForDeletion404Tests(proj, typ)
@@ -1919,8 +1849,6 @@ func Test_buildTestDeleting(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestDeleting(proj, typ)
@@ -1971,8 +1899,6 @@ func Test_buildTestDeletingShouldBeAbleToBeDeleted(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)
@@ -2011,8 +1937,6 @@ func Test_buildTestDeletingShouldFailForNonexistent(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestDeletingShouldFailForNonexistent(proj, typ)

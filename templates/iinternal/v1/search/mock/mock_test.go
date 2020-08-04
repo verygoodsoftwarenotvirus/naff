@@ -12,8 +12,6 @@ func Test_mockDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockDotGo(proj)
 
@@ -61,8 +59,6 @@ func Test_buildInterfaceImplementationStatement(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInterfaceImplementationStatement(proj)
 
@@ -85,8 +81,6 @@ func Test_buildIndexManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildIndexManager()
 
 		expected := `

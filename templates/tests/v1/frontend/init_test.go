@@ -12,8 +12,6 @@ func Test_initDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := initDotGo(proj)
 
@@ -59,8 +57,6 @@ func Test_buildInitVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildInitVarDefs()
 
 		expected := `
@@ -80,8 +76,6 @@ func Test_buildInitConstDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildInitConstDefs()
 
 		expected := `
@@ -103,8 +97,6 @@ func Test_buildInitInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInitInit(proj)
 

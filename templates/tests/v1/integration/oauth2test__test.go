@@ -12,8 +12,6 @@ func Test_oauth2TestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2TestDotGo(proj)
 
@@ -253,8 +251,6 @@ func Test_buildOAuth2TestMustBuildCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2TestMustBuildCode()
 
 		expected := `
@@ -284,8 +280,6 @@ func Test_buildOAuth2TestBuildDummyOAuth2ClientInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2TestBuildDummyOAuth2ClientInput(proj)
 
@@ -323,8 +317,6 @@ func Test_buildOAuth2TestConvertInputToClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2TestConvertInputToClient(proj)
 
@@ -355,8 +347,6 @@ func Test_buildOAuth2TestCheckOAuth2ClientEquality(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2TestCheckOAuth2ClientEquality(proj)
 
@@ -391,8 +381,6 @@ func Test_buildOAuth2TestTestOAuth2Clients(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2TestTestOAuth2Clients(proj)
 

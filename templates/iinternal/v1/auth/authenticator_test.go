@@ -12,8 +12,6 @@ func Test_authenticatorDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := authenticatorDotGo(proj)
 
@@ -86,8 +84,6 @@ func Test_buildAuthenticatorVariableDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAuthenticatorVariableDeclarations()
 
 		expected := `
@@ -121,8 +117,6 @@ func Test_buildProvideBcryptHashCost(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideBcryptHashCost()
 
 		expected := `
@@ -145,8 +139,6 @@ func Test_buildAuthenticatorTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAuthenticatorTypeDefinitions()
 
 		expected := `
@@ -189,8 +181,6 @@ func Test_buildInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildInit()
 
 		expected := `

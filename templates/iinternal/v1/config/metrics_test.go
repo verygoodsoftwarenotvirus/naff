@@ -12,8 +12,6 @@ func Test_metricsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := metricsDotGo(proj)
 
@@ -143,8 +141,6 @@ func Test_buildMetricsConstantsDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMetricsConstantsDeclarations()
 
 		expected := `
@@ -173,8 +169,6 @@ func Test_buildMetricsTypeDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMetricsTypeDeclarations()
 
 		expected := `
@@ -197,8 +191,6 @@ func Test_buildMetricsVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMetricsVarDeclarations()
 
 		expected := `
@@ -234,8 +226,6 @@ func Test_buildProvideInstrumentationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideInstrumentationHandler(proj)
 
@@ -300,8 +290,6 @@ func Test_buildProvideTracing(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideTracing()
 
 		expected := `

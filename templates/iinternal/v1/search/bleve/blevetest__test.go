@@ -12,8 +12,6 @@ func Test_bleveTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := bleveTestDotGo(proj)
 
@@ -232,8 +230,6 @@ func Test_buildBleveTestTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBleveTestTypeDefinitions()
 
 		expected := `
@@ -265,8 +261,6 @@ func Test_buildTestNewBleveIndexManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestNewBleveIndexManager(proj)
 
@@ -318,8 +312,6 @@ func Test_buildTestBleveIndexManager_Index(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBleveIndexManager_Index(proj)
 
@@ -373,8 +365,6 @@ func Test_buildTestBleveIndexManager_Search(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBleveIndexManager_Search(proj)
 
@@ -498,8 +488,6 @@ func Test_buildTestBleveIndexManager_Delete(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBleveIndexManager_Delete(proj)
 

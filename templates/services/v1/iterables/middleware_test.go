@@ -12,8 +12,6 @@ func Test_middlewareDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := middlewareDotGo(proj, typ)
@@ -79,8 +77,6 @@ func Test_buildCreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCreationInputMiddleware(proj, typ)
@@ -125,8 +121,6 @@ func Test_buildUpdateInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateInputMiddleware(proj, typ)

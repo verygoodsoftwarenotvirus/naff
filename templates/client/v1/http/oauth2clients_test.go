@@ -12,8 +12,6 @@ func Test_oauth2ClientsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj)
 
@@ -163,8 +161,6 @@ func Test_buildBuildGetOAuth2ClientRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientRequest(proj)
 
@@ -198,8 +194,6 @@ func Test_buildGetOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj)
 
@@ -237,8 +231,6 @@ func Test_buildBuildGetOAuth2ClientsRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientsRequest(proj)
 
@@ -272,8 +264,6 @@ func Test_buildGetOAuth2Clients(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Clients(proj)
 
@@ -312,8 +302,6 @@ func Test_buildBuildCreateOAuth2ClientRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateOAuth2ClientRequest(proj)
 
@@ -357,8 +345,6 @@ func Test_buildCreateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj)
 
@@ -411,8 +397,6 @@ func Test_buildBuildArchiveOAuth2ClientRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildArchiveOAuth2ClientRequest(proj)
 
@@ -446,8 +430,6 @@ func Test_buildArchiveOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildArchiveOAuth2Client(proj)
 

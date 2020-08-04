@@ -12,8 +12,6 @@ func Test_mockReadCloserTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockReadCloserTestDotGo(proj)
 
@@ -58,8 +56,6 @@ func Test_buildMockReadCloserInterfaceAssurance(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockReadCloserInterfaceAssurance()
 
 		expected := `
@@ -81,8 +77,6 @@ func Test_buildMockReadCloserDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockReadCloserDecl()
 
 		expected := `
@@ -107,8 +101,6 @@ func Test_buildNewMockReadCloser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildNewMockReadCloser()
 
 		expected := `
@@ -131,8 +123,6 @@ func Test_buildMockReadCloserReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockReadCloserReadHandler()
 
 		expected := `
@@ -156,8 +146,6 @@ func Test_buildMockReadCloserClose(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockReadCloserClose()
 
 		expected := `

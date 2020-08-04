@@ -12,8 +12,6 @@ func Test_databaseDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := databaseDotGo(proj)
 
@@ -118,8 +116,6 @@ func Test_buildDatabaseConstantDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildDatabaseConstantDeclarations(proj)
 
@@ -147,8 +143,6 @@ func Test_buildProvideDatabaseConnection(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseConnection(proj)
 
@@ -188,8 +182,6 @@ func Test_buildProvideDatabaseClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseClient(proj)
 
@@ -246,8 +238,6 @@ func Test_buildProvideSessionManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideSessionManager(proj)
 

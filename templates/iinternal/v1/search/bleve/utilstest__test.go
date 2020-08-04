@@ -12,8 +12,6 @@ func Test_utilsTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := utilsTestDotGo(proj)
 
@@ -71,8 +69,6 @@ func Test_buildTestEnsureQueryIsRestrictedToUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestEnsureQueryIsRestrictedToUser(proj)
 

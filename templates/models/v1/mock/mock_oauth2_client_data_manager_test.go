@@ -12,8 +12,6 @@ func Test_mockOauth2ClientDataManagerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockOauth2ClientDataManagerDotGo(proj)
 
@@ -89,8 +87,6 @@ func Test_buildOAuth2ClientDataManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDataManager()
 
 		expected := `
@@ -115,8 +111,6 @@ func Test_buildGetOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj)
 
@@ -144,8 +138,6 @@ func Test_buildGetOAuth2ClientByClientID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientByClientID(proj)
 
@@ -173,8 +165,6 @@ func Test_buildGetAllOAuth2ClientCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildGetAllOAuth2ClientCount()
 
 		expected := `
@@ -200,8 +190,6 @@ func Test_buildGetAllOAuth2Clients(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2Clients(proj)
 
@@ -229,8 +217,6 @@ func Test_buildGetOAuth2ClientsForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientsForUser(proj)
 
@@ -258,8 +244,6 @@ func Test_buildCreateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj)
 
@@ -287,8 +271,6 @@ func Test_buildUpdateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateOAuth2Client(proj)
 
@@ -315,8 +297,6 @@ func Test_buildArchiveOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildArchiveOAuth2Client()
 
 		expected := `

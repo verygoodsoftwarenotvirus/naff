@@ -12,8 +12,6 @@ func Test_runtimeTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := runtimeTestDotGo(proj)
 
@@ -54,8 +52,6 @@ func Test_buildTestRecordRuntimeStats(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestRecordRuntimeStats()
 
 		expected := `
@@ -87,8 +83,6 @@ func Test_buildTestRegisterDefaultViews(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestRegisterDefaultViews()
 
 		expected := `

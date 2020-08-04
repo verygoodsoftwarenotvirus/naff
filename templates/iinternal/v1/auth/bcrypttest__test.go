@@ -12,8 +12,6 @@ func Test_bcryptTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := bcryptTestDotGo(proj)
 
@@ -184,8 +182,6 @@ func Test_buildConstDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildConstDefinitions()
 
 		expected := `
@@ -210,8 +206,6 @@ func Test_buildTestBcrypt_HashPassword(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBcrypt_HashPassword(proj)
 
@@ -251,8 +245,6 @@ func Test_buildTestBcrypt_PasswordMatches(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBcrypt_PasswordMatches(proj)
 
@@ -299,8 +291,6 @@ func Test_buildTestBcrypt_PasswordIsAcceptable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBcrypt_PasswordIsAcceptable(proj)
 
@@ -337,8 +327,6 @@ func Test_buildTestBcrypt_ValidateLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestBcrypt_ValidateLogin(proj)
 
@@ -444,8 +432,6 @@ func Test_buildTestProvideBcrypt(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestProvideBcrypt(proj)
 

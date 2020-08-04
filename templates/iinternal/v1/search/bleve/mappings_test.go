@@ -12,8 +12,6 @@ func Test_mappingsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mappingsDotGo(proj)
 
@@ -51,8 +49,6 @@ func Test_buildSomethingMapper(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingMapper(typ)

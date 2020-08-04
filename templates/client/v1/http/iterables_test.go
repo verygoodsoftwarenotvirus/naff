@@ -13,8 +13,6 @@ func Test_iterablesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesDotGo(proj, typ)
@@ -257,8 +255,6 @@ func Test_attachURIToSpanCall(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := attachURIToSpanCall(proj)
 
@@ -283,8 +279,6 @@ func Test_buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(T *testing.
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, typ)
@@ -306,8 +300,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, proj.LastDataType())
@@ -341,8 +333,6 @@ func Test_buildV1ClientURLBuildingParamsForCreatingSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildV1ClientURLBuildingParamsForCreatingSomething(proj, typ)
@@ -362,8 +352,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildV1ClientURLBuildingParamsForCreatingSomething(proj, proj.LastDataType())
@@ -396,8 +384,6 @@ func Test_buildV1ClientURLBuildingParamsForListOfSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildV1ClientURLBuildingParamsForListOfSomething(proj, typ)
@@ -417,8 +403,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildV1ClientURLBuildingParamsForListOfSomething(proj, proj.LastDataType())
@@ -451,8 +435,6 @@ func Test_buildV1ClientURLBuildingParamsForSearchingSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildV1ClientURLBuildingParamsForSearchingSomething(typ)
@@ -476,8 +458,6 @@ func Test_buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(T *testi
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, typ)
@@ -499,8 +479,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, proj.LastDataType())
@@ -534,8 +512,6 @@ func Test_buildBuildSomethingExistsRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildSomethingExistsRequest(proj, typ)
@@ -575,8 +551,6 @@ func Test_buildSomethingExists(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingExists(proj, typ)
@@ -613,8 +587,6 @@ func Test_buildBuildGetSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildGetSomethingRequestFuncDecl(proj, typ)
@@ -654,8 +626,6 @@ func Test_buildGetSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetSomethingFuncDecl(proj, typ)
@@ -697,8 +667,6 @@ func Test_buildBuildSearchSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildSearchSomethingRequestFuncDecl(proj, typ)
@@ -744,8 +712,6 @@ func Test_buildSearchSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSearchSomethingFuncDecl(proj, typ)
@@ -787,8 +753,6 @@ func Test_buildBuildGetListOfSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildGetListOfSomethingRequestFuncDecl(proj, typ)
@@ -827,8 +791,6 @@ func Test_buildGetListOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetListOfSomethingFuncDecl(proj, typ)
@@ -870,8 +832,6 @@ func Test_buildBuildCreateSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildCreateSomethingRequestFuncDecl(proj, typ)
@@ -910,8 +870,6 @@ func Test_buildCreateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCreateSomethingFuncDecl(proj, typ)
@@ -950,8 +908,6 @@ func Test_buildBuildUpdateSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildUpdateSomethingRequestFuncDecl(proj, typ)
@@ -992,8 +948,6 @@ func Test_buildUpdateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateSomethingFuncDecl(proj, typ)
@@ -1031,8 +985,6 @@ func Test_buildBuildArchiveSomethingRequestFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildArchiveSomethingRequestFuncDecl(proj, typ)
@@ -1072,8 +1024,6 @@ func Test_buildArchiveSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildArchiveSomethingFuncDecl(proj, typ)

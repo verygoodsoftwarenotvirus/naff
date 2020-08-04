@@ -12,8 +12,6 @@ func Test_oauth2ClientsTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsTestDotGo(proj)
 
@@ -278,8 +276,6 @@ func Test_buildTestClient_GetOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetOAuth2Client(proj)
 
@@ -341,8 +337,6 @@ func Test_buildTestClient_GetOAuth2ClientByClientID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetOAuth2ClientByClientID(proj)
 
@@ -402,8 +396,6 @@ func Test_buildTestClient_GetOAuth2ClientCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetOAuth2ClientCount(proj)
 
@@ -480,8 +472,6 @@ func Test_buildTestClient_GetAllOAuth2ClientCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetAllOAuth2ClientCount(proj)
 
@@ -524,8 +514,6 @@ func Test_buildTestClient_GetOAuth2ClientsForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetOAuth2ClientsForUser(proj)
 
@@ -606,8 +594,6 @@ func Test_buildTestClient_CreateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_CreateOAuth2Client(proj)
 
@@ -673,8 +659,6 @@ func Test_buildTestClient_UpdateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_UpdateOAuth2Client(proj)
 
@@ -719,8 +703,6 @@ func Test_buildTestClient_ArchiveOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_ArchiveOAuth2Client(proj)
 

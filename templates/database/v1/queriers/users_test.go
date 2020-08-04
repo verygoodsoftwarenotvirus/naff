@@ -13,8 +13,6 @@ func Test_usersDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := usersDotGo(proj, dbvendor)
@@ -466,8 +464,6 @@ func (p *Postgres) ArchiveUser(ctx context.Context, userID uint64) error {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := usersDotGo(proj, dbvendor)
@@ -916,8 +912,6 @@ func (s *Sqlite) ArchiveUser(ctx context.Context, userID uint64) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := usersDotGo(proj, dbvendor)
@@ -1370,8 +1364,6 @@ func Test_buildUsersFileConstDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUsersFileConstDeclarations()
 
 		expected := `
@@ -1401,8 +1393,6 @@ func Test_buildUsersFileVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUsersFileVarDeclarations()
 
 		expected := `
@@ -1439,8 +1429,6 @@ func Test_buildScanUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanUser(proj, dbvendor)
@@ -1487,8 +1475,6 @@ func (p *Postgres) scanUser(scan v1.Scanner) (*v11.User, error) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanUser(proj, dbvendor)
@@ -1535,8 +1521,6 @@ func (s *Sqlite) scanUser(scan v1.Scanner) (*v11.User, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildScanUser(proj, dbvendor)
@@ -1587,8 +1571,6 @@ func Test_buildScanUsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanUsers(proj, dbvendor)
@@ -1634,8 +1616,6 @@ func (p *Postgres) scanUsers(rows v1.ResultIterator) ([]v11.User, error) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanUsers(proj, dbvendor)
@@ -1681,8 +1661,6 @@ func (s *Sqlite) scanUsers(rows v1.ResultIterator) ([]v11.User, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildScanUsers(proj, dbvendor)
@@ -1732,8 +1710,6 @@ func Test_buildBuildGetUserQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetUserQuery(dbvendor)
@@ -1773,8 +1749,6 @@ func (p *Postgres) buildGetUserQuery(userID uint64) (query string, args []interf
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetUserQuery(dbvendor)
@@ -1814,8 +1788,6 @@ func (s *Sqlite) buildGetUserQuery(userID uint64) (query string, args []interfac
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetUserQuery(dbvendor)
@@ -1859,8 +1831,6 @@ func Test_buildGetUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUser(proj, dbvendor)
@@ -1892,8 +1862,6 @@ func (p *Postgres) GetUser(ctx context.Context, userID uint64) (*v1.User, error)
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUser(proj, dbvendor)
@@ -1925,8 +1893,6 @@ func (s *Sqlite) GetUser(ctx context.Context, userID uint64) (*v1.User, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUser(proj, dbvendor)
@@ -1962,8 +1928,6 @@ func Test_buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(dbvendor)
@@ -2002,8 +1966,6 @@ func (p *Postgres) buildGetUserWithUnverifiedTwoFactorSecretQuery(userID uint64)
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(dbvendor)
@@ -2042,8 +2004,6 @@ func (s *Sqlite) buildGetUserWithUnverifiedTwoFactorSecretQuery(userID uint64) (
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(dbvendor)
@@ -2086,8 +2046,6 @@ func Test_buildGetUserWithUnverifiedTwoFactorSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUserWithUnverifiedTwoFactorSecret(proj, dbvendor)
@@ -2119,8 +2077,6 @@ func (p *Postgres) GetUserWithUnverifiedTwoFactorSecret(ctx context.Context, use
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUserWithUnverifiedTwoFactorSecret(proj, dbvendor)
@@ -2152,8 +2108,6 @@ func (s *Sqlite) GetUserWithUnverifiedTwoFactorSecret(ctx context.Context, userI
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUserWithUnverifiedTwoFactorSecret(proj, dbvendor)
@@ -2189,8 +2143,6 @@ func Test_buildBuildGetUserByUsernameQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetUserByUsernameQuery(dbvendor)
@@ -2230,8 +2182,6 @@ func (p *Postgres) buildGetUserByUsernameQuery(username string) (query string, a
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetUserByUsernameQuery(dbvendor)
@@ -2271,8 +2221,6 @@ func (s *Sqlite) buildGetUserByUsernameQuery(username string) (query string, arg
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetUserByUsernameQuery(dbvendor)
@@ -2316,8 +2264,6 @@ func Test_buildGetUserByUsername(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUserByUsername(proj, dbvendor)
@@ -2354,8 +2300,6 @@ func (p *Postgres) GetUserByUsername(ctx context.Context, username string) (*v1.
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUserByUsername(proj, dbvendor)
@@ -2392,8 +2336,6 @@ func (s *Sqlite) GetUserByUsername(ctx context.Context, username string) (*v1.Us
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUserByUsername(proj, dbvendor)
@@ -2434,8 +2376,6 @@ func Test_buildBuildGetAllUsersCountQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetAllUsersCountQuery(dbvendor)
@@ -2473,8 +2413,6 @@ func (p *Postgres) buildGetAllUsersCountQuery() (query string) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetAllUsersCountQuery(dbvendor)
@@ -2512,8 +2450,6 @@ func (s *Sqlite) buildGetAllUsersCountQuery() (query string) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetAllUsersCountQuery(dbvendor)
@@ -2555,8 +2491,6 @@ func Test_buildGetAllUsersCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildGetAllUsersCount(dbvendor)
@@ -2581,8 +2515,6 @@ func (p *Postgres) GetAllUsersCount(ctx context.Context) (count uint64, err erro
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildGetAllUsersCount(dbvendor)
@@ -2607,8 +2539,6 @@ func (s *Sqlite) GetAllUsersCount(ctx context.Context) (count uint64, err error)
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildGetAllUsersCount(dbvendor)
@@ -2637,8 +2567,6 @@ func Test_buildBuildGetUsersQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetUsersQuery(proj, dbvendor)
@@ -2680,8 +2608,6 @@ func (p *Postgres) buildGetUsersQuery(filter *v1.QueryFilter) (query string, arg
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetUsersQuery(proj, dbvendor)
@@ -2723,8 +2649,6 @@ func (s *Sqlite) buildGetUsersQuery(filter *v1.QueryFilter) (query string, args 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetUsersQuery(proj, dbvendor)
@@ -2770,8 +2694,6 @@ func Test_buildGetUsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUsers(proj, dbvendor)
@@ -2816,8 +2738,6 @@ func (p *Postgres) GetUsers(ctx context.Context, filter *v1.QueryFilter) (*v1.Us
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUsers(proj, dbvendor)
@@ -2862,8 +2782,6 @@ func (s *Sqlite) GetUsers(ctx context.Context, filter *v1.QueryFilter) (*v1.User
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUsers(proj, dbvendor)
@@ -2912,8 +2830,6 @@ func Test_buildBuildCreateUserQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateUserQuery(proj, dbvendor)
@@ -2965,8 +2881,6 @@ func (p *Postgres) buildCreateUserQuery(input v1.UserDatabaseCreationInput) (que
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateUserQuery(proj, dbvendor)
@@ -3016,8 +2930,6 @@ func (s *Sqlite) buildCreateUserQuery(input v1.UserDatabaseCreationInput) (query
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateUserQuery(proj, dbvendor)
@@ -3071,8 +2983,6 @@ func Test_buildCreateUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateUser(proj, dbvendor)
@@ -3118,8 +3028,6 @@ func (p *Postgres) CreateUser(ctx context.Context, input v1.UserDatabaseCreation
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateUser(proj, dbvendor)
@@ -3165,8 +3073,6 @@ func (s *Sqlite) CreateUser(ctx context.Context, input v1.UserDatabaseCreationIn
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateUser(proj, dbvendor)
@@ -3216,8 +3122,6 @@ func Test_buildBuildUpdateUserQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildUpdateUserQuery(proj, dbvendor)
@@ -3260,8 +3164,6 @@ func (p *Postgres) buildUpdateUserQuery(input *v1.User) (query string, args []in
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildUpdateUserQuery(proj, dbvendor)
@@ -3302,8 +3204,6 @@ func (s *Sqlite) buildUpdateUserQuery(input *v1.User) (query string, args []inte
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildUpdateUserQuery(proj, dbvendor)
@@ -3348,8 +3248,6 @@ func Test_buildUpdateUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateUser(proj, dbvendor)
@@ -3376,8 +3274,6 @@ func (p *Postgres) UpdateUser(ctx context.Context, input *v1.User) error {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateUser(proj, dbvendor)
@@ -3405,8 +3301,6 @@ func (s *Sqlite) UpdateUser(ctx context.Context, input *v1.User) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateUser(proj, dbvendor)
@@ -3434,8 +3328,6 @@ func (m *MariaDB) UpdateUser(ctx context.Context, input *v1.User) error {
 	})
 
 	T.Run("panics on invalid database", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("invalid")
 		proj := testprojects.BuildTodoApp()
 
@@ -3447,8 +3339,6 @@ func Test_buildBuildUpdateUserPasswordQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildUpdateUserPasswordQuery(dbvendor)
@@ -3488,8 +3378,6 @@ func (p *Postgres) buildUpdateUserPasswordQuery(userID uint64, newHash string) (
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildUpdateUserPasswordQuery(dbvendor)
@@ -3527,8 +3415,6 @@ func (s *Sqlite) buildUpdateUserPasswordQuery(userID uint64, newHash string) (qu
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildUpdateUserPasswordQuery(dbvendor)
@@ -3570,8 +3456,6 @@ func Test_buildUpdateUserPassword(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildUpdateUserPassword(dbvendor)
@@ -3598,8 +3482,6 @@ func (p *Postgres) UpdateUserPassword(ctx context.Context, userID uint64, newHas
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildUpdateUserPassword(dbvendor)
@@ -3626,8 +3508,6 @@ func (s *Sqlite) UpdateUserPassword(ctx context.Context, userID uint64, newHash 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildUpdateUserPassword(dbvendor)
@@ -3658,8 +3538,6 @@ func Test_buildBuildVerifyUserTwoFactorSecretQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildVerifyUserTwoFactorSecretQuery(dbvendor)
@@ -3694,8 +3572,6 @@ func (p *Postgres) buildVerifyUserTwoFactorSecretQuery(userID uint64) (query str
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildVerifyUserTwoFactorSecretQuery(dbvendor)
@@ -3730,8 +3606,6 @@ func (s *Sqlite) buildVerifyUserTwoFactorSecretQuery(userID uint64) (query strin
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildVerifyUserTwoFactorSecretQuery(dbvendor)
@@ -3770,8 +3644,6 @@ func Test_buildVerifyUserTwoFactorSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildVerifyUserTwoFactorSecret(dbvendor)
@@ -3796,8 +3668,6 @@ func (p *Postgres) VerifyUserTwoFactorSecret(ctx context.Context, userID uint64)
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildVerifyUserTwoFactorSecret(dbvendor)
@@ -3822,8 +3692,6 @@ func (s *Sqlite) VerifyUserTwoFactorSecret(ctx context.Context, userID uint64) e
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildVerifyUserTwoFactorSecret(dbvendor)
@@ -3852,8 +3720,6 @@ func Test_buildBuildArchiveUserQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildArchiveUserQuery(dbvendor)
@@ -3890,8 +3756,6 @@ func (p *Postgres) buildArchiveUserQuery(userID uint64) (query string, args []in
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildArchiveUserQuery(dbvendor)
@@ -3926,8 +3790,6 @@ func (s *Sqlite) buildArchiveUserQuery(userID uint64) (query string, args []inte
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildArchiveUserQuery(dbvendor)
@@ -3966,8 +3828,6 @@ func Test_buildArchiveUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildArchiveUser(dbvendor)
@@ -3992,8 +3852,6 @@ func (p *Postgres) ArchiveUser(ctx context.Context, userID uint64) error {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildArchiveUser(dbvendor)
@@ -4018,8 +3876,6 @@ func (s *Sqlite) ArchiveUser(ctx context.Context, userID uint64) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildArchiveUser(dbvendor)

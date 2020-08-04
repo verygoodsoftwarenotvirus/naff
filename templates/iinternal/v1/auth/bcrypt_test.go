@@ -12,8 +12,6 @@ func Test_bcryptDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := bcryptDotGo(proj)
 
@@ -147,8 +145,6 @@ func Test_buildBcryptConstDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBcryptConstDeclarations()
 
 		expected := `
@@ -176,8 +172,6 @@ func Test_buildBcryptVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBcryptVarDeclarations()
 
 		expected := `
@@ -204,8 +198,6 @@ func Test_buildBcryptTypeDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBcryptTypeDeclarations()
 
 		expected := `
@@ -237,8 +229,6 @@ func Test_buildProvideBcryptAuthenticator(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideBcryptAuthenticator()
 
 		expected := `
@@ -269,8 +259,6 @@ func Test_buildHashPassword(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildHashPassword(proj)
 
@@ -302,8 +290,6 @@ func Test_buildValidateLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildValidateLogin(proj)
 
@@ -364,8 +350,6 @@ func Test_buildPasswordMatches(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildPasswordMatches(proj)
 
@@ -396,8 +380,6 @@ func Test_buildHashedPasswordIsTooWeak(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildHashedPasswordIsTooWeak(proj)
 
@@ -430,8 +412,6 @@ func Test_buildPasswordIsAcceptable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildPasswordIsAcceptable()
 
 		expected := `

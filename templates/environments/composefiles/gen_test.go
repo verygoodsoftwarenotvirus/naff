@@ -14,30 +14,24 @@ func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 		project.OutputPath = os.TempDir()
 
 		assert.NoError(t, RenderPackage(project))
 	})
 
-	//	T.Run("with invalid output directory", func(t *testing.T) {
-	//		t.Parallel()
-	//
-	//		proj := testprojects.BuildTodoApp()
-	//		proj.OutputPath = `/\0/\0/\0`
-	//
-	//		assert.Error(t, RenderPackage(proj))
-	//	})
+	T.Run("with invalid output directory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = `/dev/null`
+
+		assert.Error(t, RenderPackage(proj))
+	})
 }
 
 func Test_getDatabasePalabra(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbName := "postgres"
 
 		expected := `Postgres`
@@ -47,8 +41,6 @@ func Test_getDatabasePalabra(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbName := "sqlite"
 
 		expected := `Sqlite`
@@ -58,8 +50,6 @@ func Test_getDatabasePalabra(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbName := "mariadb"
 
 		expected := `MariaDB`
@@ -73,8 +63,6 @@ func Test_developmentDotYaml(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 
 		expected := `version: "3.3"
@@ -165,8 +153,6 @@ func Test_integrationTestsDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 		dbName := getDatabasePalabra("postgres")
 
@@ -208,8 +194,6 @@ services:
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 		dbName := getDatabasePalabra("sqlite")
 
@@ -239,8 +223,6 @@ services:
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 		dbName := getDatabasePalabra("mariadb")
 
@@ -288,8 +270,6 @@ func Test_loadTestsDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 		dbName := getDatabasePalabra("postgres")
 
@@ -331,8 +311,6 @@ services:
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 		dbName := getDatabasePalabra("sqlite")
 
@@ -361,8 +339,6 @@ services:
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 		dbName := getDatabasePalabra("mariadb")
 
@@ -409,8 +385,6 @@ func Test_frontendTestsDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 
 		expected := `version: "3.3"
@@ -491,8 +465,6 @@ func Test_integrationCoverageDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
 
 		expected := `version: '3.3'

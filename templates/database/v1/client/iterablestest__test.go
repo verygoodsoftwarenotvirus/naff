@@ -12,8 +12,6 @@ func Test_iterablesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesTestDotGo(proj, typ)
@@ -248,8 +246,6 @@ func Test_buildTestClientSomethingExists(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientSomethingExists(proj, typ)
@@ -296,8 +292,6 @@ func Test_buildTestClientGetSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetSomething(proj, typ)
@@ -344,8 +338,6 @@ func Test_buildTestClientGetAllOfSomethingCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetAllOfSomethingCount(proj, typ)
@@ -389,8 +381,6 @@ func Test_buildTestClientGetAllOfSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetAllOfSomething(proj, typ)
@@ -434,8 +424,6 @@ func Test_buildTestClientGetListOfSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetListOfSomething(proj, typ)
@@ -496,8 +484,6 @@ func TestClient_GetItems(T *testing.T) {
 	})
 
 	T.Run("with type not belonging to user", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
@@ -562,8 +548,6 @@ func Test_buildTestClientGetListOfSomethingWithIDs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetListOfSomethingWithIDs(proj, typ)
@@ -610,8 +594,6 @@ func TestClient_GetItemsWithIDs(T *testing.T) {
 	})
 
 	T.Run("with type not belonging to user", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
@@ -661,8 +643,6 @@ func Test_buildTestClientCreateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientCreateSomething(proj, typ)
@@ -710,8 +690,6 @@ func Test_buildTestClientUpdateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientUpdateSomething(proj, typ)
@@ -759,8 +737,6 @@ func Test_buildTestClientArchiveSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientArchiveSomething(proj, typ)

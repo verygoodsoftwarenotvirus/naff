@@ -12,8 +12,6 @@ func Test_userDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := userDotGo(proj)
 
@@ -170,8 +168,6 @@ func Test_buildUserTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserTypeDefinitions()
 
 		expected := `
@@ -304,8 +300,6 @@ func Test_buildUserUpdate(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserUpdate()
 
 		expected := `
@@ -338,8 +332,6 @@ func Test_buildUserToSessionInfo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserToSessionInfo()
 
 		expected := `

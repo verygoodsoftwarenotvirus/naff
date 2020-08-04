@@ -12,8 +12,6 @@ func Test_dashboardDotJSON(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 
 		expected := `{

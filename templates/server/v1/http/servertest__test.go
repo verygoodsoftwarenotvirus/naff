@@ -12,8 +12,6 @@ func Test_serverTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := serverTestDotGo(proj)
 
@@ -175,8 +173,6 @@ func Test_buildProvideServerArgs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		cookieSecret := "COOKIE_SECRET"
 		x := buildProvideServerArgs(proj, cookieSecret)
@@ -228,8 +224,6 @@ func Test_buildBuildTestServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildTestServer(proj)
 
@@ -278,8 +272,6 @@ func Test_buildTestProvideServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestProvideServer(proj)
 

@@ -12,8 +12,6 @@ func Test_authDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := authDotGo(proj)
 
@@ -69,8 +67,6 @@ func Test_buildAuthConstantDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAuthConstantDefinitions()
 
 		expected := `
@@ -93,8 +89,6 @@ func Test_buildAuthInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAuthInit()
 
 		expected := `
@@ -118,8 +112,6 @@ func Test_buildAuthTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAuthTypeDefinitions()
 
 		expected := `
@@ -151,8 +143,6 @@ func Test_buildAuthSessionInfoToBytes(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAuthSessionInfoToBytes()
 
 		expected := `

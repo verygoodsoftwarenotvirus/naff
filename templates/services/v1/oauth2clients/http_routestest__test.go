@@ -12,8 +12,6 @@ func Test_httpRoutesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesTestDotGo(proj)
 
@@ -748,8 +746,6 @@ func Test_buildTest_randString(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_randString()
 
 		expected := `
@@ -779,8 +775,6 @@ func Test_buildBuildRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildRequest()
 
 		expected := `
@@ -817,8 +811,6 @@ func Test_buildTest_fetchUserID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_fetchUserID(proj)
 
@@ -871,8 +863,6 @@ func Test_buildTestService_ListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ListHandler(proj)
 
@@ -1022,8 +1012,6 @@ func Test_buildTestService_CreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_CreateHandler(proj)
 
@@ -1352,8 +1340,6 @@ func Test_buildTestService_ReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ReadHandler(proj)
 
@@ -1518,8 +1504,6 @@ func Test_buildTestService_ArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ArchiveHandler(proj)
 

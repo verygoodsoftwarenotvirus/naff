@@ -12,8 +12,6 @@ func Test_mainTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainTestDotGo(proj)
 
@@ -964,8 +962,6 @@ func Test_buildClientTestConstants(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildClientTestConstants()
 
 		expected := `
@@ -988,8 +984,6 @@ func Test_buildClientTestTypes(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildClientTestTypes()
 
 		expected := `
@@ -1015,8 +1009,6 @@ func Test_buildClientTestValuer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildClientTestValuer()
 
 		expected := `
@@ -1040,8 +1032,6 @@ func Test_buildMustParseURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMustParseURL()
 
 		expected := `
@@ -1069,8 +1059,6 @@ func Test_buildBuildTestClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildTestClient()
 
 		expected := `
@@ -1108,8 +1096,6 @@ func Test_buildBuildTestClientWithInvalidURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildTestClientWithInvalidURL()
 
 		expected := `
@@ -1148,8 +1134,6 @@ func Test_buildTestV1Client_AuthenticatedClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_AuthenticatedClient()
 
 		expected := `
@@ -1184,8 +1168,6 @@ func Test_buildTestV1Client_PlainClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_PlainClient()
 
 		expected := `
@@ -1220,8 +1202,6 @@ func Test_buildTestV1Client_TokenSource(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_TokenSource()
 
 		expected := `
@@ -1272,8 +1252,6 @@ func Test_buildTestNewClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestNewClient()
 
 		expected := `
@@ -1344,8 +1322,6 @@ func Test_buildTestNewSimpleClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestNewSimpleClient()
 
 		expected := `
@@ -1383,8 +1359,6 @@ func Test_buildTestV1Client_CloseRequestBody(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_CloseRequestBody()
 
 		expected := `
@@ -1437,8 +1411,6 @@ func Test_buildTestBuildURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestBuildURL()
 
 		expected := `
@@ -1519,8 +1491,6 @@ func Test_buildTestBuildVersionlessURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestBuildVersionlessURL()
 
 		expected := `
@@ -1601,8 +1571,6 @@ func Test_buildTestV1Client_BuildWebsocketURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_BuildWebsocketURL()
 
 		expected := `
@@ -1654,8 +1622,6 @@ func Test_buildTestV1Client_BuildHealthCheckRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_BuildHealthCheckRequest()
 
 		expected := `
@@ -1698,8 +1664,6 @@ func Test_buildTestV1Client_IsUp(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_IsUp()
 
 		expected := `
@@ -1789,8 +1753,6 @@ func Test_buildTestV1Client_buildDataRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_buildDataRequest()
 
 		expected := `
@@ -1859,8 +1821,6 @@ func Test_buildTestV1Client_checkExistence(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_checkExistence()
 
 		expected := `
@@ -1936,8 +1896,6 @@ func Test_buildTestV1Client_retrieve(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_retrieve()
 
 		expected := `
@@ -2050,8 +2008,6 @@ func Test_buildTestV1Client_executeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_executeRequest()
 
 		expected := `
@@ -2194,8 +2150,6 @@ func Test_buildTestV1Client_executeRawRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_executeRawRequest()
 
 		expected := `
@@ -2250,8 +2204,6 @@ func Test_buildTestV1Client_executeUnauthenticatedDataRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1Client_executeUnauthenticatedDataRequest()
 
 		expected := `

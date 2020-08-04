@@ -14,30 +14,24 @@ func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 		project.OutputPath = filepath.Join(os.TempDir(), "one", "two")
 
 		assert.NoError(t, RenderPackage(project))
 	})
 
-	//	T.Run("with invalid output directory", func(t *testing.T) {
-	//		t.Parallel()
-	//
-	//		proj := testprojects.BuildTodoApp()
-	//		proj.OutputPath = `/\0/\0/\0`
-	//
-	//		assert.Error(t, RenderPackage(proj))
-	//	})
+	T.Run("with invalid output directory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = `/dev/null`
+
+		assert.Error(t, RenderPackage(proj))
+	})
 }
 
 func Test_dockerIgnore(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		expected := `**/node_modules
 **/dist
 `
@@ -51,8 +45,6 @@ func Test_gitIgnore(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 
 		expected := `# Binaries for programs and plugins
@@ -116,8 +108,6 @@ func Test_gitlabCIDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 
 		expected := `stages:
@@ -358,8 +348,6 @@ func Test_golancCILintDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 
 		expected := `# options for analysis running

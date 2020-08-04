@@ -12,8 +12,6 @@ func Test_iterableServiceDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterableServiceDotGo(proj, typ)
@@ -129,8 +127,6 @@ func Test_buildSomethingServiceConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingServiceConstantDefs(proj, typ)
@@ -165,8 +161,6 @@ func Test_buildSomethingServiceVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingServiceVarDefs(proj, typ)
@@ -192,8 +186,6 @@ func Test_buildServiceTypeDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildServiceTypeDecls(proj, typ)
@@ -244,8 +236,6 @@ func Test_buildProvideServiceFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildProvideServiceFuncDecl(proj, typ)
@@ -302,8 +292,6 @@ func Test_buildProvideServiceSearchIndexFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildProvideServiceSearchIndexFuncDecl(proj, typ)

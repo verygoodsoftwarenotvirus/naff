@@ -12,8 +12,6 @@ func Test_mockIterableDataServerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := mockIterableDataServerDotGo(proj, typ)
@@ -91,8 +89,6 @@ func Test_buildIterableDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableDataServer(typ)
@@ -119,8 +115,6 @@ func Test_buildIterableCreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableCreationInputMiddleware(typ)
@@ -148,8 +142,6 @@ func Test_buildIterableUpdateInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableUpdateInputMiddleware(typ)
@@ -177,8 +169,6 @@ func Test_buildIterableSearchHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableSearchHandler(typ)
@@ -205,8 +195,6 @@ func Test_buildIterableListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableListHandler(typ)
@@ -233,8 +221,6 @@ func Test_buildIterableCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableCreateHandler(typ)
@@ -261,8 +247,6 @@ func Test_buildIterableExistenceHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableExistenceHandler(typ)
@@ -289,8 +273,6 @@ func Test_buildIterableReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableReadHandler(typ)
@@ -317,8 +299,6 @@ func Test_buildIterableUpdateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableUpdateHandler(typ)
@@ -345,8 +325,6 @@ func Test_buildIterableArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableArchiveHandler(typ)

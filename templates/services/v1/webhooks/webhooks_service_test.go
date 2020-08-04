@@ -12,8 +12,6 @@ func Test_webhooksServiceDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := webhooksServiceDotGo(proj)
 
@@ -109,8 +107,6 @@ func Test_buildWebhooksServiceConstDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhooksServiceConstDefs(proj)
 
@@ -144,8 +140,6 @@ func Test_buildWebhooksServiceVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhooksServiceVarDefs(proj)
 
@@ -170,8 +164,6 @@ func Test_buildWebhooksServiceTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhooksServiceTypeDefs(proj)
 
@@ -222,8 +214,6 @@ func Test_buildProvideWebhooksService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideWebhooksService(proj)
 

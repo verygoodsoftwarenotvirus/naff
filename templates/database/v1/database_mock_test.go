@@ -12,8 +12,6 @@ func Test_databaseMockDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := databaseMockDotGo(proj)
 
@@ -95,8 +93,6 @@ func Test_buildBuildMockDatabase(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildMockDatabase(proj)
 
@@ -127,8 +123,6 @@ func Test_buildMockDatabase(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockDatabase(proj)
 
@@ -160,8 +154,6 @@ func Test_buildMigrate(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMigrate()
 
 		expected := `
@@ -186,8 +178,6 @@ func Test_buildIsReady(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildIsReady()
 
 		expected := `
@@ -212,8 +202,6 @@ func Test_buildResultIterator(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildResultIterator()
 
 		expected := `

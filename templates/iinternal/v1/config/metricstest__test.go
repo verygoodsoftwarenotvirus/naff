@@ -12,8 +12,6 @@ func Test_metricsTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := metricsTestDotGo(proj)
 
@@ -66,8 +64,6 @@ func Test_buildTestServerConfig_ProvideInstrumentationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestServerConfig_ProvideInstrumentationHandler()
 
 		expected := `
@@ -105,8 +101,6 @@ func Test_buildTestServerConfig_ProvideTracing(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestServerConfig_ProvideTracing()
 
 		expected := `

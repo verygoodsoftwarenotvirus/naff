@@ -12,8 +12,6 @@ func Test_authTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := authTestDotGo(proj)
 
@@ -660,8 +658,6 @@ func Test_buildLoginUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildLoginUser(proj)
 
@@ -723,8 +719,6 @@ func Test_buildTestAuth(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestAuth(proj)
 

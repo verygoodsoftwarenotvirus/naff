@@ -12,8 +12,6 @@ func Test_bleveDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := bleveDotGo(proj)
 
@@ -149,8 +147,6 @@ func Test_buildConstantDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildConstantDefinitions(proj)
 
@@ -179,8 +175,6 @@ func Test_buildInterfaceImplementationStatement(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInterfaceImplementationStatement(proj)
 
@@ -203,8 +197,6 @@ func Test_buildTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTypeDefinitions()
 
 		expected := `
@@ -232,8 +224,6 @@ func Test_buildNewBleveIndexManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildNewBleveIndexManager(proj)
 
@@ -299,8 +289,6 @@ func Test_buildNewBleveIndexManager_Index(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildNewBleveIndexManager_Index(proj)
 
@@ -332,8 +320,6 @@ func Test_buildNewBleveIndexManager_Search(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildNewBleveIndexManager_Search(proj)
 
@@ -389,8 +375,6 @@ func Test_buildNewBleveIndexManager_Delete(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildNewBleveIndexManager_Delete(proj)
 

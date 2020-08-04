@@ -13,8 +13,6 @@ func Test_encodingTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := encodingTestDotGo(proj)
 
@@ -112,8 +110,6 @@ func Test_buildEncodingTestTypeDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildEncodingTestTypeDeclarations()
 
 		expected := `
@@ -135,8 +131,6 @@ func Test_buildTestServerEncoderDecoder_EncodeResponse(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestServerEncoderDecoder_EncodeResponse()
 
 		expected := `
@@ -187,8 +181,6 @@ func Test_buildTestServerEncoderDecoder_DecodeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestServerEncoderDecoder_DecodeRequest()
 
 		expected := `

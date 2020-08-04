@@ -12,8 +12,6 @@ func Test_oauth2ClientsServiceTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsServiceTestDotGo(proj)
 
@@ -222,8 +220,6 @@ func Test_buildBuildTestService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildTestService(proj)
 
@@ -276,8 +272,6 @@ func Test_buildTestProvideOAuth2ClientsService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestProvideOAuth2ClientsService(proj)
 
@@ -356,8 +350,6 @@ func Test_buildTest_clientStore_GetByID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_clientStore_GetByID(proj)
 
@@ -444,8 +436,6 @@ func Test_buildTestService_HandleAuthorizeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestService_HandleAuthorizeRequest()
 
 		expected := `
@@ -488,8 +478,6 @@ func Test_buildTestService_HandleTokenRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestService_HandleTokenRequest()
 
 		expected := `

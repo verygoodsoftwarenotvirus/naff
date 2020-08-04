@@ -12,8 +12,6 @@ func Test_serverDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := serverDotGo(proj)
 
@@ -69,8 +67,6 @@ func Test_buildTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTypeDefs(proj)
 
@@ -103,8 +99,6 @@ func Test_buildVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildVarDefs()
 
 		expected := `
@@ -131,8 +125,6 @@ func Test_buildProvideServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideServer(proj)
 
@@ -164,8 +156,6 @@ func Test_buildServe(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServe()
 
 		expected := `

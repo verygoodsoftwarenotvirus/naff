@@ -12,8 +12,6 @@ func Test_frontendServiceDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := frontendServiceDotGo(proj)
 
@@ -56,8 +54,6 @@ func Test_buildFrontendConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildFrontendConstantDefs()
 
 		expected := `
@@ -79,8 +75,6 @@ func Test_buildFrontendTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildFrontendTypeDefs(proj)
 
@@ -110,8 +104,6 @@ func Test_buildProvideFrontendService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideFrontendService(proj)
 

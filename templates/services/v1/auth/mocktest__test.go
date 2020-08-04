@@ -12,8 +12,6 @@ func Test_mockTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockTestDotGo(proj)
 
@@ -74,8 +72,6 @@ func Test_buildMockOAuth2ClientValidator(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockOAuth2ClientValidator()
 
 		expected := `
@@ -99,8 +95,6 @@ func Test_buildMockOAuth2ClientValidatorExtractOAuth2ClientFromRequest(T *testin
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockOAuth2ClientValidatorExtractOAuth2ClientFromRequest(proj)
 
@@ -128,8 +122,6 @@ func Test_buildMockCookieEncoderDecoder(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockCookieEncoderDecoder()
 
 		expected := `
@@ -153,8 +145,6 @@ func Test_buildMockCookieEncoderDecoderEncode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockCookieEncoderDecoderEncode()
 
 		expected := `
@@ -177,8 +167,6 @@ func Test_buildMockCookieEncoderDecoderDecode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockCookieEncoderDecoderDecode()
 
 		expected := `
@@ -201,8 +189,6 @@ func Test_buildMockHTTPHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHTTPHandler()
 
 		expected := `
@@ -226,8 +212,6 @@ func Test_buildMockHTTPHandlerServeHTTP(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHTTPHandlerServeHTTP()
 
 		expected := `

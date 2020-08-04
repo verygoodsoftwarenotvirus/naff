@@ -12,8 +12,6 @@ func Test_mainDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainDotGo(proj)
 
@@ -141,8 +139,6 @@ func Test_buildMainServiceAttacker(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMainServiceAttacker(proj)
 
@@ -168,8 +164,6 @@ func Test_buildMainSetup(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainSetup()
 
 		expected := `
@@ -194,8 +188,6 @@ func Test_buildMainDo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainDo()
 
 		expected := `
@@ -268,8 +260,6 @@ func Test_buildMainTeardown(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainTeardown()
 
 		expected := `
@@ -292,8 +282,6 @@ func Test_buildMainClone(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainClone()
 
 		expected := `
@@ -318,8 +306,6 @@ func Test_buildMainMain(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainMain()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_userTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := userTestDotGo(proj)
 
@@ -55,8 +53,6 @@ func Test_buildTestUser_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestUser_Update()
 
 		expected := `

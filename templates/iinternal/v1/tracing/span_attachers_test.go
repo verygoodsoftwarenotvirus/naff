@@ -12,8 +12,6 @@ func Test_spanAttachersDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := spanAttachersDotGo(proj)
 
@@ -111,8 +109,6 @@ func Test_buildConstants(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildConstants(proj)
 
@@ -144,8 +140,6 @@ func Test_buildAttachUint64ToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachUint64ToSpan()
 
 		expected := `
@@ -172,8 +166,6 @@ func Test_buildAttachStringToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachStringToSpan()
 
 		expected := `
@@ -199,8 +191,6 @@ func Test_buildAttachFilterToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildAttachFilterToSpan(proj)
 
@@ -233,8 +223,6 @@ func Test_buildAttachSomethingIDToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildAttachSomethingIDToSpan(typ)
@@ -261,8 +249,6 @@ func Test_buildAttachUserIDToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachUserIDToSpan()
 
 		expected := `
@@ -287,8 +273,6 @@ func Test_buildAttachOAuth2ClientDatabaseIDToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachOAuth2ClientDatabaseIDToSpan()
 
 		expected := `
@@ -313,8 +297,6 @@ func Test_buildAttachOAuth2ClientIDToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachOAuth2ClientIDToSpan()
 
 		expected := `
@@ -339,8 +321,6 @@ func Test_buildAttachUsernameToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachUsernameToSpan()
 
 		expected := `
@@ -365,8 +345,6 @@ func Test_buildAttachWebhookIDToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachWebhookIDToSpan()
 
 		expected := `
@@ -391,8 +369,6 @@ func Test_buildAttachRequestURIToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachRequestURIToSpan()
 
 		expected := `
@@ -417,8 +393,6 @@ func Test_buildAttachSearchQueryToSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildAttachSearchQueryToSpan()
 
 		expected := `

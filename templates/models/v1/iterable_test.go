@@ -13,8 +13,6 @@ func Test_iterableDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterableDotGo(proj, typ)
@@ -122,8 +120,6 @@ func Test_buildUpdateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateSomething(typ)
@@ -154,8 +150,6 @@ func Test_buildSomethingConstantDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingConstantDefinitions(proj, typ)
@@ -182,8 +176,6 @@ func Test_buildSomethingTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingTypeDefinitions(proj, typ)
@@ -266,8 +258,6 @@ func Test_buildSomethingToUpdateInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingToUpdateInput(typ)
@@ -295,8 +285,6 @@ func Test_buildBaseModelStructFields(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBaseModelStructFields(typ)
@@ -326,8 +314,6 @@ func Test_buildUpdateModelStructFields(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateModelStructFields(typ)
@@ -349,8 +335,6 @@ type Example struct {
 	})
 
 	T.Run("with ownership", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildUpdateModelStructFields(proj.LastDataType())
@@ -374,8 +358,6 @@ func Test_buildCreateModelStructFields(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCreateModelStructFields(typ)
@@ -401,8 +383,6 @@ func Test_buildInterfaceMethods(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildInterfaceMethods(proj, typ)
@@ -436,8 +416,6 @@ func Test_buildUpdateFunctionLogic(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateFunctionLogic(proj.DataTypes[0].Fields)
 
@@ -462,8 +440,6 @@ func main() {
 	})
 
 	T.Run("with every type", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildEveryTypeApp()
 		x := buildUpdateFunctionLogic(proj.DataTypes[0].Fields)
 

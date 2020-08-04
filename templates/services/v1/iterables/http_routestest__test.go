@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,6 @@ func Test_httpRoutesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := httpRoutesTestDotGo(proj, typ)
@@ -1114,8 +1113,6 @@ func Test_includeOwnerFetchers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := includeOwnerFetchers(proj, typ)
@@ -1135,14 +1132,35 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		x := includeOwnerFetchers(proj, typ)
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+
+	s.thingIDFetcher = thingIDFetcher
+	s.anotherThingIDFetcher = anotherThingIDFetcher
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildRelevantIDFetchers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRelevantIDFetchers(proj, typ)
@@ -1167,19 +1185,96 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		typ := proj.LastDataType()
+		x := buildRelevantIDFetchers(proj, typ)
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"net/http"
+)
+
+func main() {
+	exampleThing := fake.BuildFakeThing()
+	thingIDFetcher := func(_ *http.Request) uint64 {
+		return exampleThing.ID
+	}
+
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	anotherThingIDFetcher := func(_ *http.Request) uint64 {
+		return exampleAnotherThing.ID
+	}
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain that belongs to user", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		for i := range proj.DataTypes {
+			proj.DataTypes[i].BelongsToUser = true
+			proj.DataTypes[i].RestrictedToUser = true
+		}
+
+		typ := proj.LastDataType()
+
+		x := buildRelevantIDFetchers(proj, typ)
+
+		expected := `
+package main
+
+import (
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"net/http"
+)
+
+func main() {
+	exampleUser := fake.BuildFakeUser()
+	userIDFetcher := func(_ *http.Request) uint64 {
+		return exampleUser.ID
+	}
+
+	exampleThing := fake.BuildFakeThing()
+	exampleThing.BelongsToUser = exampleUser.ID
+	thingIDFetcher := func(_ *http.Request) uint64 {
+		return exampleThing.ID
+	}
+
+	exampleAnotherThing := fake.BuildFakeAnotherThing()
+	exampleAnotherThing.BelongsToThing = exampleThing.ID
+	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	anotherThingIDFetcher := func(_ *http.Request) uint64 {
+		return exampleAnotherThing.ID
+	}
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_setupDataManagersForCreation(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		actualCallArgs := []jen.Code{}
 		returnValues := []jen.Code{}
 		indexToReturnFalse := 0
 		returnErr := true
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := setupDataManagersForCreation(proj, typ, actualCallArgs, returnValues, indexToReturnFalse, returnErr)
@@ -1202,14 +1297,45 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		actualCallArgs := []jen.Code{}
+		returnValues := []jen.Code{}
+		indexToReturnFalse := 0
+		returnErr := true
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+
+		x := setupDataManagersForCreation(proj, typ, actualCallArgs, returnValues, indexToReturnFalse, returnErr)
+
+		expected := `
+package main
+
+import (
+	"errors"
+	mock1 "github.com/stretchr/testify/mock"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+)
+
+func main() {
+	thingDataManager := &mock.ThingDataManager{}
+	thingDataManager.On("ThingExists", mock1.Anything, exampleThing.ID).Return(true, errors.New("blah"))
+	s.thingDataManager = thingDataManager
+
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_determineMockExpecters(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		indexToStopAt := 1
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1225,8 +1351,6 @@ func Test_buildTestServiceListFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceListFuncDecl(proj, typ)
@@ -1383,8 +1507,6 @@ func Test_buildTestServiceSearchFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceSearchFuncDecl(proj, typ)
@@ -1610,14 +1732,219 @@ func TestItemsService_SearchHandler(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with search disabled", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.SearchEnabled = false
+		x := buildTestServiceSearchFuncDecl(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	assert "github.com/stretchr/testify/assert"
+	mock1 "github.com/stretchr/testify/mock"
+	require "github.com/stretchr/testify/require"
+	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestItemsService_SearchHandler(T *testing.T) {
+	T.Parallel()
+
+	exampleUser := fake.BuildFakeUser()
+	userIDFetcher := func(_ *http.Request) uint64 {
+		return exampleUser.ID
+	}
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+
+		s.userIDFetcher = userIDFetcher
+
+		exampleQuery := "whatever"
+		exampleLimit := uint8(123)
+		exampleItemList := fake.BuildFakeItemList().Items
+		var exampleItemIDs []uint64
+		for _, x := range exampleItemList {
+			exampleItemIDs = append(exampleItemIDs, x.ID)
+		}
+
+		itemDataManager := &mock.ItemDataManager{}
+		itemDataManager.On("GetItemsWithIDs", mock1.Anything, exampleUser.ID, exampleLimit, exampleItemIDs).Return(exampleItemList, nil)
+		s.itemDataManager = itemDataManager
+
+		ed := &mock2.EncoderDecoder{}
+		ed.On("EncodeResponse", mock1.Anything, mock1.AnythingOfType("[]models.Item")).Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("http://todo.verygoodsoftwarenotvirus.ru?q=%s&limit=%d", exampleQuery, exampleLimit),
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.SearchHandler(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, si, itemDataManager, ed)
+	})
+
+	T.Run("with error conducting search", func(t *testing.T) {
+		s := buildTestService()
+
+		s.userIDFetcher = userIDFetcher
+
+		exampleQuery := "whatever"
+		exampleLimit := uint8(123)
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("http://todo.verygoodsoftwarenotvirus.ru?q=%s&limit=%d", exampleQuery, exampleLimit),
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.SearchHandler(res, req)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, si)
+	})
+
+	T.Run("with now rows returned", func(t *testing.T) {
+		s := buildTestService()
+
+		s.userIDFetcher = userIDFetcher
+
+		exampleQuery := "whatever"
+		exampleLimit := uint8(123)
+		exampleItemList := fake.BuildFakeItemList().Items
+		var exampleItemIDs []uint64
+		for _, x := range exampleItemList {
+			exampleItemIDs = append(exampleItemIDs, x.ID)
+		}
+
+		itemDataManager := &mock.ItemDataManager{}
+		itemDataManager.On("GetItemsWithIDs", mock1.Anything, exampleUser.ID, exampleLimit, exampleItemIDs).Return([]v1.Item{}, sql.ErrNoRows)
+		s.itemDataManager = itemDataManager
+
+		ed := &mock2.EncoderDecoder{}
+		ed.On("EncodeResponse", mock1.Anything, mock1.AnythingOfType("[]models.Item")).Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("http://todo.verygoodsoftwarenotvirus.ru?q=%s&limit=%d", exampleQuery, exampleLimit),
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.SearchHandler(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, si, itemDataManager, ed)
+	})
+
+	T.Run("with error fetching from database", func(t *testing.T) {
+		s := buildTestService()
+
+		s.userIDFetcher = userIDFetcher
+
+		exampleQuery := "whatever"
+		exampleLimit := uint8(123)
+		exampleItemList := fake.BuildFakeItemList().Items
+		var exampleItemIDs []uint64
+		for _, x := range exampleItemList {
+			exampleItemIDs = append(exampleItemIDs, x.ID)
+		}
+
+		itemDataManager := &mock.ItemDataManager{}
+		itemDataManager.On("GetItemsWithIDs", mock1.Anything, exampleUser.ID, exampleLimit, exampleItemIDs).Return([]v1.Item{}, errors.New("blah"))
+		s.itemDataManager = itemDataManager
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("http://todo.verygoodsoftwarenotvirus.ru?q=%s&limit=%d", exampleQuery, exampleLimit),
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.SearchHandler(res, req)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, si, itemDataManager)
+	})
+
+	T.Run("with error encoding response", func(t *testing.T) {
+		s := buildTestService()
+
+		s.userIDFetcher = userIDFetcher
+
+		exampleQuery := "whatever"
+		exampleLimit := uint8(123)
+		exampleItemList := fake.BuildFakeItemList().Items
+		var exampleItemIDs []uint64
+		for _, x := range exampleItemList {
+			exampleItemIDs = append(exampleItemIDs, x.ID)
+		}
+
+		itemDataManager := &mock.ItemDataManager{}
+		itemDataManager.On("GetItemsWithIDs", mock1.Anything, exampleUser.ID, exampleLimit, exampleItemIDs).Return(exampleItemList, nil)
+		s.itemDataManager = itemDataManager
+
+		ed := &mock2.EncoderDecoder{}
+		ed.On("EncodeResponse", mock1.Anything, mock1.AnythingOfType("[]models.Item")).Return(errors.New("blah"))
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("http://todo.verygoodsoftwarenotvirus.ru?q=%s&limit=%d", exampleQuery, exampleLimit),
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.SearchHandler(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, si, itemDataManager, ed)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestServiceCreateFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceCreateFuncDecl(proj, typ)
@@ -1806,8 +2133,6 @@ func Test_buildTestServiceExistenceFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceExistenceFuncDecl(proj, typ)
@@ -1939,8 +2264,6 @@ func Test_buildTestServiceReadFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceReadFuncDecl(proj, typ)
@@ -2113,8 +2436,6 @@ func Test_buildTestServiceUpdateFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceUpdateFuncDecl(proj, typ)
@@ -2379,14 +2700,11 @@ func Test_setupDataManagersForDeletion(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		actualCallArgs := []jen.Code{}
 		returnValues := []jen.Code{}
 		indexToReturnFalse := 0
 		returnErr := true
 		returnFalse := true
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := setupDataManagersForDeletion(proj, typ, actualCallArgs, returnValues, indexToReturnFalse, returnErr, returnFalse)
@@ -2415,8 +2733,6 @@ func Test_buildTestServiceArchiveFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestServiceArchiveFuncDecl(proj, typ)

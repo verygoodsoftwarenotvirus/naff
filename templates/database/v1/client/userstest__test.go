@@ -12,8 +12,6 @@ func Test_usersTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := usersTestDotGo(proj)
 
@@ -245,8 +243,6 @@ func Test_buildTestClient_GetUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetUser(proj)
 
@@ -290,8 +286,6 @@ func Test_buildTestClient_GetUserWithUnverifiedTwoFactorSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetUserWithUnverifiedTwoFactorSecret(proj)
 
@@ -335,8 +329,6 @@ func Test_buildTestClient_VerifyUserTwoFactorSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_VerifyUserTwoFactorSecret(proj)
 
@@ -379,8 +371,6 @@ func Test_buildTestClient_GetUserByUsername(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetUserByUsername(proj)
 
@@ -424,8 +414,6 @@ func Test_buildTestClient_GetAllUsersCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetAllUsersCount(proj)
 
@@ -468,8 +456,6 @@ func Test_buildTestClient_GetUsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_GetUsers(proj)
 
@@ -531,8 +517,6 @@ func Test_buildTestClient_CreateUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_CreateUser(proj)
 
@@ -577,8 +561,6 @@ func Test_buildTestClient_UpdateUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_UpdateUser(proj)
 
@@ -622,8 +604,6 @@ func Test_buildTestClient_UpdateUserPassword(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_UpdateUserPassword(proj)
 
@@ -667,8 +647,6 @@ func Test_buildTestClient_ArchiveUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestClient_ArchiveUser(proj)
 

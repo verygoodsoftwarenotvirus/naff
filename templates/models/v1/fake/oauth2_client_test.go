@@ -12,8 +12,6 @@ func Test_oauth2ClientDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientDotGo(proj)
 
@@ -91,8 +89,6 @@ func Test_buildBuildFakeOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeOAuth2Client(proj)
 
@@ -133,8 +129,6 @@ func Test_buildBuildFakeOAuth2ClientList(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeOAuth2ClientList(proj)
 
@@ -174,8 +168,6 @@ func Test_buildBuildFakeOAuth2ClientCreationInputFromClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeOAuth2ClientCreationInputFromClient(proj)
 

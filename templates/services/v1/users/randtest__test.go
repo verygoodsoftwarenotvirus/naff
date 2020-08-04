@@ -11,8 +11,6 @@ func Test_randTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := randTestDotGo()
 
 		expected := `
@@ -50,8 +48,6 @@ func Test_buildRandTestMockSecretGenerator(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandTestMockSecretGenerator()
 
 		expected := `
@@ -77,8 +73,6 @@ func Test_buildRandTestMockSecretGeneratorGenerateTwoFactorSecret(T *testing.T) 
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandTestMockSecretGeneratorGenerateTwoFactorSecret()
 
 		expected := `
@@ -102,8 +96,6 @@ func Test_buildRandTestMockSecretGeneratorGenerateSalt(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandTestMockSecretGeneratorGenerateSalt()
 
 		expected := `

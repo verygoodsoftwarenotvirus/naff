@@ -12,8 +12,6 @@ func Test_iterablesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesDotGo(proj, typ)
@@ -121,8 +119,6 @@ func Test_buildParamsForMethodThatHandlesAnInstanceWithRetrievedStructs(T *testi
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		call := true
@@ -145,8 +141,6 @@ func Test_buildFetchRandomSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildFetchRandomSomething(proj, typ)
@@ -182,8 +176,6 @@ func Test_buildCreationArguments(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		varPrefix := "example"
@@ -210,8 +202,6 @@ func Test_buildRequisiteCreationCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRequisiteCreationCode(proj, typ)
@@ -231,8 +221,6 @@ func Test_buildParamsForMethodThatHandlesAnInstanceWithStructs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildParamsForMethodThatHandlesAnInstanceWithStructs(proj, typ)
@@ -254,8 +242,6 @@ func Test_buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(T *tes
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj, typ)
@@ -282,8 +268,6 @@ func Test_buildRandomActionMap(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRandomActionMap(proj, typ)
@@ -378,8 +362,6 @@ func Test_buildCreateSomethingBlock(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCreateSomethingBlock(proj, typ)
@@ -410,8 +392,6 @@ func Test_buildRandomDependentIDFetchers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildRandomDependentIDFetchers(proj, typ)
@@ -437,8 +417,6 @@ func Test_buildGetSomethingBlock(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetSomethingBlock(proj, typ)
@@ -472,8 +450,6 @@ func Test_buildGetListOfSomethingBlock(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetListOfSomethingBlock(proj, typ)
@@ -501,8 +477,6 @@ func Test_buildUpdateChildBlock(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateChildBlock(proj, typ)
@@ -538,8 +512,6 @@ func Test_buildArchiveSomethingBlock(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildArchiveSomethingBlock(proj, typ)

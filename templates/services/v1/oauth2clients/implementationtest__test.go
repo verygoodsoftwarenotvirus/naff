@@ -12,8 +12,6 @@ func Test_implementationTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := implementationTestDotGo(proj)
 
@@ -410,8 +408,6 @@ func Test_buildImplementationTestConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildImplementationTestConstantDefs()
 
 		expected := `
@@ -433,8 +429,6 @@ func Test_buildTestService_OAuth2InternalErrorHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestService_OAuth2InternalErrorHandler()
 
 		expected := `
@@ -468,8 +462,6 @@ func Test_buildTestService_OAuth2ResponseErrorHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestService_OAuth2ResponseErrorHandler()
 
 		expected := `
@@ -499,8 +491,6 @@ func Test_buildTestService_AuthorizeScopeHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_AuthorizeScopeHandler(proj)
 
@@ -676,8 +666,6 @@ func Test_buildTestService_UserAuthorizationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_UserAuthorizationHandler(proj)
 
@@ -751,8 +739,6 @@ func Test_buildTestService_ClientAuthorizedHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ClientAuthorizedHandler(proj)
 
@@ -859,8 +845,6 @@ func Test_buildTestService_ClientScopeHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ClientScopeHandler(proj)
 

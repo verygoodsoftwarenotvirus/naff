@@ -12,8 +12,6 @@ func Test_mockWebhookDataManagerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockWebhookDataManagerDotGo(proj)
 
@@ -83,8 +81,6 @@ func Test_buildMockWebhookDataManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookDataManager()
 
 		expected := `
@@ -109,8 +105,6 @@ func Test_buildMockGetWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockGetWebhook(proj)
 
@@ -138,8 +132,6 @@ func Test_buildMockGetAllWebhooksCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockGetAllWebhooksCount()
 
 		expected := `
@@ -165,8 +157,6 @@ func Test_buildMockGetWebhooks(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockGetWebhooks(proj)
 
@@ -194,8 +184,6 @@ func Test_buildMockGetAllWebhooks(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockGetAllWebhooks(proj)
 
@@ -223,8 +211,6 @@ func Test_buildMockCreateWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockCreateWebhook(proj)
 
@@ -252,8 +238,6 @@ func Test_buildMockUpdateWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMockUpdateWebhook(proj)
 
@@ -280,8 +264,6 @@ func Test_buildMockArchiveWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockArchiveWebhook()
 
 		expected := `

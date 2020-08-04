@@ -12,8 +12,6 @@ func Test_middlewareTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareTestDotGo(proj)
 
@@ -413,8 +411,6 @@ func Test_buildMockHTTPHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHTTPHandler()
 
 		expected := `
@@ -445,8 +441,6 @@ func Test_buildTestService_CreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_CreationInputMiddleware(proj)
 
@@ -538,8 +532,6 @@ func Test_buildTestService_RequestIsAuthenticated(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_RequestIsAuthenticated(proj)
 
@@ -680,8 +672,6 @@ func Test_buildTestService_OAuth2TokenAuthenticationMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_OAuth2TokenAuthenticationMiddleware(proj)
 
@@ -773,8 +763,6 @@ func Test_buildTestService_OAuth2ClientInfoMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_OAuth2ClientInfoMiddleware(proj)
 
@@ -863,8 +851,6 @@ func Test_buildTestService_fetchOAuth2ClientFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_fetchOAuth2ClientFromRequest(proj)
 
@@ -917,8 +903,6 @@ func Test_buildTestService_fetchOAuth2ClientIDFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_fetchOAuth2ClientIDFromRequest(proj)
 

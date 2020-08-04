@@ -12,8 +12,6 @@ func Test_mockDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockDotGo(proj)
 
@@ -90,8 +88,6 @@ func Test_buildInterfaceImplementationDeclaration(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInterfaceImplementationDeclaration(proj)
 
@@ -114,8 +110,6 @@ func Test_buildMockAuthenticator(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockAuthenticator()
 
 		expected := `
@@ -140,8 +134,6 @@ func Test_buildMockValidateLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockValidateLogin()
 
 		expected := `
@@ -181,8 +173,6 @@ func Test_buildMockPasswordIsAcceptable(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockPasswordIsAcceptable()
 
 		expected := `
@@ -205,8 +195,6 @@ func Test_buildMockHashPassword(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHashPassword()
 
 		expected := `
@@ -232,8 +220,6 @@ func Test_buildMockPasswordMatches(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockPasswordMatches()
 
 		expected := `

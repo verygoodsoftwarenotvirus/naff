@@ -12,8 +12,6 @@ func Test_mainTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainTestDotGo(proj)
 
@@ -73,8 +71,6 @@ func Test_buildRunTestOnAllSupportedBrowsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRunTestOnAllSupportedBrowsers()
 
 		expected := `
@@ -110,8 +106,6 @@ func Test_buildTestProvider(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvider()
 
 		expected := `
@@ -134,8 +128,6 @@ func Test_buildTestLoginPage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestLoginPage()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_wireDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := wireDotGo(proj)
 
@@ -80,8 +78,6 @@ func Test_buildProvideConfigServerSettings(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideConfigServerSettings()
 
 		expected := `
@@ -105,8 +101,6 @@ func Test_buildProvideConfigAuthSettings(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideConfigAuthSettings()
 
 		expected := `
@@ -130,8 +124,6 @@ func Test_buildProvideConfigDatabaseSettings(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideConfigDatabaseSettings()
 
 		expected := `
@@ -155,8 +147,6 @@ func Test_buildProvideConfigFrontendSettings(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideConfigFrontendSettings()
 
 		expected := `
@@ -180,8 +170,6 @@ func Test_buildProvideSearchSettings(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideSearchSettings()
 
 		expected := `
@@ -205,8 +193,6 @@ func Test_buildWireProviders(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWireProviders(proj)
 

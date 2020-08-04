@@ -12,8 +12,6 @@ func Test_actionsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := actionsDotGo(proj)
 
@@ -109,8 +107,6 @@ func Test_buildVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildVarDefs()
 
 		expected := `
@@ -135,8 +131,6 @@ func Test_buildTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTypeDefs()
 
 		expected := `
@@ -168,8 +162,6 @@ func Test_buildRandomAction(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildRandomAction(proj)
 

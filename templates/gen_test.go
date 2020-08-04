@@ -14,8 +14,6 @@ func TestRenderProject(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = filepath.Join(os.TempDir(), "things", "stuff")
 

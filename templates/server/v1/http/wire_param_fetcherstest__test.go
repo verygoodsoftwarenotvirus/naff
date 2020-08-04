@@ -50,8 +50,6 @@ func Test_wireParamFetchersTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := wireParamFetchersTestDotGo(proj)
 
@@ -345,14 +343,440 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := wireParamFetchersTestDotGo(proj)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"fmt"
+	chi "github.com/go-chi/chi"
+	assert "github.com/stretchr/testify/assert"
+	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	anotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/anotherthings"
+	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
+	things "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/things"
+	users "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
+	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
+	yetanotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/yetanotherthings"
+	"testing"
+)
+
+func TestProvideThingsServiceThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideThingsServiceThingIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideAnotherThingsServiceThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideAnotherThingsServiceThingIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideAnotherThingsServiceAnotherThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideAnotherThingsServiceAnotherThingIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideYetAnotherThingsServiceThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideYetAnotherThingsServiceThingIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideYetAnotherThingsServiceAnotherThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideYetAnotherThingsServiceAnotherThingIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideYetAnotherThingsServiceYetAnotherThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideUsersServiceUserIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideUsersServiceUserIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideWebhooksServiceUserIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideWebhooksServiceUserIDFetcher()
+	})
+}
+
+func TestProvideWebhooksServiceWebhookIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideWebhooksServiceWebhookIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func TestProvideOAuth2ClientsServiceClientIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		_ = ProvideOAuth2ClientsServiceClientIDFetcher(noop.ProvideNoopLogger())
+	})
+}
+
+func Test_userIDFetcherFromRequestContext(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		exampleUser := fake.BuildFakeUser()
+		expected := exampleUser.ToSessionInfo()
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(req.Context(), v1.SessionInfoKey, expected),
+		)
+
+		actual := userIDFetcherFromRequestContext(req)
+		assert.Equal(t, expected.UserID, actual)
+	})
+
+	T.Run("without attached value", func(t *testing.T) {
+		req := buildRequest(t)
+		actual := userIDFetcherFromRequestContext(req)
+
+		assert.Zero(t, actual)
+	})
+}
+
+func Test_buildRouteParamUserIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(123)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{users.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
+		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(0)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{users.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildRouteParamThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		fn := buildRouteParamThingIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(123)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{things.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
+		fn := buildRouteParamThingIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(0)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{things.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildRouteParamAnotherThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		fn := buildRouteParamAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(123)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{anotherthings.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
+		fn := buildRouteParamAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(0)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{anotherthings.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildRouteParamYetAnotherThingIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		fn := buildRouteParamYetAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(123)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{yetanotherthings.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
+		fn := buildRouteParamYetAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(0)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{yetanotherthings.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(123)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{webhooks.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
+		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(0)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{webhooks.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(123)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{oauth2clients.URIParamKey},
+						Values: []string{fmt.Sprintf("%d", expected)},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+
+	T.Run("with invalid value somehow", func(t *testing.T) {
+		// NOTE: This will probably never happen in dev or production
+		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		expected := uint64(0)
+
+		req := buildRequest(t)
+		req = req.WithContext(
+			context.WithValue(
+				req.Context(),
+				chi.RouteCtxKey,
+				&chi.Context{
+					URLParams: chi.RouteParams{
+						Keys:   []string{oauth2clients.URIParamKey},
+						Values: []string{"expected"},
+					},
+				},
+			),
+		)
+
+		actual := fn(req)
+		assert.Equal(t, expected, actual)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestProvideSomethingServiceUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestProvideSomethingServiceUserIDFetcher(typ)
@@ -382,8 +806,6 @@ func Test_buildTestProvideSomethingServiceSomethingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestProvideSomethingServiceSomethingIDFetcher(typ)
@@ -414,8 +836,6 @@ func Test_buildTestProvideSomethingServiceOwnerTypeIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildTestProvideSomethingServiceOwnerTypeIDFetcher(proj.LastDataType(), proj.DataTypes[1])
@@ -446,8 +866,6 @@ func Test_buildTestProvideUsersServiceUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvideUsersServiceUserIDFetcher()
 
 		expected := `
@@ -476,8 +894,6 @@ func Test_buildTestProvideWebhooksServiceUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvideWebhooksServiceUserIDFetcher()
 
 		expected := `
@@ -505,8 +921,6 @@ func Test_buildTestProvideWebhooksServiceWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvideWebhooksServiceWebhookIDFetcher()
 
 		expected := `
@@ -535,8 +949,6 @@ func Test_buildTestProvideOAuth2ClientsServiceClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvideOAuth2ClientsServiceClientIDFetcher()
 
 		expected := `
@@ -565,8 +977,6 @@ func Test_buildTest_userIDFetcherFromRequestContext(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_userIDFetcherFromRequestContext(proj)
 
@@ -615,8 +1025,6 @@ func Test_buildTest_buildRouteParamUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_buildRouteParamUserIDFetcher(proj)
 
@@ -692,8 +1100,6 @@ func Test_buildTest_buildRouteParamSomethingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTest_buildRouteParamSomethingIDFetcher(proj, typ)
@@ -770,8 +1176,6 @@ func Test_buildTest_buildRouteParamWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_buildRouteParamWebhookIDFetcher(proj)
 
@@ -847,8 +1251,6 @@ func Test_buildTest_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTest_buildRouteParamOAuth2ClientIDFetcher(proj)
 

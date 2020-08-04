@@ -12,8 +12,6 @@ func Test_middlewareDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareDotGo(proj)
 
@@ -179,8 +177,6 @@ func Test_buildMiddlewareConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMiddlewareConstantDefs()
 
 		expected := `
@@ -203,8 +199,6 @@ func Test_buildCreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreationInputMiddleware(proj)
 
@@ -247,8 +241,6 @@ func Test_buildExtractOAuth2ClientFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildExtractOAuth2ClientFromRequest(proj)
 
@@ -312,8 +304,6 @@ func Test_buildDetermineScope(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildDetermineScope()
 
 		expected := `
@@ -347,8 +337,6 @@ func Test_buildOAuth2TokenAuthenticationMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2TokenAuthenticationMiddleware(proj)
 
@@ -396,8 +384,6 @@ func Test_buildOAuth2ClientInfoMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientInfoMiddleware(proj)
 
@@ -450,8 +436,6 @@ func Test_buildServiceFetchOAuth2ClientFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServiceFetchOAuth2ClientFromRequest(proj)
 
@@ -479,8 +463,6 @@ func Test_buildServiceFetchOAuth2ClientIDFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceFetchOAuth2ClientIDFromRequest()
 
 		expected := `

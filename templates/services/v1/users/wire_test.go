@@ -12,8 +12,6 @@ func Test_wireDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := wireDotGo(proj)
 
@@ -55,8 +53,6 @@ func Test_buildProviders(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProviders()
 
 		expected := `
@@ -85,8 +81,6 @@ func Test_buildProvideUserDataManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideUserDataManager(proj)
 
@@ -113,8 +107,6 @@ func Test_buildProvideUserDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideUserDataServer(proj)
 

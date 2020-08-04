@@ -12,8 +12,6 @@ func Test_mainDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainDotGo(proj)
 
@@ -72,8 +70,6 @@ func Test_buildMainConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainConstantDefs()
 
 		expected := `
@@ -98,8 +94,6 @@ func Test_buildMainTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainTypeDefs()
 
 		expected := `
@@ -142,8 +136,6 @@ func Test_buildMainErrorInterfaceImplementation(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainErrorInterfaceImplementation()
 
 		expected := `
@@ -163,8 +155,6 @@ func Test_buildMainErrorResponseDotError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMainErrorResponseDotError()
 
 		expected := `

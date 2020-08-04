@@ -12,8 +12,6 @@ func Test_usersTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := usersTestDotGo(proj)
 
@@ -189,8 +187,6 @@ func Test_buildUsersTestsInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUsersTestsInit()
 
 		expected := `
@@ -217,8 +213,6 @@ func Test_buildUsersTestsRandString(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUsersTestsRandString()
 
 		expected := `
@@ -251,8 +245,6 @@ func Test_buildUsersTestsBuildDummyUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersTestsBuildDummyUser(proj)
 
@@ -301,8 +293,6 @@ func Test_buildUsersTestsCheckUserCreationEquality(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersTestsCheckUserCreationEquality(proj)
 
@@ -336,8 +326,6 @@ func Test_buildUsersTestsCheckUserEquality(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersTestsCheckUserEquality(proj)
 
@@ -370,8 +358,6 @@ func Test_buildUsersTestsTestUsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersTestsTestUsers(proj)
 

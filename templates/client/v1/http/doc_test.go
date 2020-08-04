@@ -12,8 +12,6 @@ func Test_docDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		expected := `
 /*
 Package client provides an HTTP client that can communicate with and interpret the responses

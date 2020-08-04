@@ -12,8 +12,6 @@ func Test_oauth2ClientsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj)
 
@@ -122,8 +120,6 @@ func Test_buildFetchRandomOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildFetchRandomOAuth2Client(proj)
 
@@ -166,8 +162,6 @@ func Test_buildMustBuildCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMustBuildCode()
 
 		expected := `
@@ -196,8 +190,6 @@ func Test_buildBuildOAuth2ClientActions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildOAuth2ClientActions(proj)
 

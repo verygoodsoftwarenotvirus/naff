@@ -12,8 +12,6 @@ func Test_oauth2HandlerMockTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2HandlerMockTestDotGo(proj)
 
@@ -88,8 +86,6 @@ func Test_buildOAuth2HandlerMockTestMockOAuth2Handler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestMockOAuth2Handler()
 
 		expected := `
@@ -115,8 +111,6 @@ func Test_buildOAuth2HandlerMockTestSetAllowGetAccessRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetAllowGetAccessRequest()
 
 		expected := `
@@ -138,8 +132,6 @@ func Test_buildOAuth2HandlerMockTestSetClientAuthorizedHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetClientAuthorizedHandler()
 
 		expected := `
@@ -163,8 +155,6 @@ func Test_buildOAuth2HandlerMockTestSetClientScopeHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetClientScopeHandler()
 
 		expected := `
@@ -188,8 +178,6 @@ func Test_buildOAuth2HandlerMockTestSetClientInfoHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetClientInfoHandler()
 
 		expected := `
@@ -213,8 +201,6 @@ func Test_buildOAuth2HandlerMockTestSetUserAuthorizationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetUserAuthorizationHandler()
 
 		expected := `
@@ -238,8 +224,6 @@ func Test_buildOAuth2HandlerMockTestSetAuthorizeScopeHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetAuthorizeScopeHandler()
 
 		expected := `
@@ -263,8 +247,6 @@ func Test_buildOAuth2HandlerMockTestSetResponseErrorHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetResponseErrorHandler()
 
 		expected := `
@@ -288,8 +270,6 @@ func Test_buildOAuth2HandlerMockTestSetInternalErrorHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestSetInternalErrorHandler()
 
 		expected := `
@@ -313,8 +293,6 @@ func Test_buildOAuth2HandlerMockTestValidationBearerToken(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestValidationBearerToken()
 
 		expected := `
@@ -340,8 +318,6 @@ func Test_buildOAuth2HandlerMockTestHandleAuthorizeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestHandleAuthorizeRequest()
 
 		expected := `
@@ -365,8 +341,6 @@ func Test_buildOAuth2HandlerMockTestHandleTokenRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2HandlerMockTestHandleTokenRequest()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_docDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		expected := `
 /*
 Command config_gen generates configuration files in the local repository, configured

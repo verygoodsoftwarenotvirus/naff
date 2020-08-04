@@ -13,8 +13,6 @@ func Test_iterablesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesDotGo(proj, typ)
@@ -164,8 +162,6 @@ func Test_buildTracerAttachmentsForMethodWithParents(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTracerAttachmentsForMethodWithParents(proj, typ)
@@ -188,8 +184,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildTracerAttachmentsForMethodWithParents(proj, proj.LastDataType())
@@ -217,8 +211,6 @@ func Test_buildTracerAttachmentsForListMethodWithParents(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTracerAttachmentsForListMethodWithParents(proj, typ)
@@ -241,8 +233,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildTracerAttachmentsForListMethodWithParents(proj, proj.LastDataType())
@@ -270,8 +260,6 @@ func Test_buildSomethingExists(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildSomethingExists(proj, typ)
@@ -310,8 +298,6 @@ func Test_buildGetSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetSomething(proj, typ)
@@ -351,8 +337,6 @@ func Test_buildGetAllSomethingCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetAllSomethingCount(proj, typ)
@@ -385,8 +369,6 @@ func Test_buildGetAllSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetAllSomething(proj, typ)
@@ -420,8 +402,6 @@ func Test_buildGetListOfSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetListOfSomething(proj, typ)
@@ -462,8 +442,6 @@ func Test_buildGetListOfSomethingWithIDs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetListOfSomethingWithIDs(proj, typ)
@@ -500,8 +478,6 @@ func (c *Client) GetItemsWithIDs(ctx context.Context, userID uint64, limit uint8
 	})
 
 	T.Run("with structure not belonging to user", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
@@ -540,8 +516,6 @@ func Test_buildCreateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildCreateSomething(proj, typ)
@@ -575,8 +549,6 @@ func Test_buildUpdateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildUpdateSomething(proj, typ)
@@ -612,8 +584,6 @@ func Test_buildArchiveSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildArchiveSomething(proj, typ)
@@ -648,8 +618,6 @@ func (c *Client) ArchiveItem(ctx context.Context, itemID, userID uint64) error {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildArchiveSomething(proj, proj.LastDataType())
@@ -688,8 +656,6 @@ func Test_buildGetAllSomethingForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGetAllSomethingForUser(proj, typ)

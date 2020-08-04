@@ -13,29 +13,23 @@ func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = os.TempDir()
 		assert.NoError(t, RenderPackage(proj))
 	})
 
-	//	T.Run("with invalid output directory", func(t *testing.T) {
-	//		t.Parallel()
-	//
-	//		proj := testprojects.BuildTodoApp()
-	//		proj.OutputPath = `/\0/\0/\0`
-	//
-	//		assert.Error(t, RenderPackage(proj))
-	//	})
+	T.Run("with invalid output directory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = `/dev/null`
+
+		assert.Error(t, RenderPackage(proj))
+	})
 }
 
 func Test_mainDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainDotGo(proj)
 
@@ -185,8 +179,6 @@ func Test_buildConstDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildConstDeclarations()
 
 		expected := `
@@ -217,8 +209,6 @@ func Test_buildVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildVarDeclarations()
 
 		expected := `
@@ -257,8 +247,6 @@ func Test_buildLimitSlice(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildLimitSlice()
 
 		expected := `
@@ -286,8 +274,6 @@ func Test_buildMustnt(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMustnt()
 
 		expected := `
@@ -311,8 +297,6 @@ func Test_buildClearTheScreen(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildClearTheScreen()
 
 		expected := `
@@ -337,8 +321,6 @@ func Test_buildBuildTheThing(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildTheThing()
 
 		expected := `
@@ -383,8 +365,6 @@ func Test_buildDoTheThing(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildDoTheThing()
 
 		expected := `
@@ -426,8 +406,6 @@ func Test_buildRequestTOTPSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRequestTOTPSecret()
 
 		expected := `
@@ -467,8 +445,6 @@ func Test_buildMain(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMain()
 
 		expected := `

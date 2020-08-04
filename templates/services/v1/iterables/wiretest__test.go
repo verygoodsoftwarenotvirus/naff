@@ -12,8 +12,6 @@ func Test_wireTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := wireTestDotGo(proj, typ)
@@ -52,8 +50,6 @@ func Test_buildTestProvideSomethingDataManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestProvideSomethingDataManager(proj, typ)
@@ -84,8 +80,6 @@ func Test_buildTestProvideSomethingDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestProvideSomethingDataServer(typ)

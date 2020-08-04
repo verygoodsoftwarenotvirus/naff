@@ -12,8 +12,6 @@ func Test_mockWebhookDataServerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockWebhookDataServerDotGo(proj)
 
@@ -80,8 +78,6 @@ func Test_buildMockWebhookDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookDataServer()
 
 		expected := `
@@ -106,8 +102,6 @@ func Test_buildMockWebhookCreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookCreationInputMiddleware()
 
 		expected := `
@@ -133,8 +127,6 @@ func Test_buildMockWebhookUpdateInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookUpdateInputMiddleware()
 
 		expected := `
@@ -160,8 +152,6 @@ func Test_buildMockWebhookListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookListHandler()
 
 		expected := `
@@ -186,8 +176,6 @@ func Test_buildMockWebhookCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookCreateHandler()
 
 		expected := `
@@ -212,8 +200,6 @@ func Test_buildMockWebhookReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookReadHandler()
 
 		expected := `
@@ -238,8 +224,6 @@ func Test_buildMockWebhookUpdateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookUpdateHandler()
 
 		expected := `
@@ -264,8 +248,6 @@ func Test_buildMockWebhookArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockWebhookArchiveHandler()
 
 		expected := `

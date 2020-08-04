@@ -12,8 +12,6 @@ func Test_iterablesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesDotGo(proj, typ)
@@ -90,8 +88,6 @@ func Test_buildBuildFakeSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildFakeSomething(proj, typ)
@@ -121,8 +117,6 @@ func BuildFakeItem() *v1.Item {
 	})
 
 	T.Run("with every type", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildEveryTypeApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildFakeSomething(proj, typ)
@@ -181,8 +175,6 @@ func Test_buildBuildFakeSomethingList(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildFakeSomethingList(proj, typ)
@@ -223,8 +215,6 @@ func Test_buildBuildFakeSomethingUpdateInputFromSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildFakeSomethingUpdateInputFromSomething(proj, typ)
@@ -255,8 +245,6 @@ func Test_buildBuildFakeSomethingCreationInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildFakeSomethingCreationInput(proj, typ)
@@ -284,8 +272,6 @@ func Test_buildBuildFakeSomethingCreationInputFromSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildFakeSomethingCreationInputFromSomething(proj, typ)

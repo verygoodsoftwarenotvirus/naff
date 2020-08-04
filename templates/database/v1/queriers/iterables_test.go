@@ -14,8 +14,6 @@ func Test_iterablesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -452,8 +450,6 @@ func (p *Postgres) ArchiveItem(ctx context.Context, itemID, userID uint64) error
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -904,8 +900,6 @@ func (s *Sqlite) ArchiveItem(ctx context.Context, itemID, userID uint64) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1360,8 +1354,6 @@ func Test_buildIterableConstants(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableConstants(typ)
@@ -1384,8 +1376,6 @@ const (
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildIterableConstants(proj.LastDataType())
@@ -1410,8 +1400,6 @@ func Test_buildIterableVariableDecs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildIterableVariableDecs(proj, typ)
@@ -1441,8 +1429,6 @@ var (
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildIterableVariableDecs(proj, proj.DataTypes[0])
@@ -1475,8 +1461,6 @@ func Test_buildTableColumns(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTableColumns(typ)
@@ -1506,8 +1490,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildTableColumns(proj.LastDataType())
@@ -1539,8 +1521,6 @@ func Test_buildScanFields(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildScanFields(typ)
@@ -1568,8 +1548,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		x := buildScanFields(proj.LastDataType())
@@ -1599,8 +1577,6 @@ func Test_buildScanSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1641,8 +1617,6 @@ func (p *Postgres) scanItem(scan v1.Scanner) (*v11.Item, error) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1683,8 +1657,6 @@ func (s *Sqlite) scanItem(scan v1.Scanner) (*v11.Item, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1729,8 +1701,6 @@ func Test_buildScanListOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1776,8 +1746,6 @@ func (p *Postgres) scanItems(rows v1.ResultIterator) ([]v11.Item, error) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1823,8 +1791,6 @@ func (s *Sqlite) scanItems(rows v1.ResultIterator) ([]v11.Item, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1874,8 +1840,6 @@ func Test_buildSomethingExistsQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1914,8 +1878,6 @@ func (p *Postgres) buildItemExistsQuery(itemID, userID uint64) (query string, ar
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -1959,8 +1921,6 @@ func (p *Postgres) buildYetAnotherThingExistsQuery(thingID, anotherThingID, yetA
 	})
 
 	T.Run("postgres belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2001,8 +1961,6 @@ func (p *Postgres) buildItemExistsQuery(itemID, userID uint64) (query string, ar
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2041,8 +1999,6 @@ func (s *Sqlite) buildItemExistsQuery(itemID, userID uint64) (query string, args
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -2086,8 +2042,6 @@ func (s *Sqlite) buildYetAnotherThingExistsQuery(thingID, anotherThingID, yetAno
 	})
 
 	T.Run("sqlite belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2128,8 +2082,6 @@ func (s *Sqlite) buildItemExistsQuery(itemID, userID uint64) (query string, args
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2168,8 +2120,6 @@ func (m *MariaDB) buildItemExistsQuery(itemID, userID uint64) (query string, arg
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -2213,8 +2163,6 @@ func (m *MariaDB) buildYetAnotherThingExistsQuery(thingID, anotherThingID, yetAn
 	})
 
 	T.Run("mariadb belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2259,8 +2207,6 @@ func Test_buildSomethingExistsFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2292,8 +2238,6 @@ func (p *Postgres) ItemExists(ctx context.Context, itemID, userID uint64) (exist
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2325,8 +2269,6 @@ func (s *Sqlite) ItemExists(ctx context.Context, itemID, userID uint64) (exists 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2362,8 +2304,6 @@ func Test_buildGetSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2401,8 +2341,6 @@ func (p *Postgres) buildGetItemQuery(itemID, userID uint64) (query string, args 
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -2445,8 +2383,6 @@ func (p *Postgres) buildGetYetAnotherThingQuery(thingID, anotherThingID, yetAnot
 	})
 
 	T.Run("postgres belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2487,8 +2423,6 @@ func (p *Postgres) buildGetItemQuery(itemID uint64) (query string, args []interf
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2526,8 +2460,6 @@ func (s *Sqlite) buildGetItemQuery(itemID, userID uint64) (query string, args []
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -2570,8 +2502,6 @@ func (s *Sqlite) buildGetYetAnotherThingQuery(thingID, anotherThingID, yetAnothe
 	})
 
 	T.Run("sqlite belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2612,8 +2542,6 @@ func (s *Sqlite) buildGetItemQuery(itemID uint64) (query string, args []interfac
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2651,8 +2579,6 @@ func (m *MariaDB) buildGetItemQuery(itemID, userID uint64) (query string, args [
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -2695,8 +2621,6 @@ func (m *MariaDB) buildGetYetAnotherThingQuery(thingID, anotherThingID, yetAnoth
 	})
 
 	T.Run("mariadb belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2741,8 +2665,6 @@ func Test_buildGetSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2769,8 +2691,6 @@ func (p *Postgres) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2797,8 +2717,6 @@ func (s *Sqlite) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2829,8 +2747,6 @@ func Test_buildSomethingAllCountQueryDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2875,8 +2791,6 @@ func (p *Postgres) buildGetAllItemsCountQuery() string {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2921,8 +2835,6 @@ func (s *Sqlite) buildGetAllItemsCountQuery() string {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2971,8 +2883,6 @@ func Test_buildGetAllSomethingCountFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2997,8 +2907,6 @@ func (p *Postgres) GetAllItemsCount(ctx context.Context) (count uint64, err erro
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3023,8 +2931,6 @@ func (s *Sqlite) GetAllItemsCount(ctx context.Context) (count uint64, err error)
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3053,8 +2959,6 @@ func Test_buildGetBatchOfSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3092,8 +2996,6 @@ func (p *Postgres) buildGetBatchOfItemsQuery(beginID, endID uint64) (query strin
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3131,8 +3033,6 @@ func (s *Sqlite) buildGetBatchOfItemsQuery(beginID, endID uint64) (query string,
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3174,8 +3074,6 @@ func Test_buildGetAllOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3235,8 +3133,6 @@ func (p *Postgres) GetAllItems(ctx context.Context, resultChannel chan []v1.Item
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3296,8 +3192,6 @@ func (s *Sqlite) GetAllItems(ctx context.Context, resultChannel chan []v1.Item) 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3361,8 +3255,6 @@ func Test_buildGetListOfSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3407,8 +3299,6 @@ func (p *Postgres) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (qu
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3453,8 +3343,6 @@ func (s *Sqlite) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (quer
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3502,8 +3390,6 @@ func (m *MariaDB) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (que
 	//  the only thing that these modifications affect is the comment
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -3554,8 +3440,6 @@ func (p *Postgres) buildGetYetAnotherThingsQuery(thingID, anotherThingID uint64,
 	})
 
 	T.Run("postgres with ownership chain and user restriction", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -3609,8 +3493,6 @@ func (p *Postgres) buildGetYetAnotherThingsQuery(thingID, anotherThingID, userID
 	})
 
 	T.Run("postgres belonging to a user and no other", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -3656,8 +3538,6 @@ func (p *Postgres) buildGetYetAnotherThingsQuery(filter *v1.QueryFilter) (query 
 	})
 
 	T.Run("postgres belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3707,8 +3587,6 @@ func Test_buildGetListOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3754,8 +3632,6 @@ func (p *Postgres) GetItems(ctx context.Context, userID uint64, filter *v1.Query
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3801,8 +3677,6 @@ func (s *Sqlite) GetItems(ctx context.Context, userID uint64, filter *v1.QueryFi
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3852,8 +3726,6 @@ func Test_buildGetListOfSomethingWithIDsQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3901,8 +3773,6 @@ func (p *Postgres) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []u
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -3949,8 +3819,6 @@ func (p *Postgres) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, l
 	})
 
 	T.Run("postgres belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3999,8 +3867,6 @@ func (p *Postgres) buildGetItemsWithIDsQuery(limit uint8, ids []uint64) (query s
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4056,8 +3922,6 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []uin
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -4112,8 +3976,6 @@ func (s *Sqlite) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, lim
 	})
 
 	T.Run("sqlite belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4170,8 +4032,6 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(limit uint8, ids []uint64) (query str
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4227,8 +4087,6 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []ui
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -4283,8 +4141,6 @@ func (m *MariaDB) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, li
 	})
 
 	T.Run("mariadb belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4341,8 +4197,6 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(limit uint8, ids []uint64) (query st
 	})
 
 	T.Run("panics with invalid database", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("invalid")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4355,8 +4209,6 @@ func Test_buildGetListOfSomethingWithIDsFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4398,8 +4250,6 @@ func (p *Postgres) GetItemsWithIDs(ctx context.Context, userID uint64, limit uin
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -4442,8 +4292,6 @@ func (p *Postgres) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingI
 	})
 
 	T.Run("postgres belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4487,8 +4335,6 @@ func (p *Postgres) GetItemsWithIDs(ctx context.Context, limit uint8, ids []uint6
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4530,8 +4376,6 @@ func (s *Sqlite) GetItemsWithIDs(ctx context.Context, userID uint64, limit uint8
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -4574,8 +4418,6 @@ func (s *Sqlite) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID 
 	})
 
 	T.Run("sqlite belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4619,8 +4461,6 @@ func (s *Sqlite) GetItemsWithIDs(ctx context.Context, limit uint8, ids []uint64)
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4662,8 +4502,6 @@ func (m *MariaDB) GetItemsWithIDs(ctx context.Context, userID uint64, limit uint
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -4706,8 +4544,6 @@ func (m *MariaDB) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID
 	})
 
 	T.Run("mariadb belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4755,8 +4591,6 @@ func Test_determineCreationColumns(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := determineCreationColumns(typ)
@@ -4780,8 +4614,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		typ := proj.LastDataType()
@@ -4808,8 +4640,6 @@ func Test_determineCreationQueryValues(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := determineCreationQueryValues("example", typ)
@@ -4833,8 +4663,6 @@ func main() {
 	})
 
 	T.Run("with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		typ := proj.LastDataType()
@@ -4861,8 +4689,6 @@ func Test_buildCreateSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4906,8 +4732,6 @@ func (p *Postgres) buildCreateItemQuery(input *v1.Item) (query string, args []in
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4949,8 +4773,6 @@ func (s *Sqlite) buildCreateItemQuery(input *v1.Item) (query string, args []inte
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4996,8 +4818,6 @@ func Test_buildCreateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5037,8 +4857,6 @@ func (p *Postgres) CreateItem(ctx context.Context, input *v1.ItemCreationInput) 
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5086,8 +4904,6 @@ func (s *Sqlite) CreateItem(ctx context.Context, input *v1.ItemCreationInput) (*
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5135,8 +4951,6 @@ func (m *MariaDB) CreateItem(ctx context.Context, input *v1.ItemCreationInput) (
 	})
 
 	T.Run("panics with invalid database", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("invalid")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5145,8 +4959,6 @@ func (m *MariaDB) CreateItem(ctx context.Context, input *v1.ItemCreationInput) (
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5185,8 +4997,6 @@ func (p *Postgres) CreateYetAnotherThing(ctx context.Context, input *v1.YetAnoth
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5233,8 +5043,6 @@ func (s *Sqlite) CreateYetAnotherThing(ctx context.Context, input *v1.YetAnother
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5285,8 +5093,6 @@ func Test_buildUpdateSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5328,8 +5134,6 @@ func (p *Postgres) buildUpdateItemQuery(input *v1.Item) (query string, args []in
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5370,8 +5174,6 @@ func (p *Postgres) buildUpdateYetAnotherThingQuery(input *v1.YetAnotherThing) (q
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5411,8 +5213,6 @@ func (s *Sqlite) buildUpdateItemQuery(input *v1.Item) (query string, args []inte
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5451,8 +5251,6 @@ func (s *Sqlite) buildUpdateYetAnotherThingQuery(input *v1.YetAnotherThing) (que
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5492,8 +5290,6 @@ func (m *MariaDB) buildUpdateItemQuery(input *v1.Item) (query string, args []int
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5536,8 +5332,6 @@ func Test_buildUpdateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5563,8 +5357,6 @@ func (p *Postgres) UpdateItem(ctx context.Context, input *v1.Item) error {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5591,8 +5383,6 @@ func (s *Sqlite) UpdateItem(ctx context.Context, input *v1.Item) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5623,8 +5413,6 @@ func Test_buildArchiveSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5665,8 +5453,6 @@ func (p *Postgres) buildArchiveItemQuery(itemID, userID uint64) (query string, a
 	})
 
 	T.Run("postgres with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5708,8 +5494,6 @@ func (p *Postgres) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherTh
 	})
 
 	T.Run("postgres with ownership chain and user ownership", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5753,8 +5537,6 @@ func (p *Postgres) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherTh
 	})
 
 	T.Run("postgres belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5797,8 +5579,6 @@ func (p *Postgres) buildArchiveItemQuery(itemID uint64) (query string, args []in
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5837,8 +5617,6 @@ func (s *Sqlite) buildArchiveItemQuery(itemID, userID uint64) (query string, arg
 	})
 
 	T.Run("sqlite with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -5878,8 +5656,6 @@ func (s *Sqlite) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherThin
 	})
 
 	T.Run("sqlite belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5920,8 +5696,6 @@ func (s *Sqlite) buildArchiveItemQuery(itemID uint64) (query string, args []inte
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5960,8 +5734,6 @@ func (m *MariaDB) buildArchiveItemQuery(itemID, userID uint64) (query string, ar
 	})
 
 	T.Run("mariadb with ownership chain", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
@@ -6001,8 +5773,6 @@ func (m *MariaDB) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherThi
 	})
 
 	T.Run("mariadb belonging to nobody", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6047,8 +5817,6 @@ func Test_buildArchiveSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6082,8 +5850,6 @@ func (p *Postgres) ArchiveItem(ctx context.Context, itemID, userID uint64) error
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6117,8 +5883,6 @@ func (s *Sqlite) ArchiveItem(ctx context.Context, itemID, userID uint64) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]

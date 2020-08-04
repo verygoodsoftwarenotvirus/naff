@@ -12,8 +12,6 @@ func Test_counterDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := counterDotGo(proj)
 
@@ -58,8 +56,6 @@ func Test_buildUnitCounter(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUnitCounter(proj)
 
@@ -88,8 +84,6 @@ func Test_buildIncrement(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildIncrement()
 
 		expected := `
@@ -114,8 +108,6 @@ func Test_buildIncrementBy(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildIncrementBy()
 
 		expected := `
@@ -140,8 +132,6 @@ func Test_buildDecrement(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildDecrement()
 
 		expected := `

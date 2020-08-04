@@ -13,8 +13,6 @@ func Test_timeTellerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := timeTellerDotGo(proj, dbvendor)
@@ -51,8 +49,6 @@ func (m *mockTimeTeller) Now() uint64 {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := timeTellerDotGo(proj, dbvendor)
@@ -89,8 +85,6 @@ func (m *mockTimeTeller) Now() uint64 {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := timeTellerDotGo(proj, dbvendor)
