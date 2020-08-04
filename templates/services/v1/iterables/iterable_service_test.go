@@ -1,6 +1,7 @@
 package iterables
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -230,6 +231,55 @@ type (
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+
+		x := buildServiceTypeDecls(proj, typ)
+
+		expected := `
+package example
+
+import (
+	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
+	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
+	"net/http"
+)
+
+type (
+	// Service handles to-do list yet another things
+	Service struct {
+		logger                     v1.Logger
+		thingDataManager           v11.ThingDataManager
+		anotherThingDataManager    v11.AnotherThingDataManager
+		yetAnotherThingDataManager v11.YetAnotherThingDataManager
+		thingIDFetcher             ThingIDFetcher
+		anotherThingIDFetcher      AnotherThingIDFetcher
+		yetAnotherThingIDFetcher   YetAnotherThingIDFetcher
+		yetAnotherThingCounter     metrics.UnitCounter
+		encoderDecoder             encoding.EncoderDecoder
+		reporter                   newsman.Reporter
+	}
+
+	// ThingIDFetcher is a function that fetches thing IDs.
+	ThingIDFetcher func(*http.Request) uint64
+
+	// AnotherThingIDFetcher is a function that fetches another thing IDs.
+	AnotherThingIDFetcher func(*http.Request) uint64
+
+	// YetAnotherThingIDFetcher is a function that fetches yet another thing IDs.
+	YetAnotherThingIDFetcher func(*http.Request) uint64
+)
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildProvideServiceFuncDecl(T *testing.T) {
@@ -277,6 +327,64 @@ func ProvideItemsService(
 		itemCounter:     itemCounter,
 		reporter:        reporter,
 		search:          searchIndexManager,
+	}
+
+	return svc, nil
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+
+		x := buildProvideServiceFuncDecl(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"fmt"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
+	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
+)
+
+// ProvideYetAnotherThingsService builds a new YetAnotherThingsService.
+func ProvideYetAnotherThingsService(
+	logger v1.Logger,
+	thingDataManager v11.ThingDataManager,
+	anotherThingDataManager v11.AnotherThingDataManager,
+	yetAnotherThingDataManager v11.YetAnotherThingDataManager,
+	thingIDFetcher ThingIDFetcher,
+	anotherThingIDFetcher AnotherThingIDFetcher,
+	yetAnotherThingIDFetcher YetAnotherThingIDFetcher,
+	encoder encoding.EncoderDecoder,
+	yetAnotherThingCounterProvider metrics.UnitCounterProvider,
+	reporter newsman.Reporter,
+) (*Service, error) {
+	yetAnotherThingCounter, err := yetAnotherThingCounterProvider(counterName, counterDescription)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing counter: %w", err)
+	}
+
+	svc := &Service{
+		logger:                     logger.WithName(serviceName),
+		thingIDFetcher:             thingIDFetcher,
+		anotherThingIDFetcher:      anotherThingIDFetcher,
+		yetAnotherThingIDFetcher:   yetAnotherThingIDFetcher,
+		thingDataManager:           thingDataManager,
+		anotherThingDataManager:    anotherThingDataManager,
+		yetAnotherThingDataManager: yetAnotherThingDataManager,
+		encoderDecoder:             encoder,
+		yetAnotherThingCounter:     yetAnotherThingCounter,
+		reporter:                   reporter,
 	}
 
 	return svc, nil
