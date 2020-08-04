@@ -80,8 +80,8 @@ type Project struct {
 	enabledDatabases     map[validDatabase]struct{}
 }
 
-// lastDataType is a helper method for tests
-func (p *Project) lastDataType() DataType {
+// LastDataType is a helper method for tests
+func (p *Project) LastDataType() DataType {
 	return p.DataTypes[len(p.DataTypes)-1]
 }
 

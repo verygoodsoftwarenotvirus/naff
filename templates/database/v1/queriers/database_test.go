@@ -1177,6 +1177,14 @@ func (m *MariaDB) IsReady(ctx context.Context) (ready bool) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("invalid", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+
+		assert.Panics(t, func() { buildIsReady(dbvendor) })
+	})
 }
 
 func Test_buildLogQueryBuildingError(T *testing.T) {

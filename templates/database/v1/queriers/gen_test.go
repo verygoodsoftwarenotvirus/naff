@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"github.com/Masterminds/squirrel"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"os"
 	"testing"
 
@@ -296,6 +297,108 @@ func TestPostgres_buildExampleQuery(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with expected arguments", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		expectedArgs := []jen.Code{
+			jen.One(),
+			jen.Nil(),
+		}
+
+		qb := squirrel.Select("*").From("something").Where(squirrel.Eq{
+			"things": "whatever",
+			"stuff":  "whatever",
+		})
+		x := buildQueryTest(dbvendor, "ExampleQuery", qb, expectedArgs, nil, nil)
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestPostgres_buildExampleQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		expectedQuery := "SELECT * FROM something WHERE stuff = ? AND things = ?"
+		expectedArgs := []interface{}{
+			1,
+			nil,
+		}
+		actualQuery, actualArgs := p.buildExampleQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with expected arguments", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		expectedArgs := []jen.Code{
+			jen.Nil(),
+		}
+
+		qb := squirrel.Select("*").From("something").Where(squirrel.Eq{
+			"things": "whatever",
+			"stuff":  "whatever",
+		})
+		x := buildQueryTest(dbvendor, "ExampleQuery", qb, expectedArgs, nil, nil)
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestPostgres_buildExampleQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		expectedQuery := "SELECT * FROM something WHERE stuff = ? AND things = ?"
+		expectedArgs := []interface{}{
+			nil,
+		}
+		actualQuery, actualArgs := p.buildExampleQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("panics when failing to build SQL query", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+
+		qb := squirrel.Select()
+
+		assert.Panics(t, func() { buildQueryTest(dbvendor, "ExampleQuery", qb, nil, nil, nil) })
+	})
 }
 
 func Test_unixTimeForDatabase(T *testing.T) {
@@ -339,13 +442,7 @@ func Test_unixTimeForDatabase(T *testing.T) {
 
 		dbvendor := wordsmith.FromSingularPascalCase("Fart")
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic did not occur")
-			}
-		}()
-
-		unixTimeForDatabase(dbvendor)
+		assert.Panics(t, func() { unixTimeForDatabase(dbvendor) })
 	})
 }
 
@@ -399,12 +496,6 @@ func Test_queryBuilderForDatabase(T *testing.T) {
 
 		dbvendor := wordsmith.FromSingularPascalCase("Fart")
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic did not occur")
-			}
-		}()
-
-		queryBuilderForDatabase(dbvendor)
+		assert.Panics(t, func() { queryBuilderForDatabase(dbvendor) })
 	})
 }

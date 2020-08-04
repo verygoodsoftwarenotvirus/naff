@@ -310,7 +310,7 @@ func main() {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, proj.DataTypes[2])
+		x := buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj, proj.LastDataType())
 
 		expected := `
 package main
@@ -366,7 +366,7 @@ func main() {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildV1ClientURLBuildingParamsForCreatingSomething(proj, proj.DataTypes[2])
+		x := buildV1ClientURLBuildingParamsForCreatingSomething(proj, proj.LastDataType())
 
 		expected := `
 package main
@@ -421,7 +421,7 @@ func main() {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildV1ClientURLBuildingParamsForListOfSomething(proj, proj.DataTypes[2])
+		x := buildV1ClientURLBuildingParamsForListOfSomething(proj, proj.LastDataType())
 
 		expected := `
 package main
@@ -503,7 +503,7 @@ func main() {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, proj.DataTypes[2])
+		x := buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, proj.LastDataType())
 
 		expected := `
 package main

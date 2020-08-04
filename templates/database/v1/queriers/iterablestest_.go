@@ -2,7 +2,6 @@ package queriers
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -1322,6 +1321,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 		).
@@ -1362,6 +1362,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 						jen.IDf("example%sIDs", sn),
 					)
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			jen.Line(),
@@ -1392,6 +1393,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 		).
@@ -1411,6 +1413,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return utils.BuildFakeVar(proj, fmt.Sprintf("%sList", sn))
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			func() jen.Code {
@@ -1447,6 +1450,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 						jen.IDf("example%sIDs", sn),
 					)
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			jen.Line(),
@@ -1478,6 +1482,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 		).
@@ -1497,6 +1502,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return utils.BuildFakeVar(proj, fmt.Sprintf("%sList", sn))
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			func() jen.Code {
@@ -1533,6 +1539,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 						jen.IDf("example%sIDs", sn),
 					)
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			jen.Line(),
@@ -1574,6 +1581,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 		).
@@ -1597,6 +1605,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return utils.BuildFakeVar(proj, fmt.Sprintf("%sList", sn))
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			func() jen.Code {
@@ -1633,6 +1642,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 						jen.IDf("example%sIDs", sn),
 					)
 				}
+				// this line can never be tested
 				return jen.Null()
 			}(),
 			jen.Line(),
@@ -1941,7 +1951,8 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 
 	expectedQuery, _, err := qb.ToSql()
 	if err != nil {
-		log.Fatalf("error running buildTestDBUpdateSomethingFuncDecl: %v", err)
+		// this line can't be tested
+		panic(fmt.Sprintf("error running buildTestDBUpdateSomethingFuncDecl: %v", err))
 	}
 
 	callArgs := typ.BuildArgsForDBQuerierTestOfUpdateMethod()
@@ -2047,7 +2058,7 @@ func buildTestDBUpdateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith
 	}
 }
 
-func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) (qb squirrel.UpdateBuilder, expectedArgs []jen.Code, callArgs []jen.Code) {
+func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor wordsmith.SuperPalabra, typ models.DataType) (qb squirrel.UpdateBuilder, expectedArgs []jen.Code, callArgs []jen.Code) {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -2091,7 +2102,7 @@ func buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj *models.Projec
 func buildTestDBArchiveSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
-	qb, expectedArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
+	qb, expectedArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 	pql := typ.BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(proj)
 	callArgs := typ.BuildArgsForDBQuerierTestOfArchiveQueryBuilder()
 
@@ -2103,7 +2114,7 @@ func buildTestDBArchiveSomethingFuncDecl(proj *models.Project, dbvendor wordsmit
 	dbfl := dbvendor.LowercaseAbbreviation()
 	sn := typ.Name.Singular()
 
-	qb, dbQueryExpectationArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
+	qb, dbQueryExpectationArgs, _ := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 	actualCallArgs := typ.BuildRequisiteFakeVarCallArgsForDBQueriersArchiveMethodTest()
 
 	dbQuery, _, _ := qb.ToSql()

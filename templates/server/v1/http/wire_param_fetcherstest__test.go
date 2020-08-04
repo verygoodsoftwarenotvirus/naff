@@ -418,7 +418,7 @@ func Test_buildTestProvideSomethingServiceOwnerTypeIDFetcher(T *testing.T) {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildTestProvideSomethingServiceOwnerTypeIDFetcher(proj.DataTypes[2], proj.DataTypes[1])
+		x := buildTestProvideSomethingServiceOwnerTypeIDFetcher(proj.LastDataType(), proj.DataTypes[1])
 
 		expected := `
 package example

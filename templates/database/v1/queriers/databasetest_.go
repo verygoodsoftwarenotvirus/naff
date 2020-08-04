@@ -2,12 +2,11 @@ package queriers
 
 import (
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	"log"
 	"strings"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -268,7 +267,7 @@ func buildTestProviderFunc(dbvendor wordsmith.SuperPalabra) jen.Code {
 	} else if isMariaDB(dbvendor) {
 		providerFuncName = fmt.Sprintf("Provide%sConnection", sn)
 	} else {
-		log.Panicf("invalid dbvendor: %q", dbvendor.Singular())
+		panic(fmt.Sprintf("invalid dbvendor: %q", dbvendor.Singular()))
 	}
 
 	return jen.Func().IDf("Test%s", providerFuncName).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(

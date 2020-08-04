@@ -249,11 +249,7 @@ func buildQueryTest(
 	expectArguments := len(expectedArgs) > 0
 	if expectArguments {
 		x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
-		if len(expectedArgs) > 0 {
-			block = append(block, x.Valuesln(expectedArgs...))
-		} else {
-			block = append(block, x.Values(expectedArgs...))
-		}
+		block = append(block, x.Valuesln(expectedArgs...))
 	}
 
 	returnedVars := []jen.Code{jen.ID(actualQueryVarName)}

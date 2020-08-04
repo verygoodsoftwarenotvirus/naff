@@ -3432,6 +3432,15 @@ func (m *MariaDB) UpdateUser(ctx context.Context, input *v1.User) error {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("panics on invalid database", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+		proj := testprojects.BuildTodoApp()
+
+		assert.Panics(t, func() { buildUpdateUser(proj, dbvendor) })
+	})
 }
 
 func Test_buildBuildUpdateUserPasswordQuery(T *testing.T) {

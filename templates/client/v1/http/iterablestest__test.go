@@ -1112,7 +1112,7 @@ func TestV1Client_GetItems(T *testing.T) {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildTestV1Client_GetListOfSomething(proj, proj.DataTypes[2])
+		x := buildTestV1Client_GetListOfSomething(proj, proj.LastDataType())
 
 		expected := `
 package example
@@ -1215,7 +1215,7 @@ func Test_buildTestV1Client_BuildCreateSomethingRequest(T *testing.T) {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildTestV1Client_BuildCreateSomethingRequest(proj, proj.DataTypes[2])
+		x := buildTestV1Client_BuildCreateSomethingRequest(proj, proj.LastDataType())
 
 		expected := `
 package example
@@ -1346,7 +1346,7 @@ func TestV1Client_CreateItem(T *testing.T) {
 
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildTestV1Client_CreateSomething(proj, proj.DataTypes[2])
+		x := buildTestV1Client_CreateSomething(proj, proj.LastDataType())
 
 		expected := `
 package example

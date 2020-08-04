@@ -3180,6 +3180,15 @@ func (m *MariaDB) UpdateWebhook(ctx context.Context, input *v1.Webhook) error {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("panics on invalid database", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+		proj := testprojects.BuildTodoApp()
+
+		assert.Panics(t, func() { buildUpdateWebhook(proj, dbvendor) })
+	})
 }
 
 func Test_buildBuildArchiveWebhookQuery(T *testing.T) {
@@ -3303,6 +3312,7 @@ func (m *MariaDB) buildArchiveWebhookQuery(webhookID, userID uint64) (query stri
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
 }
 
 func Test_buildArchiveWebhook(T *testing.T) {

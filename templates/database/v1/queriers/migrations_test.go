@@ -1139,13 +1139,7 @@ func Test_typeToPostgresType(T *testing.T) {
 
 		typ := "fart"
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic did not occur")
-			}
-		}()
-
-		typeToPostgresType(typ)
+		assert.Panics(t, func() { typeToPostgresType(typ) })
 	})
 }
 
@@ -1196,13 +1190,7 @@ func Test_typeToSqliteType(T *testing.T) {
 
 		typ := "fart"
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic did not occur")
-			}
-		}()
-
-		typeToSqliteType(typ)
+		assert.Panics(t, func() { typeToSqliteType(typ) })
 	})
 }
 
@@ -1253,13 +1241,7 @@ func Test_typeToMariaDBType(T *testing.T) {
 
 		typ := "fart"
 
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic did not occur")
-			}
-		}()
-
-		typeToMariaDBType(typ)
+		assert.Panics(t, func() { typeToMariaDBType(typ) })
 	})
 }
 

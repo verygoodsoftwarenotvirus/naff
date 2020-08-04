@@ -1231,4 +1231,12 @@ func TestProvideMariaDBConnection(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("invalid", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+
+		assert.Panics(t, func() { buildTestProviderFunc(dbvendor) })
+	})
 }

@@ -1,6 +1,7 @@
 package queriers
 
 import (
+	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
 
@@ -284,7 +285,7 @@ func buildIsReady(dbvendor wordsmith.SuperPalabra) []jen.Code {
 						jen.Return().False(),
 					}
 				}
-				return nil
+				panic(fmt.Sprintf("invalid database: %q", dbvendor.Singular()))
 			}()...,
 		),
 		jen.Line(),

@@ -1,6 +1,7 @@
 package queriers
 
 import (
+	"fmt"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -632,7 +633,7 @@ func buildUpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 				jen.Return(jen.Err()),
 			}
 		}
-		return nil
+		panic(fmt.Sprintf("invalid dbvendor: %q", dbvendor))
 	}
 
 	lines := []jen.Code{

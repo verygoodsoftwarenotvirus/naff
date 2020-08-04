@@ -1,6 +1,7 @@
 package client
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -185,6 +186,31 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildTracerAttachmentsForMethodWithParents(proj, proj.LastDataType())
+
+		expected := `
+package main
+
+import (
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+)
+
+func main() {
+	tracing.AttachThingIDToSpan(span, thingID)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+	tracing.AttachYetAnotherThingIDToSpan(span, yetAnotherThingID)
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTracerAttachmentsForListMethodWithParents(T *testing.T) {
@@ -207,6 +233,31 @@ import (
 func main() {
 	tracing.AttachFilterToSpan(span, filter)
 	tracing.AttachUserIDToSpan(span, userID)
+}
+`
+		actual := testutils.RenderFunctionBodyToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildTracerAttachmentsForListMethodWithParents(proj, proj.LastDataType())
+
+		expected := `
+package main
+
+import (
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+)
+
+func main() {
+	tracing.AttachThingIDToSpan(span, thingID)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+	tracing.AttachFilterToSpan(span, filter)
 }
 `
 		actual := testutils.RenderFunctionBodyToString(t, x)
@@ -447,6 +498,42 @@ func (c *Client) GetItemsWithIDs(ctx context.Context, userID uint64, limit uint8
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with structure not belonging to user", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToUser = false
+		x := buildGetListOfSomethingWithIDs(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItemsWithIDs fetches items from the database within a given set of IDs.
+func (c *Client) GetItemsWithIDs(ctx context.Context, limit uint8, ids []uint64) ([]v1.Item, error) {
+	ctx, span := tracing.StartSpan(ctx, "GetItemsWithIDs")
+	defer span.End()
+
+	c.logger.WithValues(map[string]interface{}{
+		"id_count": len(ids),
+	}).Debug("GetItemsWithIDs called")
+
+	itemList, err := c.querier.GetItemsWithIDs(ctx, limit, ids)
+
+	return itemList, err
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildCreateSomething(T *testing.T) {
@@ -553,6 +640,42 @@ func (c *Client) ArchiveItem(ctx context.Context, itemID, userID uint64) error {
 	}).Debug("ArchiveItem called")
 
 	return c.querier.ArchiveItem(ctx, itemID, userID)
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildArchiveSomething(proj, proj.LastDataType())
+
+		expected := `
+package example
+
+import (
+	"context"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+)
+
+// ArchiveYetAnotherThing archives a yet another thing from the database by its ID.
+func (c *Client) ArchiveYetAnotherThing(ctx context.Context, anotherThingID, yetAnotherThingID uint64) error {
+	ctx, span := tracing.StartSpan(ctx, "ArchiveYetAnotherThing")
+	defer span.End()
+
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+	tracing.AttachYetAnotherThingIDToSpan(span, yetAnotherThingID)
+
+	c.logger.WithValues(map[string]interface{}{
+		"yet_another_thing_id": yetAnotherThingID,
+		"another_thing_id":     anotherThingID,
+	}).Debug("ArchiveYetAnotherThing called")
+
+	return c.querier.ArchiveYetAnotherThing(ctx, anotherThingID, yetAnotherThingID)
 }
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

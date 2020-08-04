@@ -700,24 +700,6 @@ func buildBuildUpdateUserPasswordQuery(dbvendor wordsmith.SuperPalabra) []jen.Co
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
-	buildUpdateUserQueryQuery := func() jen.Code {
-		q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
-			Dotln("Update").Call(jen.ID("usersTableName")).
-			Dotln("Set").Call(jen.ID("usersTableHashedPasswordColumn"), jen.ID("newHash")).
-			Dotln("Set").Call(jen.ID("usersTableRequiresPasswordChangeColumn"), jen.False()).
-			Dotln("Set").Call(jen.ID("usersTablePasswordLastChangedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
-			Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
-			Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
-			jen.ID("idColumn").MapAssign().ID("userID")))
-
-		if isPostgres(dbvendor) {
-			q.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.ID("lastUpdatedOnColumn")))
-		}
-
-		q.Dotln("ToSql").Call()
-		return q
-	}
-
 	lines := []jen.Code{
 		jen.Comment("buildUpdateUserPasswordQuery returns a SQL query (and arguments) that would update the given user's password."),
 		jen.Line(),
@@ -730,7 +712,23 @@ func buildBuildUpdateUserPasswordQuery(dbvendor wordsmith.SuperPalabra) []jen.Co
 		).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
-			buildUpdateUserQueryQuery(),
+			func() jen.Code {
+				q := jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID(dbfl).Dot("sqlBuilder").
+					Dotln("Update").Call(jen.ID("usersTableName")).
+					Dotln("Set").Call(jen.ID("usersTableHashedPasswordColumn"), jen.ID("newHash")).
+					Dotln("Set").Call(jen.ID("usersTableRequiresPasswordChangeColumn"), jen.False()).
+					Dotln("Set").Call(jen.ID("usersTablePasswordLastChangedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+					Dotln("Set").Call(jen.ID("lastUpdatedOnColumn"), jen.Qual("github.com/Masterminds/squirrel", "Expr").Call(jen.ID("currentUnixTimeQuery"))).
+					Dotln("Where").Call(jen.Qual("github.com/Masterminds/squirrel", "Eq").Valuesln(
+					jen.ID("idColumn").MapAssign().ID("userID")))
+
+				if isPostgres(dbvendor) {
+					q.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.ID("lastUpdatedOnColumn")))
+				}
+
+				q.Dotln("ToSql").Call()
+				return q
+			}(),
 			jen.Line(),
 			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
 			jen.Line(),
