@@ -666,23 +666,6 @@ func buildUpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 	sn := dbvendor.Singular()
 	dbfl := string(dbvendor.LowercaseAbbreviation()[0])
 
-	buildUpdateUserBody := func() []jen.Code {
-		if isPostgres(dbvendor) {
-			return []jen.Code{
-				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
-				jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("LastUpdatedOn")),
-			}
-		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-			return []jen.Code{
-				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
-				jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
-				jen.Return().Err(),
-			}
-		}
-
-		return nil
-	}
-
 	lines := []jen.Code{
 		jen.Comment("UpdateUser receives a complete User struct and updates its place in the db."),
 		jen.Line(),
@@ -691,7 +674,21 @@ func buildUpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabra) []je
 		jen.Comment("incomplete models at your peril."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Body(
-			buildUpdateUserBody()...,
+			func() []jen.Code {
+				if isPostgres(dbvendor) {
+					return []jen.Code{
+						jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
+						jen.Return().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()).Dot("Scan").Call(jen.AddressOf().ID("input").Dot("LastUpdatedOn")),
+					}
+				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+					return []jen.Code{
+						jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateUserQuery").Call(jen.ID("input")),
+						jen.List(jen.Underscore(), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("ExecContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
+						jen.Return().Err(),
+					}
+				}
+				panic("invalid database vendor")
+			}()...,
 		),
 		jen.Line(),
 	}

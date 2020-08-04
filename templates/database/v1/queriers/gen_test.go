@@ -209,6 +209,16 @@ func Test_renderDatabasePackage(T *testing.T) {
 		proj.OutputPath = os.TempDir()
 		assert.NoError(t, renderDatabasePackage(proj, dbvendor))
 	})
+
+	T.Run("invalid", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := "invalid"
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = os.TempDir()
+
+		assert.Error(t, renderDatabasePackage(proj, dbvendor))
+	})
 }
 
 func Test_buildMariaDBWord(T *testing.T) {
@@ -258,7 +268,7 @@ func Test_buildQueryTest(T *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		qb := squirrel.Select("*")
-		x := buildQueryTest(dbvendor, "Example", qb, nil, nil, nil)
+		x := buildQueryTest(dbvendor, "ExampleQuery", qb, nil, nil, nil)
 
 		expected := `
 package example
@@ -323,6 +333,20 @@ func Test_unixTimeForDatabase(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("invalid vendor", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("Fart")
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		unixTimeForDatabase(dbvendor)
+	})
 }
 
 func Test_queryBuilderForDatabase(T *testing.T) {
@@ -368,5 +392,19 @@ func Test_queryBuilderForDatabase(T *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("invalid vendor", func(t *testing.T) {
+		t.Parallel()
+
+		dbvendor := wordsmith.FromSingularPascalCase("Fart")
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		queryBuilderForDatabase(dbvendor)
 	})
 }

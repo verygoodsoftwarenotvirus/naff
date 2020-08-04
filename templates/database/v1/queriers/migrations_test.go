@@ -1133,6 +1133,20 @@ func Test_typeToPostgresType(T *testing.T) {
 			assert.NotEmpty(t, typeToPostgresType(typ))
 		}
 	})
+
+	T.Run("panics on unknown type", func(t *testing.T) {
+		t.Parallel()
+
+		typ := "fart"
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		typeToPostgresType(typ)
+	})
 }
 
 func Test_typeToSqliteType(T *testing.T) {
@@ -1176,6 +1190,20 @@ func Test_typeToSqliteType(T *testing.T) {
 			assert.NotEmpty(t, typeToSqliteType(typ))
 		}
 	})
+
+	T.Run("panics on unknown type", func(t *testing.T) {
+		t.Parallel()
+
+		typ := "fart"
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		typeToSqliteType(typ)
+	})
 }
 
 func Test_typeToMariaDBType(T *testing.T) {
@@ -1218,6 +1246,20 @@ func Test_typeToMariaDBType(T *testing.T) {
 		for _, typ := range allTypes {
 			assert.NotEmpty(t, typeToMariaDBType(typ))
 		}
+	})
+
+	T.Run("panics on unknown type", func(t *testing.T) {
+		t.Parallel()
+
+		typ := "fart"
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic did not occur")
+			}
+		}()
+
+		typeToMariaDBType(typ)
 	})
 }
 

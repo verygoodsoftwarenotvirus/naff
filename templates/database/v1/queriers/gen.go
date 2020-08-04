@@ -305,9 +305,8 @@ func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
 	case "s":
 		return "(strftime('%s','now'))"
 	default:
-		log.Fatalf("invalid database type! %q", db.LowercaseAbbreviation())
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
 	}
-	panic("won't get here")
 }
 
 func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
@@ -319,7 +318,6 @@ func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilde
 	case "s":
 		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
 	default:
-		log.Fatalf("invalid database type! %q", db.LowercaseAbbreviation())
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
 	}
-	panic("won't get here")
 }
