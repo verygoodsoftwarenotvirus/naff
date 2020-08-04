@@ -617,7 +617,40 @@ func TestClient_GetItemsWithIDs(T *testing.T) {
 		typ.BelongsToUser = false
 		x := buildTestClientGetListOfSomethingWithIDs(proj, typ)
 
-		expected := ``
+		expected := `
+package example
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_GetItemsWithIDs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleItemList := fake.BuildFakeItemList().Items
+		var exampleIDs []uint64
+		for _, x := range exampleItemList {
+			exampleIDs = append(exampleIDs, x.ID)
+		}
+
+		c, mockDB := buildTestClient()
+		mockDB.ItemDataManager.On("GetItemsWithIDs", mock.Anything, defaultLimit, exampleIDs).Return(exampleItemList, nil)
+
+		actual, err := c.GetItemsWithIDs(ctx, defaultLimit, exampleIDs)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")

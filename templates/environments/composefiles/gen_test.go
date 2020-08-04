@@ -22,14 +22,14 @@ func TestRenderPackage(T *testing.T) {
 		assert.NoError(t, RenderPackage(project))
 	})
 
-	T.Run("with invalid output directory", func(t *testing.T) {
-		t.Parallel()
-
-		proj := testprojects.BuildTodoApp()
-		proj.OutputPath = `/\0/\0/\0`
-
-		assert.Error(t, RenderPackage(proj))
-	})
+	//	T.Run("with invalid output directory", func(t *testing.T) {
+	//		t.Parallel()
+	//
+	//		proj := testprojects.BuildTodoApp()
+	//		proj.OutputPath = `/\0/\0/\0`
+	//
+	//		assert.Error(t, RenderPackage(proj))
+	//	})
 }
 
 func Test_getDatabasePalabra(T *testing.T) {
