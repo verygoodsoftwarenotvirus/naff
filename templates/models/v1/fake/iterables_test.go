@@ -119,6 +119,62 @@ func BuildFakeItem() *v1.Item {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with every type", func(t *testing.T) {
+		t.Parallel()
+
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+		x := buildBuildFakeSomething(proj, typ)
+
+		expected := `
+package example
+
+import (
+	v5 "github.com/brianvoe/gofakeit/v5"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// BuildFakeEveryType builds a faked every type.
+func BuildFakeEveryType() *v1.EveryType {
+	return &v1.EveryType{
+		ID:               v5.Uint64(),
+		String:           v5.Word(),
+		PointerToString:  func(x string) *string { return &x }(v5.Word()),
+		Bool:             v5.Bool(),
+		PointerToBool:    func(x bool) *bool { return &x }(v5.Bool()),
+		Int:              int(v5.Int32()),
+		PointerToInt:     func(x int) *int { return &x }(int(v5.Int32())),
+		Int8:             v5.Int8(),
+		PointerToInt8:    func(x int8) *int8 { return &x }(v5.Int8()),
+		Int16:            v5.Int16(),
+		PointerToInt16:   func(x int16) *int16 { return &x }(v5.Int16()),
+		Int32:            v5.Int32(),
+		PointerToInt32:   func(x int32) *int32 { return &x }(v5.Int32()),
+		Int64:            int64(v5.Int32()),
+		PointerToInt64:   func(x int64) *int64 { return &x }(int64(v5.Int32())),
+		Uint:             uint(v5.Uint32()),
+		PointerToUint:    func(x uint) *uint { return &x }(uint(v5.Uint32())),
+		Uint8:            v5.Uint8(),
+		PointerToUint8:   func(x uint8) *uint8 { return &x }(v5.Uint8()),
+		Uint16:           v5.Uint16(),
+		PointerToUint16:  func(x uint16) *uint16 { return &x }(v5.Uint16()),
+		Uint32:           v5.Uint32(),
+		PointerToUint32:  func(x uint32) *uint32 { return &x }(v5.Uint32()),
+		Uint64:           uint64(v5.Uint32()),
+		PointerToUint64:  func(x uint64) *uint64 { return &x }(uint64(v5.Uint32())),
+		Float32:          v5.Float32(),
+		PointerToFloat32: func(x float32) *float32 { return &x }(v5.Float32()),
+		Float64:          float64(v5.Float32()),
+		PointerToFloat64: func(x float64) *float64 { return &x }(float64(v5.Float32())),
+		CreatedOn:        uint64(uint32(v5.Date().Unix())),
+	}
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildBuildFakeSomethingList(T *testing.T) {
