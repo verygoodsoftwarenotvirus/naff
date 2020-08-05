@@ -1,8 +1,7 @@
-package project
+package frontendsrc
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
@@ -10,20 +9,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRenderProject(T *testing.T) {
+func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
-		proj.OutputPath = filepath.Join(os.TempDir(), "things", "stuff")
+		proj.OutputPath = os.TempDir()
 
-		assert.NoError(t, RenderProject(proj))
+		assert.NoError(t, RenderPackage(proj))
 	})
 
 	T.Run("with invalid output directory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = `/dev/null`
 
-		assert.Panics(t, func() { RenderProject(proj) })
+		assert.Error(t, RenderPackage(proj))
 	})
 }

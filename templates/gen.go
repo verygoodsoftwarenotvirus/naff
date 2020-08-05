@@ -19,7 +19,6 @@ import (
 	composefiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	deploy "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/deploy"
 	dockerfiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
-	frontendmisc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/v1"
 	frontendsrc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/v1/src"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/auth/mock"
@@ -109,7 +108,6 @@ func RenderProject(proj *naffmodels.Project) error {
 		{name: "deployfiles", renderFunc: deploy.RenderPackage, activated: allActive},
 		{name: "dockerfiles", renderFunc: dockerfiles.RenderPackage, activated: allActive},
 		{name: "miscellaneous", renderFunc: misc.RenderPackage, activated: allActive},
-		{name: "frontendmisc", renderFunc: frontendmisc.RenderPackage, activated: allActive},
 		{name: "frontendsrc", renderFunc: frontendsrc.RenderPackage, activated: allActive},
 	}
 
