@@ -21,17 +21,9 @@ func TestRenderProject(T *testing.T) {
 	})
 
 	//T.Run("with invalid output directory", func(t *testing.T) {
-	//	t.SkipNow()
-	//
 	//	proj := testprojects.BuildTodoApp()
-	//	proj.OutputPath = `/\0/\0/\0`
+	//	proj.OutputPath = `/dev/null`
 	//
-	//	defer func() {
-	//		if r := recover(); r == nil {
-	//			t.Error("expected panic did not occur")
-	//		}
-	//	}()
-	//
-	//	RenderProject(proj)
+	//	assert.Panics(t, func() { RenderProject(proj) })
 	//})
 }
