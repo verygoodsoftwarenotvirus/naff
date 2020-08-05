@@ -12,8 +12,6 @@ func Test_middlewareTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareTestDotGo(proj)
 
@@ -247,8 +245,6 @@ func Test_buildMiddlewareTestingMockHTTPHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMiddlewareTestingMockHTTPHandler()
 
 		expected := `
@@ -279,8 +275,6 @@ func Test_buildMiddlewareTestingTestService_UserInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMiddlewareTestingTestService_UserInputMiddleware(proj)
 
@@ -355,8 +349,6 @@ func Test_buildMiddlewareTestingTestService_PasswordUpdateInputMiddleware(T *tes
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMiddlewareTestingTestService_PasswordUpdateInputMiddleware(proj)
 
@@ -436,8 +428,6 @@ func Test_buildMiddlewareTestingTestService_TOTPSecretVerificationInputMiddlewar
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMiddlewareTestingTestService_TOTPSecretVerificationInputMiddleware(proj)
 
@@ -512,8 +502,6 @@ func Test_buildMiddlewareTestingTestService_TOTPSecretRefreshInputMiddleware(T *
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMiddlewareTestingTestService_TOTPSecretRefreshInputMiddleware(proj)
 

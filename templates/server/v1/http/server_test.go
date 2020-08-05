@@ -12,8 +12,6 @@ func Test_serverDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := serverDotGo(proj)
 
@@ -205,8 +203,6 @@ func Test_buildServerConstantDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServerConstantDefinitions()
 
 		expected := `
@@ -231,8 +227,6 @@ func Test_buildServerTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServerTypeDefinitions(proj)
 
@@ -286,8 +280,6 @@ func Test_buildServerProvideServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildServerProvideServer(proj)
 
@@ -386,8 +378,6 @@ func Test_buildCommentedOutLogRoutesMethod(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildCommentedOutLogRoutesMethod()
 
 		expected := `
@@ -420,8 +410,6 @@ func Test_buildServerServe(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServerServe()
 
 		expected := `
@@ -459,8 +447,6 @@ func Test_buildServerProvideHTTPServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServerProvideHTTPServer()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_frontendServiceTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := frontendServiceTestDotGo(proj)
 
@@ -44,8 +42,6 @@ func Test_buildTestProvideFrontendService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestProvideFrontendService(proj)
 

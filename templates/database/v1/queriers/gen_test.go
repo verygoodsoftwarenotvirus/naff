@@ -2,6 +2,7 @@ package queriers
 
 import (
 	"github.com/Masterminds/squirrel"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"os"
 	"testing"
 
@@ -15,8 +16,6 @@ func Test_isPostgres(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		actual := isPostgres(dbvendor)
@@ -25,8 +24,6 @@ func Test_isPostgres(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		actual := isPostgres(dbvendor)
@@ -35,8 +32,6 @@ func Test_isPostgres(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		actual := isPostgres(dbvendor)
@@ -49,8 +44,6 @@ func Test_isSqlite(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		actual := isSqlite(dbvendor)
@@ -59,8 +52,6 @@ func Test_isSqlite(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		actual := isSqlite(dbvendor)
@@ -69,8 +60,6 @@ func Test_isSqlite(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		actual := isSqlite(dbvendor)
@@ -83,8 +72,6 @@ func Test_isMariaDB(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		actual := isMariaDB(dbvendor)
@@ -93,8 +80,6 @@ func Test_isMariaDB(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		actual := isMariaDB(dbvendor)
@@ -103,8 +88,6 @@ func Test_isMariaDB(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		actual := isMariaDB(dbvendor)
@@ -117,11 +100,16 @@ func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = os.TempDir()
 		assert.NoError(t, RenderPackage(proj))
+	})
+
+	T.Run("with invalid output directory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = `/dev/null`
+
+		assert.Error(t, RenderPackage(proj))
 	})
 }
 
@@ -129,8 +117,6 @@ func TestGetOAuth2ClientPalabra(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := GetOAuth2ClientPalabra()
 
 		expected := `OAuth2Client`
@@ -144,8 +130,6 @@ func TestGetUserPalabra(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := GetUserPalabra()
 
 		expected := `User`
@@ -159,8 +143,6 @@ func TestGetWebhookPalabra(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := GetWebhookPalabra()
 
 		expected := `Webhook`
@@ -174,8 +156,6 @@ func Test_renderDatabasePackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := postgres
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = os.TempDir()
@@ -184,8 +164,6 @@ func Test_renderDatabasePackage(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := sqlite
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = os.TempDir()
@@ -193,12 +171,18 @@ func Test_renderDatabasePackage(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := mariadb
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = os.TempDir()
 		assert.NoError(t, renderDatabasePackage(proj, dbvendor))
+	})
+
+	T.Run("invalid", func(t *testing.T) {
+		dbvendor := "invalid"
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = os.TempDir()
+
+		assert.Error(t, renderDatabasePackage(proj, dbvendor))
 	})
 }
 
@@ -206,8 +190,6 @@ func Test_buildMariaDBWord(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMariaDBWord()
 
 		expected := `MariaDB`
@@ -221,8 +203,6 @@ func Test_convertArgsToCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := convertArgsToCode([]interface{}{"things", "and", "stuff"})
 
 		expected := `
@@ -244,12 +224,10 @@ func Test_buildQueryTest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		qb := squirrel.Select("*")
-		x := buildQueryTest(dbvendor, "Example", qb, nil, nil, nil)
+		x := buildQueryTest(dbvendor, "ExampleQuery", qb, nil, nil, nil)
 
 		expected := `
 package example
@@ -277,14 +255,108 @@ func TestPostgres_buildExampleQuery(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with expected arguments", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		expectedArgs := []jen.Code{
+			jen.One(),
+			jen.Nil(),
+		}
+
+		qb := squirrel.Select("*").From("something").Where(squirrel.Eq{
+			"things": "whatever",
+			"stuff":  "whatever",
+		})
+		x := buildQueryTest(dbvendor, "ExampleQuery", qb, expectedArgs, nil, nil)
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestPostgres_buildExampleQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		expectedQuery := "SELECT * FROM something WHERE stuff = ? AND things = ?"
+		expectedArgs := []interface{}{
+			1,
+			nil,
+		}
+		actualQuery, actualArgs := p.buildExampleQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with expected arguments", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		expectedArgs := []jen.Code{
+			jen.Nil(),
+		}
+
+		qb := squirrel.Select("*").From("something").Where(squirrel.Eq{
+			"things": "whatever",
+			"stuff":  "whatever",
+		})
+		x := buildQueryTest(dbvendor, "ExampleQuery", qb, expectedArgs, nil, nil)
+
+		expected := `
+package example
+
+import (
+	assert "github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestPostgres_buildExampleQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		expectedQuery := "SELECT * FROM something WHERE stuff = ? AND things = ?"
+		expectedArgs := []interface{}{
+			nil,
+		}
+		actualQuery, actualArgs := p.buildExampleQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("panics when failing to build SQL query", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+
+		qb := squirrel.Select()
+
+		assert.Panics(t, func() { buildQueryTest(dbvendor, "ExampleQuery", qb, nil, nil, nil) })
+	})
 }
 
 func Test_unixTimeForDatabase(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		expected := `extract(epoch FROM NOW())`
@@ -294,8 +366,6 @@ func Test_unixTimeForDatabase(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		expected := `(strftime('%s','now'))`
@@ -305,8 +375,6 @@ func Test_unixTimeForDatabase(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Mariadb")
 
 		expected := `UNIX_TIMESTAMP()`
@@ -314,14 +382,18 @@ func Test_unixTimeForDatabase(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("invalid vendor", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Fart")
+
+		assert.Panics(t, func() { unixTimeForDatabase(dbvendor) })
+	})
 }
 
 func Test_queryBuilderForDatabase(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := queryBuilderForDatabase(dbvendor).Select("*").From("table").Where(squirrel.Eq{"id": 123})
@@ -334,8 +406,6 @@ func Test_queryBuilderForDatabase(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := queryBuilderForDatabase(dbvendor).Select("*").From("table").Where(squirrel.Eq{"id": 123})
@@ -348,8 +418,6 @@ func Test_queryBuilderForDatabase(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Mariadb")
 
 		x := queryBuilderForDatabase(dbvendor).Select("*").From("table").Where(squirrel.Eq{"id": 123})
@@ -359,5 +427,11 @@ func Test_queryBuilderForDatabase(T *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("invalid vendor", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Fart")
+
+		assert.Panics(t, func() { queryBuilderForDatabase(dbvendor) })
 	})
 }

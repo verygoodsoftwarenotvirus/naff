@@ -12,8 +12,6 @@ func Test_iterableTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterableTestDotGo(proj, typ)
@@ -73,8 +71,6 @@ func Test_buildTestSomething_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestSomething_Update(typ)
@@ -115,8 +111,6 @@ func Test_buildTestSomething_ToUpdateInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestSomething_ToUpdateInput(proj, typ)

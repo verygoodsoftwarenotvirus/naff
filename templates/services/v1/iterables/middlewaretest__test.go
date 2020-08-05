@@ -12,8 +12,6 @@ func Test_middlewareTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := middlewareTestDotGo(proj, typ)
@@ -147,8 +145,6 @@ func Test_buildMockHTTPHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHTTPHandler()
 
 		expected := `
@@ -172,8 +168,6 @@ func Test_buildMockHTTPHandlerServeHTTP(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHTTPHandlerServeHTTP()
 
 		expected := `
@@ -197,8 +191,6 @@ func Test_buildTestService_CreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_CreationInputMiddleware(proj)
 
@@ -273,8 +265,6 @@ func Test_buildTestService_UpdateInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_UpdateInputMiddleware(proj)
 

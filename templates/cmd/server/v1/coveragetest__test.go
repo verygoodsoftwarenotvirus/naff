@@ -12,8 +12,6 @@ func Test_coverageTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := coverageTestDotGo(proj)
 
@@ -52,8 +50,6 @@ func Test_buildTestMain(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestMain()
 
 		expected := `

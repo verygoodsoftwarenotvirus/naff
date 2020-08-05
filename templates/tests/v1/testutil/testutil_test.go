@@ -13,8 +13,6 @@ func Test_testutilDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := testutilDotGo(proj)
 
@@ -294,8 +292,6 @@ func Test_buildInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildInit()
 
 		expected := `
@@ -320,8 +316,6 @@ func Test_buildDetermineServiceURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildDetermineServiceURL()
 
 		expected := `
@@ -361,8 +355,6 @@ func Test_buildEnsureServerIsUp(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildEnsureServerIsUp()
 
 		expected := `
@@ -406,8 +398,6 @@ func Test_buildIsUp(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildIsUp()
 
 		expected := `
@@ -449,8 +439,6 @@ func Test_buildCreateObligatoryUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateObligatoryUser(proj)
 
@@ -531,8 +519,6 @@ func Test_buildBuildURL(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildURL()
 
 		expected := `
@@ -567,8 +553,6 @@ func Test_buildGetLoginCookie(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetLoginCookie(proj)
 
@@ -642,8 +626,6 @@ func Test_buildCreateObligatoryClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateObligatoryClient(proj)
 

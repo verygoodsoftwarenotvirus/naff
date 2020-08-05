@@ -12,8 +12,6 @@ func Test_middlewareDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareDotGo(proj)
 
@@ -131,8 +129,6 @@ func Test_buildMiddlewareConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildMiddlewareConstantDefs(proj)
 
@@ -167,8 +163,6 @@ func Test_buildUserInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUserInputMiddleware(proj)
 
@@ -212,8 +206,6 @@ func Test_buildPasswordUpdateInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildPasswordUpdateInputMiddleware(proj)
 
@@ -257,8 +249,6 @@ func Test_buildTOTPSecretVerificationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTOTPSecretVerificationInputMiddleware(proj)
 
@@ -302,8 +292,6 @@ func Test_buildTOTPSecretRefreshInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTOTPSecretRefreshInputMiddleware(proj)
 

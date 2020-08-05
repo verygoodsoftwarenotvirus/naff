@@ -12,8 +12,6 @@ func Test_webhooksDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := webhooksDotGo(proj)
 
@@ -106,8 +104,6 @@ func Test_buildFetchRandomWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildFetchRandomWebhook(proj)
 
@@ -142,8 +138,6 @@ func Test_buildBuildWebhookActions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildWebhookActions(proj)
 

@@ -12,8 +12,6 @@ func Test_initDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := initDotGo(proj)
 
@@ -101,8 +99,6 @@ func Test_buildInitVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInitVarDefs(proj)
 
@@ -129,8 +125,6 @@ func Test_buildInitInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInitInit(proj)
 
@@ -175,8 +169,6 @@ func Test_buildInitBuildHTTPClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildInitBuildHTTPClient()
 
 		expected := `
@@ -206,8 +198,6 @@ func Test_buildInitInitializeClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildInitInitializeClient(proj)
 

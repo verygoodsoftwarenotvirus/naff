@@ -12,44 +12,62 @@ func counterDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildUnitCounter(proj)...)
+	code.Add(buildIncrement()...)
+	code.Add(buildIncrementBy()...)
+	code.Add(buildDecrement()...)
+
+	return code
+}
+
+func buildUnitCounter(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
 		jen.Var().Underscore().Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
-	)
-
-	code.Add(
 		jen.Comment("UnitCounter is a mock metrics.UnitCounter"),
 		jen.Line(),
 		jen.Type().ID("UnitCounter").Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIncrement() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Increment implements our UnitCounter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Increment").Params(constants.CtxParam()).Body(
 			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIncrementBy() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("IncrementBy implements our UnitCounter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("val").Uint64()).Body(
 			jen.ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("val")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDecrement() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Decrement implements our UnitCounter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("UnitCounter")).ID("Decrement").Params(constants.CtxParam()).Body(
 			jen.ID("m").Dot("Called").Call(constants.CtxVar()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

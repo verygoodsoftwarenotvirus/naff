@@ -12,8 +12,6 @@ func Test_spansDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := spansDotGo(proj)
 
@@ -40,8 +38,6 @@ func Test_buildStartSpan(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildStartSpan()
 
 		expected := `

@@ -13,12 +13,17 @@ func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 		project.OutputPath = os.TempDir()
 
 		assert.NoError(t, RenderPackage(project))
+	})
+
+	T.Run("with invalid output directory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = `/dev/null`
+
+		assert.Error(t, RenderPackage(proj))
 	})
 }
 
@@ -26,8 +31,6 @@ func Test_prometheusLocalConfigDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 
 		expected := `global:
@@ -119,8 +122,6 @@ func Test_grafanaLocalProvisioningDashboardsAllDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		expected := `apiVersion: 1
 
 providers:
@@ -156,8 +157,6 @@ func Test_grafanaLocalProvisioningDataSourcesAllDotYAML(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		expected := `apiVersion: 1
 
 # Thanks to https://ops.tips/blog/initialize-grafana-with-preconfigured-dashboards/#configuring-grafana
@@ -180,8 +179,6 @@ func Test_grafanaDotIni(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		expected := `##################### Grafana Configuration Example #####################
 #
 # Everything has defaults so you only need to uncomment things you want to

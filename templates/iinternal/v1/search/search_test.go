@@ -12,8 +12,6 @@ func Test_searchDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := searchDotGo(proj)
 
@@ -53,8 +51,6 @@ func Test_buildTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTypeDefs()
 
 		expected := `

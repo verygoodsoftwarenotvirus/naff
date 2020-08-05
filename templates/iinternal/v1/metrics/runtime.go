@@ -86,6 +86,14 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 	code.Comment("https://github.com/opencensus-integrations/caddy/blob/c8498719b7c1c2a3c707355be2395a35f03e434e/caddy/caddymain/exporters.go#L54-L110")
 	code.Line()
 
+	code.Add(buildRuntimeVarDeclarations()...)
+	code.Add(buildRuntimeRegisterDefaultViews()...)
+	code.Add(buildRuntimeRecordRuntimeStats()...)
+
+	return code
+}
+
+func buildRuntimeVarDeclarations() []jen.Code {
 	var (
 		defs []jen.Code
 		vals []jen.Code
@@ -99,6 +107,17 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 		}
 		vals = append(vals, jen.ID(fmt.Sprintf("Runtime%sView", metric.varName)))
 	}
+
+	vals = append(vals,
+		jen.ID("MetricAggregationMeasurementView"),
+		jen.Comment("provided by ochttp"),
+		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountView"),
+		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestBytesView"),
+		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseBytesView"),
+		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerLatencyView"),
+		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountByMethod"),
+		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseCountByStatusCode"),
+	)
 
 	defs = append(defs,
 		jen.Line(),
@@ -116,39 +135,33 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 			jen.ID("Aggregation").MapAssign().Qual("go.opencensus.io/stats/view", "LastValue").Call(),
 		),
 		jen.Line(),
-	)
-
-	vals = append(vals,
-		jen.ID("MetricAggregationMeasurementView"),
-		jen.Comment("provided by ochttp"),
-		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountView"),
-		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestBytesView"),
-		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseBytesView"),
-		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerLatencyView"),
-		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerRequestCountByMethod"),
-		jen.Qual("go.opencensus.io/plugin/ochttp", "ServerResponseCountByStatusCode"),
-	)
-
-	defs = append(defs,
 		jen.Comment("DefaultRuntimeViews represents the pre-configured views"),
 		jen.ID("DefaultRuntimeViews").Equals().Index().PointerTo().Qual("go.opencensus.io/stats/view", "View").Valuesln(vals...),
 	)
 
-	code.Add(
+	lines := []jen.Code{
 		jen.Var().Defs(defs...),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildRuntimeRegisterDefaultViews() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("RegisterDefaultViews registers default runtime views."),
 		jen.Line(),
 		jen.Func().ID("RegisterDefaultViews").Params().Params(jen.Error()).Body(
 			jen.Return().Qual("go.opencensus.io/stats/view", "Register").Call(jen.ID("DefaultRuntimeViews").Spread()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildRuntimeRecordRuntimeStats() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("RecordRuntimeStats records runtime statistics at the provided interval."),
 		jen.Line(),
 		jen.Comment("Returns a stop function and an error."),
@@ -220,9 +233,9 @@ func runtimeDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }
 
 var (

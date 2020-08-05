@@ -141,7 +141,18 @@ lintegration-tests: integration-tests lint
 		loadTestTargets        []string
 	)
 
-	for _, db := range proj.EnabledDatabases() {
+	if proj.DatabaseIsEnabled(models.Postgres) {
+		db := models.Postgres
+		loadTestTargets = append(loadTestTargets, fmt.Sprintf("load-tests-%s", db))
+		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
+	}
+	if proj.DatabaseIsEnabled(models.Sqlite) {
+		db := models.Sqlite
+		loadTestTargets = append(loadTestTargets, fmt.Sprintf("load-tests-%s", db))
+		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
+	}
+	if proj.DatabaseIsEnabled(models.MariaDB) {
+		db := models.MariaDB
 		loadTestTargets = append(loadTestTargets, fmt.Sprintf("load-tests-%s", db))
 		integrationTestTargets = append(integrationTestTargets, fmt.Sprintf("integration-tests-%s", db))
 	}
@@ -222,7 +233,8 @@ run:
 	--remove-orphans \
 	--renew-anon-volumes \
 	--always-recreate-deps \
-	--abort-on-container-exit`
+	--abort-on-container-exit
+`
 
 	return f
 }

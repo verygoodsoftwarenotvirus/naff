@@ -12,8 +12,6 @@ func Test_httpRoutesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesTestDotGo(proj)
 
@@ -123,8 +121,6 @@ func Test_buildBuildRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildRequest()
 
 		expected := `
@@ -161,8 +157,6 @@ func Test_buildTestService_StaticDir(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_StaticDir(proj)
 
@@ -239,8 +233,6 @@ func Test_buildTestService_buildStaticFileServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_buildStaticFileServer(proj)
 

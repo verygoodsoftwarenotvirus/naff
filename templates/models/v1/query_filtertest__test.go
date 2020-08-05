@@ -12,8 +12,6 @@ func Test_queryFilterTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := queryFilterTestDotGo(proj)
 
@@ -250,8 +248,6 @@ func Test_buildTestFromParams(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestFromParams()
 
 		expected := `
@@ -309,8 +305,6 @@ func Test_buildTestQueryFilter_SetPage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestQueryFilter_SetPage()
 
 		expected := `
@@ -342,8 +336,6 @@ func Test_buildTestQueryFilter_QueryPage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestQueryFilter_QueryPage()
 
 		expected := `
@@ -375,8 +367,6 @@ func Test_buildTestQueryFilter_ToValues(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestQueryFilter_ToValues()
 
 		expected := `
@@ -434,8 +424,6 @@ func Test_buildTestQueryFilter_ApplyToQueryBuilder(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestQueryFilter_ApplyToQueryBuilder()
 
 		expected := `
@@ -542,8 +530,6 @@ func Test_buildTestExtractQueryFilter(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestExtractQueryFilter()
 
 		expected := `

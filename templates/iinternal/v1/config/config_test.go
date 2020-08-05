@@ -12,8 +12,6 @@ func Test_configDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := configDotGo(proj)
 
@@ -229,8 +227,6 @@ func Test_buildConfigConstantVariableDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildConfigConstantVariableDeclarations()
 
 		expected := `
@@ -266,8 +262,6 @@ func Test_buildConfigVariableDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildConfigVariableDeclarations()
 
 		expected := `
@@ -293,8 +287,6 @@ func Test_buildInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildInit()
 
 		expected := `
@@ -321,8 +313,6 @@ func Test_buildTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTypeDefinitions(proj)
 
@@ -434,8 +424,6 @@ func Test_buildEncodeToFile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildEncodeToFile()
 
 		expected := `
@@ -465,8 +453,6 @@ func Test_buildBuildConfig(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildConfig()
 
 		expected := `
@@ -508,8 +494,6 @@ func Test_buildParseConfigFile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildParseConfigFile()
 
 		expected := `
@@ -555,8 +539,6 @@ func Test_buildRandString(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandString()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_httpRoutesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesDotGo(proj)
 
@@ -392,8 +390,6 @@ func Test_buildHTTPRoutesConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildHTTPRoutesConstantDefs()
 
 		expected := `
@@ -419,8 +415,6 @@ func Test_buildDecodeCookieFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildDecodeCookieFromRequest(proj)
 
@@ -482,8 +476,6 @@ func Test_buildWebsocketAuthFunction(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebsocketAuthFunction(proj)
 
@@ -531,8 +523,6 @@ func Test_buildFetchUserFromCookie(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildFetchUserFromCookie(proj)
 
@@ -576,8 +566,6 @@ func Test_buildLoginHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildLoginHandler(proj)
 
@@ -667,8 +655,6 @@ func Test_buildLogoutHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildLogoutHandler(proj)
 
@@ -727,8 +713,6 @@ func Test_buildStatusHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildStatusHandler(proj)
 
@@ -778,8 +762,6 @@ func Test_buildCycleSecretHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCycleSecretHandler(proj)
 
@@ -818,8 +800,6 @@ func Test_buildFetchLoginDataFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildFetchLoginDataFromRequest(proj)
 
@@ -883,8 +863,6 @@ func Test_buildValidateLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildValidateLogin(proj)
 
@@ -953,8 +931,6 @@ func Test_buildBuildCookie(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildCookie()
 
 		expected := `

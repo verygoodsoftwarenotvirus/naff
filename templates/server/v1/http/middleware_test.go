@@ -12,8 +12,6 @@ func Test_middlewareDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareDotGo(proj)
 
@@ -65,8 +63,6 @@ func Test_buildServerMiddlewareVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServerMiddlewareVarDeclarations()
 
 		expected := `
@@ -90,8 +86,6 @@ func Test_buildServerFormatSpanNameForRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServerFormatSpanNameForRequest()
 
 		expected := `
@@ -120,8 +114,6 @@ func Test_buildServerServerLoggingMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServerServerLoggingMiddleware()
 
 		expected := `

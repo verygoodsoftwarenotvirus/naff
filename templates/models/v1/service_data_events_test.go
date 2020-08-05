@@ -12,8 +12,6 @@ func Test_serviceDataEventsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := serviceDataEventsDotGo(proj)
 
@@ -44,8 +42,6 @@ func Test_buildServiceDataEvent(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceDataEvent()
 
 		expected := `
@@ -66,8 +62,6 @@ func Test_buildServiceDataEventsConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildServiceDataEventsConstantDefs()
 
 		expected := `

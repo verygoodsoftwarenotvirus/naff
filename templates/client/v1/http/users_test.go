@@ -12,8 +12,6 @@ func Test_usersDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := usersDotGo(proj)
 
@@ -225,8 +223,6 @@ func Test_buildBuildGetUserRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetUserRequest(proj)
 
@@ -260,8 +256,6 @@ func Test_buildGetUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUser(proj)
 
@@ -299,8 +293,6 @@ func Test_buildBuildGetUsersRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetUsersRequest(proj)
 
@@ -334,8 +326,6 @@ func Test_buildGetUsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetUsers(proj)
 
@@ -375,8 +365,6 @@ func Test_buildBuildCreateUserRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateUserRequest(proj)
 
@@ -410,8 +398,6 @@ func Test_buildCreateUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateUser(proj)
 
@@ -451,8 +437,6 @@ func Test_buildBuildArchiveUserRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildArchiveUserRequest(proj)
 
@@ -486,8 +470,6 @@ func Test_buildArchiveUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildArchiveUser(proj)
 
@@ -523,8 +505,6 @@ func Test_buildBuildLoginRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildLoginRequest(proj)
 
@@ -568,8 +548,6 @@ func Test_buildLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildLogin(proj)
 
@@ -623,8 +601,6 @@ func Test_buildBuildVerifyTOTPSecretRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildVerifyTOTPSecretRequest(proj)
 
@@ -661,8 +637,6 @@ func Test_buildVerifyTOTPSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildVerifyTOTPSecret(proj)
 

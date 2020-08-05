@@ -12,8 +12,6 @@ func Test_mockOauth2ClientDataServerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockOauth2ClientDataServerDotGo(proj)
 
@@ -94,8 +92,6 @@ func Test_buildOAuth2ClientDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientDataServer()
 
 		expected := `
@@ -120,8 +116,6 @@ func Test_buildOAuth2ClientListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientListHandler()
 
 		expected := `
@@ -146,8 +140,6 @@ func Test_buildOAuth2ClientCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientCreateHandler()
 
 		expected := `
@@ -172,8 +164,6 @@ func Test_buildOAuth2ClientReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientReadHandler()
 
 		expected := `
@@ -198,8 +188,6 @@ func Test_buildOAuth2ClientArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientArchiveHandler()
 
 		expected := `
@@ -224,8 +212,6 @@ func Test_buildOAuth2ClientCreationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientCreationInputMiddleware()
 
 		expected := `
@@ -251,8 +237,6 @@ func Test_buildOAuth2ClientInfoMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientInfoMiddleware()
 
 		expected := `
@@ -278,8 +262,6 @@ func Test_buildExtractOAuth2ClientFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildExtractOAuth2ClientFromRequest(proj)
 
@@ -308,8 +290,6 @@ func Test_buildOAuth2ClientHandleAuthorizeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientHandleAuthorizeRequest()
 
 		expected := `
@@ -335,8 +315,6 @@ func Test_buildOAuth2ClientHandleTokenRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientHandleTokenRequest()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_webhookDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := webhookDotGo(proj)
 
@@ -104,8 +102,6 @@ func Test_buildBuildFakeWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeWebhook(proj)
 
@@ -144,8 +140,6 @@ func Test_buildBuildFakeWebhookList(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeWebhookList(proj)
 
@@ -184,8 +178,6 @@ func Test_buildBuildFakeWebhookUpdateInputFromWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeWebhookUpdateInputFromWebhook(proj)
 
@@ -220,8 +212,6 @@ func Test_buildBuildFakeWebhookCreationInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeWebhookCreationInput(proj)
 
@@ -248,8 +238,6 @@ func Test_buildBuildFakeWebhookCreationInputFromWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeWebhookCreationInputFromWebhook(proj)
 

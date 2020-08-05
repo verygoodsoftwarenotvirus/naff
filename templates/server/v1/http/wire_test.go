@@ -12,8 +12,6 @@ func Test_wireDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := wireDotGo(proj)
 
@@ -58,8 +56,6 @@ func Test_buildWireVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWireVarDeclarations(proj)
 
@@ -90,8 +86,6 @@ func Test_buildProvideNamespace(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideNamespace(proj)
 
@@ -117,8 +111,6 @@ func Test_buildProvideNewsmanTypeNameManipulationFunc(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildProvideNewsmanTypeNameManipulationFunc()
 
 		expected := `

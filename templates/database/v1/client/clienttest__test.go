@@ -12,8 +12,6 @@ func Test_clientTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := clientTestDotGo(proj)
 
@@ -131,8 +129,6 @@ func Test_buildBuildTestClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildTestClient(proj)
 
@@ -163,8 +159,6 @@ func Test_buildTestMigrate(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestMigrate(proj)
 
@@ -220,8 +214,6 @@ func Test_buildTestIsReady(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestIsReady(proj)
 
@@ -261,8 +253,6 @@ func Test_buildTestProvideDatabaseClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestProvideDatabaseClient(proj)
 

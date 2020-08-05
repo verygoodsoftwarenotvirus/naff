@@ -12,8 +12,6 @@ func Test_httpRoutesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesTestDotGo(proj)
 
@@ -1082,8 +1080,6 @@ func Test_buildAttachCookieToRequestForTest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildAttachCookieToRequestForTest(proj)
 
@@ -1131,8 +1127,6 @@ func Test_buildTestService_DecodeCookieFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_DecodeCookieFromRequest(proj)
 
@@ -1214,8 +1208,6 @@ func Test_buildTestService_WebsocketAuthFunction(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_WebsocketAuthFunction(proj)
 
@@ -1318,8 +1310,6 @@ func Test_buildTestService_fetchUserFromCookie(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_fetchUserFromCookie(proj)
 
@@ -1417,8 +1407,6 @@ func Test_buildTestService_LoginHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_LoginHandler(proj)
 
@@ -1740,8 +1728,6 @@ func Test_buildTestService_LogoutHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_LogoutHandler(proj)
 
@@ -1825,8 +1811,6 @@ func Test_buildTestService_fetchLoginDataFromRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_fetchLoginDataFromRequest(proj)
 
@@ -1950,8 +1934,6 @@ func Test_buildTestService_validateLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_validateLogin(proj)
 
@@ -2208,8 +2190,6 @@ func Test_buildTestService_StatusHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_StatusHandler(proj)
 
@@ -2330,8 +2310,6 @@ func Test_buildTestService_CycleSecretHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_CycleSecretHandler(proj)
 
@@ -2381,8 +2359,6 @@ func Test_buildTestService_buildCookie(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestService_buildCookie()
 
 		expected := `

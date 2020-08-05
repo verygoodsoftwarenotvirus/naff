@@ -3,6 +3,7 @@ package queriers
 import (
 	"github.com/Masterminds/squirrel"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,8 +16,6 @@ func Test_iterablesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -964,8 +963,6 @@ func TestPostgres_ArchiveItem(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1931,8 +1928,6 @@ func TestSqlite_ArchiveItem(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -2902,8 +2897,6 @@ func Test_buildBuildMockRowsFromSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildMockRowsFromSomething(proj, typ)
@@ -2948,8 +2941,6 @@ func Test_buildBuildErroneousMockRowFromSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBuildErroneousMockRowFromSomething(proj, typ)
@@ -2986,8 +2977,6 @@ func Test_applyFleshedOutQueryFilter(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		qb := squirrel.Select("*")
 		x := applyFleshedOutQueryFilter(qb, "example")
 
@@ -3003,8 +2992,6 @@ func Test_applyFleshedOutQueryFilterWithCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		qb := squirrel.Select("*")
 		x := applyFleshedOutQueryFilterWithCode(qb, "example", nil)
 
@@ -3020,8 +3007,6 @@ func Test_appendFleshedOutQueryFilterArgs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := appendFleshedOutQueryFilterArgs([]jen.Code{})
 
 		expected := `
@@ -3043,8 +3028,6 @@ func Test_buildGeneralFields(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildGeneralFields("exampleVarName", typ)
@@ -3070,14 +3053,37 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with chain ownership", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildGeneralFields("exampleVarName", proj.LastDataType())
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(
+		exampleVarName.ID,
+		exampleVarName.CreatedOn,
+		exampleVarName.LastUpdatedOn,
+		exampleVarName.ArchivedOn,
+		exampleVarName.BelongsToAnotherThing,
+	)
+}
+`
+		actual := testutils.RenderCallArgsPerLineToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildBadFields(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildBadFields("exampleVarName", typ)
@@ -3103,19 +3109,52 @@ func main() {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with chain ownership", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildBadFields("exampleVarName", proj.LastDataType())
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(
+		exampleVarName.ArchivedOn,
+		exampleVarName.CreatedOn,
+		exampleVarName.LastUpdatedOn,
+		exampleVarName.BelongsToAnotherThing,
+		exampleVarName.ID,
+	)
+}
+`
+		actual := testutils.RenderCallArgsPerLineToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildPrefixedStringColumns(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 
 		expected := []string{"items.id", "items.name", "items.details", "items.created_on", "items.last_updated_on", "items.archived_on", "items.belongs_to_user"}
 		actual := buildPrefixedStringColumns(typ)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with chain ownership", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expected := []string{"yet_another_things.id", "yet_another_things.created_on", "yet_another_things.last_updated_on", "yet_another_things.archived_on", "yet_another_things.belongs_to_another_thing"}
+		actual := buildPrefixedStringColumns(proj.LastDataType())
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -3125,8 +3164,6 @@ func Test_buildPrefixedStringColumnsAsString(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 
@@ -3141,8 +3178,6 @@ func Test_buildCreationStringColumnsAndArgs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 
@@ -3163,14 +3198,35 @@ func main() {
 		assert.Equal(t, expectedCols, actualCols, "expected and actual columns do not match")
 		assert.Equal(t, expectedRenderedArgs, actualRenderedArgs, "expected and actual rendered arguments do not match")
 	})
+
+	T.Run("with chain ownership", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+
+		expectedCols := []string{"belongs_to_another_thing"}
+		actualCols, args := buildCreationStringColumnsAndArgs(proj.LastDataType())
+
+		expectedRenderedArgs := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleYetAnotherThing.BelongsToAnotherThing)
+}
+`
+		actualRenderedArgs := testutils.RenderCallArgsToString(t, args)
+
+		assert.Equal(t, expectedCols, actualCols, "expected and actual columns do not match")
+		assert.Equal(t, expectedRenderedArgs, actualRenderedArgs, "expected and actual rendered arguments do not match")
+	})
+
 }
 
 func Test_buildUpdateQueryParts(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3182,8 +3238,6 @@ func Test_buildUpdateQueryParts(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3195,8 +3249,6 @@ func Test_buildUpdateQueryParts(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3212,8 +3264,6 @@ func Test_getIncIndex(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		exampleIndex := uint(1)
 
@@ -3224,8 +3274,6 @@ func Test_getIncIndex(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		exampleIndex := uint(1)
 
@@ -3236,12 +3284,20 @@ func Test_getIncIndex(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		exampleIndex := uint(1)
 
 		expected := `?`
+		actual := getIncIndex(dbvendor, exampleIndex)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("invalid dbvendor", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+		exampleIndex := uint(1)
+
+		expected := ``
 		actual := getIncIndex(dbvendor, exampleIndex)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
@@ -3252,8 +3308,6 @@ func Test_getTimeQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		expected := `extract(epoch FROM NOW())`
@@ -3263,8 +3317,6 @@ func Test_getTimeQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		expected := `(strftime('%s','now'))`
@@ -3274,11 +3326,18 @@ func Test_getTimeQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		expected := `UNIX_TIMESTAMP()`
+		actual := getTimeQuery(dbvendor)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with invalid db", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+
+		expected := ``
 		actual := getTimeQuery(dbvendor)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
@@ -3289,8 +3348,6 @@ func Test_buildTestScanListOfThings(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3339,8 +3396,6 @@ func TestPostgres_ScanItems(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3389,8 +3444,6 @@ func TestSqlite_ScanItems(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3443,8 +3496,6 @@ func Test_buildTestDBBuildSomethingExistsQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3488,8 +3539,6 @@ func TestPostgres_buildItemExistsQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3533,8 +3582,6 @@ func TestSqlite_buildItemExistsQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3582,8 +3629,6 @@ func Test_buildTestDBSomethingExists(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3657,8 +3702,6 @@ func TestPostgres_ItemExists(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3732,8 +3775,6 @@ func TestSqlite_ItemExists(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3805,14 +3846,95 @@ func TestMariaDB_ItemExists(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres with ownership chain", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		x := buildTestDBSomethingExists(proj, dbvendor, proj.LastDataType())
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	gosqlmock "github.com/DATA-DOG/go-sqlmock"
+	assert "github.com/stretchr/testify/assert"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestPostgres_YetAnotherThingExists(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT EXISTS ( SELECT yet_another_things.id FROM yet_another_things JOIN another_things ON yet_another_things.belongs_to_another_thing=another_things.id JOIN things ON another_things.belongs_to_thing=things.id WHERE another_things.belongs_to_thing = $1 AND another_things.id = $2 AND things.id = $3 AND yet_another_things.belongs_to_another_thing = $4 AND yet_another_things.id = $5 )"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleAnotherThing.BelongsToThing = exampleThing.ID
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleThing.ID,
+				exampleAnotherThing.ID,
+				exampleThing.ID,
+				exampleAnotherThing.ID,
+				exampleYetAnotherThing.ID,
+			).
+			WillReturnRows(gosqlmock.NewRows([]string{"exists"}).AddRow(true))
+
+		actual, err := p.YetAnotherThingExists(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+		assert.NoError(t, err)
+		assert.True(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleAnotherThing.BelongsToThing = exampleThing.ID
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleThing.ID,
+				exampleAnotherThing.ID,
+				exampleThing.ID,
+				exampleAnotherThing.ID,
+				exampleYetAnotherThing.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.YetAnotherThingExists(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+		assert.NoError(t, err)
+		assert.False(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestDBBuildGetSomethingQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3856,8 +3978,6 @@ func TestPostgres_buildGetItemQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3901,8 +4021,6 @@ func TestSqlite_buildGetItemQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3950,8 +4068,6 @@ func Test_buildTestDBGetSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4024,8 +4140,6 @@ func TestPostgres_GetItem(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4098,8 +4212,6 @@ func TestSqlite_GetItem(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4170,14 +4282,80 @@ func TestMariaDB_GetItem(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres without belonging to user", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToUser = false
+		x := buildTestDBGetSomething(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	assert "github.com/stretchr/testify/assert"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestPostgres_GetItem(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items WHERE items.id = $1"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleItem := fake.BuildFakeItem()
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleItem.ID,
+			).
+			WillReturnRows(buildMockRowsFromItems(exampleItem))
+
+		actual, err := p.GetItem(ctx, exampleItem.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItem, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleItem := fake.BuildFakeItem()
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleItem.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetItem(ctx, exampleItem.ID)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestDBBuildGetAllSomethingCountQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4211,8 +4389,6 @@ func TestPostgres_buildGetAllItemsCountQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4246,8 +4422,6 @@ func TestSqlite_buildGetAllItemsCountQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4285,8 +4459,6 @@ func Test_buildTestDBGetAllSomethingCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4329,8 +4501,6 @@ func TestPostgres_GetAllItemsCount(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4373,8 +4543,6 @@ func TestSqlite_GetAllItemsCount(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4421,8 +4589,6 @@ func Test_buildTestDBGetBatchOfSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4463,8 +4629,6 @@ func TestPostgres_buildGetBatchOfItemsQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4505,8 +4669,6 @@ func TestSqlite_buildGetBatchOfItemsQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4551,8 +4713,6 @@ func Test_buildTestDBGetAllOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4732,8 +4892,6 @@ func TestPostgres_GetAllItems(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4913,8 +5071,6 @@ func TestSqlite_GetAllItems(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5098,8 +5254,6 @@ func Test_buildTestDBGetListOfSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5145,8 +5299,6 @@ func TestPostgres_buildGetItemsQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5192,8 +5344,6 @@ func TestSqlite_buildGetItemsQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5243,8 +5393,6 @@ func Test_buildTestDBGetListOfSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5366,8 +5514,6 @@ func TestPostgres_GetItems(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5489,8 +5635,6 @@ func TestSqlite_GetItems(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5610,14 +5754,237 @@ func TestMariaDB_GetItems(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres while belonging to nobody", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToNobody = true
+		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestPostgres_GetItems(T *testing.T) {
+	T.Parallel()
+
+	exampleUser := fake.BuildFakeUser()
+	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1 ORDER BY items.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleItemList := fake.BuildFakeItemList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnRows(
+				buildMockRowsFromItems(
+					&exampleItemList.Items[0],
+					&exampleItemList.Items[1],
+					&exampleItemList.Items[2],
+				),
+			)
+
+		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning item", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleUser := fake.BuildFakeUser()
+		exampleItem := fake.BuildFakeItem()
+		exampleItem.BelongsToUser = exampleUser.ID
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
+
+		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("postgres while not belonging to user", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToUser = false
+		typ.RestrictedToUser = false
+		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestPostgres_GetItems(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items WHERE items.archived_on IS NULL ORDER BY items.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleItemList := fake.BuildFakeItemList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildMockRowsFromItems(
+					&exampleItemList.Items[0],
+					&exampleItemList.Items[1],
+					&exampleItemList.Items[2],
+				),
+			)
+
+		actual, err := p.GetItems(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetItems(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		actual, err := p.GetItems(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning item", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleItem := fake.BuildFakeItem()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildErroneousMockRowFromItem(exampleItem),
+			)
+
+		actual, err := p.GetItems(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5665,8 +6032,6 @@ func TestPostgres_buildGetItemsWithIDsQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5715,8 +6080,6 @@ func TestSqlite_buildGetItemsWithIDsQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5769,8 +6132,6 @@ func Test_buildTestDBGetListOfSomethingWithIDsFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5898,8 +6259,6 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6038,8 +6397,6 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6176,14 +6533,138 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres while not belonging to user", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToUser = false
+		x := buildTestDBGetListOfSomethingWithIDsFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	assert "github.com/stretchr/testify/assert"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestPostgres_GetItemsWithIDs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleItemList := fake.BuildFakeItemList()
+		var exampleItemIDs []uint64
+		for _, item := range exampleItemList.Items {
+			exampleItemIDs = append(exampleItemIDs, item.ID)
+		}
+
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(exampleUser.ID).
+			WillReturnRows(
+				buildMockRowsFromItems(
+					&exampleItemList.Items[0],
+					&exampleItemList.Items[1],
+					&exampleItemList.Items[2],
+				),
+			)
+
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleItemIDs)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList.Items, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleItemIDs := []uint64{123, 456, 789}
+
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(exampleUser.ID).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleItemIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleItemIDs := []uint64{123, 456, 789}
+
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(exampleUser.ID).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleItemIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning item", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleItemIDs := []uint64{123, 456, 789}
+
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+
+		exampleItem := fake.BuildFakeItem()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(exampleUser.ID).
+			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
+
+		actual, err := p.GetItemsWithIDs(ctx, 0, exampleItemIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestDBCreateSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6228,8 +6709,6 @@ func TestPostgres_buildCreateItemQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6274,8 +6753,6 @@ func TestSqlite_buildCreateItemQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6324,8 +6801,6 @@ func Test_buildTestDBCreateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6404,8 +6879,6 @@ func TestPostgres_CreateItem(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6489,8 +6962,6 @@ func TestSqlite_CreateItem(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6572,14 +7043,91 @@ func TestMariaDB_CreateItem(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres with ownership chain", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		x := buildTestDBCreateSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"errors"
+	gosqlmock "github.com/DATA-DOG/go-sqlmock"
+	assert "github.com/stretchr/testify/assert"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestPostgres_CreateYetAnotherThing(T *testing.T) {
+	T.Parallel()
+
+	expectedCreationQuery := "INSERT INTO yet_another_things (belongs_to_another_thing) VALUES ($1) RETURNING id, created_on"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleAnotherThing.BelongsToThing = exampleThing.ID
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		exampleRows := gosqlmock.NewRows([]string{"id", "created_on"}).AddRow(exampleYetAnotherThing.ID, exampleYetAnotherThing.CreatedOn)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleYetAnotherThing.BelongsToAnotherThing,
+			).WillReturnRows(exampleRows)
+
+		actual, err := p.CreateYetAnotherThing(ctx, exampleInput)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleYetAnotherThing, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleThing := fake.BuildFakeThing()
+		exampleAnotherThing := fake.BuildFakeAnotherThing()
+		exampleAnotherThing.BelongsToThing = exampleThing.ID
+		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
+		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
+		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleYetAnotherThing.BelongsToAnotherThing,
+			).WillReturnError(errors.New("blah"))
+
+		actual, err := p.CreateYetAnotherThing(ctx, exampleInput)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestBuildUpdateSomethingQueryFuncDeclQueryBuilder(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6605,8 +7153,6 @@ func main() {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6632,8 +7178,6 @@ func main() {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6657,14 +7201,38 @@ func main() {
 		assert.Equal(t, expectedQuery, actualQuery, "expected and actual query do not match")
 		assert.Equal(t, expectedRenderedArgs, actualRenderedArgs, "expected and actual rendered args do not match")
 	})
+
+	T.Run("postgres with ownership chain", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		qb, args := buildTestBuildUpdateSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
+
+		expectedQuery := `UPDATE yet_another_things SET last_updated_on = extract(epoch FROM NOW()) WHERE belongs_to_another_thing = $1 AND id = $2 RETURNING last_updated_on`
+		actualQuery, _, err := qb.ToSql()
+		assert.NoError(t, err)
+
+		expectedRenderedArgs := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleYetAnotherThing.BelongsToAnotherThing, exampleYetAnotherThing.ID)
+}
+`
+		actualRenderedArgs := testutils.RenderCallArgsToString(t, args)
+
+		assert.Equal(t, expectedQuery, actualQuery, "expected and actual query do not match")
+		assert.Equal(t, expectedRenderedArgs, actualRenderedArgs, "expected and actual rendered args do not match")
+	})
 }
 
 func Test_buildTestBuildUpdateSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6710,8 +7278,6 @@ func TestPostgres_buildUpdateItemQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6757,8 +7323,6 @@ func TestSqlite_buildUpdateItemQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6808,8 +7372,6 @@ func Test_buildTestDBUpdateSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6887,8 +7449,6 @@ func TestPostgres_UpdateItem(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -6965,8 +7525,6 @@ func TestSqlite_UpdateItem(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -7047,12 +7605,10 @@ func Test_buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(T *testing.T) 
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
+		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 
 		expectedQuery := `UPDATE items SET last_updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to_user = $1 AND id = $2 RETURNING archived_on`
 		expectedRenderedExpectedArgs := `
@@ -7086,12 +7642,10 @@ func main() {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
+		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 
 		expectedQuery := `UPDATE items SET last_updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to_user = ? AND id = ?`
 		expectedRenderedExpectedArgs := `
@@ -7125,12 +7679,10 @@ func main() {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(proj, dbvendor, typ)
+		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
 
 		expectedQuery := `UPDATE items SET last_updated_on = UNIX_TIMESTAMP(), archived_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND belongs_to_user = ? AND id = ?`
 		expectedRenderedExpectedArgs := `
@@ -7162,14 +7714,50 @@ func main() {
 		actualRenderedCallArgs := testutils.RenderCallArgsToString(t, returnedCallArgs)
 		assert.Equal(t, expectedRenderedCallArgs, actualRenderedCallArgs, "expected and actual output do not match")
 	})
+
+	T.Run("postgres with ownership chain", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		qb, returnedExpectedArgs, returnedCallArgs := buildTestBuildArchiveSomethingQueryFuncDeclQueryBuilder(dbvendor, typ)
+
+		expectedQuery := `UPDATE yet_another_things SET last_updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND belongs_to_another_thing = $1 AND id = $2 RETURNING archived_on`
+		expectedRenderedExpectedArgs := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+		expectedRenderedCallArgs := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleAnotherThing.ID, exampleYetAnotherThing.ID)
+}
+`
+
+		actualQuery, _, err := qb.ToSql()
+		assert.NoError(t, err)
+		assert.Equal(t, expectedQuery, actualQuery, "expected and actual output do not match")
+
+		actualRenderedExpectedArgs := testutils.RenderCallArgsToString(t, returnedExpectedArgs)
+		assert.Equal(t, expectedRenderedExpectedArgs, actualRenderedExpectedArgs, "expected and actual output do not match")
+
+		actualRenderedCallArgs := testutils.RenderCallArgsToString(t, returnedCallArgs)
+		assert.Equal(t, expectedRenderedCallArgs, actualRenderedCallArgs, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestDBArchiveSomethingQueryFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -7213,8 +7801,6 @@ func TestPostgres_buildArchiveItemQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -7258,8 +7844,6 @@ func TestSqlite_buildArchiveItemQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -7307,8 +7891,6 @@ func Test_buildTestDBArchiveSomethingFuncDecl(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -7403,8 +7985,6 @@ func TestPostgres_ArchiveItem(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -7499,8 +8079,6 @@ func TestSqlite_ArchiveItem(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]

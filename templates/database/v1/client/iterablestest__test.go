@@ -12,8 +12,6 @@ func Test_iterablesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := iterablesTestDotGo(proj, typ)
@@ -248,8 +246,6 @@ func Test_buildTestClientSomethingExists(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientSomethingExists(proj, typ)
@@ -296,8 +292,6 @@ func Test_buildTestClientGetSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetSomething(proj, typ)
@@ -344,8 +338,6 @@ func Test_buildTestClientGetAllOfSomethingCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetAllOfSomethingCount(proj, typ)
@@ -389,8 +381,6 @@ func Test_buildTestClientGetAllOfSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetAllOfSomething(proj, typ)
@@ -434,8 +424,6 @@ func Test_buildTestClientGetListOfSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetListOfSomething(proj, typ)
@@ -494,14 +482,72 @@ func TestClient_GetItems(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with type not belonging to user", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToUser = false
+		typ.RestrictedToUser = false
+		x := buildTestClientGetListOfSomething(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_GetItems(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		ctx := context.Background()
+
+		filter := v1.DefaultQueryFilter()
+		exampleItemList := fake.BuildFakeItemList()
+
+		c, mockDB := buildTestClient()
+		mockDB.ItemDataManager.On("GetItems", mock.Anything, filter).Return(exampleItemList, nil)
+
+		actual, err := c.GetItems(ctx, filter)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+
+	T.Run("with nil filter", func(t *testing.T) {
+		ctx := context.Background()
+
+		filter := (*v1.QueryFilter)(nil)
+		exampleItemList := fake.BuildFakeItemList()
+
+		c, mockDB := buildTestClient()
+		mockDB.ItemDataManager.On("GetItems", mock.Anything, filter).Return(exampleItemList, nil)
+
+		actual, err := c.GetItems(ctx, filter)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestClientGetListOfSomethingWithIDs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientGetListOfSomethingWithIDs(proj, typ)
@@ -546,14 +592,57 @@ func TestClient_GetItemsWithIDs(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with type not belonging to user", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.BelongsToUser = false
+		x := buildTestClientGetListOfSomethingWithIDs(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestClient_GetItemsWithIDs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleItemList := fake.BuildFakeItemList().Items
+		var exampleIDs []uint64
+		for _, x := range exampleItemList {
+			exampleIDs = append(exampleIDs, x.ID)
+		}
+
+		c, mockDB := buildTestClient()
+		mockDB.ItemDataManager.On("GetItemsWithIDs", mock.Anything, defaultLimit, exampleIDs).Return(exampleItemList, nil)
+
+		actual, err := c.GetItemsWithIDs(ctx, defaultLimit, exampleIDs)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		mock.AssertExpectationsForObjects(t, mockDB)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestClientCreateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientCreateSomething(proj, typ)
@@ -601,8 +690,6 @@ func Test_buildTestClientUpdateSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientUpdateSomething(proj, typ)
@@ -650,8 +737,6 @@ func Test_buildTestClientArchiveSomething(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildTestClientArchiveSomething(proj, typ)

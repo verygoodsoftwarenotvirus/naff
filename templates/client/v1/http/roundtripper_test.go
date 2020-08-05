@@ -12,8 +12,6 @@ func Test_roundtripperDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := roundtripperDotGo(proj)
 
@@ -74,8 +72,6 @@ func Test_buildRoundtripperConstDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRoundtripperConstDecls()
 
 		expected := `
@@ -98,8 +94,6 @@ func Test_buildDefaultRoundTripper(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildDefaultRoundTripper()
 
 		expected := `
@@ -123,8 +117,6 @@ func Test_buildNewDefaultRoundTripper(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildNewDefaultRoundTripper()
 
 		expected := `
@@ -149,8 +141,6 @@ func Test_buildRoundTrip(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRoundTrip()
 
 		expected := `
@@ -176,8 +166,6 @@ func Test_buildBuildDefaultTransport(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildDefaultTransport()
 
 		expected := `

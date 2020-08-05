@@ -7,17 +7,29 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+const (
+	typeName       = "opencensusCounter"
+	pointerVarName = "c"
+)
+
 func counterDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile("metrics")
 
-	const (
-		typeName       = "opencensusCounter"
-		pointerVarName = "c"
-	)
-
 	utils.AddImports(proj, code)
 
-	code.Add(
+	code.Add(buildOpencensusCounter()...)
+	code.Add(buildSubtractFromCount()...)
+	code.Add(buildAddToCount()...)
+	code.Add(buildDecrement()...)
+	code.Add(buildIncrement()...)
+	code.Add(buildIncrementBy()...)
+	code.Add(buildProvideUnitCounter()...)
+
+	return code
+}
+
+func buildOpencensusCounter() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("opencensusCounter is a Counter that interfaces with opencensus."),
 		jen.Line(),
 		jen.Type().ID(typeName).Struct(
@@ -27,9 +39,13 @@ func counterDotGo(proj *models.Project) *jen.File {
 			jen.ID("v").PointerTo().Qual("go.opencensus.io/stats/view", "View"),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildSubtractFromCount() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("subtractFromCount").Params(
 			constants.CtxParam(),
 			jen.ID("value").Uint64(),
@@ -46,9 +62,13 @@ func counterDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildAddToCount() []jen.Code {
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("addToCount").Params(
 			constants.CtxParam(),
 			jen.ID("value").Uint64(),
@@ -63,36 +83,52 @@ func counterDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildDecrement() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Decrement satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Decrement").Params(constants.CtxParam()).Body(
 			jen.ID("c").Dot("subtractFromCount").Call(constants.CtxVar(), jen.One()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIncrement() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("Increment satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("Increment").Params(constants.CtxParam()).Body(
 			jen.ID("c").Dot("addToCount").Call(constants.CtxVar(), jen.One()),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildIncrementBy() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("IncrementBy satisfies our Counter interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(pointerVarName).PointerTo().ID(typeName)).ID("IncrementBy").Params(constants.CtxParam(), jen.ID("value").Uint64()).Body(
 			jen.ID("c").Dot("addToCount").Call(constants.CtxVar(), jen.ID("value")),
 		),
 		jen.Line(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildProvideUnitCounter() []jen.Code {
+	lines := []jen.Code{
 		jen.Comment("ProvideUnitCounter provides a new counter."),
 		jen.Line(),
 		jen.Func().ID("ProvideUnitCounter").Params(jen.ID("counterName").ID("CounterName"), jen.ID("description").String()).Params(jen.ID("UnitCounter"), jen.Error()).Body(
@@ -120,7 +156,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 			jen.Return(jen.ID(pointerVarName), jen.Nil()),
 		),
 		jen.Line(),
-	)
+	}
 
-	return code
+	return lines
 }

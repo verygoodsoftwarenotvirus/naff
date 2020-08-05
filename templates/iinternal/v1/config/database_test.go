@@ -12,8 +12,6 @@ func Test_databaseDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := databaseDotGo(proj)
 
@@ -26,17 +24,36 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	mysqlstore "github.com/alexedwards/scs/mysqlstore"
+	postgresstore "github.com/alexedwards/scs/postgresstore"
+	sqlite3store "github.com/alexedwards/scs/sqlite3store"
 	v2 "github.com/alexedwards/scs/v2"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
+	mariadb "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/mariadb"
+	postgres "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/postgres"
+	sqlite "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/sqlite"
 )
 
-const ()
+const (
+	// PostgresProviderKey is the string we use to refer to postgres
+	PostgresProviderKey = "postgres"
+	// MariaDBProviderKey is the string we use to refer to mariaDB
+	MariaDBProviderKey = "mariadb"
+	// SqliteProviderKey is the string we use to refer to sqlite
+	SqliteProviderKey = "sqlite"
+)
 
 // ProvideDatabaseConnection provides a database implementation dependent on the configuration.
 func (cfg *ServerConfig) ProvideDatabaseConnection(logger v1.Logger) (*sql.DB, error) {
 	switch cfg.Database.Provider {
+	case PostgresProviderKey:
+		return postgres.ProvidePostgresDB(logger, cfg.Database.ConnectionDetails)
+	case MariaDBProviderKey:
+		return mariadb.ProvideMariaDBConnection(logger, cfg.Database.ConnectionDetails)
+	case SqliteProviderKey:
+		return sqlite.ProvideSqliteDB(logger, cfg.Database.ConnectionDetails)
 	default:
 		return nil, fmt.Errorf("invalid database type selected: %q", cfg.Database.Provider)
 	}
@@ -55,6 +72,12 @@ func (cfg *ServerConfig) ProvideDatabaseClient(ctx context.Context, logger v1.Lo
 
 	var dbc v11.DataManager
 	switch cfg.Database.Provider {
+	case PostgresProviderKey:
+		dbc = postgres.ProvidePostgres(debug, rawDB, logger)
+	case MariaDBProviderKey:
+		dbc = mariadb.ProvideMariaDB(debug, rawDB, logger)
+	case SqliteProviderKey:
+		dbc = sqlite.ProvideSqlite(debug, rawDB, logger)
 	default:
 		return nil, fmt.Errorf("invalid database type selected: %q", cfg.Database.Provider)
 	}
@@ -69,6 +92,12 @@ func ProvideSessionManager(authConf AuthSettings, dbConf DatabaseSettings, db *s
 	sessionManager := v2.New()
 
 	switch dbConf.Provider {
+	case PostgresProviderKey:
+		sessionManager.Store = postgresstore.New(db)
+	case MariaDBProviderKey:
+		sessionManager.Store = mysqlstore.New(db)
+	case SqliteProviderKey:
+		sessionManager.Store = sqlite3store.New(db)
 	}
 
 	sessionManager.Lifetime = authConf.CookieLifetime
@@ -87,8 +116,6 @@ func Test_buildDatabaseConstantDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildDatabaseConstantDeclarations(proj)
 
@@ -97,7 +124,14 @@ package example
 
 import ()
 
-const ()
+const (
+	// PostgresProviderKey is the string we use to refer to postgres
+	PostgresProviderKey = "postgres"
+	// MariaDBProviderKey is the string we use to refer to mariaDB
+	MariaDBProviderKey = "mariadb"
+	// SqliteProviderKey is the string we use to refer to sqlite
+	SqliteProviderKey = "sqlite"
+)
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 
@@ -109,8 +143,6 @@ func Test_buildProvideDatabaseConnection(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseConnection(proj)
 
@@ -121,11 +153,20 @@ import (
 	"database/sql"
 	"fmt"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
+	mariadb "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/mariadb"
+	postgres "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/postgres"
+	sqlite "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/sqlite"
 )
 
 // ProvideDatabaseConnection provides a database implementation dependent on the configuration.
 func (cfg *ServerConfig) ProvideDatabaseConnection(logger v1.Logger) (*sql.DB, error) {
 	switch cfg.Database.Provider {
+	case PostgresProviderKey:
+		return postgres.ProvidePostgresDB(logger, cfg.Database.ConnectionDetails)
+	case MariaDBProviderKey:
+		return mariadb.ProvideMariaDBConnection(logger, cfg.Database.ConnectionDetails)
+	case SqliteProviderKey:
+		return sqlite.ProvideSqliteDB(logger, cfg.Database.ConnectionDetails)
 	default:
 		return nil, fmt.Errorf("invalid database type selected: %q", cfg.Database.Provider)
 	}
@@ -141,8 +182,6 @@ func Test_buildProvideDatabaseClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseClient(proj)
 
@@ -158,6 +197,9 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
+	mariadb "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/mariadb"
+	postgres "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/postgres"
+	sqlite "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/queriers/sqlite"
 )
 
 // ProvideDatabaseClient provides a database implementation dependent on the configuration.
@@ -173,6 +215,12 @@ func (cfg *ServerConfig) ProvideDatabaseClient(ctx context.Context, logger v1.Lo
 
 	var dbc v11.DataManager
 	switch cfg.Database.Provider {
+	case PostgresProviderKey:
+		dbc = postgres.ProvidePostgres(debug, rawDB, logger)
+	case MariaDBProviderKey:
+		dbc = mariadb.ProvideMariaDB(debug, rawDB, logger)
+	case SqliteProviderKey:
+		dbc = sqlite.ProvideSqlite(debug, rawDB, logger)
 	default:
 		return nil, fmt.Errorf("invalid database type selected: %q", cfg.Database.Provider)
 	}
@@ -190,8 +238,6 @@ func Test_buildProvideSessionManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideSessionManager(proj)
 
@@ -200,6 +246,9 @@ package example
 
 import (
 	"database/sql"
+	mysqlstore "github.com/alexedwards/scs/mysqlstore"
+	postgresstore "github.com/alexedwards/scs/postgresstore"
+	sqlite3store "github.com/alexedwards/scs/sqlite3store"
 	v2 "github.com/alexedwards/scs/v2"
 )
 
@@ -210,6 +259,12 @@ func ProvideSessionManager(authConf AuthSettings, dbConf DatabaseSettings, db *s
 	sessionManager := v2.New()
 
 	switch dbConf.Provider {
+	case PostgresProviderKey:
+		sessionManager.Store = postgresstore.New(db)
+	case MariaDBProviderKey:
+		sessionManager.Store = mysqlstore.New(db)
+	case SqliteProviderKey:
+		sessionManager.Store = sqlite3store.New(db)
 	}
 
 	sessionManager.Lifetime = authConf.CookieLifetime

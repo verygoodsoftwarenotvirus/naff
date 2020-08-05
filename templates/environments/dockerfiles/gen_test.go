@@ -13,12 +13,17 @@ func TestRenderPackage(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		project := testprojects.BuildTodoApp()
 		project.OutputPath = os.TempDir()
 
 		assert.NoError(t, RenderPackage(project))
+	})
+
+	T.Run("with invalid output directory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.OutputPath = `/dev/null`
+
+		assert.Error(t, RenderPackage(proj))
 	})
 }
 
@@ -26,8 +31,6 @@ func Test_formattingDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
 		expected := `FROM golang:stretch
@@ -50,8 +53,6 @@ func Test_developmentDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 		binaryName := "binary"
 
@@ -99,8 +100,6 @@ func Test_frontendTestDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
 		expected := `FROM golang:stretch
@@ -123,8 +122,6 @@ func Test_integrationCoverageServerDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
 		expected := `# build stage
@@ -172,8 +169,6 @@ func Test_buildIntegrationServerDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 		binaryName := "binary"
 
@@ -219,8 +214,6 @@ ENTRYPOINT ["/binary"]
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 		binaryName := "binary"
 
@@ -266,8 +259,6 @@ ENTRYPOINT ["/binary"]
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 		binaryName := "binary"
 
@@ -317,8 +308,6 @@ func Test_frontendTestsServerDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 		binaryName := "binary"
 
@@ -368,8 +357,6 @@ func Test_integrationTestsDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
 		expected := `FROM golang:stretch
@@ -395,8 +382,6 @@ func Test_loadTestsDotDockerfile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
 		expected := `# build stage

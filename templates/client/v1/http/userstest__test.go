@@ -12,8 +12,6 @@ func Test_usersTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := usersTestDotGo(proj)
 
@@ -557,8 +555,6 @@ func Test_buildTestV1ClientBuildGetUserRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildGetUserRequest(proj)
 
@@ -608,8 +604,6 @@ func Test_buildTestV1ClientGetUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientGetUser(proj)
 
@@ -688,8 +682,6 @@ func Test_buildTestV1ClientBuildGetUsersRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestV1ClientBuildGetUsersRequest()
 
 		expected := `
@@ -732,8 +724,6 @@ func Test_buildTestV1ClientGetUsers(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientGetUsers(proj)
 
@@ -810,8 +800,6 @@ func Test_buildTestV1ClientBuildCreateUserRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildCreateUserRequest(proj)
 
@@ -858,8 +846,6 @@ func Test_buildTestV1ClientCreateUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientCreateUser(proj)
 
@@ -935,8 +921,6 @@ func Test_buildTestV1ClientBuildArchiveUserRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildArchiveUserRequest(proj)
 
@@ -986,8 +970,6 @@ func Test_buildTestV1ClientArchiveUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientArchiveUser(proj)
 
@@ -1045,8 +1027,6 @@ func Test_buildTestV1ClientBuildLoginRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildLoginRequest(proj)
 
@@ -1103,8 +1083,6 @@ func Test_buildTestV1ClientLogin(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientLogin(proj)
 
@@ -1229,8 +1207,6 @@ func Test_buildTestV1ClientBuildValidateTOTPSecretRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientBuildValidateTOTPSecretRequest(proj)
 
@@ -1276,8 +1252,6 @@ func Test_buildTestV1ClientValidateTOTPSecret(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestV1ClientValidateTOTPSecret(proj)
 

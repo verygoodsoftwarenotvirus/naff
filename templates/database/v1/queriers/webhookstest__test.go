@@ -13,8 +13,6 @@ func Test_webhooksTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := webhooksTestDotGo(proj, dbvendor)
@@ -663,8 +661,6 @@ func TestPostgres_ArchiveWebhook(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := webhooksTestDotGo(proj, dbvendor)
@@ -1319,8 +1315,6 @@ func TestSqlite_ArchiveWebhook(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := webhooksTestDotGo(proj, dbvendor)
@@ -1979,8 +1973,6 @@ func Test_buildBuildMockRowsFromWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildMockRowsFromWebhook(proj)
 
@@ -2030,8 +2022,6 @@ func Test_buildBuildErroneousMockRowFromWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildErroneousMockRowFromWebhook(proj, dbvendor)
@@ -2070,8 +2060,6 @@ func buildErroneousMockRowFromWebhook(w *v1.Webhook) *gosqlmock.Rows {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildErroneousMockRowFromWebhook(proj, dbvendor)
@@ -2110,8 +2098,6 @@ func buildErroneousMockRowFromWebhook(w *v1.Webhook) *gosqlmock.Rows {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildErroneousMockRowFromWebhook(proj, dbvendor)
@@ -2154,8 +2140,6 @@ func Test_buildTestScanWebhooks(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestScanWebhooks(proj, dbvendor)
@@ -2203,8 +2187,6 @@ func TestPostgres_ScanWebhooks(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestScanWebhooks(proj, dbvendor)
@@ -2252,8 +2234,6 @@ func TestSqlite_ScanWebhooks(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestScanWebhooks(proj, dbvendor)
@@ -2305,8 +2285,6 @@ func Test_buildTestDB_buildGetWebhookQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetWebhookQuery(proj, dbvendor)
@@ -2347,8 +2325,6 @@ func TestPostgres_buildGetWebhookQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetWebhookQuery(proj, dbvendor)
@@ -2389,8 +2365,6 @@ func TestSqlite_buildGetWebhookQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetWebhookQuery(proj, dbvendor)
@@ -2435,8 +2409,6 @@ func Test_buildTestDB_GetWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetWebhook(proj, dbvendor)
@@ -2534,8 +2506,6 @@ func TestPostgres_GetWebhook(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetWebhook(proj, dbvendor)
@@ -2633,8 +2603,6 @@ func TestSqlite_GetWebhook(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetWebhook(proj, dbvendor)
@@ -2736,8 +2704,6 @@ func Test_buildTestDB_buildGetAllWebhooksCountQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)
@@ -2770,8 +2736,6 @@ func TestPostgres_buildGetAllWebhooksCountQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)
@@ -2804,8 +2768,6 @@ func TestSqlite_buildGetAllWebhooksCountQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetAllWebhooksCountQuery(proj, dbvendor)
@@ -2842,8 +2804,6 @@ func Test_buildTestDB_GetAllWebhooksCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetAllWebhooksCount(proj, dbvendor)
@@ -2901,8 +2861,6 @@ func TestPostgres_GetAllWebhooksCount(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetAllWebhooksCount(proj, dbvendor)
@@ -2960,8 +2918,6 @@ func TestSqlite_GetAllWebhooksCount(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetAllWebhooksCount(proj, dbvendor)
@@ -3023,8 +2979,6 @@ func Test_buildTestDB_buildGetAllWebhooksQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetAllWebhooksQuery(proj, dbvendor)
@@ -3057,8 +3011,6 @@ func TestPostgres_buildGetAllWebhooksQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetAllWebhooksQuery(proj, dbvendor)
@@ -3091,8 +3043,6 @@ func TestSqlite_buildGetAllWebhooksQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetAllWebhooksQuery(proj, dbvendor)
@@ -3129,8 +3079,6 @@ func Test_buildTestDB_GetAllWebhooks(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetAllWebhooks(proj, dbvendor)
@@ -3226,8 +3174,6 @@ func TestPostgres_GetAllWebhooks(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetAllWebhooks(proj, dbvendor)
@@ -3323,8 +3269,6 @@ func TestSqlite_GetAllWebhooks(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetAllWebhooks(proj, dbvendor)
@@ -3424,8 +3368,6 @@ func Test_buildTestDB_buildGetWebhooksQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetWebhooksQuery(proj, dbvendor)
@@ -3470,8 +3412,6 @@ func TestPostgres_buildGetWebhooksQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetWebhooksQuery(proj, dbvendor)
@@ -3516,8 +3456,6 @@ func TestSqlite_buildGetWebhooksQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildGetWebhooksQuery(proj, dbvendor)
@@ -3566,8 +3504,6 @@ func Test_buildTestDB_GetWebhooks(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetWebhooks(proj, dbvendor)
@@ -3672,8 +3608,6 @@ func TestPostgres_GetWebhooks(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetWebhooks(proj, dbvendor)
@@ -3778,8 +3712,6 @@ func TestSqlite_GetWebhooks(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_GetWebhooks(proj, dbvendor)
@@ -3888,8 +3820,6 @@ func Test_buildTestDB_buildWebhookCreationQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildWebhookCreationQuery(proj, dbvendor)
@@ -3937,8 +3867,6 @@ func TestPostgres_buildWebhookCreationQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildWebhookCreationQuery(proj, dbvendor)
@@ -3986,8 +3914,6 @@ func TestSqlite_buildWebhookCreationQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildWebhookCreationQuery(proj, dbvendor)
@@ -4039,8 +3965,6 @@ func Test_buildTestDB_CreateWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_CreateWebhook(proj, dbvendor)
@@ -4121,8 +4045,6 @@ func TestPostgres_CreateWebhook(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_CreateWebhook(proj, dbvendor)
@@ -4209,8 +4131,6 @@ func TestSqlite_CreateWebhook(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_CreateWebhook(proj, dbvendor)
@@ -4301,8 +4221,6 @@ func Test_buildTestDB_buildUpdateWebhookQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildUpdateWebhookQuery(proj, dbvendor)
@@ -4351,8 +4269,6 @@ func TestPostgres_buildUpdateWebhookQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildUpdateWebhookQuery(proj, dbvendor)
@@ -4401,8 +4317,6 @@ func TestSqlite_buildUpdateWebhookQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildUpdateWebhookQuery(proj, dbvendor)
@@ -4455,8 +4369,6 @@ func Test_buildTestDB_UpdateWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_UpdateWebhook(proj, dbvendor)
@@ -4535,8 +4447,6 @@ func TestPostgres_UpdateWebhook(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_UpdateWebhook(proj, dbvendor)
@@ -4615,8 +4525,6 @@ func TestSqlite_UpdateWebhook(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_UpdateWebhook(proj, dbvendor)
@@ -4699,8 +4607,6 @@ func Test_buildTestDB_buildArchiveWebhookQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildArchiveWebhookQuery(proj, dbvendor)
@@ -4741,8 +4647,6 @@ func TestPostgres_buildArchiveWebhookQuery(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildArchiveWebhookQuery(proj, dbvendor)
@@ -4783,8 +4687,6 @@ func TestSqlite_buildArchiveWebhookQuery(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_buildArchiveWebhookQuery(proj, dbvendor)
@@ -4829,8 +4731,6 @@ func Test_buildTestDB_ArchiveWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_ArchiveWebhook(proj, dbvendor)
@@ -4874,8 +4774,6 @@ func TestPostgres_ArchiveWebhook(T *testing.T) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_ArchiveWebhook(proj, dbvendor)
@@ -4919,8 +4817,6 @@ func TestSqlite_ArchiveWebhook(T *testing.T) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildTestDB_ArchiveWebhook(proj, dbvendor)

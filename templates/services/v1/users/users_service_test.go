@@ -12,8 +12,6 @@ func Test_usersServiceDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := usersServiceDotGo(proj)
 
@@ -119,8 +117,6 @@ func Test_buildUsersServiceConstDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersServiceConstDefs(proj)
 
@@ -148,8 +144,6 @@ func Test_buildUsersServiceVarDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersServiceVarDefs(proj)
 
@@ -174,8 +168,6 @@ func Test_buildUsersServiceTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersServiceTypeDefs(proj)
 
@@ -231,8 +223,6 @@ func Test_buildProvideUsersService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideUsersService(proj)
 

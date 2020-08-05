@@ -12,8 +12,6 @@ func Test_docDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := "postgres"
 		dbDesc := ""
 
@@ -33,8 +31,6 @@ import ()
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := "sqlite"
 		dbDesc := ""
 
@@ -54,8 +50,6 @@ import ()
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := "mariadb"
 		dbDesc := ""
 

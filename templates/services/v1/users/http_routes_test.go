@@ -12,8 +12,6 @@ func Test_httpRoutesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesDotGo(proj)
 
@@ -502,8 +500,6 @@ func Test_buildUsersHTTPRoutesVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesVarDeclarations(proj)
 
@@ -530,8 +526,6 @@ func Test_buildUsersHTTPRoutesValidateCredentialChangeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesValidateCredentialChangeRequest(proj)
 
@@ -599,8 +593,6 @@ func Test_buildUsersHTTPRoutesListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesListHandler(proj)
 
@@ -647,8 +639,6 @@ func Test_buildUsersHTTPRoutesCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesCreateHandler(proj)
 
@@ -776,8 +766,6 @@ func Test_buildUsersHTTPRoutesBuildQRCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesBuildQRCode(proj)
 
@@ -846,8 +834,6 @@ func Test_buildUsersHTTPRoutesReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesReadHandler(proj)
 
@@ -902,8 +888,6 @@ func Test_buildUsersHTTPRoutesTOTPSecretVerificationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesTOTPSecretVerificationHandler(proj)
 
@@ -970,8 +954,6 @@ func Test_buildUsersHTTPRoutesNewTOTPSecretHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesNewTOTPSecretHandler(proj)
 
@@ -1061,8 +1043,6 @@ func Test_buildUsersHTTPRoutesUpdatePasswordHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesUpdatePasswordHandler(proj)
 
@@ -1148,8 +1128,6 @@ func Test_buildUsersHTTPRoutesArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUsersHTTPRoutesArchiveHandler(proj)
 

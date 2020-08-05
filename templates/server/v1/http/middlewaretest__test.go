@@ -12,8 +12,6 @@ func Test_middlewareTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := middlewareTestDotGo(proj)
 
@@ -95,8 +93,6 @@ func Test_buildMiddlewareTestTypeDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMiddlewareTestTypeDefinitions()
 
 		expected := `
@@ -120,8 +116,6 @@ func Test_buildMockHTTPHandlerServeHTTP(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildMockHTTPHandlerServeHTTP()
 
 		expected := `
@@ -145,8 +139,6 @@ func Test_buildBuildRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildRequest()
 
 		expected := `
@@ -184,8 +176,6 @@ func Test_buildTest_formatSpanNameForRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_formatSpanNameForRequest()
 
 		expected := `
@@ -222,8 +212,6 @@ func Test_buildTestServer_loggingMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestServer_loggingMiddleware()
 
 		expected := `

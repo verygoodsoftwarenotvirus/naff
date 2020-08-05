@@ -12,8 +12,6 @@ func Test_makefile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 
 		expected := `PWD                      := $(shell pwd)
@@ -139,7 +137,7 @@ gamut: revendor rewire config_files quicktest lint integration-tests-postgres in
 lintegration-tests: integration-tests lint
 
 .PHONY: integration-tests
-integration-tests: 
+integration-tests: integration-tests-postgres integration-tests-sqlite integration-tests-mariadb
 
 .PHONY: integration-tests-
 integration-tests-%:
@@ -168,7 +166,7 @@ integration-coverage: $(ARTIFACTS_DIR)
 ## Load tests
 
 .PHONY: load-tests
-load-tests: 
+load-tests: load-tests-postgres load-tests-sqlite load-tests-mariadb
 
 .PHONY: load-tests-
 load-tests-%:
@@ -210,8 +208,11 @@ run:
 	--remove-orphans \
 	--renew-anon-volumes \
 	--always-recreate-deps \
-	--abort-on-container-exit`
+	--abort-on-container-exit
+`
 		actual := makefile(proj)
+
+		//
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

@@ -12,8 +12,6 @@ func Test_webhookTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := webhookTestDotGo(proj)
 
@@ -95,8 +93,6 @@ func Test_buildTestWebhook_Update(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestWebhook_Update()
 
 		expected := `
@@ -156,8 +152,6 @@ func Test_buildTestWebhook_ToListener(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestWebhook_ToListener()
 
 		expected := `
@@ -187,8 +181,6 @@ func Test_buildTest_buildErrorLogFunc(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_buildErrorLogFunc()
 
 		expected := `

@@ -12,8 +12,6 @@ func Test_helpersDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := helpersDotGo(proj)
 
@@ -118,8 +116,6 @@ func Test_buildArgIsNotPointer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildArgIsNotPointer()
 
 		expected := `
@@ -148,8 +144,6 @@ func Test_buildArgIsNotNil(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildArgIsNotNil()
 
 		expected := `
@@ -177,8 +171,6 @@ func Test_buildArgIsNotPointerOrNil(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildArgIsNotPointerOrNil()
 
 		expected := `
@@ -211,8 +203,6 @@ func Test_buildUnmarshalBody(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUnmarshalBody(proj)
 
@@ -272,8 +262,6 @@ func Test_buildCreateBodyFromStruct(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildCreateBodyFromStruct()
 
 		expected := `

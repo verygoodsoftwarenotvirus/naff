@@ -12,8 +12,6 @@ func Test_httpRoutesTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesTestDotGo(proj)
 
@@ -1347,8 +1345,6 @@ func Test_buildBuildRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildRequest()
 
 		expected := `
@@ -1385,8 +1381,6 @@ func Test_buildTestService_validateCredentialChangeRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_validateCredentialChangeRequest(proj)
 
@@ -1588,8 +1582,6 @@ func Test_buildTestService_ListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ListHandler(proj)
 
@@ -1679,8 +1671,6 @@ func Test_buildTestService_CreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_CreateHandler(proj)
 
@@ -1984,8 +1974,6 @@ func Test_buildTestService_ReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_ReadHandler(proj)
 
@@ -2106,8 +2094,6 @@ func Test_buildTestService_NewTOTPSecretHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_NewTOTPSecretHandler(proj)
 
@@ -2393,8 +2379,6 @@ func Test_buildTestService_TOTPSecretValidationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_TOTPSecretValidationHandler(proj)
 
@@ -2587,8 +2571,6 @@ func Test_buildTestService_UpdatePasswordHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_UpdatePasswordHandler(proj)
 
@@ -2822,8 +2804,6 @@ func Test_buildTestService_Archive(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_Archive(proj)
 
@@ -2904,8 +2884,6 @@ func Test_buildTestService_buildQRCode(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestService_buildQRCode(proj)
 

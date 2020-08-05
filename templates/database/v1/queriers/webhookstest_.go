@@ -685,6 +685,7 @@ func buildTestDB_CreateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 			createWebhookReturnFunc = "WillReturnResult"
 			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
 		}
+		// this line can never be tested
 		return jen.Null()
 	}
 
@@ -851,6 +852,7 @@ func buildTestDB_UpdateWebhook(proj *models.Project, dbvendor wordsmith.SuperPal
 			updateWebhookReturnFunc = "WillReturnResult"
 			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID")), jen.One())
 		}
+		// this line can never be tested
 		return jen.Null()
 	}
 

@@ -112,11 +112,11 @@ func TestDataType_OwnedByAUserAtSomeLevel(T *testing.T) {
 		t.Parallel()
 
 		p := &Project{
-			DataTypes: buildOwnershipChain("A", "B", "C"),
+			DataTypes: BuildOwnershipChain("A", "B", "C"),
 		}
 		p.DataTypes[0].BelongsToUser = true
 
-		assert.True(t, p.lastDataType().OwnedByAUserAtSomeLevel(p))
+		assert.True(t, p.LastDataType().OwnedByAUserAtSomeLevel(p))
 	})
 }
 
@@ -206,7 +206,7 @@ func TestDataType_buildGetSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		p.DataTypes[0].BelongsToUser = true
 		p.DataTypes[0].RestrictedToUser = true
 
@@ -219,7 +219,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID, userID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().buildGetSomethingParams(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().buildGetSomethingParams(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -536,9 +536,9 @@ func TestDataType_ModifyQueryBuildingStatementWithJoinClauses(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing", "EvenStillAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing", "EvenStillAnotherThing")
 
-		result := p.lastDataType().ModifyQueryBuildingStatementWithJoinClauses(p, jen.ID("something"))
+		result := p.LastDataType().ModifyQueryBuildingStatementWithJoinClauses(p, jen.ID("something"))
 
 		expected := `
 package main
@@ -599,11 +599,11 @@ func TestDataType_ModifyQueryBuilderWithJoinClauses(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		s := squirrel.Select("*").From("fart")
 
-		result := p.lastDataType().ModifyQueryBuilderWithJoinClauses(p, s)
+		result := p.LastDataType().ModifyQueryBuilderWithJoinClauses(p, s)
 
 		expected := "SELECT * FROM fart JOIN another_things ON yet_another_things.belongs_to_another_thing=another_things.id JOIN things ON another_things.belongs_to_thing=things.id"
 		actual, _, err := result.ToSql()
@@ -648,13 +648,13 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
 		}
 
-		result := p.lastDataType().buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+		result := p.LastDataType().buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
 
 		expected := `
 package main
@@ -739,13 +739,13 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(T 
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
 		}
 
-		results := p.lastDataType().buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
+		results := p.LastDataType().buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
 		qb := squirrel.Select("*").From("farts").Where(results)
 
 		expected := "SELECT * FROM farts WHERE another_things.belongs_to_thing = ? AND another_things.belongs_to_user = ? AND another_things.id = ? AND things.belongs_to_user = ? AND things.id = ? AND yet_another_things.belongs_to_another_thing = ? AND yet_another_things.belongs_to_user = ? AND yet_another_things.id = ?"
@@ -825,13 +825,13 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
 		}
 
-		results := p.lastDataType().BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p)
+		results := p.LastDataType().BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p)
 		qb := squirrel.Select("*").From("farts").Where(results)
 
 		expected := "SELECT * FROM farts WHERE another_things.belongs_to_thing = ? AND another_things.belongs_to_user = ? AND another_things.id = ? AND things.belongs_to_user = ? AND things.id = ? AND yet_another_things.archived_on IS NULL AND yet_another_things.belongs_to_another_thing = ? AND yet_another_things.belongs_to_user = ?"
@@ -875,7 +875,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -901,7 +901,7 @@ func main() {
 	}
 }
 `
-		actual := renderMapEntriesWithStringKeysToString(t, p.lastDataType().BuildDBQuerierRetrievalQueryMethodConditionalClauses(p))
+		actual := renderMapEntriesWithStringKeysToString(t, p.LastDataType().BuildDBQuerierRetrievalQueryMethodConditionalClauses(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -940,7 +940,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -966,7 +966,7 @@ func main() {
 	}
 }
 `
-		actual := renderMapEntriesWithStringKeysToString(t, p.lastDataType().BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p))
+		actual := renderMapEntriesWithStringKeysToString(t, p.LastDataType().BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1027,7 +1027,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1042,7 +1042,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID, userID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildGetSomethingArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildGetSomethingArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1378,7 +1378,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1393,7 +1393,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildGetSomethingArgsWithExampleVariables(p, true))
+		actual := renderCallArgsToString(t, p.LastDataType().buildGetSomethingArgsWithExampleVariables(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1454,7 +1454,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1469,7 +1469,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToUser)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildSingleInstanceQueryTestCallArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildSingleInstanceQueryTestCallArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1504,7 +1504,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1519,7 +1519,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1606,7 +1606,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1621,7 +1621,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID, userID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForServiceRouteExistenceCheck(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForServiceRouteExistenceCheck(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1656,7 +1656,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1671,7 +1671,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1816,7 +1816,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -1839,7 +1839,7 @@ func main() {
 	filter := fake.BuildFleshedOutQueryFilter()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2016,7 +2016,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -2036,7 +2036,7 @@ func main() {
 	}
 }
 `
-		actual := renderIndependentStatementToString(t, p.lastDataType().BuildGetSomethingLogValues(p))
+		actual := renderIndependentStatementToString(t, p.LastDataType().BuildGetSomethingLogValues(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2049,7 +2049,7 @@ func TestDataType_BuildGetListOfSomethingLogValues(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -2063,7 +2063,7 @@ func main() {
 	}
 }
 `
-		actual := renderIndependentStatementToString(t, p.lastDataType().BuildGetListOfSomethingLogValues(p))
+		actual := renderIndependentStatementToString(t, p.LastDataType().BuildGetListOfSomethingLogValues(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2072,7 +2072,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -2091,7 +2091,7 @@ func main() {
 	}
 }
 `
-		actual := renderIndependentStatementToString(t, p.lastDataType().BuildGetListOfSomethingLogValues(p))
+		actual := renderIndependentStatementToString(t, p.LastDataType().BuildGetListOfSomethingLogValues(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2149,7 +2149,7 @@ func example(ctx context.Context, filter *v1.QueryFilter) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -2165,7 +2165,7 @@ import (
 func example(ctx context.Context, thingID, anotherThingID, userID uint64, filter *QueryFilter) {}
 `
 
-		actual := renderFunctionParamsToString(t, p.lastDataType().buildGetListOfSomethingParams(p, true))
+		actual := renderFunctionParamsToString(t, p.LastDataType().buildGetListOfSomethingParams(p, true))
 		assert.Equal(t, expected, actual)
 	})
 }
@@ -2612,7 +2612,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -2627,7 +2627,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID, filter)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -2865,7 +2865,7 @@ func example(ctx context.Context, updated *v1.Thing) {}
 			}
 		}()
 
-		renderFunctionParamsToString(t, p.lastDataType().buildUpdateSomethingParams(p, "", true))
+		renderFunctionParamsToString(t, p.LastDataType().buildUpdateSomethingParams(p, "", true))
 	})
 
 }
@@ -3032,7 +3032,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -3047,7 +3047,7 @@ func main() {
 	exampleFunction(ctx, Thing.ID, updated)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildUpdateSomethingArgsWithExampleVars(p, "updated"))
+		actual := renderCallArgsToString(t, p.LastDataType().buildUpdateSomethingArgsWithExampleVars(p, "updated"))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3182,7 +3182,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -3197,7 +3197,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, userID, filter)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildGetListOfSomethingArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildGetListOfSomethingArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3312,7 +3312,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -3331,7 +3331,7 @@ func main() {
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWithOwnerStruct(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildVarDeclarationsOfDependentStructsWithOwnerStruct(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3368,7 +3368,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -3393,7 +3393,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3515,7 +3515,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -3536,7 +3536,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWhereEachStructIsImportant(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildVarDeclarationsOfDependentStructsWhereEachStructIsImportant(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3573,7 +3573,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -3592,7 +3592,7 @@ func main() {
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreImportant(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3801,7 +3801,7 @@ func TestDataType_buildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3815,7 +3815,7 @@ func main() {
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildDependentObjectsForHTTPClientListRetrievalTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildDependentObjectsForHTTPClientListRetrievalTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3828,7 +3828,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3842,7 +3842,7 @@ func main() {
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientListRetrievalTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildDependentObjectsForHTTPClientListRetrievalTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3855,7 +3855,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMet
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3869,7 +3869,7 @@ func main() {
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3882,7 +3882,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsForUpdateFunction(T *tes
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3896,7 +3896,7 @@ func main() {
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildVarDeclarationsOfDependentStructsForUpdateFunction(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildVarDeclarationsOfDependentStructsForUpdateFunction(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3909,7 +3909,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientUpdateMethodTest(T *testing.
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3923,7 +3923,7 @@ func main() {
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientUpdateMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildDependentObjectsForHTTPClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3936,7 +3936,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3950,7 +3950,7 @@ func main() {
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3963,7 +3963,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientCreationMethodTest(T *testin
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -3979,7 +3979,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildDependentObjectsForHTTPClientCreationMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildDependentObjectsForHTTPClientCreationMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -3992,10 +3992,10 @@ func TestDataType_BuildFormatStringForHTTPClientExistenceMethodTest(T *testing.T
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientExistenceMethodTest(p)
+		actual := p.LastDataType().BuildFormatStringForHTTPClientExistenceMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4008,10 +4008,10 @@ func TestDataType_BuildFormatStringForHTTPClientRetrievalMethodTest(T *testing.T
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientRetrievalMethodTest(p)
+		actual := p.LastDataType().BuildFormatStringForHTTPClientRetrievalMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4024,10 +4024,10 @@ func TestDataType_BuildFormatStringForHTTPClientUpdateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientUpdateMethodTest(p)
+		actual := p.LastDataType().BuildFormatStringForHTTPClientUpdateMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4040,10 +4040,10 @@ func TestDataType_BuildFormatStringForHTTPClientArchiveMethodTest(T *testing.T) 
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/things/%d/another_things/%d/yet_another_things/%d"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientArchiveMethodTest(p)
+		actual := p.LastDataType().BuildFormatStringForHTTPClientArchiveMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4056,10 +4056,10 @@ func TestDataType_BuildFormatStringForHTTPClientListMethodTest(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/things/%d/another_things/%d/yet_another_things"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientListMethodTest(p)
+		actual := p.LastDataType().BuildFormatStringForHTTPClientListMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4072,10 +4072,10 @@ func TestDataType_BuildFormatStringForHTTPClientSearchMethodTest(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/yet_another_things/search"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientSearchMethodTest()
+		actual := p.LastDataType().BuildFormatStringForHTTPClientSearchMethodTest()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4088,10 +4088,10 @@ func TestDataType_BuildFormatStringForHTTPClientCreateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := "/api/v1/things/%d/another_things/%d/yet_another_things"
-		actual := p.lastDataType().BuildFormatStringForHTTPClientCreateMethodTest(p)
+		actual := p.LastDataType().BuildFormatStringForHTTPClientCreateMethodTest(p)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4126,7 +4126,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4141,7 +4141,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildFormatCallArgsForHTTPClientRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4176,7 +4176,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4191,7 +4191,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientExistenceMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildFormatCallArgsForHTTPClientExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4226,7 +4226,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4241,7 +4241,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientListMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildFormatCallArgsForHTTPClientListMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4276,7 +4276,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4291,7 +4291,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientCreationMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildFormatCallArgsForHTTPClientCreationMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4326,7 +4326,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4341,7 +4341,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleYetAnotherThing.BelongsToAnotherThing, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildFormatCallArgsForHTTPClientUpdateTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildFormatCallArgsForHTTPClientUpdateTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4376,7 +4376,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4391,7 +4391,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientExistenceRequestBuildingMethod(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForHTTPClientExistenceRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4426,7 +4426,7 @@ func example(ctx context.Context, thingID uint64) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4441,7 +4441,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientExistenceRequestBuildingMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientExistenceRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4476,7 +4476,7 @@ func example(ctx context.Context, thingID uint64) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4491,7 +4491,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientExistenceMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientExistenceMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4526,7 +4526,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4541,7 +4541,7 @@ func main() {
 	exampleFunction(ctx, thingID, input)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientCreateRequestBuildingMethod(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForHTTPClientCreateRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4576,7 +4576,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4591,7 +4591,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientRetrievalRequestBuildingMethod(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForHTTPClientRetrievalRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4626,7 +4626,7 @@ func example(ctx context.Context, thingID uint64) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4641,7 +4641,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientRetrievalRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4696,7 +4696,7 @@ func example(ctx context.Context, thingID uint64) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4709,7 +4709,7 @@ import ()
 
 func example(ctx, thingID, anotherThingID, yetAnotherThingID) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalMethod(p, true))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientRetrievalMethod(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4718,7 +4718,7 @@ func example(ctx, thingID, anotherThingID, yetAnotherThingID) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4733,7 +4733,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientRetrievalMethod(p, false))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientRetrievalMethod(p, false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4769,7 +4769,7 @@ func example(ctx context.Context, input *v1.ThingCreationInput) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4785,7 +4785,7 @@ import (
 
 func example(ctx context.Context, thingID uint64, input *v1.YetAnotherThingCreationInput) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4821,7 +4821,7 @@ func example(ctx context.Context, input *v1.ThingCreationInput) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4837,7 +4837,7 @@ import (
 
 func example(ctx context.Context, thingID uint64, input *v1.YetAnotherThingCreationInput) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientCreateMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientCreateMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4873,7 +4873,7 @@ func example(ctx context.Context, thing *v1.Thing) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4889,7 +4889,7 @@ import (
 
 func example(ctx context.Context, thingID uint64, yetAnotherThing *v1.YetAnotherThing) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4924,7 +4924,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4939,7 +4939,7 @@ func main() {
 	exampleFunction(ctx, thingID, yetAnotherThing)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientUpdateRequestBuildingMethod(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForHTTPClientUpdateRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -4975,7 +4975,7 @@ func example(ctx context.Context, thing *v1.Thing) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -4991,7 +4991,7 @@ import (
 
 func example(ctx context.Context, thingID uint64, yetAnotherThing *v1.YetAnotherThing) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientUpdateMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientUpdateMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5026,7 +5026,7 @@ func example(ctx context.Context, thingID uint64) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5041,7 +5041,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientArchiveRequestBuildingMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientArchiveRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5076,7 +5076,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5091,7 +5091,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientArchiveRequestBuildingMethod(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForHTTPClientArchiveRequestBuildingMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5126,7 +5126,7 @@ func example(ctx context.Context, thingID uint64) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5141,7 +5141,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientArchiveMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientArchiveMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5174,7 +5174,7 @@ func example(ctx, exampleThing.ID) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5187,7 +5187,7 @@ import ()
 
 func example(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().buildParamsForMethodThatHandlesAnInstanceWithStructs(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().buildParamsForMethodThatHandlesAnInstanceWithStructs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5404,7 +5404,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5419,7 +5419,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleInput)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildHTTPClientCreationRequestBuildingMethodArgsForTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildHTTPClientCreationRequestBuildingMethodArgsForTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5454,7 +5454,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5469,7 +5469,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleInput)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildHTTPClientCreationMethodArgsForTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildHTTPClientCreationMethodArgsForTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5504,7 +5504,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5519,7 +5519,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, filter)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildArgsForHTTPClientListRequestMethod(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildArgsForHTTPClientListRequestMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5555,7 +5555,7 @@ func example(ctx context.Context, filter *v1.QueryFilter) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5571,7 +5571,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID uint64, filter *v1.QueryFilter) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientListRequestMethod(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientListRequestMethod(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5607,7 +5607,7 @@ func example(ctx context.Context, filter *v1.QueryFilter) {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5623,7 +5623,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID uint64, filter *v1.QueryFilter) {}
 `
-		actual := renderFunctionParamsToString(t, p.lastDataType().BuildParamsForHTTPClientMethodThatFetchesAList(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientMethodThatFetchesAList(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5658,7 +5658,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5673,7 +5673,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildCallArgsForHTTPClientListRetrievalRequestBuildingMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5708,7 +5708,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5723,7 +5723,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, filter)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientListRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildCallArgsForHTTPClientListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5758,7 +5758,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5773,7 +5773,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleYetAnotherThing)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildCallArgsForHTTPClientUpdateRequestBuildingMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5808,7 +5808,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5823,7 +5823,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleYetAnotherThing)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForHTTPClientUpdateMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildCallArgsForHTTPClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5887,7 +5887,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -5915,7 +5915,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecs(p, true))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildRequisiteFakeVarDecs(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -5979,7 +5979,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6002,7 +6002,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecForModifierFuncs(p, true))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildRequisiteFakeVarDecForModifierFuncs(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6101,7 +6101,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6123,7 +6123,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientCreateMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBClientCreateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6165,7 +6165,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6189,7 +6189,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6226,7 +6226,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6250,7 +6250,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6283,7 +6283,7 @@ func main() {}
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			if i != len(p.DataTypes)-1 {
 				p.DataTypes[i].BelongsToUser = true
@@ -6304,7 +6304,7 @@ func main() {
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarDecsForListFunction(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildRequisiteFakeVarDecsForListFunction(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6317,7 +6317,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(T *te
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6331,7 +6331,7 @@ func main() {
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6344,7 +6344,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(T *t
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6360,7 +6360,7 @@ func main() {
 	filter := fake.BuildFleshedOutQueryFilter()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6369,7 +6369,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6384,7 +6384,7 @@ func main() {
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, false))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, false))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6393,7 +6393,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6415,7 +6415,7 @@ func main() {
 	filter := fake.BuildFleshedOutQueryFilter()
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p, true))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6428,7 +6428,7 @@ func TestDataType_buildRequisiteFakeVarCallArgsForCreation(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6441,7 +6441,7 @@ func main() {
 	exampleYetAnotherThing.ID
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6450,7 +6450,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6468,7 +6468,7 @@ func main() {
 	exampleYetAnotherThing.BelongsToUser
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6481,7 +6481,7 @@ func TestDataType_buildRequisiteFakeVarCallArgs(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6492,7 +6492,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6501,7 +6501,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6516,7 +6516,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToUser)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6525,7 +6525,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		p.DataTypes[0].BelongsToUser = true
 		p.DataTypes[0].RestrictedToUser = true
 
@@ -6538,7 +6538,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgs(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6551,7 +6551,7 @@ func TestDataType_buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(T *
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6562,7 +6562,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6571,7 +6571,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		p.DataTypes[0].BelongsToUser = true
 		p.DataTypes[0].RestrictedToUser = true
 
@@ -6584,7 +6584,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleUser.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6597,7 +6597,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(T 
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6608,7 +6608,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForServiceExistenceHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6621,7 +6621,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(T *test
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6632,7 +6632,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForServiceReadHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6645,7 +6645,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(T *te
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6656,7 +6656,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForServiceCreateHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6669,7 +6669,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(T *te
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6680,7 +6680,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForServiceUpdateHandlerTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6741,7 +6741,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(T 
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6752,7 +6752,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForDBClientExistenceMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6765,7 +6765,7 @@ func TestDataType_BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(T 
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6776,7 +6776,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForDBClientRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6837,7 +6837,7 @@ func TestDataType_BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(T *
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -6848,7 +6848,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6857,7 +6857,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		p.DataTypes[2].BelongsToUser = true
 		p.DataTypes[2].RestrictedToUser = true
 
@@ -6870,7 +6870,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildExpectedQueryArgsForDBQueriersListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -6905,7 +6905,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -6920,7 +6920,7 @@ func main() {
 	exampleFunction(ctx, exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID, filter)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -7006,7 +7006,7 @@ func TestDataType_BuildCallArgsForDBClientListRetrievalMethodTest(T *testing.T) 
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -7017,7 +7017,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -7026,7 +7026,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		p.DataTypes[0].RestrictedToUser = true
 		p.DataTypes[0].BelongsToUser = true
 
@@ -7039,7 +7039,7 @@ func main() {
 	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleUser.ID)
 }
 `
-		actual := renderCallArgsToString(t, p.lastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
+		actual := renderCallArgsToString(t, p.LastDataType().BuildCallArgsForDBClientListRetrievalMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -7052,7 +7052,7 @@ func TestDataType_BuildRequisiteVarsForDBClientUpdateMethodTest(T *testing.T) {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 
 		expected := `
 package main
@@ -7070,7 +7070,7 @@ func main() {
 
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteVarsForDBClientUpdateMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteVarsForDBClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -7079,7 +7079,7 @@ func main() {
 		t.Parallel()
 
 		p := buildExampleTodoListProject()
-		p.DataTypes = buildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			p.DataTypes[i].BelongsToUser = true
 			p.DataTypes[i].RestrictedToUser = true
@@ -7103,7 +7103,7 @@ func main() {
 
 }
 `
-		actual := renderVariableDeclarationsToString(t, p.lastDataType().BuildRequisiteVarsForDBClientUpdateMethodTest(p))
+		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteVarsForDBClientUpdateMethodTest(p))
 
 		assert.Equal(t, expected, actual)
 	})

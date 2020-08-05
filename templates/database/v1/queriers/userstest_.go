@@ -917,15 +917,6 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		updateUserReturnMethod = "WillReturnResult"
 	}
 
-	buildUpdateUserExampleRows := func() jen.Code {
-		if isPostgres(dbvendor) {
-			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("last_updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
-		} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-			return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One())
-		}
-		return jen.Null()
-	}
-
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_UpdateUser", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -935,7 +926,15 @@ func buildTestDB_UpdateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				utils.BuildFakeVar(proj, "User"),
 				jen.Line(),
 				jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-				buildUpdateUserExampleRows(),
+				func() jen.Code {
+					if isPostgres(dbvendor) {
+						return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("last_updated_on"))).Dot("AddRow").Call(jen.Uint64().Call(jen.Qual("time", "Now").Call().Dot("Unix").Call()))
+					} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+						return jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewResult").Call(jen.ID("int64").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("ID")), jen.One())
+					}
+					// this line can never be tested :(
+					panic(fmt.Sprintf("invalid dbvendor: %q", dbvendor))
+				}(),
 				jen.Line(),
 				jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.ID("mockDB").Dot(updateUserExpectMethod).Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).Dot("WithArgs").Callln(

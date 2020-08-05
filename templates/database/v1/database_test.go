@@ -12,8 +12,6 @@ func Test_databaseDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := databaseDotGo(proj)
 
@@ -79,8 +77,6 @@ func Test_buildVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildVarDeclarations()
 
 		expected := `
@@ -106,8 +102,6 @@ func Test_buildTypeDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTypeDeclarations(proj)
 

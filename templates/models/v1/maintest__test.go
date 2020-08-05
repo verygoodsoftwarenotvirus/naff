@@ -12,8 +12,6 @@ func Test_mainTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mainTestDotGo(proj)
 
@@ -48,8 +46,6 @@ func Test_buildTestErrorResponse_Error(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestErrorResponse_Error()
 
 		expected := `

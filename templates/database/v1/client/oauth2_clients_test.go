@@ -12,8 +12,6 @@ func Test_oauth2ClientsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj)
 
@@ -156,8 +154,6 @@ func Test_buildGetOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj)
 
@@ -203,8 +199,6 @@ func Test_buildGetOAuth2ClientByClientID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientByClientID(proj)
 
@@ -246,8 +240,6 @@ func Test_buildGetAllOAuth2ClientCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2ClientCount(proj)
 
@@ -279,8 +271,6 @@ func Test_buildGetOAuth2ClientsForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientsForUser(proj)
 
@@ -316,8 +306,6 @@ func Test_buildCreateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj)
 
@@ -361,8 +349,6 @@ func Test_buildUpdateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateOAuth2Client(proj)
 
@@ -394,8 +380,6 @@ func Test_buildArchiveOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildArchiveOAuth2Client(proj)
 

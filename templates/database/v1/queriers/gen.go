@@ -249,11 +249,7 @@ func buildQueryTest(
 	expectArguments := len(expectedArgs) > 0
 	if expectArguments {
 		x := jen.ID(expectedArgsVarName).Assign().Index().Interface()
-		if len(expectedArgs) > 0 {
-			block = append(block, x.Valuesln(expectedArgs...))
-		} else {
-			block = append(block, x.Values(expectedArgs...))
-		}
+		block = append(block, x.Valuesln(expectedArgs...))
 	}
 
 	returnedVars := []jen.Code{jen.ID(actualQueryVarName)}
@@ -305,9 +301,8 @@ func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
 	case "s":
 		return "(strftime('%s','now'))"
 	default:
-		log.Fatalf("invalid database type! %q", db.LowercaseAbbreviation())
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
 	}
-	panic("won't get here")
 }
 
 func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
@@ -319,7 +314,6 @@ func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilde
 	case "s":
 		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
 	default:
-		log.Fatalf("invalid database type! %q", db.LowercaseAbbreviation())
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
 	}
-	panic("won't get here")
 }

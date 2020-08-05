@@ -12,8 +12,6 @@ func Test_fakeDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := fakeDotGo(proj)
 

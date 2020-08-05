@@ -404,9 +404,29 @@ var (
 )
 
 func BuildTodoApp() *models.Project {
-	return &models.Project{
+	p := &models.Project{
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
 		Name:       wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes:  todoDataTypes,
 	}
+
+	p.EnableDatabase(models.Postgres)
+	p.EnableDatabase(models.Sqlite)
+	p.EnableDatabase(models.MariaDB)
+
+	return p
+}
+
+func BuildEveryTypeApp() *models.Project {
+	p := &models.Project{
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
+		Name:       wordsmith.FromSingularPascalCase("Gamut"),
+		DataTypes:  []models.DataType{everyType},
+	}
+
+	p.EnableDatabase(models.Postgres)
+	p.EnableDatabase(models.Sqlite)
+	p.EnableDatabase(models.MariaDB)
+
+	return p
 }

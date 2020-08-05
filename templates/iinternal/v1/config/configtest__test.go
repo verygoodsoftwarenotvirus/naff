@@ -12,8 +12,6 @@ func Test_configTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := configTestDotGo(proj)
 
@@ -106,8 +104,6 @@ func Test_buildTest_randString(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTest_randString()
 
 		expected := `
@@ -136,8 +132,6 @@ func Test_buildTestBuildConfig(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestBuildConfig()
 
 		expected := `
@@ -165,8 +159,6 @@ func Test_buildTestParseConfigFile(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestParseConfigFile(proj)
 

@@ -168,7 +168,6 @@ func buildCallArgsForMethodThatHandlesAnInstanceWithRetrievedStructs(proj *model
 		listParams = append(listParams, jen.IDf("random%s", typ.Name.Singular()).Dot("ID"))
 
 		params = append(params, listParams...)
-
 	} else {
 		params = append(params, jen.IDf("random%s", typ.Name.Singular()).Dot("ID"))
 	}
@@ -301,12 +300,7 @@ func buildGetSomethingBlock(proj *models.Project, typ models.DataType) []jen.Cod
 	)
 
 	lines = append(lines,
-		func() jen.Code {
-			if len(lines) > 0 {
-				return jen.Line()
-			}
-			return nil
-		}(),
+		jen.Line(),
 		jen.Return().ID("c").Dotf("BuildGet%sRequest", sn).Call(requestBuildingArgs...),
 	)
 
@@ -324,12 +318,7 @@ func buildGetListOfSomethingBlock(proj *models.Project, typ models.DataType) []j
 
 	lines := buildRandomDependentIDFetchers(proj, typ)
 	lines = append(lines,
-		func() jen.Code {
-			if len(lines) > 0 {
-				return jen.Line()
-			}
-			return nil
-		}(),
+		jen.Line(),
 		jen.Return().ID("c").Dotf("BuildGet%sRequest", pn).Call(requestBuildingArgs...),
 	)
 
@@ -404,12 +393,7 @@ func buildArchiveSomethingBlock(proj *models.Project, typ models.DataType) []jen
 	)
 
 	lines = append(lines,
-		func() jen.Code {
-			if len(lines) > 0 {
-				return jen.Line()
-			}
-			return nil
-		}(),
+		jen.Line(),
 		jen.Return().ID("c").Dotf("BuildArchive%sRequest", sn).Call(requestBuildingArgs...),
 	)
 

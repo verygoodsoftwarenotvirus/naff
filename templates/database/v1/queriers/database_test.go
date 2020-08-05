@@ -13,8 +13,6 @@ func Test_databaseDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := databaseDotGo(proj, dbvendor)
@@ -181,8 +179,6 @@ func joinUint64s(in []uint64) string {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := databaseDotGo(proj, dbvendor)
@@ -326,8 +322,6 @@ func buildError(err error, msg string) error {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := databaseDotGo(proj, dbvendor)
@@ -498,8 +492,6 @@ func Test_buildDBDotGoConsts(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildDBDotGoConsts(dbvendor)
@@ -537,8 +529,6 @@ const (
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildDBDotGoConsts(dbvendor)
@@ -574,8 +564,6 @@ const (
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildDBDotGoConsts(dbvendor)
@@ -615,8 +603,6 @@ func Test_buildDBDotGoInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildDBDotGoInit(dbvendor)
@@ -651,8 +637,6 @@ func init() {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildDBDotGoInit(dbvendor)
@@ -687,8 +671,6 @@ func init() {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildDBDotGoInit(dbvendor)
@@ -727,8 +709,6 @@ func Test_buildDBDotGoVarDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildDBDotGoVarDecls(proj, dbvendor)
@@ -774,8 +754,6 @@ type (
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildDBDotGoVarDecls(proj, dbvendor)
@@ -822,8 +800,6 @@ type (
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildDBDotGoVarDecls(proj, dbvendor)
@@ -874,8 +850,6 @@ func Test_buildProvideDatabaseConn(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseConn(proj, dbvendor)
@@ -901,8 +875,6 @@ func ProvidePostgresDB(logger v1.Logger, connectionDetails v11.ConnectionDetails
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseConn(proj, dbvendor)
@@ -928,8 +900,6 @@ func ProvideSqliteDB(logger v1.Logger, connectionDetails v11.ConnectionDetails) 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseConn(proj, dbvendor)
@@ -959,8 +929,6 @@ func Test_buildProvideDatabaseClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseClient(proj, dbvendor)
@@ -991,8 +959,6 @@ func ProvidePostgres(debug bool, db *sql.DB, logger v1.Logger) v11.DataManager {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseClient(proj, dbvendor)
@@ -1024,8 +990,6 @@ func ProvideSqlite(debug bool, db *sql.DB, logger v1.Logger) v11.DataManager {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildProvideDatabaseClient(proj, dbvendor)
@@ -1061,8 +1025,6 @@ func Test_buildIsReady(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildIsReady(dbvendor)
@@ -1108,8 +1070,6 @@ func (p *Postgres) IsReady(ctx context.Context) (ready bool) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildIsReady(dbvendor)
@@ -1132,8 +1092,6 @@ func (s *Sqlite) IsReady(_ context.Context) (ready bool) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildIsReady(dbvendor)
@@ -1177,14 +1135,18 @@ func (m *MariaDB) IsReady(ctx context.Context) (ready bool) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("invalid", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("invalid")
+
+		assert.Panics(t, func() { buildIsReady(dbvendor) })
+	})
 }
 
 func Test_buildLogQueryBuildingError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildLogQueryBuildingError(dbvendor)
@@ -1211,8 +1173,6 @@ func (p *Postgres) logQueryBuildingError(err error) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildLogQueryBuildingError(dbvendor)
@@ -1239,8 +1199,6 @@ func (s *Sqlite) logQueryBuildingError(err error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildLogQueryBuildingError(dbvendor)
@@ -1271,8 +1229,6 @@ func Test_buildLogIDRetrievalError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildLogIDRetrievalError(dbvendor)
@@ -1299,8 +1255,6 @@ func (p *Postgres) logIDRetrievalError(err error) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildLogIDRetrievalError(dbvendor)
@@ -1327,8 +1281,6 @@ func (s *Sqlite) logIDRetrievalError(err error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildLogIDRetrievalError(dbvendor)
@@ -1359,8 +1311,6 @@ func Test_buildBuildError(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildBuildError()
 
 		expected := `
@@ -1396,8 +1346,6 @@ func Test_buildJoinUint64s(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildJoinUint64s()
 
 		expected := `

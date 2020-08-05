@@ -12,8 +12,6 @@ func Test_oauth2ClientsTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsTestDotGo(proj)
 
@@ -305,8 +303,6 @@ func Test_buildV1Client_BuildGetOAuth2ClientRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_BuildGetOAuth2ClientRequest(proj)
 
@@ -356,8 +352,6 @@ func Test_buildV1Client_GetOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_GetOAuth2Client(proj)
 
@@ -428,8 +422,6 @@ func Test_buildV1Client_BuildGetOAuth2ClientsRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildV1Client_BuildGetOAuth2ClientsRequest()
 
 		expected := `
@@ -472,8 +464,6 @@ func Test_buildV1Client_GetOAuth2Clients(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_GetOAuth2Clients(proj)
 
@@ -538,8 +528,6 @@ func Test_buildV1Client_BuildCreateOAuth2ClientRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_BuildCreateOAuth2ClientRequest(proj)
 
@@ -585,8 +573,6 @@ func Test_buildV1Client_CreateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_CreateOAuth2Client(proj)
 
@@ -686,8 +672,6 @@ func Test_buildV1Client_BuildArchiveOAuth2ClientRequest(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_BuildArchiveOAuth2ClientRequest(proj)
 
@@ -737,8 +721,6 @@ func Test_buildV1Client_ArchiveOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildV1Client_ArchiveOAuth2Client(proj)
 

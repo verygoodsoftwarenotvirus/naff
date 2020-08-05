@@ -12,8 +12,6 @@ func Test_userDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := userDotGo(proj)
 
@@ -152,8 +150,6 @@ func Test_buildBuildFakeUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeUser(proj)
 
@@ -190,8 +186,6 @@ func Test_buildBuildDatabaseCreationResponse(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildDatabaseCreationResponse(proj)
 
@@ -226,8 +220,6 @@ func Test_buildBuildFakeUserList(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeUserList(proj)
 
@@ -267,8 +259,6 @@ func Test_buildBuildFakeUserCreationInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeUserCreationInput(proj)
 
@@ -299,8 +289,6 @@ func Test_buildBuildFakeUserCreationInputFromUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeUserCreationInputFromUser(proj)
 
@@ -330,8 +318,6 @@ func Test_buildBuildFakeUserDatabaseCreationInputFromUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeUserDatabaseCreationInputFromUser(proj)
 
@@ -361,8 +347,6 @@ func Test_buildBuildFakeUserLoginInputFromUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeUserLoginInputFromUser(proj)
 
@@ -394,8 +378,6 @@ func Test_buildBuildFakePasswordUpdateInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakePasswordUpdateInput(proj)
 
@@ -427,8 +409,6 @@ func Test_buildBuildFakeTOTPSecretRefreshInput(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeTOTPSecretRefreshInput(proj)
 
@@ -459,8 +439,6 @@ func Test_buildBuildFakeTOTPSecretValidationInputForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildFakeTOTPSecretValidationInputForUser(proj)
 

@@ -12,8 +12,6 @@ func Test_httpRoutesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesDotGo(proj)
 
@@ -245,8 +243,6 @@ func Test_buildOAuth2ClientHTTPRoutesConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientHTTPRoutesConstantDefs(proj)
 
@@ -275,8 +271,6 @@ func Test_buildOAuth2ClientHTTPRoutesRandString(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientHTTPRoutesRandString()
 
 		expected := `
@@ -309,8 +303,6 @@ func Test_buildOAuth2ClientHTTPRoutesFetchUserID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientHTTPRoutesFetchUserID(proj)
 
@@ -340,8 +332,6 @@ func Test_buildOAuth2ClientHTTPRoutesListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientHTTPRoutesListHandler(proj)
 
@@ -399,8 +389,6 @@ func Test_buildOAuth2ClientHTTPRoutesCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientHTTPRoutesCreateHandler(proj)
 
@@ -499,8 +487,6 @@ func Test_buildOAuth2ClientHTTPRoutesReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientHTTPRoutesReadHandler(proj)
 
@@ -558,8 +544,6 @@ func Test_buildOAuth2ClientHTTPRoutesArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildOAuth2ClientHTTPRoutesArchiveHandler(proj)
 

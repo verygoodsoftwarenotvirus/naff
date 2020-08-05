@@ -11,8 +11,6 @@ func Test_randDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := randDotGo()
 
 		expected := `
@@ -72,8 +70,6 @@ func Test_buildRandConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandConstantDefs()
 
 		expected := `
@@ -96,8 +92,6 @@ func Test_buildRandInit(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandInit()
 
 		expected := `
@@ -125,8 +119,6 @@ func Test_buildRandStandardSecretGeneratorGenerateTwoFactorSecret(T *testing.T) 
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandStandardSecretGeneratorGenerateTwoFactorSecret()
 
 		expected := `
@@ -162,8 +154,6 @@ func Test_buildRandStandardSecretGeneratorGenerateSalt(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildRandStandardSecretGeneratorGenerateSalt()
 
 		expected := `

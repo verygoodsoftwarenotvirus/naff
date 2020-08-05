@@ -12,8 +12,6 @@ func Test_mockUserDataServerDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := mockUserDataServerDotGo(proj)
 
@@ -108,8 +106,6 @@ func Test_buildUserDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserDataServer()
 
 		expected := `
@@ -134,8 +130,6 @@ func Test_buildUserLoginInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserLoginInputMiddleware()
 
 		expected := `
@@ -161,8 +155,6 @@ func Test_buildUserInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserInputMiddleware()
 
 		expected := `
@@ -188,8 +180,6 @@ func Test_buildUserPasswordUpdateInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserPasswordUpdateInputMiddleware()
 
 		expected := `
@@ -215,8 +205,6 @@ func Test_buildUserTOTPSecretVerificationInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserTOTPSecretVerificationInputMiddleware()
 
 		expected := `
@@ -242,8 +230,6 @@ func Test_buildUserTOTPSecretRefreshInputMiddleware(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserTOTPSecretRefreshInputMiddleware()
 
 		expected := `
@@ -269,8 +255,6 @@ func Test_buildUserListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserListHandler()
 
 		expected := `
@@ -295,8 +279,6 @@ func Test_buildUserCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserCreateHandler()
 
 		expected := `
@@ -321,8 +303,6 @@ func Test_buildUserReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserReadHandler()
 
 		expected := `
@@ -347,8 +327,6 @@ func Test_buildUserTOTPSecretVerificationHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserTOTPSecretVerificationHandler()
 
 		expected := `
@@ -373,8 +351,6 @@ func Test_buildUserNewTOTPSecretHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserNewTOTPSecretHandler()
 
 		expected := `
@@ -399,8 +375,6 @@ func Test_buildUserUpdatePasswordHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserUpdatePasswordHandler()
 
 		expected := `
@@ -425,8 +399,6 @@ func Test_buildUserArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUserArchiveHandler()
 
 		expected := `

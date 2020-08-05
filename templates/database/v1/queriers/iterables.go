@@ -746,7 +746,7 @@ func buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor wordsmith.SuperPalabra
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.Var().ID("whenThenStatement").String()
 				}
-				return jen.Null()
+				panic(fmt.Sprintf("invalid dbvendor: %q", dbvendor))
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
@@ -1147,10 +1147,10 @@ func buildArchiveSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ mod
 		}
 		if typ.BelongsToUser {
 			if typ.BelongsToStruct != nil {
-				comment += "and a given user "
-			} else {
-				comment += "a given user "
+				comment += "and "
 			}
+			comment += "a given user "
+
 			vals = append(vals, jen.IDf("%sUserOwnershipColumn", puvn).MapAssign().ID(constants.UserIDVarName))
 		}
 	}

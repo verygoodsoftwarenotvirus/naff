@@ -12,8 +12,6 @@ func Test_wireTestDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := wireTestDotGo(proj)
 
@@ -52,8 +50,6 @@ func Test_buildTestProvideWebsocketAuthFunc(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildTestProvideWebsocketAuthFunc()
 
 		expected := `
@@ -82,8 +78,6 @@ func Test_buildTestProvideOAuth2ClientValidator(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildTestProvideOAuth2ClientValidator(proj)
 

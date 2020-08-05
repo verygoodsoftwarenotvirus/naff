@@ -12,8 +12,6 @@ func Test_wireDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := wireDotGo(proj, typ)
@@ -57,8 +55,6 @@ func Test_buildWireProviders(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildWireProviders(typ)
@@ -84,14 +80,39 @@ var (
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with search disabled", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.SearchEnabled = false
+		x := buildWireProviders(typ)
+
+		expected := `
+package example
+
+import (
+	wire "github.com/google/wire"
+)
+
+var (
+	// Providers is our collection of what we provide to other services.
+	Providers = wire.NewSet(
+		ProvideItemsService,
+		ProvideItemDataManager,
+		ProvideItemDataServer,
+	)
+)
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildWireProvideSomethingDataManager(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildWireProvideSomethingDataManager(proj, typ)
@@ -119,8 +140,6 @@ func Test_buildWireProvideSomethingDataServer(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		x := buildWireProvideSomethingDataServer(proj, typ)

@@ -152,7 +152,7 @@ func listTestFilesInDirectory(dirPath string) []string {
 }
 
 func main() {
-	const packagePath = "templates/tests/v1/integration"
+	const packagePath = "templates/database/v1/queriers"
 
 	for _, filePath := range listTestFilesInDirectory(packagePath) {
 		testsForFile := listTestsForFile(filePath)

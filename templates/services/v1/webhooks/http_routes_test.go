@@ -12,8 +12,6 @@ func Test_httpRoutesDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := httpRoutesDotGo(proj)
 
@@ -294,8 +292,6 @@ func Test_buildWebhookHTTPRoutesConstDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildWebhookHTTPRoutesConstDefs()
 
 		expected := `
@@ -318,8 +314,6 @@ func Test_buildWebhookHTTPRoutesValidateWebhook(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhookHTTPRoutesValidateWebhook(proj)
 
@@ -368,8 +362,6 @@ func Test_buildWebhookHTTPRoutesCreateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhookHTTPRoutesCreateHandler(proj)
 
@@ -448,8 +440,6 @@ func Test_buildWebhookHTTPRoutesListHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhookHTTPRoutesListHandler(proj)
 
@@ -506,8 +496,6 @@ func Test_buildWebhookHTTPRoutesReadHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhookHTTPRoutesReadHandler(proj)
 
@@ -565,8 +553,6 @@ func Test_buildWebhookHTTPRoutesUpdateHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhookHTTPRoutesUpdateHandler(proj)
 
@@ -651,8 +637,6 @@ func Test_buildWebhookHTTPRoutesArchiveHandler(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := buildWebhookHTTPRoutesArchiveHandler(proj)
 

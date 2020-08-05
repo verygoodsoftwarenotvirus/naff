@@ -12,8 +12,6 @@ func Test_utilsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		proj := testprojects.BuildTodoApp()
 		x := utilsDotGo(proj)
 
@@ -55,8 +53,6 @@ func Test_buildUtilsVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildUtilsVarDeclarations()
 
 		expected := `

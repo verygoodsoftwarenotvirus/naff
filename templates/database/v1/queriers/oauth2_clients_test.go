@@ -13,8 +13,6 @@ func Test_oauth2ClientsDotGo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj, dbvendor)
@@ -439,8 +437,6 @@ func (p *Postgres) ArchiveOAuth2Client(ctx context.Context, clientID, userID uin
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj, dbvendor)
@@ -871,8 +867,6 @@ func (s *Sqlite) ArchiveOAuth2Client(ctx context.Context, clientID, userID uint6
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := oauth2ClientsDotGo(proj, dbvendor)
@@ -1307,8 +1301,6 @@ func Test_buildOAuth2ClientsConstDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientsConstDeclarations()
 
 		expected := `
@@ -1337,8 +1329,6 @@ func Test_buildOAuth2ClientsVarDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildOAuth2ClientsVarDeclarations()
 
 		expected := `
@@ -1373,8 +1363,6 @@ func Test_buildScanOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanOAuth2Client(proj, dbvendor)
@@ -1425,8 +1413,6 @@ func (p *Postgres) scanOAuth2Client(scan v1.Scanner) (*v11.OAuth2Client, error) 
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanOAuth2Client(proj, dbvendor)
@@ -1477,8 +1463,6 @@ func (s *Sqlite) scanOAuth2Client(scan v1.Scanner) (*v11.OAuth2Client, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildScanOAuth2Client(proj, dbvendor)
@@ -1533,8 +1517,6 @@ func Test_buildScanOAuth2Clients(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanOAuth2Clients(proj, dbvendor)
@@ -1578,8 +1560,6 @@ func (p *Postgres) scanOAuth2Clients(rows v1.ResultIterator) ([]*v11.OAuth2Clien
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildScanOAuth2Clients(proj, dbvendor)
@@ -1623,8 +1603,6 @@ func (s *Sqlite) scanOAuth2Clients(rows v1.ResultIterator) ([]*v11.OAuth2Client,
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildScanOAuth2Clients(proj, dbvendor)
@@ -1672,8 +1650,6 @@ func Test_buildBuildGetOAuth2ClientByClientIDQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetOAuth2ClientByClientIDQuery(dbvendor)
@@ -1711,8 +1687,6 @@ func (p *Postgres) buildGetOAuth2ClientByClientIDQuery(clientID string) (query s
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetOAuth2ClientByClientIDQuery(dbvendor)
@@ -1750,8 +1724,6 @@ func (s *Sqlite) buildGetOAuth2ClientByClientIDQuery(clientID string) (query str
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetOAuth2ClientByClientIDQuery(dbvendor)
@@ -1793,8 +1765,6 @@ func Test_buildGetOAuth2ClientByClientID(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientByClientID(proj, dbvendor)
@@ -1820,8 +1790,6 @@ func (p *Postgres) GetOAuth2ClientByClientID(ctx context.Context, clientID strin
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientByClientID(proj, dbvendor)
@@ -1847,8 +1815,6 @@ func (s *Sqlite) GetOAuth2ClientByClientID(ctx context.Context, clientID string)
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientByClientID(proj, dbvendor)
@@ -1878,8 +1844,6 @@ func Test_buildGetAllOAuth2ClientsQueryBuilderVarDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildGetAllOAuth2ClientsQueryBuilderVarDecls()
 
 		expected := `
@@ -1904,8 +1868,6 @@ func Test_buildBuildGetAllOAuth2ClientsQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetAllOAuth2ClientsQuery(dbvendor)
@@ -1943,8 +1905,6 @@ func (p *Postgres) buildGetAllOAuth2ClientsQuery() (query string) {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetAllOAuth2ClientsQuery(dbvendor)
@@ -1982,8 +1942,6 @@ func (s *Sqlite) buildGetAllOAuth2ClientsQuery() (query string) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetAllOAuth2ClientsQuery(dbvendor)
@@ -2025,8 +1983,6 @@ func Test_buildGetAllOAuth2Clients(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2Clients(proj, dbvendor)
@@ -2065,8 +2021,6 @@ func (p *Postgres) GetAllOAuth2Clients(ctx context.Context) ([]*v1.OAuth2Client,
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2Clients(proj, dbvendor)
@@ -2105,8 +2059,6 @@ func (s *Sqlite) GetAllOAuth2Clients(ctx context.Context) ([]*v1.OAuth2Client, e
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2Clients(proj, dbvendor)
@@ -2149,8 +2101,6 @@ func Test_buildGetAllOAuth2ClientsForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2ClientsForUser(proj, dbvendor)
@@ -2191,8 +2141,6 @@ func (p *Postgres) GetAllOAuth2ClientsForUser(ctx context.Context, userID uint64
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2ClientsForUser(proj, dbvendor)
@@ -2233,8 +2181,6 @@ func (s *Sqlite) GetAllOAuth2ClientsForUser(ctx context.Context, userID uint64) 
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetAllOAuth2ClientsForUser(proj, dbvendor)
@@ -2279,8 +2225,6 @@ func Test_buildBuildGetOAuth2ClientQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetOAuth2ClientQuery(dbvendor)
@@ -2317,8 +2261,6 @@ func (p *Postgres) buildGetOAuth2ClientQuery(clientID, userID uint64) (query str
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetOAuth2ClientQuery(dbvendor)
@@ -2355,8 +2297,6 @@ func (s *Sqlite) buildGetOAuth2ClientQuery(clientID, userID uint64) (query strin
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetOAuth2ClientQuery(dbvendor)
@@ -2397,8 +2337,6 @@ func Test_buildGetOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj, dbvendor)
@@ -2435,8 +2373,6 @@ func (p *Postgres) GetOAuth2Client(ctx context.Context, clientID, userID uint64)
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj, dbvendor)
@@ -2473,8 +2409,6 @@ func (s *Sqlite) GetOAuth2Client(ctx context.Context, clientID, userID uint64) (
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2Client(proj, dbvendor)
@@ -2515,8 +2449,6 @@ func Test_buildGetAllOAuth2ClientCountQueryBuilderVarDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
 		x := buildGetAllOAuth2ClientCountQueryBuilderVarDecls()
 
 		expected := `
@@ -2541,8 +2473,6 @@ func Test_buildBuildGetAllOAuth2ClientsCountQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildGetAllOAuth2ClientsCountQuery(dbvendor)
@@ -2581,8 +2511,6 @@ func (p *Postgres) buildGetAllOAuth2ClientsCountQuery() string {
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildGetAllOAuth2ClientsCountQuery(dbvendor)
@@ -2621,8 +2549,6 @@ func (s *Sqlite) buildGetAllOAuth2ClientsCountQuery() string {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildGetAllOAuth2ClientsCountQuery(dbvendor)
@@ -2665,8 +2591,6 @@ func Test_buildGetAllOAuth2ClientCount(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildGetAllOAuth2ClientCount(dbvendor)
@@ -2691,8 +2615,6 @@ func (p *Postgres) GetAllOAuth2ClientCount(ctx context.Context) (uint64, error) 
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildGetAllOAuth2ClientCount(dbvendor)
@@ -2717,8 +2639,6 @@ func (s *Sqlite) GetAllOAuth2ClientCount(ctx context.Context) (uint64, error) {
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildGetAllOAuth2ClientCount(dbvendor)
@@ -2747,8 +2667,6 @@ func Test_buildBuildGetOAuth2ClientsForUserQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientsForUserQuery(proj, dbvendor)
@@ -2792,8 +2710,6 @@ func (p *Postgres) buildGetOAuth2ClientsForUserQuery(userID uint64, filter *v1.Q
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientsForUserQuery(proj, dbvendor)
@@ -2837,8 +2753,6 @@ func (s *Sqlite) buildGetOAuth2ClientsForUserQuery(userID uint64, filter *v1.Que
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildGetOAuth2ClientsForUserQuery(proj, dbvendor)
@@ -2886,8 +2800,6 @@ func Test_buildGetOAuth2ClientsForUser(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientsForUser(proj, dbvendor)
@@ -2941,8 +2853,6 @@ func (p *Postgres) GetOAuth2ClientsForUser(ctx context.Context, userID uint64, f
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientsForUser(proj, dbvendor)
@@ -2996,8 +2906,6 @@ func (s *Sqlite) GetOAuth2ClientsForUser(ctx context.Context, userID uint64, fil
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildGetOAuth2ClientsForUser(proj, dbvendor)
@@ -3055,8 +2963,6 @@ func Test_buildBuildCreateOAuth2ClientQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateOAuth2ClientQuery(proj, dbvendor)
@@ -3106,8 +3012,6 @@ func (p *Postgres) buildCreateOAuth2ClientQuery(input *v1.OAuth2Client) (query s
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateOAuth2ClientQuery(proj, dbvendor)
@@ -3155,8 +3059,6 @@ func (s *Sqlite) buildCreateOAuth2ClientQuery(input *v1.OAuth2Client) (query str
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildCreateOAuth2ClientQuery(proj, dbvendor)
@@ -3208,8 +3110,6 @@ func Test_buildCreateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj, dbvendor)
@@ -3249,8 +3149,6 @@ func (p *Postgres) CreateOAuth2Client(ctx context.Context, input *v1.OAuth2Clien
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj, dbvendor)
@@ -3298,8 +3196,6 @@ func (s *Sqlite) CreateOAuth2Client(ctx context.Context, input *v1.OAuth2ClientC
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildCreateOAuth2Client(proj, dbvendor)
@@ -3351,8 +3247,6 @@ func Test_buildBuildUpdateOAuth2ClientQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildUpdateOAuth2ClientQuery(proj, dbvendor)
@@ -3396,8 +3290,6 @@ func (p *Postgres) buildUpdateOAuth2ClientQuery(input *v1.OAuth2Client) (query s
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildUpdateOAuth2ClientQuery(proj, dbvendor)
@@ -3439,8 +3331,6 @@ func (s *Sqlite) buildUpdateOAuth2ClientQuery(input *v1.OAuth2Client) (query str
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildBuildUpdateOAuth2ClientQuery(proj, dbvendor)
@@ -3486,8 +3376,6 @@ func Test_buildUpdateOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateOAuth2Client(proj, dbvendor)
@@ -3513,8 +3401,6 @@ func (p *Postgres) UpdateOAuth2Client(ctx context.Context, input *v1.OAuth2Clien
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateOAuth2Client(proj, dbvendor)
@@ -3541,8 +3427,6 @@ func (s *Sqlite) UpdateOAuth2Client(ctx context.Context, input *v1.OAuth2Client)
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		x := buildUpdateOAuth2Client(proj, dbvendor)
@@ -3573,8 +3457,6 @@ func Test_buildBuildArchiveOAuth2ClientQuery(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildBuildArchiveOAuth2ClientQuery(dbvendor)
@@ -3613,8 +3495,6 @@ func (p *Postgres) buildArchiveOAuth2ClientQuery(clientID, userID uint64) (query
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildBuildArchiveOAuth2ClientQuery(dbvendor)
@@ -3651,8 +3531,6 @@ func (s *Sqlite) buildArchiveOAuth2ClientQuery(clientID, userID uint64) (query s
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildBuildArchiveOAuth2ClientQuery(dbvendor)
@@ -3693,8 +3571,6 @@ func Test_buildArchiveOAuth2Client(T *testing.T) {
 	T.Parallel()
 
 	T.Run("postgres", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 
 		x := buildArchiveOAuth2Client(dbvendor)
@@ -3719,8 +3595,6 @@ func (p *Postgres) ArchiveOAuth2Client(ctx context.Context, clientID, userID uin
 	})
 
 	T.Run("sqlite", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 
 		x := buildArchiveOAuth2Client(dbvendor)
@@ -3745,8 +3619,6 @@ func (s *Sqlite) ArchiveOAuth2Client(ctx context.Context, clientID, userID uint6
 	})
 
 	T.Run("mariadb", func(t *testing.T) {
-		t.Parallel()
-
 		dbvendor := buildMariaDBWord()
 
 		x := buildArchiveOAuth2Client(dbvendor)
