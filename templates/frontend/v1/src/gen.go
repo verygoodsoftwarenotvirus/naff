@@ -13,7 +13,9 @@ import (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]func() string{
-		"frontend/v1/src/models/fakes.ts": fakesDotTS,
+		"frontend/v1/src/models/fakes.ts":       fakesDotTS,
+		"frontend/v1/src/models/state.ts":       stateDotTS,
+		"frontend/v1/src/models/queryFilter.ts": queryFilterDotTS,
 	}
 
 	for _, typ := range proj.DataTypes {
