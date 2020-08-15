@@ -19,7 +19,7 @@ type DataType struct {
 	Name             wordsmith.SuperPalabra
 	Struct           *types.Struct
 	BelongsToUser    bool
-	BelongsToNobody  bool
+	IsEnumeration    bool
 	RestrictedToUser bool
 	SearchEnabled    bool
 	BelongsToStruct  wordsmith.SuperPalabra
@@ -36,7 +36,6 @@ type DataField struct {
 	DefaultValue          string
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
-	BelongsToEnumeration  wordsmith.SuperPalabra
 }
 
 func buildFakeVarName(typName string) string {
@@ -361,10 +360,10 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClau
 		}
 	}
 
-	if typ.BelongsToStruct != nil {
+	if typ.BelongsToStruct != nil && !typ.IsEnumeration {
 		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
-	if typ.BelongsToUser && typ.RestrictedToUser {
+	if typ.BelongsToUser && typ.RestrictedToUser && !typ.IsEnumeration {
 		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -724,6 +723,68 @@ func (typ DataType) BuildGetListOfSomethingLogValues(p *Project) *jen.Statement 
 	}
 
 	return nil
+}
+
+func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code {
+	params := []jen.Code{ctxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		lp = append(lp, jen.ID("userID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	params = append(params,
+		jen.ID("limit").Uint8(),
+		jen.ID("ids").Index().Uint64(),
+	)
+
+	return params
+}
+
+func (typ DataType) BuildGetListOfSomethingFromIDsArgs(p *Project) []jen.Code {
+	params := []jen.Code{ctxVar()}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		params = append(params, jen.ID("userID"))
+	}
+
+	params = append(params,
+		jen.ID("limit"),
+		jen.ID("ids"),
+	)
+
+	return params
+}
+
+func (typ DataType) BuildGetListOfSomethingFromIDsArgsForTest(p *Project) []jen.Code {
+	params := []jen.Code{ctxVar()}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		params = append(params, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+	}
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		params = append(params, jen.ID("exampleUser").Dot("ID"))
+	}
+
+	params = append(params,
+		jen.ID("defaultLimit"),
+		jen.ID("exampleIDs"),
+	)
+
+	return params
 }
 
 func (typ DataType) buildGetListOfSomethingParams(p *Project, isModelsPackage bool) []jen.Code {
@@ -1990,6 +2051,12 @@ func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p 
 	lines := []jen.Code{}
 
 	owners := p.FindOwnerTypeChain(typ)
+
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		lines = append(lines,
+			jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call(),
+		)
+	}
 
 	for _, pt := range owners {
 		pts := pt.Name.Singular()

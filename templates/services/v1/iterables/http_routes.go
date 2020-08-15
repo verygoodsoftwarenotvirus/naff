@@ -15,7 +15,6 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(buildHTTPRoutesConstantDefs(typ)...)
-
 	code.Add(buildListHandlerFuncDecl(proj, typ)...)
 
 	if typ.SearchEnabled {
@@ -349,7 +348,12 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 				jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(
 					constants.CtxVar(),
 					jen.ID("x").Dot("ID"),
-					jen.ID("x"),
+					func() jen.Code {
+						if len(proj.FindOwnerTypeChain(typ)) > 0 {
+							return jen.ID("x").Dot("ToSearchHelper").Call()
+						}
+						return jen.ID("x")
+					}(),
 				),
 				jen.ID("searchIndexErr").DoesNotEqual().Nil(),
 			).Body(

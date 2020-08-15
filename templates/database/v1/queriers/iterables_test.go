@@ -1,13 +1,14 @@
 package queriers
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_iterablesDotGo(T *testing.T) {
@@ -1695,6 +1696,53 @@ func (m *MariaDB) scanItem(scan v1.Scanner) (*v11.Item, error) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildScanSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an Item struct
+func (p *Postgres) scanItem(scan v1.Scanner, includeCount bool) (*v11.Item, uint64, error) {
+	x := &v11.Item{}
+	var count uint64
+
+	targetVars := []interface{}{
+		&x.ID,
+		&x.Name,
+		&x.Details,
+		&x.CreatedOn,
+		&x.LastUpdatedOn,
+		&x.ArchivedOn,
+		&x.BelongsToUser,
+	}
+
+	if includeCount {
+		targetVars = append(targetVars, &count)
+	}
+
+	if err := scan.Scan(targetVars...); err != nil {
+		return nil, 0, err
+	}
+
+	return x, count, nil
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildScanListOfSomethingFuncDecl(T *testing.T) {
@@ -1834,6 +1882,58 @@ func (m *MariaDB) scanItems(rows v1.ResultIterator) ([]v11.Item, error) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("postgres with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildScanListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// scanItems takes a logger and some database rows and turns them into a slice of items.
+func (p *Postgres) scanItems(rows v1.ResultIterator) ([]v11.Item, uint64, error) {
+	var (
+		list  []v11.Item
+		count uint64
+	)
+
+	for rows.Next() {
+		x, c, err := p.scanItem(rows, true)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		if count == 0 {
+			count = c
+		}
+
+		list = append(list, *x)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	if closeErr := rows.Close(); closeErr != nil {
+		p.logger.Error(closeErr, "closing database rows")
+	}
+
+	return list, count, nil
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildSomethingExistsQueryFuncDecl(T *testing.T) {
@@ -1920,11 +2020,11 @@ func (p *Postgres) buildYetAnotherThingExistsQuery(thingID, anotherThingID, yetA
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("postgres belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		typ.BelongsToStruct = nil
 		x := buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)
 
@@ -2041,11 +2141,11 @@ func (s *Sqlite) buildYetAnotherThingExistsQuery(thingID, anotherThingID, yetAno
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite belonging to nobody", func(t *testing.T) {
+	T.Run("sqlite with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		typ.BelongsToStruct = nil
 		x := buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)
 
@@ -2162,11 +2262,11 @@ func (m *MariaDB) buildYetAnotherThingExistsQuery(thingID, anotherThingID, yetAn
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb belonging to nobody", func(t *testing.T) {
+	T.Run("mariadb with enumeration", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		typ.BelongsToStruct = nil
 		x := buildSomethingExistsQueryFuncDecl(proj, dbvendor, typ)
 
@@ -2382,14 +2482,14 @@ func (p *Postgres) buildGetYetAnotherThingQuery(thingID, anotherThingID, yetAnot
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("postgres belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToStruct = nil
 		typ.BelongsToUser = false
 		typ.RestrictedToUser = false
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		x := buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
@@ -2501,14 +2601,14 @@ func (s *Sqlite) buildGetYetAnotherThingQuery(thingID, anotherThingID, yetAnothe
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite belonging to nobody", func(t *testing.T) {
+	T.Run("sqlite with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToStruct = nil
 		typ.BelongsToUser = false
 		typ.RestrictedToUser = false
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		x := buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
@@ -2620,14 +2720,14 @@ func (m *MariaDB) buildGetYetAnotherThingQuery(thingID, anotherThingID, yetAnoth
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb belonging to nobody", func(t *testing.T) {
+	T.Run("mariadb with enumeration", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToStruct = nil
 		typ.BelongsToUser = false
 		typ.RestrictedToUser = false
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		x := buildGetSomethingQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
@@ -2690,6 +2790,35 @@ func (p *Postgres) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("postgres with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItem fetches an item from the database.
+func (p *Postgres) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, error) {
+	query, args := p.buildGetItemQuery(itemID, userID)
+	row := p.db.QueryRowContext(ctx, query, args...)
+	i, _, err := p.scanItem(row, false)
+	return i, err
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("sqlite", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
@@ -2716,6 +2845,35 @@ func (s *Sqlite) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("sqlite with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItem fetches an item from the database.
+func (s *Sqlite) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, error) {
+	query, args := s.buildGetItemQuery(itemID, userID)
+	row := s.db.QueryRowContext(ctx, query, args...)
+	i, _, err := s.scanItem(row, false)
+	return i, err
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("mariadb", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
@@ -2735,6 +2893,35 @@ func (m *MariaDB) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item,
 	query, args := m.buildGetItemQuery(itemID, userID)
 	row := m.db.QueryRowContext(ctx, query, args...)
 	return m.scanItem(row)
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb with enumeration", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItem fetches an item from the database.
+func (m *MariaDB) GetItem(ctx context.Context, itemID, userID uint64) (*v1.Item, error) {
+	query, args := m.buildGetItemQuery(itemID, userID)
+	row := m.db.QueryRowContext(ctx, query, args...)
+	i, _, err := m.scanItem(row, false)
+	return i, err
 }
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
@@ -3298,6 +3485,52 @@ func (p *Postgres) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (qu
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("postgres with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"fmt"
+	squirrel "github.com/Masterminds/squirrel"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
+// and returns both the query and the relevant args to pass to the query executor.
+func (p *Postgres) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (query string, args []interface{}) {
+	var err error
+
+	builder := p.sqlBuilder.
+		Select(append(itemsTableColumns, fmt.Sprintf("(%s)", p.buildGetAllItemsCountQuery()))...).
+		From(itemsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", itemsTableName, archivedOnColumn):         nil,
+			fmt.Sprintf("%s.%s", itemsTableName, itemsUserOwnershipColumn): userID,
+		}).
+		OrderBy(fmt.Sprintf("%s.%s", itemsTableName, idColumn))
+
+	if filter != nil {
+		builder = filter.ApplyToQueryBuilder(builder, itemsTableName)
+	}
+
+	query, args, err = builder.ToSql()
+	p.logQueryBuildingError(err)
+
+	return query, args
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("sqlite", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
@@ -3342,6 +3575,52 @@ func (s *Sqlite) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (quer
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("sqlite with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"fmt"
+	squirrel "github.com/Masterminds/squirrel"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
+// and returns both the query and the relevant args to pass to the query executor.
+func (s *Sqlite) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (query string, args []interface{}) {
+	var err error
+
+	builder := s.sqlBuilder.
+		Select(append(itemsTableColumns, fmt.Sprintf("(%s)", s.buildGetAllItemsCountQuery()))...).
+		From(itemsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", itemsTableName, archivedOnColumn):         nil,
+			fmt.Sprintf("%s.%s", itemsTableName, itemsUserOwnershipColumn): userID,
+		}).
+		OrderBy(fmt.Sprintf("%s.%s", itemsTableName, idColumn))
+
+	if filter != nil {
+		builder = filter.ApplyToQueryBuilder(builder, itemsTableName)
+	}
+
+	query, args, err = builder.ToSql()
+	s.logQueryBuildingError(err)
+
+	return query, args
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("mariadb", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
@@ -3364,6 +3643,52 @@ func (m *MariaDB) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (que
 
 	builder := m.sqlBuilder.
 		Select(itemsTableColumns...).
+		From(itemsTableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.%s", itemsTableName, archivedOnColumn):         nil,
+			fmt.Sprintf("%s.%s", itemsTableName, itemsUserOwnershipColumn): userID,
+		}).
+		OrderBy(fmt.Sprintf("%s.%s", itemsTableName, idColumn))
+
+	if filter != nil {
+		builder = filter.ApplyToQueryBuilder(builder, itemsTableName)
+	}
+
+	query, args, err = builder.ToSql()
+	m.logQueryBuildingError(err)
+
+	return query, args
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb with enumeration", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"fmt"
+	squirrel "github.com/Masterminds/squirrel"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
+// and returns both the query and the relevant args to pass to the query executor.
+func (m *MariaDB) buildGetItemsQuery(userID uint64, filter *v1.QueryFilter) (query string, args []interface{}) {
+	var err error
+
+	builder := m.sqlBuilder.
+		Select(append(itemsTableColumns, fmt.Sprintf("(%s)", m.buildGetAllItemsCountQuery()))...).
 		From(itemsTableName).
 		Where(squirrel.Eq{
 			fmt.Sprintf("%s.%s", itemsTableName, archivedOnColumn):         nil,
@@ -3537,7 +3862,7 @@ func (p *Postgres) buildGetYetAnotherThingsQuery(filter *v1.QueryFilter) (query 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("postgres belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -3631,6 +3956,54 @@ func (p *Postgres) GetItems(ctx context.Context, userID uint64, filter *v1.Query
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("postgres with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"fmt"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItems fetches a list of items from the database that meet a particular filter.
+func (p *Postgres) GetItems(ctx context.Context, userID uint64, filter *v1.QueryFilter) (*v1.ItemList, error) {
+	query, args := p.buildGetItemsQuery(userID, filter)
+
+	rows, err := p.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, buildError(err, "querying database for items")
+	}
+
+	items, count, err := p.scanItems(rows)
+	if err != nil {
+		return nil, fmt.Errorf("scanning response from database: %w", err)
+	}
+
+	list := &v1.ItemList{
+		Pagination: v1.Pagination{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			TotalCount: count,
+		},
+		Items: items,
+	}
+
+	return list, nil
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("sqlite", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
@@ -3664,6 +4037,54 @@ func (s *Sqlite) GetItems(ctx context.Context, userID uint64, filter *v1.QueryFi
 		Pagination: v1.Pagination{
 			Page:  filter.Page,
 			Limit: filter.Limit,
+		},
+		Items: items,
+	}
+
+	return list, nil
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("sqlite with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"fmt"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItems fetches a list of items from the database that meet a particular filter.
+func (s *Sqlite) GetItems(ctx context.Context, userID uint64, filter *v1.QueryFilter) (*v1.ItemList, error) {
+	query, args := s.buildGetItemsQuery(userID, filter)
+
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, buildError(err, "querying database for items")
+	}
+
+	items, count, err := s.scanItems(rows)
+	if err != nil {
+		return nil, fmt.Errorf("scanning response from database: %w", err)
+	}
+
+	list := &v1.ItemList{
+		Pagination: v1.Pagination{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			TotalCount: count,
 		},
 		Items: items,
 	}
@@ -3720,6 +4141,54 @@ func (m *MariaDB) GetItems(ctx context.Context, userID uint64, filter *v1.QueryF
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("mariadb with enumeration", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"fmt"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+// GetItems fetches a list of items from the database that meet a particular filter.
+func (m *MariaDB) GetItems(ctx context.Context, userID uint64, filter *v1.QueryFilter) (*v1.ItemList, error) {
+	query, args := m.buildGetItemsQuery(userID, filter)
+
+	rows, err := m.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, buildError(err, "querying database for items")
+	}
+
+	items, count, err := m.scanItems(rows)
+	if err != nil {
+		return nil, fmt.Errorf("scanning response from database: %w", err)
+	}
+
+	list := &v1.ItemList{
+		Pagination: v1.Pagination{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			TotalCount: count,
+		},
+		Items: items,
+	}
+
+	return list, nil
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildGetListOfSomethingWithIDsQueryFuncDecl(T *testing.T) {
@@ -3729,7 +4198,7 @@ func Test_buildGetListOfSomethingWithIDsQueryFuncDecl(T *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
 package example
@@ -3776,7 +4245,7 @@ func (p *Postgres) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []u
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, proj.LastDataType())
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, proj.LastDataType())
 
 		expected := `
 package example
@@ -3793,7 +4262,7 @@ import (
 // slice of uint64s instead of a slice of strings in order to ensure all the provided strings
 // are valid database IDs, because there's no way in squirrel to escape them in the unnest join,
 // and if we accept strings we could leave ourselves vulnerable to SQL injection attacks.
-func (p *Postgres) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, limit uint8, ids []uint64) (query string, args []interface{}) {
+func (p *Postgres) buildGetYetAnotherThingsWithIDsQuery(thingID, anotherThingID uint64, limit uint8, ids []uint64) (query string, args []interface{}) {
 	var err error
 
 	subqueryBuilder := p.sqlBuilder.Select(yetAnotherThingsTableColumns...).
@@ -3818,13 +4287,13 @@ func (p *Postgres) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, l
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("postgres belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
 		typ.BelongsToStruct = nil
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
 package example
@@ -3870,7 +4339,7 @@ func (p *Postgres) buildGetItemsWithIDsQuery(limit uint8, ids []uint64) (query s
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
 package example
@@ -3925,7 +4394,7 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []uin
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, proj.LastDataType())
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, proj.LastDataType())
 
 		expected := `
 package example
@@ -3942,7 +4411,7 @@ import (
 // slice of uint64s instead of a slice of strings in order to ensure all the provided strings
 // are valid database IDs, because there's no way in squirrel to escape them in the unnest join,
 // and if we accept strings we could leave ourselves vulnerable to SQL injection attacks.
-func (s *Sqlite) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, limit uint8, ids []uint64) (query string, args []interface{}) {
+func (s *Sqlite) buildGetYetAnotherThingsWithIDsQuery(thingID, anotherThingID uint64, limit uint8, ids []uint64) (query string, args []interface{}) {
 	var err error
 
 	var whenThenStatement string
@@ -3975,13 +4444,13 @@ func (s *Sqlite) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, lim
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite belonging to nobody", func(t *testing.T) {
+	T.Run("sqlite with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
 		typ.BelongsToStruct = nil
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
 package example
@@ -4035,7 +4504,7 @@ func (s *Sqlite) buildGetItemsWithIDsQuery(limit uint8, ids []uint64) (query str
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
 package example
@@ -4090,7 +4559,7 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(userID uint64, limit uint8, ids []ui
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, proj.LastDataType())
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, proj.LastDataType())
 
 		expected := `
 package example
@@ -4107,7 +4576,7 @@ import (
 // slice of uint64s instead of a slice of strings in order to ensure all the provided strings
 // are valid database IDs, because there's no way in squirrel to escape them in the unnest join,
 // and if we accept strings we could leave ourselves vulnerable to SQL injection attacks.
-func (m *MariaDB) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, limit uint8, ids []uint64) (query string, args []interface{}) {
+func (m *MariaDB) buildGetYetAnotherThingsWithIDsQuery(thingID, anotherThingID uint64, limit uint8, ids []uint64) (query string, args []interface{}) {
 	var err error
 
 	var whenThenStatement string
@@ -4140,13 +4609,13 @@ func (m *MariaDB) buildGetYetAnotherThingsWithIDsQuery(anotherThingID uint64, li
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb belonging to nobody", func(t *testing.T) {
+	T.Run("mariadb with enumeration", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
 		typ.BelongsToStruct = nil
-		x := buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ)
+		x := buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
 
 		expected := `
 package example
@@ -4201,7 +4670,7 @@ func (m *MariaDB) buildGetItemsWithIDsQuery(limit uint8, ids []uint64) (query st
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 
-		assert.Panics(t, func() { buildGetListOfSomethingWithIDsQueryFuncDecl(dbvendor, typ) })
+		assert.Panics(t, func() { buildGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ) })
 	})
 }
 
@@ -4266,12 +4735,12 @@ import (
 )
 
 // GetYetAnotherThingsWithIDs fetches a list of yet another things from the database that exist within a given set of IDs.
-func (p *Postgres) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID uint64, limit uint8, ids []uint64) ([]v1.YetAnotherThing, error) {
+func (p *Postgres) GetYetAnotherThingsWithIDs(ctx context.Context, thingID, anotherThingID uint64, limit uint8, ids []uint64) ([]v1.YetAnotherThing, error) {
 	if limit == 0 {
 		limit = uint8(v1.DefaultLimit)
 	}
 
-	query, args := p.buildGetYetAnotherThingsWithIDsQuery(anotherThingID, limit, ids)
+	query, args := p.buildGetYetAnotherThingsWithIDsQuery(thingID, anotherThingID, limit, ids)
 
 	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -4291,7 +4760,7 @@ func (p *Postgres) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingI
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("postgres belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4392,12 +4861,12 @@ import (
 )
 
 // GetYetAnotherThingsWithIDs fetches a list of yet another things from the database that exist within a given set of IDs.
-func (s *Sqlite) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID uint64, limit uint8, ids []uint64) ([]v1.YetAnotherThing, error) {
+func (s *Sqlite) GetYetAnotherThingsWithIDs(ctx context.Context, thingID, anotherThingID uint64, limit uint8, ids []uint64) ([]v1.YetAnotherThing, error) {
 	if limit == 0 {
 		limit = uint8(v1.DefaultLimit)
 	}
 
-	query, args := s.buildGetYetAnotherThingsWithIDsQuery(anotherThingID, limit, ids)
+	query, args := s.buildGetYetAnotherThingsWithIDsQuery(thingID, anotherThingID, limit, ids)
 
 	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -4417,7 +4886,7 @@ func (s *Sqlite) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite belonging to nobody", func(t *testing.T) {
+	T.Run("sqlite with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -4518,12 +4987,12 @@ import (
 )
 
 // GetYetAnotherThingsWithIDs fetches a list of yet another things from the database that exist within a given set of IDs.
-func (m *MariaDB) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID uint64, limit uint8, ids []uint64) ([]v1.YetAnotherThing, error) {
+func (m *MariaDB) GetYetAnotherThingsWithIDs(ctx context.Context, thingID, anotherThingID uint64, limit uint8, ids []uint64) ([]v1.YetAnotherThing, error) {
 	if limit == 0 {
 		limit = uint8(v1.DefaultLimit)
 	}
 
-	query, args := m.buildGetYetAnotherThingsWithIDsQuery(anotherThingID, limit, ids)
+	query, args := m.buildGetYetAnotherThingsWithIDsQuery(thingID, anotherThingID, limit, ids)
 
 	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -4543,7 +5012,7 @@ func (m *MariaDB) GetYetAnotherThingsWithIDs(ctx context.Context, anotherThingID
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb belonging to nobody", func(t *testing.T) {
+	T.Run("mariadb with enumeration", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -5536,13 +6005,13 @@ func (p *Postgres) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherTh
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("postgres belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
 		typ.BelongsToStruct = nil
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		x := buildArchiveSomethingQueryFuncDecl(dbvendor, typ)
 
 		expected := `
@@ -5655,13 +6124,13 @@ func (s *Sqlite) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherThin
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite belonging to nobody", func(t *testing.T) {
+	T.Run("sqlite with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
 		typ.BelongsToStruct = nil
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		x := buildArchiveSomethingQueryFuncDecl(dbvendor, typ)
 
 		expected := `
@@ -5772,13 +6241,13 @@ func (m *MariaDB) buildArchiveYetAnotherThingQuery(anotherThingID, yetAnotherThi
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb belonging to nobody", func(t *testing.T) {
+	T.Run("mariadb with enumeration", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
 		typ.BelongsToUser = false
 		typ.BelongsToStruct = nil
-		typ.BelongsToNobody = true
+		typ.IsEnumeration = true
 		x := buildArchiveSomethingQueryFuncDecl(dbvendor, typ)
 
 		expected := `

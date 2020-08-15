@@ -218,54 +218,41 @@ func buildTestClientGetListOfSomethingWithIDs(proj *models.Project, typ models.D
 	sn := n.Singular()
 	pn := n.Plural()
 
-	subtest := []jen.Code{
-		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
-		jen.Var().ID("exampleIDs").Index().Uint64(),
-		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
-			jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID("x").Dot("ID")),
-		),
-		jen.Line(),
-		jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
-			jen.Litf("Get%sWithIDs", pn),
-			jen.Qual(constants.MockPkg, "Anything"),
-			func() jen.Code {
-				if typ.BelongsToUser {
-					return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-				}
-				return jen.Null()
-			}(),
-			jen.ID("defaultLimit"),
-			jen.ID("exampleIDs"),
-		).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
-		jen.Line(),
-		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
-			constants.CtxVar(),
-			func() jen.Code {
-				if typ.BelongsToUser {
-					return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-				}
-				return jen.Null()
-			}(),
-			jen.ID("defaultLimit"),
-			jen.ID("exampleIDs"),
-		),
-		utils.AssertNoError(jen.Err(), nil),
-		utils.AssertEqual(jen.IDf("example%sList", sn), jen.ID("actual"), nil),
-		jen.Line(),
-		utils.AssertExpectationsFor("mockDB"),
-	}
+	args := typ.BuildGetListOfSomethingFromIDsArgsForTest(proj)
+
+	subtest := append(
+		typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false),
+		[]jen.Code{
+			jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
+			jen.Var().ID("exampleIDs").Index().Uint64(),
+			jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
+				jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID("x").Dot("ID")),
+			),
+			jen.Line(),
+			jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
+			jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(
+				append(
+					[]jen.Code{
+						jen.Litf("Get%sWithIDs", pn),
+						jen.Qual(constants.MockPkg, "Anything"),
+					},
+					args[1:]...,
+				)...,
+			).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
+			jen.Line(),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
+				args...,
+			),
+			utils.AssertNoError(jen.Err(), nil),
+			utils.AssertEqual(jen.IDf("example%sList", sn), jen.ID("actual"), nil),
+			jen.Line(),
+			utils.AssertExpectationsFor("mockDB"),
+		}...,
+	)
 
 	return []jen.Code{
 		jen.Func().IDf("TestClient_Get%sWithIDs", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			func() jen.Code {
-				if typ.BelongsToUser && typ.RestrictedToUser {
-					return utils.BuildFakeVar(proj, "User")
-				}
-				return jen.Null()
-			}(),
 			jen.Line(),
 			utils.BuildSubTest("obligatory", subtest...),
 		),

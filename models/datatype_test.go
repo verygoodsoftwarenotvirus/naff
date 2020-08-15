@@ -1701,6 +1701,26 @@ func main() {
 
 		assert.Equal(t, expected, actual)
 	})
+
+	T.Run("with forums", func(t *testing.T) {
+		t.Parallel()
+
+		p := buildExampleForumsListProject()
+		dt := p.DataTypes[3]
+
+		expected := `
+package main
+
+import ()
+
+func main() {
+	exampleFunction(exampleForum.ID, exampleSubforum.ID, exampleThread.ID, examplePost.ID)
+}
+`
+		actual := renderCallArgsToString(t, dt.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(p))
+
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestDataType_BuildDBQuerierRetrievalQueryTestCallArgs(T *testing.T) {
@@ -6407,6 +6427,7 @@ import (
 )
 
 func main() {
+	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
 	exampleThing.BelongsToUser = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()

@@ -237,7 +237,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 		[]jen.Code{utils.StartSpan(proj, true, funcName), jen.Line()},
 	)
 
-	if typ.BelongsToUser {
+	if typ.RestrictedToUserAtSomeLevel(proj) {
 		block = append(block,
 			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userID")),
 		)
@@ -246,7 +246,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 	logCall := jen.ID("c").Dot(constants.LoggerVarName).Dot("WithValues").Call(
 		jen.Map(jen.String()).Interface().Valuesln(
 			func() jen.Code {
-				if typ.BelongsToUser {
+				if typ.RestrictedToUserAtSomeLevel(proj) {
 					return jen.Lit("user_id").MapAssign().ID("userID")
 				}
 				return jen.Null()
@@ -256,37 +256,25 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 	).Dot("Debug").Call(jen.Litf("Get%sWithIDs called", pn))
 	block = append(block, jen.Line(), logCall)
 
+	args := typ.BuildGetListOfSomethingFromIDsArgs(proj)
+
 	block = append(block,
 		jen.Line(),
 		jen.List(jen.IDf("%sList", uvn), jen.Err()).Assign().
 			ID("c").Dot("querier").Dotf("Get%sWithIDs", pn).Call(
-			constants.CtxVar(),
-			func() jen.Code {
-				if typ.BelongsToUser {
-					return jen.ID("userID")
-				}
-				return jen.Null()
-			}(),
-			jen.ID("limit"),
-			jen.ID("ids"),
+			args...,
 		),
 		jen.Line(),
 		jen.Return().List(jen.IDf("%sList", uvn), jen.Err()),
 	)
 
+	params := typ.BuildGetListOfSomethingFromIDsParams(proj)
+
 	return []jen.Code{
 		jen.Commentf("Get%sWithIDs fetches %s from the database within a given set of IDs.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%sWithIDs", pn).Params(
-			constants.CtxParam(),
-			func() jen.Code {
-				if typ.BelongsToUser {
-					return jen.ID("userID").Uint64()
-				}
-				return jen.Null()
-			}(),
-			jen.ID("limit").Uint8(),
-			jen.ID("ids").Index().Uint64(),
+			params...,
 		).Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(block...),
 		jen.Line(),
 	}

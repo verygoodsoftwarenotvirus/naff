@@ -811,6 +811,106 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with ownership chain and search", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		typ.SearchEnabled = true
+
+		x := buildCreateHandlerFuncDecl(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"database/sql"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
+	"net/http"
+)
+
+// CreateHandler is our yet another thing creation route.
+func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := tracing.StartSpan(req.Context(), "CreateHandler")
+	defer span.End()
+
+	logger := s.logger.WithRequest(req)
+
+	// check request context for parsed input struct.
+	input, ok := ctx.Value(createMiddlewareCtxKey).(*v1.YetAnotherThingCreationInput)
+	if !ok {
+		logger.Info("valid input not attached to request")
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// determine thing ID.
+	thingID := s.thingIDFetcher(req)
+	logger = logger.WithValue("thing_id", thingID)
+	tracing.AttachThingIDToSpan(span, thingID)
+
+	thingExists, err := s.thingDataManager.ThingExists(ctx, thingID)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Error(err, "error checking thing existence")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !thingExists {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// determine another thing ID.
+	anotherThingID := s.anotherThingIDFetcher(req)
+	logger = logger.WithValue("another_thing_id", anotherThingID)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+
+	input.BelongsToAnotherThing = anotherThingID
+
+	anotherThingExists, err := s.anotherThingDataManager.AnotherThingExists(ctx, thingID, anotherThingID)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Error(err, "error checking another thing existence")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !anotherThingExists {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// create yet another thing in database.
+	x, err := s.yetAnotherThingDataManager.CreateYetAnotherThing(ctx, input)
+	if err != nil {
+		logger.Error(err, "error creating yet another thing")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	tracing.AttachYetAnotherThingIDToSpan(span, x.ID)
+	logger = logger.WithValue("yet_another_thing_id", x.ID)
+
+	// notify relevant parties.
+	s.yetAnotherThingCounter.Increment(ctx)
+	s.reporter.Report(newsman.Event{
+		Data:      x,
+		Topics:    []string{topicName},
+		EventType: string(v1.Create),
+	})
+	if searchIndexErr := s.search.Index(ctx, x.ID, x.ToSearchHelper()); searchIndexErr != nil {
+		logger.Error(searchIndexErr, "adding yet another thing to search index")
+	}
+
+	// encode our response and peace.
+	res.WriteHeader(http.StatusCreated)
+	if err = s.encoderDecoder.EncodeResponse(res, x); err != nil {
+		logger.Error(err, "encoding response")
+	}
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildExistenceHandlerFuncDecl(T *testing.T) {

@@ -82,6 +82,15 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 		g = append(g,
 			jen.Comment(n.Plural()),
 			jen.IDf("%sPath", uvn).Assign().Lit(typ.Name.PluralRouteName()),
+			func() jen.Code {
+				if len(pathParts) > 0 {
+					pathParts = append(pathParts, jen.IDf("%sPath", uvn))
+					return jen.IDf("%sRoute", puvn).Assign().Qual("path/filepath", "Join").Callln(
+						pathParts...,
+					)
+				}
+				return jen.Null()
+			}(),
 			jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("/%s"),
 				func() jen.Code {
@@ -95,15 +104,6 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 				jen.ID("numericIDPattern"),
 				jen.Qual(proj.ServiceV1Package(typ.Name.PackageName()), "URIParamKey"),
 			),
-			func() jen.Code {
-				if len(pathParts) > 0 {
-					pathParts = append(pathParts, jen.IDf("%sPath", uvn))
-					return jen.IDf("%sRoute", puvn).Assign().Qual("path/filepath", "Join").Callln(
-						pathParts...,
-					)
-				}
-				return jen.Null()
-			}(),
 			jen.IDf("%sRouter", "v1").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),
 				jen.Func().Params(jen.IDf("%sRouter", typ.Name.PluralUnexportedVarName()).Qual(routingLibrary, "Router")).Body(

@@ -291,11 +291,17 @@ func buildTypeDefinitions(proj *models.Project) []jen.Code {
 				"json":         "metrics",
 				"toml":         "metrics,omitempty",
 			}),
-			jen.ID("Search").ID("SearchSettings").Tag(map[string]string{
-				"mapstructure": "search",
-				"json":         "search",
-				"toml":         "search,omitempty",
-			}),
+			func() jen.Code {
+				if proj.SearchEnabled() {
+					return jen.ID("Search").ID("SearchSettings").Tag(map[string]string{
+						"mapstructure": "search",
+						"json":         "search",
+						"toml":         "search,omitempty",
+					})
+				} else {
+					return jen.Null()
+				}
+			}(),
 		),
 		jen.Line(),
 	)

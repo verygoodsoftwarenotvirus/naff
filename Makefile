@@ -24,10 +24,6 @@ ifndef $(shell command -v goimports 2> /dev/null)
 	$(shell GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports)
 endif
 
-.PHONY: deps
-deps:
-	GO111MODULE=off go get -u github.com/UnnoTed/fileb0x
-
 .PHONY: vendor-clean
 vendor-clean:
 	rm -rf vendor go.sum
@@ -39,6 +35,14 @@ vendor:
 .PHONY: revendor
 revendor: vendor-clean vendor
 
+.PHONY: install
+install:
+	go build -o $(INSTALL_PATH)/naff $(VERSION_FLAG) $(THIS_PKG)/cmd/cli
+
+.PHONY: install-tojen-fork
+install-tojen-fork:
+	go build -o $(INSTALL_PATH)/tojen $(VERSION_FLAG) $(THIS_PKG)/forks/tojen
+
 ## tests
 
 .PHONY: clean-coverage
@@ -49,10 +53,6 @@ clean-coverage:
 coverage: clean-coverage $(ARTIFACTS_DIR)
 	go test -coverprofile=$(COVERAGE_OUT) -covermode=atomic -race $(PACKAGE_LIST)
 	go tool cover -func=$(ARTIFACTS_DIR)/coverage.out | grep 'total:' | xargs | awk '{ print "COVERAGE: " $$3 }'
-
-.PHONY: install
-install:
-	go build -o $(INSTALL_PATH)/naff $(VERSION_FLAG) $(THIS_PKG)/cmd/cli
 
 ## local run testing
 
@@ -71,17 +71,39 @@ clean_todo: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 compare_todo: clean_todo
 	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
 
-.PHONY: clean_gamut
-clean_gamut: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	PROJECT=gamut OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
+.PHONY: clean_every_type
+clean_every_type: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	PROJECT=every_type OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
+
+.PHONY: clean_forums
+clean_forums: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	PROJECT=forums OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
 
 .PHONY: compare_gamut
 compare_gamut: clean_gamut
 	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/gamut &
 
-.PHONY: install-tojen
-install-tojen:
-	go build -o $(INSTALL_PATH)/tojen $(VERSION_FLAG) $(THIS_PKG)/forks/tojen
+## CI output tests
+
+.PHONY: ci-todo-project-unit-tests
+ci-todo-project-unit-tests: clean_todo
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire config_files quicktest)
+
+.PHONY: ci-every-type-project-unit-tests
+ci-every-type-project-unit-tests: clean_every_type
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire config_files quicktest)
+
+.PHONY: ci-forums-project-unit-tests
+ci-forums-project-unit-tests: clean_forums
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire config_files quicktest)
+
+.PHONY: ci-todo-project-integration-tests
+ci-todo-project-integration-tests: clean_todo
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire config_files lintegration-tests)
+
+.PHONY: ci-every-type-project-integration-tests
+ci-every-type-project-integration-tests: clean_every_type
+	(cd $(EXAMPLE_OUTPUT_DIR) && $(MAKE) revendor rewire config_files lintegration-tests)
 
 ## housekeeping
 
@@ -93,5 +115,7 @@ format:
 docker_image:
 	docker build --tag naff:latest --file Dockerfile .
 
-generate_tests:
-	gotests -template_dir /home/vgsnv/src/gitlab.com/verygoodsoftwarenotvirus/naff/development/gotests_templates -all -w # fill this out
+# example commands
+
+example_generate_tests:
+	gotests -template_dir development/gotests_templates -all -w # relative path directory

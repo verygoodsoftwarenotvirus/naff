@@ -303,7 +303,7 @@ func RunGoFormatForFile(filename string) error {
 func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 	fp := BuildTemplatePath(proj.OutputPath, path)
 
-	if stat, err := os.Stat(fp); os.IsNotExist(err) {
+	if _, err := os.Stat(fp); os.IsNotExist(err) {
 		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
 			log.Printf("error making directory: %v\n", mkdirErr)
 			return err
@@ -330,7 +330,6 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 			return fmt.Errorf("error rendering file %q: %w", path, gfe)
 		}
 	} else {
-		_ = stat
 		return err
 	}
 

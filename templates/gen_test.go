@@ -17,7 +17,7 @@ func TestRenderProject(T *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		proj.OutputPath = filepath.Join(os.TempDir(), "things", "stuff")
 
-		assert.NoError(t, RenderProject(proj))
+		assert.NotPanics(t, func() { RenderProject(proj) })
 	})
 
 	//T.Run("with invalid output directory", func(t *testing.T) {

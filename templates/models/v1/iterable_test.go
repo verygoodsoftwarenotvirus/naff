@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
@@ -114,6 +115,159 @@ func (x *Item) ToUpdateInput() *ItemUpdateInput {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with search enabled and owner types", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		typ.Fields = []models.DataField{
+			{
+				Name:                wordsmith.FromSingularPascalCase("FieldOne"),
+				ValidForUpdateInput: true,
+				Type:                "string",
+			},
+			{
+				Name:                wordsmith.FromSingularPascalCase("FieldTwo"),
+				ValidForUpdateInput: true,
+				Type:                "string",
+			},
+			{
+				Name:                wordsmith.FromSingularPascalCase("FieldThree"),
+				ValidForUpdateInput: true,
+				Type:                "string",
+			},
+		}
+		typ.SearchEnabled = true
+		x := iterableDotGo(proj, typ)
+
+		//+ "`" + `
+
+		expected := `
+package example
+
+import (
+	"context"
+	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
+	"net/http"
+)
+
+const (
+	// YetAnotherThingsSearchIndexName is the name of the index used to search through yet another things.
+	YetAnotherThingsSearchIndexName search.IndexName = "yet_another_things"
+)
+
+type (
+	// YetAnotherThing represents a yet another thing.
+	YetAnotherThing struct {
+		ID                    uint64  ` + "`" + `json:"id"` + "`" + `
+		FieldOne              string  ` + "`" + `json:"fieldOne"` + "`" + `
+		FieldTwo              string  ` + "`" + `json:"fieldTwo"` + "`" + `
+		FieldThree            string  ` + "`" + `json:"fieldThree"` + "`" + `
+		CreatedOn             uint64  ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn         *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn            *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToAnotherThing uint64  ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+	}
+
+	// YetAnotherThingList represents a list of yet another things.
+	YetAnotherThingList struct {
+		Pagination
+		YetAnotherThings []YetAnotherThing ` + "`" + `json:"yet_another_things"` + "`" + `
+	}
+	// YetAnotherThingSearchHelper contains all the owner IDs for search purposes.
+	YetAnotherThingSearchHelper struct {
+		ID                    uint64  ` + "`" + `json:"id"` + "`" + `
+		FieldOne              string  ` + "`" + `json:"fieldOne"` + "`" + `
+		FieldTwo              string  ` + "`" + `json:"fieldTwo"` + "`" + `
+		FieldThree            string  ` + "`" + `json:"fieldThree"` + "`" + `
+		CreatedOn             uint64  ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn         *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn            *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToAnotherThing uint64  ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+		BelongsToThing        uint64  ` + "`" + `json:"belongsToThing"` + "`" + `
+		BelongsToAnotherThing uint64  ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+	}
+
+	// YetAnotherThingCreationInput represents what a user could set as input for creating yet another things.
+	YetAnotherThingCreationInput struct {
+		BelongsToAnotherThing uint64 ` + "`" + `json:"-"` + "`" + `
+	}
+
+	// YetAnotherThingUpdateInput represents what a user could set as input for updating yet another things.
+	YetAnotherThingUpdateInput struct {
+		FieldOne              string ` + "`" + `json:"fieldOne"` + "`" + `
+		FieldTwo              string ` + "`" + `json:"fieldTwo"` + "`" + `
+		FieldThree            string ` + "`" + `json:"fieldThree"` + "`" + `
+		BelongsToAnotherThing uint64 ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+	}
+
+	// YetAnotherThingDataManager describes a structure capable of storing yet another things permanently.
+	YetAnotherThingDataManager interface {
+		YetAnotherThingExists(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) (bool, error)
+		GetYetAnotherThing(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) (*YetAnotherThing, error)
+		GetAllYetAnotherThingsCount(ctx context.Context) (uint64, error)
+		GetAllYetAnotherThings(ctx context.Context, resultChannel chan []YetAnotherThing) error
+		GetYetAnotherThings(ctx context.Context, thingID, anotherThingID uint64, filter *QueryFilter) (*YetAnotherThingList, error)
+		GetYetAnotherThingsWithIDs(ctx context.Context, thingID, anotherThingID uint64, limit uint8, ids []uint64) ([]YetAnotherThing, error)
+		CreateYetAnotherThing(ctx context.Context, input *YetAnotherThingCreationInput) (*YetAnotherThing, error)
+		UpdateYetAnotherThing(ctx context.Context, updated *YetAnotherThing) error
+		ArchiveYetAnotherThing(ctx context.Context, anotherThingID, yetAnotherThingID uint64) error
+	}
+
+	// YetAnotherThingDataServer describes a structure capable of serving traffic related to yet another things.
+	YetAnotherThingDataServer interface {
+		CreationInputMiddleware(next http.Handler) http.Handler
+		UpdateInputMiddleware(next http.Handler) http.Handler
+
+		SearchHandler(res http.ResponseWriter, req *http.Request)
+		ListHandler(res http.ResponseWriter, req *http.Request)
+		CreateHandler(res http.ResponseWriter, req *http.Request)
+		ExistenceHandler(res http.ResponseWriter, req *http.Request)
+		ReadHandler(res http.ResponseWriter, req *http.Request)
+		UpdateHandler(res http.ResponseWriter, req *http.Request)
+		ArchiveHandler(res http.ResponseWriter, req *http.Request)
+	}
+)
+
+// Update merges an YetAnotherThingInput with a yet another thing.
+func (x *YetAnotherThing) Update(input *YetAnotherThingUpdateInput) {
+	if input.FieldOne != "" && input.FieldOne != x.FieldOne {
+		x.FieldOne = input.FieldOne
+	}
+
+	if input.FieldTwo != "" && input.FieldTwo != x.FieldTwo {
+		x.FieldTwo = input.FieldTwo
+	}
+
+	if input.FieldThree != "" && input.FieldThree != x.FieldThree {
+		x.FieldThree = input.FieldThree
+	}
+}
+
+// ToUpdateInput creates a YetAnotherThingUpdateInput struct for a yet another thing.
+func (x *YetAnotherThing) ToUpdateInput() *YetAnotherThingUpdateInput {
+	return &YetAnotherThingUpdateInput{
+		FieldOne:   x.FieldOne,
+		FieldTwo:   x.FieldTwo,
+		FieldThree: x.FieldThree,
+	}
+}
+
+// ToSearchHelper creates a YetAnotherThingSearchHelper struct for a yet another thing.
+func (x *YetAnotherThing) ToSearchHelper(thingID uint64, anotherThingID uint64) *YetAnotherThingSearchHelper {
+	return &YetAnotherThingSearchHelper{
+		FieldOne:              x.FieldOne,
+		FieldTwo:              x.FieldTwo,
+		FieldThree:            x.FieldThree,
+		BelongsToThing:        thingID,
+		BelongsToAnotherThing: anotherThingID,
+	}
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildUpdateSomething(T *testing.T) {
@@ -152,6 +306,8 @@ func Test_buildSomethingConstantDefinitions(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
+		typ.SearchEnabled = true
+
 		x := buildSomethingConstantDefinitions(proj, typ)
 
 		expected := `
@@ -252,6 +408,90 @@ type (
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("with search enabled and ownership", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		typ.SearchEnabled = true
+		x := buildSomethingTypeDefinitions(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"net/http"
+)
+
+type (
+	// YetAnotherThing represents a yet another thing.
+	YetAnotherThing struct {
+		ID                    uint64  ` + "`" + `json:"id"` + "`" + `
+		CreatedOn             uint64  ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn         *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn            *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToAnotherThing uint64  ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+	}
+
+	// YetAnotherThingList represents a list of yet another things.
+	YetAnotherThingList struct {
+		Pagination
+		YetAnotherThings []YetAnotherThing ` + "`" + `json:"yet_another_things"` + "`" + `
+	}
+	// YetAnotherThingSearchHelper contains all the owner IDs for search purposes.
+	YetAnotherThingSearchHelper struct {
+		ID                    uint64  ` + "`" + `json:"id"` + "`" + `
+		CreatedOn             uint64  ` + "`" + `json:"createdOn"` + "`" + `
+		LastUpdatedOn         *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
+		ArchivedOn            *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
+		BelongsToAnotherThing uint64  ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+		BelongsToThing        uint64  ` + "`" + `json:"belongsToThing"` + "`" + `
+		BelongsToAnotherThing uint64  ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+	}
+
+	// YetAnotherThingCreationInput represents what a user could set as input for creating yet another things.
+	YetAnotherThingCreationInput struct {
+		BelongsToAnotherThing uint64 ` + "`" + `json:"-"` + "`" + `
+	}
+
+	// YetAnotherThingUpdateInput represents what a user could set as input for updating yet another things.
+	YetAnotherThingUpdateInput struct {
+		BelongsToAnotherThing uint64 ` + "`" + `json:"belongsToAnotherThing"` + "`" + `
+	}
+
+	// YetAnotherThingDataManager describes a structure capable of storing yet another things permanently.
+	YetAnotherThingDataManager interface {
+		YetAnotherThingExists(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) (bool, error)
+		GetYetAnotherThing(ctx context.Context, thingID, anotherThingID, yetAnotherThingID uint64) (*YetAnotherThing, error)
+		GetAllYetAnotherThingsCount(ctx context.Context) (uint64, error)
+		GetAllYetAnotherThings(ctx context.Context, resultChannel chan []YetAnotherThing) error
+		GetYetAnotherThings(ctx context.Context, thingID, anotherThingID uint64, filter *QueryFilter) (*YetAnotherThingList, error)
+		GetYetAnotherThingsWithIDs(ctx context.Context, thingID, anotherThingID uint64, limit uint8, ids []uint64) ([]YetAnotherThing, error)
+		CreateYetAnotherThing(ctx context.Context, input *YetAnotherThingCreationInput) (*YetAnotherThing, error)
+		UpdateYetAnotherThing(ctx context.Context, updated *YetAnotherThing) error
+		ArchiveYetAnotherThing(ctx context.Context, anotherThingID, yetAnotherThingID uint64) error
+	}
+
+	// YetAnotherThingDataServer describes a structure capable of serving traffic related to yet another things.
+	YetAnotherThingDataServer interface {
+		CreationInputMiddleware(next http.Handler) http.Handler
+		UpdateInputMiddleware(next http.Handler) http.Handler
+
+		SearchHandler(res http.ResponseWriter, req *http.Request)
+		ListHandler(res http.ResponseWriter, req *http.Request)
+		CreateHandler(res http.ResponseWriter, req *http.Request)
+		ExistenceHandler(res http.ResponseWriter, req *http.Request)
+		ReadHandler(res http.ResponseWriter, req *http.Request)
+		UpdateHandler(res http.ResponseWriter, req *http.Request)
+		ArchiveHandler(res http.ResponseWriter, req *http.Request)
+	}
+)
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildSomethingToUpdateInput(T *testing.T) {
@@ -272,6 +512,52 @@ func (x *Item) ToUpdateInput() *ItemUpdateInput {
 	return &ItemUpdateInput{
 		Name:    x.Name,
 		Details: x.Details,
+	}
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+}
+
+func Test_buildSomethingToSearchHelper(T *testing.T) {
+	T.Parallel()
+
+	T.Run("obligatory", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		typ.Fields = []models.DataField{
+			{
+				Name: wordsmith.FromSingularPascalCase("FieldOne"),
+				Type: "string",
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("FieldTwo"),
+				Type: "string",
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("FieldThree"),
+				Type: "string",
+			},
+		}
+		typ.SearchEnabled = true
+		x := buildSomethingToSearchHelper(proj, typ)
+
+		expected := `
+package example
+
+import ()
+
+// ToSearchHelper creates a YetAnotherThingSearchHelper struct for a yet another thing.
+func (x *YetAnotherThing) ToSearchHelper(thingID uint64, anotherThingID uint64) *YetAnotherThingSearchHelper {
+	return &YetAnotherThingSearchHelper{
+		FieldOne:              x.FieldOne,
+		FieldTwo:              x.FieldTwo,
+		FieldThree:            x.FieldThree,
+		BelongsToThing:        thingID,
+		BelongsToAnotherThing: anotherThingID,
 	}
 }
 `

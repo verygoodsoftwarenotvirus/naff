@@ -14,17 +14,14 @@ func Test_makefile(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
 
-		expected := `PWD                      := $(shell pwd)
-GOPATH                   := $(GOPATH)
-ARTIFACTS_DIR            := artifacts
-COVERAGE_OUT             := $(ARTIFACTS_DIR)/coverage.out
-CONFIG_DIR               := config_files
-GO_FORMAT                := gofmt -s -w
-PACKAGE_LIST             := ` + "`" + `go list gitlab.com/verygoodsoftwarenotvirus/naff/example_output/... | grep -Ev '(cmd|tests|mock|fake)'` + "`" + `
-DOCKER_FILES_DIR         := dockerfiles
-DOCKER_COMPOSE_FILES_DIR := compose_files
-SERVER_DOCKER_IMAGE_NAME := todo-server
-SERVER_DOCKER_REPO_NAME  := docker.io/verygoodsoftwarenotvirus/$(SERVER_DOCKER_IMAGE_NAME)
+		expected := `PWD                           := $(shell pwd)
+GOPATH                        := $(GOPATH)
+ARTIFACTS_DIR                 := artifacts
+COVERAGE_OUT                  := $(ARTIFACTS_DIR)/coverage.out
+DOCKER_GO                     := docker run --interactive --tty --rm --volume $(PWD):$(PWD) --user ` + "`" + `whoami` + "`" + `:` + "`" + `whoami` + "`" + ` --workdir=$(PWD) golang:latest go
+GO_FORMAT                     := gofmt -s -w
+PACKAGE_LIST                  := ` + "`" + `go list gitlab.com/verygoodsoftwarenotvirus/naff/example_output/... | grep -Ev '(cmd|tests|mock|fake)'` + "`" + `
+TEST_DOCKER_COMPOSE_FILES_DIR := environments/testing/compose_files
 
 $(ARTIFACTS_DIR):
 	@mkdir -p $(ARTIFACTS_DIR)
@@ -48,7 +45,6 @@ dev-tools: ensure-wire ensure-go-junit-report
 vendor-clean:
 	rm -rf vendor go.sum
 
-.PHONY: vendor
 vendor:
 	if [ ! -f go.mod ]; then go mod init; fi
 	go mod vendor
@@ -63,7 +59,7 @@ wire-clean:
 	rm -f cmd/server/v1/wire_gen.go
 
 .PHONY: wire
-wire: ensure-wire
+wire: ensure-wire vendor
 	wire gen gitlab.com/verygoodsoftwarenotvirus/naff/example_output/cmd/server/v1
 
 .PHONY: rewire
@@ -71,11 +67,8 @@ rewire: ensure-wire wire-clean wire
 
 ## Config
 
-clean-configs:
-	rm -rf $(CONFIG_DIR)
-
-$(CONFIG_DIR):
-	@mkdir -p $(CONFIG_DIR)
+.PHONY: config_files
+config_files: vendor
 	go run cmd/config_gen/v1/main.go
 
 ## Testing things
@@ -103,22 +96,22 @@ gitlab-ci-junit-report: $(ARTIFACTS_DIR) ensure-go-junit-report
 	@mkdir $(CI_PROJECT_DIR)/test_artifacts
 	go test -v -race -count 5 $(PACKAGE_LIST) | go-junit-report > $(CI_PROJECT_DIR)/test_artifacts/unit_test_report.xml
 
-.PHONY: quicktest # basically the same as coverage.out, only running once instead of with ` + "`" + `-count` + "`" + ` set
-quicktest: $(ARTIFACTS_DIR)
+.PHONY: quicktest # basically only running once instead of with -count 5 or whatever
+quicktest: $(ARTIFACTS_DIR) vendor
 	go test -cover -race -failfast $(PACKAGE_LIST)
 
 .PHONY: format
-format:
+format: vendor
 	for file in ` + "`" + `find $(PWD) -name '*.go'` + "`" + `; do $(GO_FORMAT) $$file; done
 
 .PHONY: check_formatting
-check_formatting:
-	docker build --tag check_formatting:latest --file $(DOCKER_FILES_DIR)/formatting.Dockerfile .
-	docker run check_formatting:latest
+check_formatting: vendor
+	docker build --tag check_formatting:latest --file environments/testing/dockerfiles/formatting.Dockerfile .
+	docker run --rm check_formatting:latest
 
 .PHONY: frontend-tests
 frontend-tests:
-	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/frontend-tests.json up \
+	docker-compose --file $(TEST_DOCKER_COMPOSE_FILES_DIR)/frontend-tests.yaml up \
 	--build \
 	--force-recreate \
 	--remove-orphans \
@@ -137,11 +130,11 @@ gamut: revendor rewire config_files quicktest lint integration-tests-postgres in
 lintegration-tests: integration-tests lint
 
 .PHONY: integration-tests
-integration-tests: integration-tests-postgres integration-tests-sqlite integration-tests-mariadb
+integration-tests: integration-tests-sqlite integration-tests-postgres integration-tests-mariadb
 
 .PHONY: integration-tests-
 integration-tests-%:
-	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/integration-tests-$*.json up \
+	docker-compose --file $(TEST_DOCKER_COMPOSE_FILES_DIR)/integration_tests/integration-tests-$*.yaml up \
 	--build \
 	--force-recreate \
 	--remove-orphans \
@@ -150,11 +143,11 @@ integration-tests-%:
 	--abort-on-container-exit
 
 .PHONY: integration-coverage
-integration-coverage: $(ARTIFACTS_DIR)
+integration-coverage: $(ARTIFACTS_DIR) vendor
 	@# big thanks to https://blog.cloudflare.com/go-coverage-with-external-tests/
 	rm -f $(ARTIFACTS_DIR)/integration-coverage.out
 	@mkdir -p $(ARTIFACTS_DIR)
-	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/integration-coverage.json up \
+	docker-compose --file $(TEST_DOCKER_COMPOSE_FILES_DIR)/integration_tests/integration-coverage.yaml up \
 	--build \
 	--force-recreate \
 	--remove-orphans \
@@ -166,33 +159,23 @@ integration-coverage: $(ARTIFACTS_DIR)
 ## Load tests
 
 .PHONY: load-tests
-load-tests: load-tests-postgres load-tests-sqlite load-tests-mariadb
+load-tests: load-tests-sqlite load-tests-postgres load-tests-mariadb
 
 .PHONY: load-tests-
 load-tests-%:
-	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/load-tests-$*.json up \
+	docker-compose --file $(TEST_DOCKER_COMPOSE_FILES_DIR)/load_tests/load-tests-$*.yaml up \
 	--build \
 	--force-recreate \
 	--remove-orphans \
 	--renew-anon-volumes \
 	--always-recreate-deps \
 	--abort-on-container-exit
-
-## Docker things
-
-.PHONY: server-docker-image
-server-docker-image: wire
-	docker build --tag $(SERVER_DOCKER_IMAGE_NAME):latest --file $(DOCKER_FILES_DIR)/server.Dockerfile .
-
-.PHONY: push-server-to-docker
-push-server-to-docker: server-docker-image
-	docker push $(SERVER_DOCKER_REPO_NAME):latest
 
 ## Running
 
 .PHONY: dev
-dev:
-	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/development.json up \
+dev: vendor
+	docker-compose --file environments/local/docker-compose.yaml up \
 	--build \
 	--force-recreate \
 	--remove-orphans \
@@ -200,15 +183,11 @@ dev:
 	--always-recreate-deps \
 	--abort-on-container-exit
 
-.PHONY: run
-run:
-	docker-compose --file $(DOCKER_COMPOSE_FILES_DIR)/production.json up \
-	--build \
-	--force-recreate \
-	--remove-orphans \
-	--renew-anon-volumes \
-	--always-recreate-deps \
-	--abort-on-container-exit
+## housekeeping
+
+.PHONY: show_tree
+show_tree:
+	tree -d -I vendor
 `
 		actual := makefile(proj)
 

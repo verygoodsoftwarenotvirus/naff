@@ -38,8 +38,9 @@ type (
 
 	// Pagination represents a pagination request.
 	Pagination struct {
-		Page  uint64 ` + "`" + `json:"page"` + "`" + `
-		Limit uint8  ` + "`" + `json:"limit"` + "`" + `
+		Page       uint64 ` + "`" + `json:"page"` + "`" + `
+		Limit      uint8  ` + "`" + `json:"limit"` + "`" + `
+		TotalCount uint64 ` + "`" + `json:"totalCount"` + "`" + `
 	}
 
 	// CountResponse is what we respond with when a user requests a count of data types.
@@ -94,7 +95,8 @@ func Test_buildMainTypeDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildMainTypeDefs()
+		proj := testprojects.BuildTodoApp()
+		x := buildMainTypeDefs(proj)
 
 		expected := `
 package example
@@ -110,8 +112,9 @@ type (
 
 	// Pagination represents a pagination request.
 	Pagination struct {
-		Page  uint64 ` + "`" + `json:"page"` + "`" + `
-		Limit uint8  ` + "`" + `json:"limit"` + "`" + `
+		Page       uint64 ` + "`" + `json:"page"` + "`" + `
+		Limit      uint8  ` + "`" + `json:"limit"` + "`" + `
+		TotalCount uint64 ` + "`" + `json:"totalCount"` + "`" + `
 	}
 
 	// CountResponse is what we respond with when a user requests a count of data types.

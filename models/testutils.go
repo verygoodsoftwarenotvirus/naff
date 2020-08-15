@@ -46,11 +46,11 @@ func renderCallArgsToString(t *testing.T, args []jen.Code) string {
 //			},
 //			{
 //				Name:            wordsmith.FromSingularPascalCase("Subforum"),
-//				BelongsToStruct: wordsmith.FromSingularPascalCase("Forum"),
+//				BelongsToEnumeration: wordsmith.FromSingularPascalCase("Forum"),
 //			},
 //			{
 //				Name:            wordsmith.FromSingularPascalCase("Post"),
-//				BelongsToStruct: wordsmith.FromSingularPascalCase("Subforum"),
+//				BelongsToEnumeration: wordsmith.FromSingularPascalCase("Subforum"),
 //			},
 //		}
 func BuildOwnershipChain(names ...string) (out []DataType) {

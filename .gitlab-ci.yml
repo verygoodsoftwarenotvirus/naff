@@ -1,11 +1,12 @@
 stages:
   - quality
+  - generated output unit testing
+  - generated output integration testing
 
 before_script:
   - mkdir -p /go/src/gitlab.com/verygoodsoftwarenotvirus/
   - cp -rf /builds/verygoodsoftwarenotvirus/naff /go/src/gitlab.com/verygoodsoftwarenotvirus/
   - cd /go/src/gitlab.com/verygoodsoftwarenotvirus/naff
-  - apt-get update -y && apt-get install -y make git gcc musl-dev
 
 formatting:
   stage: quality
@@ -13,7 +14,7 @@ formatting:
   variables:
     GOPATH: "/go"
   script:
-    - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - apt-get update -y && apt-get install -y make git
     - if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then exit 1; fi
 
 coverage:
@@ -22,36 +23,36 @@ coverage:
   variables:
     GOPATH: "/go"
   script:
-    - apt-get update -y && apt-get install -y make git gcc musl-dev
+    - apt-get update -y && apt-get install -y make git
     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
     - make coverage
 
-# template_tests:
-#   stage: quality
-#   image: golang:stretch
-#   variables:
-#     GOPATH: "/go"
-#   script:
-#     - apt-get update -y && apt-get install -y make git gcc musl-dev
-#     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-#     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/templates/...
-#
-# models_tests:
-#   stage: quality
-#   image: golang:stretch
-#   variables:
-#     GOPATH: "/go"
-#   script:
-#     - apt-get update -y && apt-get install -y make git gcc musl-dev
-#     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-#     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/models/...
-#
-# lib_tests:
-#   stage: quality
-#   image: golang:stretch
-#   variables:
-#     GOPATH: "/go"
-#   script:
-#     - apt-get update -y && apt-get install -y make git gcc musl-dev
-#     - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
-#     - go test -cover -race gitlab.com/verygoodsoftwarenotvirus/naff/lib/...
+todo:
+  stage: generated output unit testing
+  image: golang:stretch
+  variables:
+    GOPATH: "/go"
+  script:
+    - apt-get update -y && apt-get install -y make git
+    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+    - make ci-todo-project-unit-tests
+
+every type:
+  stage: generated output unit testing
+  image: golang:stretch
+  variables:
+    GOPATH: "/go"
+  script:
+    - apt-get update -y && apt-get install -y make git
+    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+    - make ci-every-type-project-unit-tests
+
+forums:
+  stage: generated output unit testing
+  image: golang:stretch
+  variables:
+    GOPATH: "/go"
+  script:
+    - apt-get update -y && apt-get install -y make git
+    - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+    - make ci-forums-project-unit-tests

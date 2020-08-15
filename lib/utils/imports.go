@@ -17,39 +17,39 @@ import (
 func AddImports(proj *models.Project, file *jen.File) {
 	pkgRoot := proj.OutputPath
 
-	file.ImportAlias(filepath.Join(pkgRoot, "client", "v1", "http"), "client")
+	file.ImportAlias(proj.HTTPClientV1Package(), "client")
 
-	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1"), "database")
+	file.ImportAlias(proj.DatabaseV1Package(), "database")
 
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "auth"), "auth")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "auth", "mock"), "mockauth")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "config"), "config")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "encoding"), "encoding")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "encoding", "mock"), "mockencoding")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "metrics"), "metrics")
-	file.ImportAlias(filepath.Join(pkgRoot, "internal", "v1", "metrics", "mock"), "mockmetrics")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "tracing"), "tracing")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search"), "search")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search", "bleve"), "bleve")
-	file.ImportName(filepath.Join(pkgRoot, "internal", "v1", "search", "mock"), "mocksearch")
+	file.ImportName(proj.InternalAuthV1Package(), "auth")
+	file.ImportAlias(proj.InternalAuthV1Package("mock"), "mockauth")
+	file.ImportName(proj.InternalConfigV1Package(), "config")
+	file.ImportName(proj.InternalEncodingV1Package(), "encoding")
+	file.ImportAlias(proj.InternalEncodingV1Package("mock"), "mockencoding")
+	file.ImportName(proj.InternalMetricsV1Package(), "metrics")
+	file.ImportAlias(proj.InternalMetricsV1Package("mock"), "mockmetrics")
+	file.ImportName(proj.InternalTracingV1Package(), "tracing")
+	file.ImportName(proj.InternalSearchV1Package(), "search")
+	file.ImportName(proj.InternalSearchV1Package("bleve"), "bleve")
+	file.ImportName(proj.InternalSearchV1Package("mock"), "mocksearch")
 
-	file.ImportAlias(filepath.Join(pkgRoot, "database", "v1", "client"), "dbclient")
-	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "mariadb"), "mariadb")
-	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "postgres"), "postgres")
-	file.ImportName(filepath.Join(pkgRoot, "database", "v1", "queriers", "sqlite"), "sqlite")
+	file.ImportAlias(proj.DatabaseV1Package("client"), "dbclient")
+	file.ImportName(proj.DatabaseV1Package("queriers", "mariadb"), "mariadb")
+	file.ImportName(proj.DatabaseV1Package("queriers", "postgres"), "postgres")
+	file.ImportName(proj.DatabaseV1Package("queriers", "sqlite"), "sqlite")
 
-	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1"), "models")
-	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "mock"), "mockmodels")
-	file.ImportAlias(filepath.Join(pkgRoot, "models", "v1", "fake"), "fakemodels")
+	file.ImportAlias(proj.ModelsV1Package(), "models")
+	file.ImportAlias(proj.ModelsV1Package("mock"), "mockmodels")
+	file.ImportAlias(proj.ModelsV1Package("fake"), "fakemodels")
 
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1"), "server")
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1", "http"), "httpserver")
 
-	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "auth"), "authservice")
-	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "frontend"), "frontendservice")
-	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "oauth2clients"), "oauth2clientsservice")
-	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "users"), "usersservice")
-	file.ImportAlias(filepath.Join(pkgRoot, "services", "v1", "webhooks"), "webhooksservice")
+	file.ImportAlias(proj.ServiceV1AuthPackage(), "authservice")
+	file.ImportAlias(proj.ServiceV1FrontendPackage(), "frontendservice")
+	file.ImportAlias(proj.ServiceV1OAuth2ClientsPackage(), "oauth2clientsservice")
+	file.ImportAlias(proj.ServiceV1UsersPackage(), "usersservice")
+	file.ImportAlias(proj.ServiceV1WebhooksPackage(), "webhooksservice")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
@@ -59,9 +59,7 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "frontend"), "frontend")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "integration"), "integration")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "load"), "load")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "testutil"), "testutil")
-	file.ImportAlias(filepath.Join(pkgRoot, "tests", "v1", "testutil", "mock"), "mockutil")
-	file.ImportAlias(filepath.Join(pkgRoot, "tests", "v1", "testutil", "rand", "model"), "randmodel")
+	file.ImportName(proj.TestUtilV1Package(), "testutil")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 

@@ -159,18 +159,8 @@ func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.
 	sn := n.Singular()
 	pn := n.Plural()
 
-	params := []jen.Code{
-		constants.CtxParam(),
-		constants.UserIDParam(),
-		jen.ID("limit").Uint8(),
-		jen.ID("ids").Index().Uint64(),
-	}
-	callArgs := []jen.Code{
-		constants.CtxVar(),
-		constants.UserIDVar(),
-		jen.ID("limit"),
-		jen.ID("ids"),
-	}
+	params := typ.BuildGetListOfSomethingFromIDsParams(proj)
+	callArgs := typ.BuildGetListOfSomethingFromIDsArgs(proj)
 
 	lines := []jen.Code{
 		jen.Commentf("Get%sWithIDs is a mock function.", pn),

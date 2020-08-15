@@ -35,7 +35,7 @@ func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, t
 	code.Add(buildTestDBGetSomething(proj, dbvendor, typ)...)
 	code.Add(buildTestDBBuildGetAllSomethingCountQuery(proj, dbvendor, typ)...)
 	code.Add(buildTestDBGetAllSomethingCount(dbvendor, typ)...)
-	code.Add(buildTestDBGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
+	code.Add(buildTestDBGetBatchOfSomethingQueryFuncDecl(dbvendor, typ)...)
 	code.Add(buildTestDBGetAllOfSomethingFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildTestDBGetListOfSomethingQueryFuncDecl(proj, dbvendor, typ)...)
 	code.Add(buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)...)
@@ -65,11 +65,39 @@ func buildBuildMockRowsFromSomething(proj *models.Project, typ models.DataType) 
 		).Params(
 			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
 		).Body(
+			func() jen.Code {
+				if typ.IsEnumeration {
+					return jen.ID("includeCount").Assign().Len(jen.ID(puvn)).GreaterThan().One()
+				} else {
+					return jen.Null()
+				}
+			}(),
 			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
+			jen.Line(),
+			func() jen.Code {
+				if typ.IsEnumeration {
+					return jen.If(jen.ID("includeCount")).Body(
+						jen.ID("columns").Equals().Append(jen.ID("columns"), jen.Lit("count")),
+					)
+				} else {
+					return jen.Null()
+				}
+			}(),
+			jen.Line(),
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual(sqlMockPkg, "NewRows").Call(jen.ID("columns")),
 			jen.Line(),
 			jen.For().List(jen.Underscore(), jen.ID("x")).Assign().Range().ID(puvn).Body(
 				jen.ID("rowValues").Assign().Index().Qual("database/sql/driver", "Value").Valuesln(gFields...),
+				jen.Line(),
+				func() jen.Code {
+					if typ.IsEnumeration {
+						return jen.If(jen.ID("includeCount")).Body(
+							jen.ID("rowValues").Equals().Append(jen.ID("rowValues"), jen.Len(jen.ID(puvn))),
+						)
+					} else {
+						return jen.Null()
+					}
+				}(),
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("Rows")).Dot("AddRow").Call(jen.ID("rowValues").Spread()),
 			),
@@ -295,6 +323,13 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(
+					func() jen.Code {
+						if typ.IsEnumeration {
+							return jen.Underscore()
+						} else {
+							return jen.Null()
+						}
+					}(),
 					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dotf("scan%s", typ.Name.Plural()).Call(jen.ID("mockRows")),
@@ -311,6 +346,13 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.List(
+					func() jen.Code {
+						if typ.IsEnumeration {
+							return jen.Underscore()
+						} else {
+							return jen.Null()
+						}
+					}(),
 					jen.Underscore(),
 					jen.Err(),
 				).Assign().ID(dbfl).Dotf("scan%s", typ.Name.Plural()).Call(jen.ID("mockRows")),
@@ -440,7 +482,10 @@ func buildTestDBBuildGetSomethingQuery(proj *models.Project, dbvendor wordsmith.
 	tableName := typ.Name.PluralRouteName()
 
 	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
-	qb := queryBuilderForDatabase(dbvendor).Select(buildPrefixedStringColumnsAsString(typ)).
+
+	cols := buildPrefixedStringColumns(typ)
+
+	qb := queryBuilderForDatabase(dbvendor).Select(cols...).
 		From(tableName)
 
 	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
@@ -583,7 +628,7 @@ func buildTestDBGetAllSomethingCount(dbvendor wordsmith.SuperPalabra, typ models
 	return lines
 }
 
-func buildTestDBGetBatchOfSomethingQueryFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
+func buildTestDBGetBatchOfSomethingQueryFuncDecl(dbvendor wordsmith.SuperPalabra, typ models.DataType) []jen.Code {
 	pn := typ.Name.Plural()
 	tableName := typ.Name.PluralRouteName()
 	cols := buildPrefixedStringColumns(typ)
@@ -645,10 +690,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 	}
 
 	buildFirstSubtest := func() []jen.Code {
-		lines := append(
-			defaultInitLines,
-			typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)...,
-		)
+		lines := defaultInitLines[:]
 
 		expectQueryMock := jen.ID("mockDB").Dot("ExpectQuery").
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedGetQuery")))
@@ -703,10 +745,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 	}
 
 	buildSecondSubtest := func() []jen.Code {
-		lines := append(
-			defaultInitLines,
-			typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)...,
-		)
+		lines := defaultInitLines[:]
 
 		lines = append(lines,
 			jen.Line(),
@@ -727,10 +766,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 	}
 
 	buildThirdSubtest := func() []jen.Code {
-		lines := append(
-			defaultInitLines,
-			typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)...,
-		)
+		lines := defaultInitLines[:]
 
 		expectQueryMock := jen.ID("mockDB").Dot("ExpectQuery").
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedGetQuery")))
@@ -763,10 +799,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 	}
 
 	buildFourthSubtest := func() []jen.Code {
-		lines := append(
-			defaultInitLines,
-			typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)...,
-		)
+		lines := defaultInitLines[:]
 
 		expectQueryMock := jen.ID("mockDB").Dot("ExpectQuery").
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedGetQuery")))
@@ -799,10 +832,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 	}
 
 	buildFifthSubtest := func() []jen.Code {
-		lines := append(
-			defaultInitLines,
-			typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)...,
-		)
+		lines := defaultInitLines[:]
 
 		expectQueryMock := jen.ID("mockDB").Dot("ExpectQuery").
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedGetQuery")))
@@ -811,7 +841,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 			expectQueryMock = expectQueryMock.Dotln("WithArgs").Callln(withArgs...)
 		}
 		expectQueryMock = expectQueryMock.Dotln("WillReturnRows").Call(
-			jen.ID("buildErroneousMockRowFromItem").Call(jen.ID(utils.BuildFakeVarName(sn))),
+			jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		)
 
 		lines = append(lines,
@@ -865,6 +895,17 @@ func buildTestDBGetListOfSomethingQueryFuncDecl(proj *models.Project, dbvendor w
 
 	whereValues := typ.BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(proj)
 
+	countQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(countQuery, tableName)).
+		From(tableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", tableName): nil,
+		}).
+		ToSql()
+	if typ.IsEnumeration {
+		cols = append(cols, fmt.Sprintf("(%s)", countQuery))
+	}
+
 	qb := queryBuilderForDatabase(dbvendor).Select(cols...).
 		From(tableName)
 
@@ -889,6 +930,17 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 	equals := squirrel.Eq{fmt.Sprintf("%s.archived_on", tableName): nil}
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		equals[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
+	}
+
+	countQuery, _, _ := queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(countQuery, tableName)).
+		From(tableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", tableName): nil,
+		}).
+		ToSql()
+	if typ.IsEnumeration {
+		cols = append(cols, fmt.Sprintf("(%s)", countQuery))
 	}
 
 	whereValues := typ.BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(proj)
@@ -947,7 +999,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)
 		var mockDBCall *jen.Statement
 
-		if typ.BelongsToNobody {
+		if typ.IsEnumeration {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows"))
 		} else {
@@ -988,7 +1040,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 				mockDBCall = mockDBCall.Dotln("WithArgs").Callln(withArgs...)
 			}
 			mockDBCall = mockDBCall.Dotln("WillReturnError").Call(constants.ObligatoryError())
-		} else if typ.BelongsToNobody {
+		} else if typ.IsEnumeration {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WillReturnError").Call(constants.ObligatoryError())
 		}
@@ -1013,6 +1065,10 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 	buildFourthSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)
 
+		if typ.RestrictedToUserAtSomeLevel(proj) {
+			lines = lines[1:]
+		}
+
 		var mockDBCall *jen.Statement
 		if (typ.BelongsToUser && typ.RestrictedToUser) || typ.BelongsToStruct != nil {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery")))
@@ -1023,7 +1079,7 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 			mockDBCall = mockDBCall.Dotln("WillReturnRows").Call(
 				jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))),
 			)
-		} else if typ.BelongsToNobody {
+		} else if typ.IsEnumeration {
 			mockDBCall = jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 				Dotln("WillReturnRows").Call(
 				jen.IDf("buildErroneousMockRowFrom%s", sn).Call(jen.ID(utils.BuildFakeVarName(sn))),
@@ -1072,12 +1128,6 @@ func buildTestDBGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsm
 		jen.Func().IDf("Test%s_Get%s", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
-			func() jen.Code {
-				if typ.RestrictedToUserAtSomeLevel(proj) {
-					return jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
-				}
-				return jen.Null()
-			}(),
 			jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 			jen.Line(),
 			utils.BuildSubTest("happy path", buildFirstSubtest()...),
@@ -1103,7 +1153,7 @@ func buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj *models.Project, dbv
 		whereValues := squirrel.Eq{
 			fmt.Sprintf("%s.%s", tableName, "archived_on"): nil,
 		}
-		if typ.BelongsToUser {
+		if typ.BelongsToUser && typ.RestrictedToUser {
 			whereValues[fmt.Sprintf("%s.%s", tableName, "belongs_to_user")] = whateverValue
 		}
 
@@ -1121,7 +1171,7 @@ func buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj *models.Project, dbv
 			fmt.Sprintf("%s.%s", tableName, "id"):          []string{whateverValue, whateverValue, whateverValue},
 			fmt.Sprintf("%s.%s", tableName, "archived_on"): nil,
 		}
-		if typ.BelongsToUser {
+		if typ.BelongsToUser && typ.RestrictedToUser {
 			whereValues[fmt.Sprintf("%s.%s", tableName, "belongs_to_user")] = whateverValue
 		}
 
@@ -1144,17 +1194,66 @@ func buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj *models.Project, dbv
 
 	expectedQuery, _, _ := qb.ToSql()
 
-	pql := []jen.Code{}
-	if typ.BelongsToUser {
-		pql = append(pql, utils.BuildFakeVar(proj, "User"))
+	expectedArgs := []jen.Code{}
+	if typ.RestrictedToUserAtSomeLevel(proj) {
+		expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
 	}
-	pql = append(pql,
+	if isSqlite(dbvendor) || isMariaDB(dbvendor) {
+		expectedArgs = append(
+			expectedArgs,
+			jen.ID("exampleIDs").Index(jen.Zero()),
+			jen.ID("exampleIDs").Index(jen.One()),
+			jen.ID("exampleIDs").Index(jen.Lit(2)),
+		)
+	}
+
+	callArgs := typ.BuildGetListOfSomethingFromIDsArgsForTest(proj)[1:]
+
+	lines := append(
+		[]jen.Code{
+			jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
+			jen.Line(),
+		},
+		typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)...,
+	)
+	lines = append(lines,
 		jen.ID("exampleIDs").Assign().Index().Uint64().Valuesln(
 			jen.Lit(789),
 			jen.Lit(123),
 			jen.Lit(456),
 		),
-		jen.ID("exampleIDsAsStrings").Assign().ID("joinUint64s").Call(jen.ID("exampleIDs")),
+		func() jen.Code {
+			if isPostgres(dbvendor) {
+				return jen.ID("exampleIDsAsStrings").Assign().ID("joinUint64s").Call(jen.ID("exampleIDs"))
+			}
+			return jen.Null()
+		}(),
+		jen.Line(),
+		func() jen.Code {
+			if isPostgres(dbvendor) {
+				return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(
+					jen.Lit(expectedQuery),
+					jen.ID("exampleIDsAsStrings"),
+					jen.ID("defaultLimit"),
+				)
+			}
+			return jen.ID("expectedQuery").Assign().Lit(expectedQuery)
+		}(),
+		func() jen.Code {
+			if len(expectedArgs) > 0 {
+				return jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+					expectedArgs...,
+				)
+			}
+			return jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
+		}(),
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
+			callArgs...,
+		),
+		jen.Line(),
+		jen.ID("ensureArgCountMatchesQuery").Call(jen.ID("t"), jen.ID("actualQuery"), jen.ID("actualArgs")),
+		utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
+		utils.AssertEqual(jen.ID("expectedArgs"), jen.ID("actualArgs"), nil),
 	)
 
 	return []jen.Code{
@@ -1162,78 +1261,8 @@ func buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj *models.Project, dbv
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("happy path"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.Line(),
-				func() jen.Code {
-					if typ.BelongsToUser {
-						return utils.BuildFakeVar(proj, "User")
-					}
-					return jen.Null()
-				}(),
-				jen.ID("exampleIDs").Assign().Index().Uint64().Valuesln(
-					jen.Lit(789),
-					jen.Lit(123),
-					jen.Lit(456),
-				),
-				func() jen.Code {
-					if isPostgres(dbvendor) {
-						return jen.ID("exampleIDsAsStrings").Assign().ID("joinUint64s").Call(jen.ID("exampleIDs"))
-					}
-					return jen.Null()
-				}(),
-				jen.Line(),
-				func() jen.Code {
-					if isPostgres(dbvendor) {
-						return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(
-							jen.Lit(expectedQuery),
-							jen.ID("exampleIDsAsStrings"),
-							jen.ID("defaultLimit"),
-						)
-					}
-					return jen.ID("expectedQuery").Assign().Lit(expectedQuery)
-				}(),
-				jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
-					func() jen.Code {
-						if typ.BelongsToUser {
-							return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-						}
-						return jen.Null()
-					}(),
-					func() jen.Code {
-						if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-							return jen.ID("exampleIDs").Index(jen.Zero())
-						}
-						return jen.Null()
-					}(),
-					func() jen.Code {
-						if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-							return jen.ID("exampleIDs").Index(jen.One())
-						}
-						return jen.Null()
-					}(),
-					func() jen.Code {
-						if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-							return jen.ID("exampleIDs").Index(jen.Lit(2))
-						}
-						return jen.Null()
-					}(),
-				),
-				jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
-					func() jen.Code {
-						if typ.BelongsToUser {
-							return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-						}
-						return jen.Null()
-					}(),
-					jen.ID("defaultLimit"),
-					jen.ID("exampleIDs"),
-				),
-				jen.Line(),
-				jen.ID("ensureArgCountMatchesQuery").Call(jen.ID("t"), jen.ID("actualQuery"), jen.ID("actualArgs")),
-				utils.AssertEqual(jen.ID("expectedQuery"), jen.ID("actualQuery"), nil),
-				utils.AssertEqual(jen.ID("expectedArgs"), jen.ID("actualArgs"), nil),
-			),
-			),
+				lines...,
+			)),
 		),
 	}
 }
@@ -1248,6 +1277,8 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 	tableName := typ.Name.PluralRouteName()
 	cols := buildPrefixedStringColumns(typ)
 
+	actualCallArgs := typ.BuildGetListOfSomethingFromIDsArgsForTest(proj)
+
 	equals := squirrel.Eq{fmt.Sprintf("%s.archived_on", tableName): nil}
 	if typ.BelongsToUser && typ.RestrictedToUser {
 		equals[fmt.Sprintf("%s.belongs_to_user", tableName)] = whateverValue
@@ -1258,7 +1289,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 		whereValues := squirrel.Eq{
 			fmt.Sprintf("%s.%s", tableName, "archived_on"): nil,
 		}
-		if typ.BelongsToUser {
+		if typ.BelongsToUser && typ.RestrictedToUser {
 			whereValues[fmt.Sprintf("%s.%s", tableName, "belongs_to_user")] = whateverValue
 		}
 
@@ -1276,7 +1307,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			fmt.Sprintf("%s.%s", tableName, "ids"):         whateverValue,
 			fmt.Sprintf("%s.%s", tableName, "archived_on"): nil,
 		}
-		if typ.BelongsToUser {
+		if typ.BelongsToUser && typ.RestrictedToUser {
 			whereValues[fmt.Sprintf("%s.%s", tableName, "belongs_to_user")] = whateverValue
 		}
 
@@ -1298,17 +1329,6 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 	}
 	expectedQuery, _, _ := qb.ToSql()
 
-	actualCallArgs := []jen.Code{
-		constants.CtxVar(),
-	}
-	if typ.BelongsToUser {
-		actualCallArgs = append(actualCallArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
-	}
-	actualCallArgs = append(actualCallArgs,
-		jen.ID("defaultLimit"),
-		jen.IDf("example%sIDs", sn),
-	)
-
 	buildFirstSubtest := func() []jen.Code {
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)
 
@@ -1316,7 +1336,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WithArgs").Call(
 			func() jen.Code {
-				if isPostgres(dbvendor) {
+				if isPostgres(dbvendor) && typ.RestrictedToUserAtSomeLevel(proj) {
 					return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
@@ -1338,28 +1358,21 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			jen.List(jen.ID(dbfl), jen.ID("mockDB")).Assign().ID("buildTestService").Call(jen.ID("t")),
 			jen.Line(),
 			utils.BuildFakeVar(proj, fmt.Sprintf("%sList", sn)),
-			jen.Var().IDf("example%sIDs", sn).Index().Uint64(),
+			jen.Var().ID("exampleIDs").Index().Uint64(),
 			jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
-				jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
+				jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID(uvn).Dot("ID")),
 			),
 			jen.Line(),
 			func() jen.Code {
 				if isPostgres(dbvendor) {
 					return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(
 						jen.Lit(expectedQuery),
-						jen.ID("joinUint64s").Call(jen.IDf("example%sIDs", sn)),
+						jen.ID("joinUint64s").Call(jen.ID("exampleIDs")),
 						jen.ID("defaultLimit"),
 					)
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.List(jen.ID("expectedQuery"), jen.ID("expectedArgs")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
-						func() jen.Code {
-							if typ.BelongsToUser {
-								return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-							}
-							return jen.Null()
-						}(),
-						jen.ID("defaultLimit"),
-						jen.IDf("example%sIDs", sn),
+						actualCallArgs[1:]...,
 					)
 				}
 				// this line can never be tested
@@ -1388,7 +1401,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WithArgs").Call(
 			func() jen.Code {
-				if isPostgres(dbvendor) {
+				if isPostgres(dbvendor) && typ.RestrictedToUserAtSomeLevel(proj) {
 					return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
@@ -1405,7 +1418,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			jen.Line(),
 			func() jen.Code {
 				if isPostgres(dbvendor) {
-					return jen.IDf("example%sIDs", sn).Assign().Index().Uint64().Values(
+					return jen.ID("exampleIDs").Assign().Index().Uint64().Values(
 						jen.Lit(123),
 						jen.Lit(456),
 						jen.Lit(789),
@@ -1418,14 +1431,14 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.Var().IDf("example%sIDs", sn).Index().Uint64()
+					return jen.Var().ID("exampleIDs").Index().Uint64()
 				}
 				return jen.Null()
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
-						jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
+						jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID(uvn).Dot("ID")),
 					)
 				}
 				return jen.Null()
@@ -1435,19 +1448,12 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				if isPostgres(dbvendor) {
 					return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(
 						jen.Lit(expectedQuery),
-						jen.ID("joinUint64s").Call(jen.IDf("example%sIDs", sn)),
+						jen.ID("joinUint64s").Call(jen.ID("exampleIDs")),
 						jen.ID("defaultLimit"),
 					)
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.List(jen.ID("expectedQuery"), jen.ID("expectedArgs")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
-						func() jen.Code {
-							if typ.BelongsToUser {
-								return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-							}
-							return jen.Null()
-						}(),
-						jen.ID("defaultLimit"),
-						jen.IDf("example%sIDs", sn),
+						actualCallArgs[1:]...,
 					)
 				}
 				// this line can never be tested
@@ -1477,7 +1483,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WithArgs").Call(
 			func() jen.Code {
-				if isPostgres(dbvendor) {
+				if isPostgres(dbvendor) && typ.RestrictedToUserAtSomeLevel(proj) {
 					return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
@@ -1494,7 +1500,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			jen.Line(),
 			func() jen.Code {
 				if isPostgres(dbvendor) {
-					return jen.IDf("example%sIDs", sn).Assign().Index().Uint64().Values(
+					return jen.ID("exampleIDs").Assign().Index().Uint64().Values(
 						jen.Lit(123),
 						jen.Lit(456),
 						jen.Lit(789),
@@ -1507,14 +1513,14 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.Var().IDf("example%sIDs", sn).Index().Uint64()
+					return jen.Var().ID("exampleIDs").Index().Uint64()
 				}
 				return jen.Null()
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
-						jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
+						jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID(uvn).Dot("ID")),
 					)
 				}
 				return jen.Null()
@@ -1524,19 +1530,12 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				if isPostgres(dbvendor) {
 					return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(
 						jen.Lit(expectedQuery),
-						jen.ID("joinUint64s").Call(jen.IDf("example%sIDs", sn)),
+						jen.ID("joinUint64s").Call(jen.ID("exampleIDs")),
 						jen.ID("defaultLimit"),
 					)
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.List(jen.ID("expectedQuery"), jen.ID("expectedArgs")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
-						func() jen.Code {
-							if typ.BelongsToUser {
-								return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-							}
-							return jen.Null()
-						}(),
-						jen.ID("defaultLimit"),
-						jen.IDf("example%sIDs", sn),
+						actualCallArgs[1:]...,
 					)
 				}
 				// this line can never be tested
@@ -1559,24 +1558,13 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 	}
 
 	buildFourthSubtest := func() []jen.Code {
-		fourthSubtestCallArgs := []jen.Code{
-			constants.CtxVar(),
-		}
-		if typ.BelongsToUser {
-			fourthSubtestCallArgs = append(fourthSubtestCallArgs, jen.ID(utils.BuildFakeVarName("User")).Dot("ID"))
-		}
-		fourthSubtestCallArgs = append(fourthSubtestCallArgs,
-			jen.Zero(),
-			jen.IDf("example%sIDs", sn),
-		)
-
 		lines := typ.BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(proj, false)
 
 		expectQueryMock := jen.ID("mockDB").Dot("ExpectQuery").
 			Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedQuery"))).
 			Dotln("WithArgs").Call(
 			func() jen.Code {
-				if isPostgres(dbvendor) {
+				if isPostgres(dbvendor) && typ.RestrictedToUserAtSomeLevel(proj) {
 					return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.ID("interfacesToDriverValues").Call(jen.ID("expectedArgs")).Spread()
@@ -1597,7 +1585,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			jen.Line(),
 			func() jen.Code {
 				if isPostgres(dbvendor) {
-					return jen.IDf("example%sIDs", sn).Assign().Index().Uint64().Values(
+					return jen.ID("exampleIDs").Assign().Index().Uint64().Values(
 						jen.Lit(123),
 						jen.Lit(456),
 						jen.Lit(789),
@@ -1610,14 +1598,14 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
-					return jen.Var().IDf("example%sIDs", sn).Index().Uint64()
+					return jen.Var().ID("exampleIDs").Index().Uint64()
 				}
 				return jen.Null()
 			}(),
 			func() jen.Code {
 				if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.For(jen.List(jen.Underscore(), jen.ID(uvn)).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
-						jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID(uvn).Dot("ID")),
+						jen.ID("exampleIDs").Equals().Append(jen.ID("exampleIDs"), jen.ID(uvn).Dot("ID")),
 					)
 				}
 				return jen.Null()
@@ -1627,19 +1615,12 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 				if isPostgres(dbvendor) {
 					return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(
 						jen.Lit(expectedQuery),
-						jen.ID("joinUint64s").Call(jen.IDf("example%sIDs", sn)),
+						jen.ID("joinUint64s").Call(jen.ID("exampleIDs")),
 						jen.ID("defaultLimit"),
 					)
 				} else if isSqlite(dbvendor) || isMariaDB(dbvendor) {
 					return jen.List(jen.ID("expectedQuery"), jen.ID("expectedArgs")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
-						func() jen.Code {
-							if typ.BelongsToUser {
-								return jen.ID(utils.BuildFakeVarName("User")).Dot("ID")
-							}
-							return jen.Null()
-						}(),
-						jen.ID("defaultLimit"),
-						jen.IDf("example%sIDs", sn),
+						actualCallArgs[1:]...,
 					)
 				}
 				// this line can never be tested
@@ -1651,7 +1632,7 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 			expectQueryMock,
 			jen.Line(),
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dotf("Get%sWithIDs", pn).Call(
-				fourthSubtestCallArgs...,
+				actualCallArgs...,
 			),
 			jen.Line(),
 			utils.AssertError(jen.Err(), nil),
@@ -1666,13 +1647,6 @@ func buildTestDBGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor
 	return []jen.Code{
 		jen.Func().IDf("Test%s_Get%sWithIDs", dbvsn, pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
-			func() jen.Code {
-				if typ.RestrictedToUserAtSomeLevel(proj) {
-					return jen.ID(utils.BuildFakeVarName("User")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call()
-				}
-				return jen.Null()
-			}(),
 			jen.Line(),
 			utils.BuildSubTest("happy path", buildFirstSubtest()...),
 			jen.Line(),

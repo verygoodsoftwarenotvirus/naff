@@ -2,10 +2,10 @@ package iterables
 
 import (
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -17,6 +17,7 @@ func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildTestServiceListFuncDecl(proj, typ)...)
 
 	if typ.SearchEnabled {
+		code.ImportName(proj.InternalSearchV1Package("mock"), "mocksearch")
 		code.Add(buildTestServiceSearchFuncDecl(proj, typ)...)
 	}
 
@@ -320,7 +321,10 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		func() jen.Code {
 			if typ.SearchEnabled {
-				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchV1Package("mock"), "IndexManager").Values()
+				return jen.ID("si").Assign().AddressOf().Qual(
+					proj.InternalSearchV1Package("mock"),
+					"IndexManager",
+				).Values()
 			}
 			return jen.Null()
 		}(),
@@ -716,15 +720,50 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	scn := typ.Name.SingularCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
-	happyPathSubtest := []jen.Code{
-		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher")
+	buildInitialLines := func() []jen.Code {
+		lines := []jen.Code{
+			jen.ID("s").Assign().ID("buildTestService").Call(),
+			jen.Line(),
+		}
+
+		for _, ot := range proj.FindOwnerTypeChain(typ) {
+			lines = append(lines, jen.ID("s").Dotf("%sIDFetcher", ot.Name.UnexportedVarName()).Equals().IDf("%sIDFetcher", ot.Name.UnexportedVarName()))
+		}
+
+		if typ.BelongsToUser {
+			lines = append(lines, jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"))
+		}
+
+		return lines
+	}
+
+	buildExpectationLines := func() []jen.Code {
+		lines := []jen.Code{}
+
+		for _, ot := range proj.FindOwnerTypeChain(typ) {
+			otuvn := ot.Name.UnexportedVarName()
+
+			existsCallArgs := []jen.Code{
+				jen.Litf("%sExists", ot.Name.Singular()),
+				jen.Qual(constants.MockPkg, "Anything"),
 			}
-			return jen.Null()
-		}(),
+
+			existsCallArgs = append(existsCallArgs, ot.BuildDBQuerierBuildSomethingExistsQueryTestCallArgs(proj)...)
+
+			lines = append(lines,
+				jen.IDf("%sDataManager", otuvn).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values(),
+				jen.IDf("%sDataManager", otuvn).Dot("On").Call(
+					existsCallArgs...,
+				).Dot("Return").Call(jen.True(), jen.Nil()),
+				jen.ID("s").Dotf("%sDataManager", otuvn).Equals().IDf("%sDataManager", otuvn),
+				jen.Line(),
+			)
+		}
+
+		return lines
+	}
+
+	happyPathSubtest := append(buildInitialLines(),
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
@@ -741,6 +780,11 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
+	)
+
+	happyPathSubtest = append(happyPathSubtest, buildExpectationLines()...)
+
+	happyPathSubtest = append(happyPathSubtest,
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Create%s", sn),
@@ -821,17 +865,9 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return utils.AssertExpectationsFor(fmt.Sprintf("%sDataManager", uvn), "mc", "r", "ed")
 		}(),
-	}
+	)
 
-	noInputSubtest := []jen.Code{
-		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher")
-			}
-			return jen.Null()
-		}(),
+	noInputSubtest := append(buildInitialLines(),
 		jen.Line(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
@@ -845,17 +881,9 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.ID("s").Dot("CreateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
 		jen.Line(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-	}
+	)
 
-	creationErrSubtest := []jen.Code{
-		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher")
-			}
-			return jen.Null()
-		}(),
+	creationErrSubtest := append(buildInitialLines(),
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
@@ -872,6 +900,11 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
+	)
+
+	creationErrSubtest = append(creationErrSubtest, buildExpectationLines()...)
+
+	creationErrSubtest = append(creationErrSubtest,
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Create%s", sn),
@@ -902,17 +935,9 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 		jen.Line(),
 		utils.AssertExpectationsFor(fmt.Sprintf("%sDataManager", uvn)),
-	}
+	)
 
-	encodeErrSubtest := []jen.Code{
-		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
-		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher")
-			}
-			return jen.Null()
-		}(),
+	encodeErrSubtest := append(buildInitialLines(),
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
@@ -929,6 +954,11 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
+	)
+
+	encodeErrSubtest = append(encodeErrSubtest, buildExpectationLines()...)
+
+	encodeErrSubtest = append(encodeErrSubtest,
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Create%s", sn),
@@ -1009,7 +1039,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return utils.AssertExpectationsFor(fmt.Sprintf("%sDataManager", uvn), "mc", "r", "ed")
 		}(),
-	}
+	)
 
 	block := append(
 		[]jen.Code{
@@ -1018,9 +1048,8 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		},
 		buildRelevantIDFetchers(proj, typ)...,
 	)
-	block = append(block, jen.Line())
-	block = append(
-		block,
+	block = append(block,
+		jen.Line(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("happy path"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
@@ -1028,10 +1057,6 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			),
 		),
 		jen.Line(),
-	)
-
-	block = append(
-		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("without input attached"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
@@ -1039,10 +1064,6 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			),
 		),
 		jen.Line(),
-	)
-
-	block = append(
-		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Litf("with error creating %s", scn),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
@@ -1050,10 +1071,6 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			),
 		),
 		jen.Line(),
-	)
-
-	block = append(
-		block,
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("with error encoding response"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
