@@ -79,14 +79,22 @@ func buildWireBuildCallArgs(proj *models.Project) []jen.Code {
 		jen.Qual(internalConfigImp, "Providers"),
 		jen.Qual(internalAuthImp, "Providers"),
 		jen.Comment("server things"),
-		jen.Qual(proj.InternalSearchV1Package("bleve"), "Providers"),
+	}
+
+	if proj.SearchEnabled() {
+		args = append(args,
+			jen.Qual(proj.InternalSearchV1Package("bleve"), "Providers"),
+		)
+	}
+
+	args = append(args,
 		jen.Qual(serverImp, "Providers"),
 		jen.Qual(internalEncodingImp, "Providers"),
 		jen.Qual(httpServerImp, "Providers"),
 		jen.Comment("metrics"),
 		jen.Qual(internalMetricsImp, "Providers"),
 		jen.Comment("external libs"),
-	}
+	)
 
 	//if proj.EnableNewsman {
 	args = append(args,

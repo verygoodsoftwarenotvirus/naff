@@ -552,6 +552,32 @@ func (s *Statement) Params(params ...Code) *Statement {
 	return s
 }
 
+// ReturnParams renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func ReturnParams(params ...Code) *Statement {
+	return newStatement().ReturnParams(params...)
+}
+
+// ReturnParams renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (g *Group) ReturnParams(params ...Code) *Statement {
+	s := ReturnParams(params...)
+	g.items = append(g.items, s)
+	return s
+}
+
+// ReturnParams renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
+func (s *Statement) ReturnParams(params ...Code) *Statement {
+	g := &Group{
+		close:     ")",
+		items:     params,
+		multi:     false,
+		name:      "params",
+		open:      "(",
+		separator: ",",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // Receiver renders a comma separated list enclosed by parenthesis. Use for function parameters and method receivers.
 func Receiver(receiver Code) *Statement {
 	return newStatement().Receiver(receiver)

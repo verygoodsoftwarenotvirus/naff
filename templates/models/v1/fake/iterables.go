@@ -100,6 +100,12 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
+						func() jen.Code {
+							if typ.IsEnumeration {
+								return jen.ID("TotalCount").MapAssign().Lit(3)
+							}
+							return jen.Null()
+						}(),
 					),
 					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
 						jen.PointerTo().IDf("example%s1", sn),

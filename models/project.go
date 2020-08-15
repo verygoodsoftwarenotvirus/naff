@@ -126,10 +126,21 @@ func (p *Project) ParseModels() error {
 	return nil
 }
 
-// SearchEnabled returns true if any of the datatypes have SearchEnabled
+// SearchEnabled returns true if any of the datatypes have search enabled
 func (p *Project) SearchEnabled() bool {
 	for _, typ := range p.DataTypes {
 		if typ.SearchEnabled {
+			return true
+		}
+	}
+
+	return false
+}
+
+// EnumerationPresent returns true if any of the datatypes are enumerations
+func (p *Project) EnumerationPresent() bool {
+	for _, typ := range p.DataTypes {
+		if typ.IsEnumeration {
 			return true
 		}
 	}
@@ -331,7 +342,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 
 								if properOwner == "__nobody__" {
 									dt.BelongsToUser = false
-									dt.BelongsToNobody = true
+									dt.IsEnumeration = true
 								} else if properOwner != "" {
 									dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
 									dt.BelongsToUser = alsoBelongsToUser

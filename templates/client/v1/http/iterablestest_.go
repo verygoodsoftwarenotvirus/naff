@@ -544,8 +544,10 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 
 	structDecls := typ.BuildDependentObjectsForHTTPClientListRetrievalTest(proj)
 	happyPathSubtestLines := append(
-		structDecls,
+		structDecls[:],
 		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		jen.ID("expectedPath").Assign().Add(uriDec),
 		jen.Line(),
 		jen.IDf("example%sList", ts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", ts)).Call(),
 		jen.Line(),
@@ -579,7 +581,7 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	)
 
 	invalidClientURLSubtestLines := append(
-		structDecls,
+		structDecls[:],
 		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -593,8 +595,10 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	)
 
 	invalidResponseSubtestLines := append(
-		structDecls,
+		structDecls[:],
 		jen.ID(constants.FilterVarName).Assign().Add(utils.NilQueryFilter(proj)),
+		jen.Line(),
+		jen.ID("expectedPath").Assign().Add(uriDec),
 		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
@@ -627,8 +631,6 @@ func buildTestV1Client_GetListOfSomething(proj *models.Project, typ models.DataT
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Get%s", pn)).Body(
 			utils.ParallelTest(nil),
-			jen.Line(),
-			jen.Const().ID("expectedPath").Equals().Add(uriDec),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
 			jen.Line(),
@@ -697,6 +699,16 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 		typ.BuildDependentObjectsForHTTPClientCreationMethodTest(proj),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", ts, ts)).Call(jen.ID(utils.BuildFakeVarName(ts))),
 		jen.Line(),
+		func() jen.Code {
+			if len(proj.FindOwnerTypeChain(typ)) > 0 {
+				return jen.ID("expectedPath").Assign().Qual("fmt", "Sprintf").Call(
+					append([]jen.Code{jen.Lit(modelListRoute)}, typ.BuildFormatCallArgsForHTTPClientCreationMethodTest(proj)...)...,
+				)
+			} else {
+				return jen.ID("expectedPath").Assign().Lit(modelListRoute)
+			}
+		}(),
+		jen.Line(),
 		utils.BuildTestServer(
 			"ts",
 			utils.AssertEqual(
@@ -752,8 +764,6 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 	lines := []jen.Code{
 		utils.OuterTestFunc(fmt.Sprintf("V1Client_Create%s", ts)).Body(
 			utils.ParallelTest(nil),
-			jen.Line(),
-			jen.Const().ID("expectedPath").Equals().Lit(modelListRoute),
 			jen.Line(),
 			utils.BuildSubTest("happy path", happyPathSubtestLines...),
 			jen.Line(),

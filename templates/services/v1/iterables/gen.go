@@ -2,6 +2,8 @@ package iterables
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -25,6 +27,24 @@ func RenderPackage(proj *models.Project) error {
 		} {
 			if err := utils.RenderGoFile(proj, path, file); err != nil {
 				return err
+			}
+
+			if path == fmt.Sprintf("services/v1/%s/http_routes_test.go", pn) {
+				p := utils.BuildTemplatePath(proj.OutputPath, path)
+
+				fileBytes, err := ioutil.ReadFile(p)
+				if err != nil {
+					return fmt.Errorf("error reading recently written file: %w", err)
+				}
+
+				newFile := strings.Replace(string(fileBytes), `
+	"gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"
+	mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"`, `
+	mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"`, 1)
+
+				if err := ioutil.WriteFile(p, []byte(newFile), 0644); err != nil {
+					return fmt.Errorf("error correcting file: %w", err)
+				}
 			}
 		}
 	}

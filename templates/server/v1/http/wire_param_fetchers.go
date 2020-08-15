@@ -17,22 +17,24 @@ func wireParamFetchersDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildWireParamFetchersVarDeclarations(proj)...)
 
-	for _, typ := range proj.DataTypes {
-		if typ.OwnedByAUserAtSomeLevel(proj) {
-			code.Add(buildProvideSomethingServiceUserIDFetcher(proj, typ)...)
-		}
+	code.Add(buildProvideUsersServiceUserIDFetcher(proj)...)
+	code.Add(buildProvideOAuth2ClientsServiceClientIDFetcher(proj)...)
+	code.Add(buildProvideWebhooksServiceWebhookIDFetcher(proj)...)
+	code.Add(buildProvideWebhooksServiceUserIDFetcher(proj)...)
 
-		for _, ot := range proj.FindOwnerTypeChain(typ) {
-			code.Add(buildProvideSomethingServiceThingIDFetcher(proj, ot)...)
+	for _, typ := range proj.DataTypes {
+		ownerTypes := proj.FindOwnerTypeChain(typ)
+		for _, ot := range ownerTypes {
+			code.Add(buildProvideSomethingServiceThingIDFetcher(proj, typ, ot)...)
 		}
 
 		code.Add(buildProvideSomethingServiceOwnerTypeIDFetcher(proj, typ)...)
+
+		if typ.OwnedByAUserAtSomeLevel(proj) {
+			code.Add(buildProvideSomethingServiceUserIDFetcher(proj, typ)...)
+		}
 	}
 
-	code.Add(buildProvideUsersServiceUserIDFetcher(proj)...)
-	code.Add(buildProvideWebhooksServiceUserIDFetcher(proj)...)
-	code.Add(buildProvideWebhooksServiceWebhookIDFetcher(proj)...)
-	code.Add(buildProvideOAuth2ClientsServiceClientIDFetcher(proj)...)
 	code.Add(buildUserIDFetcherFromRequestContext(proj)...)
 	code.Add(buildBuildRouteParamUserIDFetcher(proj)...)
 
@@ -50,27 +52,24 @@ func buildWireParamFetchersVarDeclarations(proj *models.Project) []jen.Code {
 	newSetArgs := []jen.Code{
 		jen.ID("ProvideUsersServiceUserIDFetcher"),
 		jen.ID("ProvideOAuth2ClientsServiceClientIDFetcher"),
+		jen.ID("ProvideWebhooksServiceWebhookIDFetcher"),
+		jen.ID("ProvideWebhooksServiceUserIDFetcher"),
 	}
 
 	for _, typ := range proj.DataTypes {
 		sn := typ.Name.Singular()
 		pn := typ.Name.Plural()
 
-		if typ.OwnedByAUserAtSomeLevel(proj) {
-			newSetArgs = append(newSetArgs, jen.IDf("Provide%sServiceUserIDFetcher", pn))
-		}
-
 		for _, ot := range proj.FindOwnerTypeChain(typ) {
 			newSetArgs = append(newSetArgs, jen.IDf("Provide%sService%sIDFetcher", pn, ot.Name.Singular()))
 		}
 
 		newSetArgs = append(newSetArgs, jen.IDf("Provide%sService%sIDFetcher", pn, sn))
-	}
 
-	newSetArgs = append(newSetArgs,
-		jen.ID("ProvideWebhooksServiceUserIDFetcher"),
-		jen.ID("ProvideWebhooksServiceWebhookIDFetcher"),
-	)
+		if typ.OwnedByAUserAtSomeLevel(proj) {
+			newSetArgs = append(newSetArgs, jen.IDf("Provide%sServiceUserIDFetcher", pn))
+		}
+	}
 
 	lines := []jen.Code{
 		jen.Var().Defs(
@@ -100,8 +99,8 @@ func buildProvideSomethingServiceUserIDFetcher(proj *models.Project, typ models.
 	return lines
 }
 
-func buildProvideSomethingServiceThingIDFetcher(proj *models.Project, typ models.DataType) []jen.Code {
-	ots := typ.Name.Singular()
+func buildProvideSomethingServiceThingIDFetcher(proj *models.Project, typ models.DataType, ownerType models.DataType) []jen.Code {
+	ots := ownerType.Name.Singular()
 	pn := typ.Name.Plural()
 	pkgN := typ.Name.PackageName()
 

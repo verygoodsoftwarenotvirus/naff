@@ -148,11 +148,10 @@ func TestClient_GetItems(T *testing.T) {
 func TestClient_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("obligatory", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
 		exampleItemList := fake.BuildFakeItemList().Items
 		var exampleIDs []uint64
 		for _, x := range exampleItemList {
@@ -566,11 +565,10 @@ import (
 func TestClient_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("obligatory", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
 		exampleItemList := fake.BuildFakeItemList().Items
 		var exampleIDs []uint64
 		for _, x := range exampleItemList {

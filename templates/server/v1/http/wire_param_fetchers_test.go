@@ -1,12 +1,14 @@
 package httpserver
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/testutils"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_wireParamFetchersDotGo(T *testing.T) {
@@ -36,15 +38,30 @@ var (
 	paramFetcherProviders = wire.NewSet(
 		ProvideUsersServiceUserIDFetcher,
 		ProvideOAuth2ClientsServiceClientIDFetcher,
-		ProvideItemsServiceUserIDFetcher,
-		ProvideItemsServiceItemIDFetcher,
-		ProvideWebhooksServiceUserIDFetcher,
 		ProvideWebhooksServiceWebhookIDFetcher,
+		ProvideWebhooksServiceUserIDFetcher,
+		ProvideItemsServiceItemIDFetcher,
+		ProvideItemsServiceUserIDFetcher,
 	)
 )
 
-// ProvideItemsServiceUserIDFetcher provides a UserIDFetcher.
-func ProvideItemsServiceUserIDFetcher() items.UserIDFetcher {
+// ProvideUsersServiceUserIDFetcher provides a UsernameFetcher.
+func ProvideUsersServiceUserIDFetcher(logger v1.Logger) users.UserIDFetcher {
+	return buildRouteParamUserIDFetcher(logger)
+}
+
+// ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher.
+func ProvideOAuth2ClientsServiceClientIDFetcher(logger v1.Logger) oauth2clients.ClientIDFetcher {
+	return buildRouteParamOAuth2ClientIDFetcher(logger)
+}
+
+// ProvideWebhooksServiceWebhookIDFetcher provides an WebhookIDFetcher.
+func ProvideWebhooksServiceWebhookIDFetcher(logger v1.Logger) webhooks.WebhookIDFetcher {
+	return buildRouteParamWebhookIDFetcher(logger)
+}
+
+// ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher.
+func ProvideWebhooksServiceUserIDFetcher() webhooks.UserIDFetcher {
 	return userIDFetcherFromRequestContext
 }
 
@@ -53,24 +70,9 @@ func ProvideItemsServiceItemIDFetcher(logger v1.Logger) items.ItemIDFetcher {
 	return buildRouteParamItemIDFetcher(logger)
 }
 
-// ProvideUsersServiceUserIDFetcher provides a UsernameFetcher.
-func ProvideUsersServiceUserIDFetcher(logger v1.Logger) users.UserIDFetcher {
-	return buildRouteParamUserIDFetcher(logger)
-}
-
-// ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher.
-func ProvideWebhooksServiceUserIDFetcher() webhooks.UserIDFetcher {
+// ProvideItemsServiceUserIDFetcher provides a UserIDFetcher.
+func ProvideItemsServiceUserIDFetcher() items.UserIDFetcher {
 	return userIDFetcherFromRequestContext
-}
-
-// ProvideWebhooksServiceWebhookIDFetcher provides an WebhookIDFetcher.
-func ProvideWebhooksServiceWebhookIDFetcher(logger v1.Logger) webhooks.WebhookIDFetcher {
-	return buildRouteParamWebhookIDFetcher(logger)
-}
-
-// ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher.
-func ProvideOAuth2ClientsServiceClientIDFetcher(logger v1.Logger) oauth2clients.ClientIDFetcher {
-	return buildRouteParamOAuth2ClientIDFetcher(logger)
 }
 
 // userIDFetcherFromRequestContext fetches a user ID from a request routed by chi.
@@ -136,9 +138,8 @@ func buildRouteParamOAuth2ClientIDFetcher(logger v1.Logger) func(req *http.Reque
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("with ownership chain", func(t *testing.T) {
-		proj := testprojects.BuildTodoApp()
-		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+	T.Run("with forums app", func(t *testing.T) {
+		proj := testprojects.BuildForumsApp()
 		x := wireParamFetchersDotGo(proj)
 
 		expected := `
@@ -149,12 +150,16 @@ import (
 	wire "github.com/google/wire"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	anotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/anotherthings"
+	forums "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/forums"
+	notifications "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/notifications"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
-	things "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/things"
+	postreactions "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/postreactions"
+	posts "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/posts"
+	reactionicons "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/reactionicons"
+	subforums "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/subforums"
+	threads "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/threads"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
 	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
-	yetanotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/yetanotherthings"
 	"net/http"
 	"strconv"
 )
@@ -163,55 +168,40 @@ var (
 	paramFetcherProviders = wire.NewSet(
 		ProvideUsersServiceUserIDFetcher,
 		ProvideOAuth2ClientsServiceClientIDFetcher,
-		ProvideThingsServiceThingIDFetcher,
-		ProvideAnotherThingsServiceThingIDFetcher,
-		ProvideAnotherThingsServiceAnotherThingIDFetcher,
-		ProvideYetAnotherThingsServiceThingIDFetcher,
-		ProvideYetAnotherThingsServiceAnotherThingIDFetcher,
-		ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher,
-		ProvideWebhooksServiceUserIDFetcher,
 		ProvideWebhooksServiceWebhookIDFetcher,
+		ProvideWebhooksServiceUserIDFetcher,
+		ProvideForumsServiceForumIDFetcher,
+		ProvideSubforumsServiceForumIDFetcher,
+		ProvideSubforumsServiceSubforumIDFetcher,
+		ProvideThreadsServiceForumIDFetcher,
+		ProvideThreadsServiceSubforumIDFetcher,
+		ProvideThreadsServiceThreadIDFetcher,
+		ProvideThreadsServiceUserIDFetcher,
+		ProvidePostsServiceForumIDFetcher,
+		ProvidePostsServiceSubforumIDFetcher,
+		ProvidePostsServiceThreadIDFetcher,
+		ProvidePostsServicePostIDFetcher,
+		ProvidePostsServiceUserIDFetcher,
+		ProvideReactionIconsServiceReactionIconIDFetcher,
+		ProvidePostReactionsServiceForumIDFetcher,
+		ProvidePostReactionsServiceSubforumIDFetcher,
+		ProvidePostReactionsServiceThreadIDFetcher,
+		ProvidePostReactionsServicePostIDFetcher,
+		ProvidePostReactionsServicePostReactionIDFetcher,
+		ProvidePostReactionsServiceUserIDFetcher,
+		ProvideNotificationsServiceNotificationIDFetcher,
+		ProvideNotificationsServiceUserIDFetcher,
 	)
 )
-
-// ProvideThingsServiceThingIDFetcher provides a ThingIDFetcher.
-func ProvideThingsServiceThingIDFetcher(logger v1.Logger) things.ThingIDFetcher {
-	return buildRouteParamThingIDFetcher(logger)
-}
-
-// ProvideThingsServiceThingIDFetcher provides a ThingIDFetcher.
-func ProvideThingsServiceThingIDFetcher(logger v1.Logger) things.ThingIDFetcher {
-	return buildRouteParamThingIDFetcher(logger)
-}
-
-// ProvideAnotherThingsServiceAnotherThingIDFetcher provides an AnotherThingIDFetcher.
-func ProvideAnotherThingsServiceAnotherThingIDFetcher(logger v1.Logger) anotherthings.AnotherThingIDFetcher {
-	return buildRouteParamAnotherThingIDFetcher(logger)
-}
-
-// ProvideThingsServiceThingIDFetcher provides a ThingIDFetcher.
-func ProvideThingsServiceThingIDFetcher(logger v1.Logger) things.ThingIDFetcher {
-	return buildRouteParamThingIDFetcher(logger)
-}
-
-// ProvideAnotherThingsServiceAnotherThingIDFetcher provides an AnotherThingIDFetcher.
-func ProvideAnotherThingsServiceAnotherThingIDFetcher(logger v1.Logger) anotherthings.AnotherThingIDFetcher {
-	return buildRouteParamAnotherThingIDFetcher(logger)
-}
-
-// ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher provides a YetAnotherThingIDFetcher.
-func ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher(logger v1.Logger) yetanotherthings.YetAnotherThingIDFetcher {
-	return buildRouteParamYetAnotherThingIDFetcher(logger)
-}
 
 // ProvideUsersServiceUserIDFetcher provides a UsernameFetcher.
 func ProvideUsersServiceUserIDFetcher(logger v1.Logger) users.UserIDFetcher {
 	return buildRouteParamUserIDFetcher(logger)
 }
 
-// ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher.
-func ProvideWebhooksServiceUserIDFetcher() webhooks.UserIDFetcher {
-	return userIDFetcherFromRequestContext
+// ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher.
+func ProvideOAuth2ClientsServiceClientIDFetcher(logger v1.Logger) oauth2clients.ClientIDFetcher {
+	return buildRouteParamOAuth2ClientIDFetcher(logger)
 }
 
 // ProvideWebhooksServiceWebhookIDFetcher provides an WebhookIDFetcher.
@@ -219,9 +209,114 @@ func ProvideWebhooksServiceWebhookIDFetcher(logger v1.Logger) webhooks.WebhookID
 	return buildRouteParamWebhookIDFetcher(logger)
 }
 
-// ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher.
-func ProvideOAuth2ClientsServiceClientIDFetcher(logger v1.Logger) oauth2clients.ClientIDFetcher {
-	return buildRouteParamOAuth2ClientIDFetcher(logger)
+// ProvideWebhooksServiceUserIDFetcher provides a UserIDFetcher.
+func ProvideWebhooksServiceUserIDFetcher() webhooks.UserIDFetcher {
+	return userIDFetcherFromRequestContext
+}
+
+// ProvideForumsServiceForumIDFetcher provides a ForumIDFetcher.
+func ProvideForumsServiceForumIDFetcher(logger v1.Logger) forums.ForumIDFetcher {
+	return buildRouteParamForumIDFetcher(logger)
+}
+
+// ProvideSubforumsServiceForumIDFetcher provides a ForumIDFetcher.
+func ProvideSubforumsServiceForumIDFetcher(logger v1.Logger) subforums.ForumIDFetcher {
+	return buildRouteParamForumIDFetcher(logger)
+}
+
+// ProvideSubforumsServiceSubforumIDFetcher provides a SubforumIDFetcher.
+func ProvideSubforumsServiceSubforumIDFetcher(logger v1.Logger) subforums.SubforumIDFetcher {
+	return buildRouteParamSubforumIDFetcher(logger)
+}
+
+// ProvideThreadsServiceForumIDFetcher provides a ForumIDFetcher.
+func ProvideThreadsServiceForumIDFetcher(logger v1.Logger) threads.ForumIDFetcher {
+	return buildRouteParamForumIDFetcher(logger)
+}
+
+// ProvideThreadsServiceSubforumIDFetcher provides a SubforumIDFetcher.
+func ProvideThreadsServiceSubforumIDFetcher(logger v1.Logger) threads.SubforumIDFetcher {
+	return buildRouteParamSubforumIDFetcher(logger)
+}
+
+// ProvideThreadsServiceThreadIDFetcher provides a ThreadIDFetcher.
+func ProvideThreadsServiceThreadIDFetcher(logger v1.Logger) threads.ThreadIDFetcher {
+	return buildRouteParamThreadIDFetcher(logger)
+}
+
+// ProvideThreadsServiceUserIDFetcher provides a UserIDFetcher.
+func ProvideThreadsServiceUserIDFetcher() threads.UserIDFetcher {
+	return userIDFetcherFromRequestContext
+}
+
+// ProvidePostsServiceForumIDFetcher provides a ForumIDFetcher.
+func ProvidePostsServiceForumIDFetcher(logger v1.Logger) posts.ForumIDFetcher {
+	return buildRouteParamForumIDFetcher(logger)
+}
+
+// ProvidePostsServiceSubforumIDFetcher provides a SubforumIDFetcher.
+func ProvidePostsServiceSubforumIDFetcher(logger v1.Logger) posts.SubforumIDFetcher {
+	return buildRouteParamSubforumIDFetcher(logger)
+}
+
+// ProvidePostsServiceThreadIDFetcher provides a ThreadIDFetcher.
+func ProvidePostsServiceThreadIDFetcher(logger v1.Logger) posts.ThreadIDFetcher {
+	return buildRouteParamThreadIDFetcher(logger)
+}
+
+// ProvidePostsServicePostIDFetcher provides a PostIDFetcher.
+func ProvidePostsServicePostIDFetcher(logger v1.Logger) posts.PostIDFetcher {
+	return buildRouteParamPostIDFetcher(logger)
+}
+
+// ProvidePostsServiceUserIDFetcher provides a UserIDFetcher.
+func ProvidePostsServiceUserIDFetcher() posts.UserIDFetcher {
+	return userIDFetcherFromRequestContext
+}
+
+// ProvideReactionIconsServiceReactionIconIDFetcher provides a ReactionIconIDFetcher.
+func ProvideReactionIconsServiceReactionIconIDFetcher(logger v1.Logger) reactionicons.ReactionIconIDFetcher {
+	return buildRouteParamReactionIconIDFetcher(logger)
+}
+
+// ProvidePostReactionsServiceForumIDFetcher provides a ForumIDFetcher.
+func ProvidePostReactionsServiceForumIDFetcher(logger v1.Logger) postreactions.ForumIDFetcher {
+	return buildRouteParamForumIDFetcher(logger)
+}
+
+// ProvidePostReactionsServiceSubforumIDFetcher provides a SubforumIDFetcher.
+func ProvidePostReactionsServiceSubforumIDFetcher(logger v1.Logger) postreactions.SubforumIDFetcher {
+	return buildRouteParamSubforumIDFetcher(logger)
+}
+
+// ProvidePostReactionsServiceThreadIDFetcher provides a ThreadIDFetcher.
+func ProvidePostReactionsServiceThreadIDFetcher(logger v1.Logger) postreactions.ThreadIDFetcher {
+	return buildRouteParamThreadIDFetcher(logger)
+}
+
+// ProvidePostReactionsServicePostIDFetcher provides a PostIDFetcher.
+func ProvidePostReactionsServicePostIDFetcher(logger v1.Logger) postreactions.PostIDFetcher {
+	return buildRouteParamPostIDFetcher(logger)
+}
+
+// ProvidePostReactionsServicePostReactionIDFetcher provides a PostReactionIDFetcher.
+func ProvidePostReactionsServicePostReactionIDFetcher(logger v1.Logger) postreactions.PostReactionIDFetcher {
+	return buildRouteParamPostReactionIDFetcher(logger)
+}
+
+// ProvidePostReactionsServiceUserIDFetcher provides a UserIDFetcher.
+func ProvidePostReactionsServiceUserIDFetcher() postreactions.UserIDFetcher {
+	return userIDFetcherFromRequestContext
+}
+
+// ProvideNotificationsServiceNotificationIDFetcher provides a NotificationIDFetcher.
+func ProvideNotificationsServiceNotificationIDFetcher(logger v1.Logger) notifications.NotificationIDFetcher {
+	return buildRouteParamNotificationIDFetcher(logger)
+}
+
+// ProvideNotificationsServiceUserIDFetcher provides a UserIDFetcher.
+func ProvideNotificationsServiceUserIDFetcher() notifications.UserIDFetcher {
+	return userIDFetcherFromRequestContext
 }
 
 // userIDFetcherFromRequestContext fetches a user ID from a request routed by chi.
@@ -243,40 +338,92 @@ func buildRouteParamUserIDFetcher(logger v1.Logger) users.UserIDFetcher {
 	}
 }
 
-// buildRouteParamThingIDFetcher builds a function that fetches a ThingID from a request routed by chi.
-func buildRouteParamThingIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+// buildRouteParamForumIDFetcher builds a function that fetches a ForumID from a request routed by chi.
+func buildRouteParamForumIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
 		// we can generally disregard this error only because we should be able to validate.
 		// that the string only contains numbers via chi's regex url param feature.
-		u, err := strconv.ParseUint(chi.URLParam(req, things.URIParamKey), 10, 64)
+		u, err := strconv.ParseUint(chi.URLParam(req, forums.URIParamKey), 10, 64)
 		if err != nil {
-			logger.Error(err, "fetching ThingID from request")
+			logger.Error(err, "fetching ForumID from request")
 		}
 		return u
 	}
 }
 
-// buildRouteParamAnotherThingIDFetcher builds a function that fetches a AnotherThingID from a request routed by chi.
-func buildRouteParamAnotherThingIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+// buildRouteParamSubforumIDFetcher builds a function that fetches a SubforumID from a request routed by chi.
+func buildRouteParamSubforumIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
 		// we can generally disregard this error only because we should be able to validate.
 		// that the string only contains numbers via chi's regex url param feature.
-		u, err := strconv.ParseUint(chi.URLParam(req, anotherthings.URIParamKey), 10, 64)
+		u, err := strconv.ParseUint(chi.URLParam(req, subforums.URIParamKey), 10, 64)
 		if err != nil {
-			logger.Error(err, "fetching AnotherThingID from request")
+			logger.Error(err, "fetching SubforumID from request")
 		}
 		return u
 	}
 }
 
-// buildRouteParamYetAnotherThingIDFetcher builds a function that fetches a YetAnotherThingID from a request routed by chi.
-func buildRouteParamYetAnotherThingIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+// buildRouteParamThreadIDFetcher builds a function that fetches a ThreadID from a request routed by chi.
+func buildRouteParamThreadIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
 	return func(req *http.Request) uint64 {
 		// we can generally disregard this error only because we should be able to validate.
 		// that the string only contains numbers via chi's regex url param feature.
-		u, err := strconv.ParseUint(chi.URLParam(req, yetanotherthings.URIParamKey), 10, 64)
+		u, err := strconv.ParseUint(chi.URLParam(req, threads.URIParamKey), 10, 64)
 		if err != nil {
-			logger.Error(err, "fetching YetAnotherThingID from request")
+			logger.Error(err, "fetching ThreadID from request")
+		}
+		return u
+	}
+}
+
+// buildRouteParamPostIDFetcher builds a function that fetches a PostID from a request routed by chi.
+func buildRouteParamPostIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate.
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, posts.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching PostID from request")
+		}
+		return u
+	}
+}
+
+// buildRouteParamReactionIconIDFetcher builds a function that fetches a ReactionIconID from a request routed by chi.
+func buildRouteParamReactionIconIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate.
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, reactionicons.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching ReactionIconID from request")
+		}
+		return u
+	}
+}
+
+// buildRouteParamPostReactionIDFetcher builds a function that fetches a PostReactionID from a request routed by chi.
+func buildRouteParamPostReactionIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate.
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, postreactions.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching PostReactionID from request")
+		}
+		return u
+	}
+}
+
+// buildRouteParamNotificationIDFetcher builds a function that fetches a NotificationID from a request routed by chi.
+func buildRouteParamNotificationIDFetcher(logger v1.Logger) func(req *http.Request) uint64 {
+	return func(req *http.Request) uint64 {
+		// we can generally disregard this error only because we should be able to validate.
+		// that the string only contains numbers via chi's regex url param feature.
+		u, err := strconv.ParseUint(chi.URLParam(req, notifications.URIParamKey), 10, 64)
+		if err != nil {
+			logger.Error(err, "fetching NotificationID from request")
 		}
 		return u
 	}
@@ -332,10 +479,10 @@ var (
 	paramFetcherProviders = wire.NewSet(
 		ProvideUsersServiceUserIDFetcher,
 		ProvideOAuth2ClientsServiceClientIDFetcher,
-		ProvideItemsServiceUserIDFetcher,
-		ProvideItemsServiceItemIDFetcher,
-		ProvideWebhooksServiceUserIDFetcher,
 		ProvideWebhooksServiceWebhookIDFetcher,
+		ProvideWebhooksServiceUserIDFetcher,
+		ProvideItemsServiceItemIDFetcher,
+		ProvideItemsServiceUserIDFetcher,
 	)
 )
 `
@@ -344,9 +491,8 @@ var (
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("with ownership chain", func(t *testing.T) {
-		proj := testprojects.BuildTodoApp()
-		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+	T.Run("with forums app", func(t *testing.T) {
+		proj := testprojects.BuildForumsApp()
 		x := buildWireParamFetchersVarDeclarations(proj)
 
 		expected := `
@@ -360,14 +506,29 @@ var (
 	paramFetcherProviders = wire.NewSet(
 		ProvideUsersServiceUserIDFetcher,
 		ProvideOAuth2ClientsServiceClientIDFetcher,
-		ProvideThingsServiceThingIDFetcher,
-		ProvideAnotherThingsServiceThingIDFetcher,
-		ProvideAnotherThingsServiceAnotherThingIDFetcher,
-		ProvideYetAnotherThingsServiceThingIDFetcher,
-		ProvideYetAnotherThingsServiceAnotherThingIDFetcher,
-		ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher,
-		ProvideWebhooksServiceUserIDFetcher,
 		ProvideWebhooksServiceWebhookIDFetcher,
+		ProvideWebhooksServiceUserIDFetcher,
+		ProvideForumsServiceForumIDFetcher,
+		ProvideSubforumsServiceForumIDFetcher,
+		ProvideSubforumsServiceSubforumIDFetcher,
+		ProvideThreadsServiceForumIDFetcher,
+		ProvideThreadsServiceSubforumIDFetcher,
+		ProvideThreadsServiceThreadIDFetcher,
+		ProvideThreadsServiceUserIDFetcher,
+		ProvidePostsServiceForumIDFetcher,
+		ProvidePostsServiceSubforumIDFetcher,
+		ProvidePostsServiceThreadIDFetcher,
+		ProvidePostsServicePostIDFetcher,
+		ProvidePostsServiceUserIDFetcher,
+		ProvideReactionIconsServiceReactionIconIDFetcher,
+		ProvidePostReactionsServiceForumIDFetcher,
+		ProvidePostReactionsServiceSubforumIDFetcher,
+		ProvidePostReactionsServiceThreadIDFetcher,
+		ProvidePostReactionsServicePostIDFetcher,
+		ProvidePostReactionsServicePostReactionIDFetcher,
+		ProvidePostReactionsServiceUserIDFetcher,
+		ProvideNotificationsServiceNotificationIDFetcher,
+		ProvideNotificationsServiceUserIDFetcher,
 	)
 )
 `
@@ -408,20 +569,27 @@ func Test_buildProvideSomethingServiceThingIDFetcher(T *testing.T) {
 
 	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
-		typ := proj.DataTypes[0]
-		x := buildProvideSomethingServiceThingIDFetcher(proj, typ)
+
+		owner := models.DataType{
+			Name: wordsmith.FromSingularPascalCase("Thing"),
+		}
+		typ := models.DataType{
+			Name: wordsmith.FromSingularPascalCase("AnotherThing"),
+		}
+
+		x := buildProvideSomethingServiceThingIDFetcher(proj, typ, owner)
 
 		expected := `
 package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	items "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
+	anotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/anotherthings"
 )
 
-// ProvideItemsServiceItemIDFetcher provides an ItemIDFetcher.
-func ProvideItemsServiceItemIDFetcher(logger v1.Logger) items.ItemIDFetcher {
-	return buildRouteParamItemIDFetcher(logger)
+// ProvideAnotherThingsServiceThingIDFetcher provides a ThingIDFetcher.
+func ProvideAnotherThingsServiceThingIDFetcher(logger v1.Logger) anotherthings.ThingIDFetcher {
+	return buildRouteParamThingIDFetcher(logger)
 }
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

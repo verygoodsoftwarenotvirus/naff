@@ -200,12 +200,12 @@ func TestV1Client_BuildGetItemsRequest(T *testing.T) {
 func TestV1Client_GetItems(T *testing.T) {
 	T.Parallel()
 
-	const expectedPath = "/api/v1/items"
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
 		filter := (*v1.QueryFilter)(nil)
+
+		expectedPath := "/api/v1/items"
 
 		exampleItemList := fake.BuildFakeItemList()
 
@@ -243,6 +243,8 @@ func TestV1Client_GetItems(T *testing.T) {
 		ctx := context.Background()
 
 		filter := (*v1.QueryFilter)(nil)
+
+		expectedPath := "/api/v1/items"
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
@@ -381,13 +383,13 @@ func TestV1Client_BuildCreateItemRequest(T *testing.T) {
 func TestV1Client_CreateItem(T *testing.T) {
 	T.Parallel()
 
-	const expectedPath = "/api/v1/items"
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
 		exampleItem := fake.BuildFakeItem()
 		exampleInput := fake.BuildFakeItemCreationInputFromItem(exampleItem)
+
+		expectedPath := "/api/v1/items"
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
@@ -1022,12 +1024,12 @@ import (
 func TestV1Client_GetItems(T *testing.T) {
 	T.Parallel()
 
-	const expectedPath = "/api/v1/items"
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
 		filter := (*v1.QueryFilter)(nil)
+
+		expectedPath := "/api/v1/items"
 
 		exampleItemList := fake.BuildFakeItemList()
 
@@ -1065,6 +1067,8 @@ func TestV1Client_GetItems(T *testing.T) {
 		ctx := context.Background()
 
 		filter := (*v1.QueryFilter)(nil)
+
+		expectedPath := "/api/v1/items"
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
@@ -1113,14 +1117,14 @@ import (
 func TestV1Client_GetYetAnotherThings(T *testing.T) {
 	T.Parallel()
 
-	const expectedPath = fmt.Sprintf("/api/v1/things/%d/another_things/%d/yet_another_things", exampleThing.ID, exampleAnotherThing.ID)
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
 		exampleThing := fake.BuildFakeThing()
 		exampleAnotherThing := fake.BuildFakeAnotherThing()
 		filter := (*v1.QueryFilter)(nil)
+
+		expectedPath := fmt.Sprintf("/api/v1/things/%d/another_things/%d/yet_another_things", exampleThing.ID, exampleAnotherThing.ID)
 
 		exampleYetAnotherThingList := fake.BuildFakeYetAnotherThingList()
 
@@ -1162,6 +1166,8 @@ func TestV1Client_GetYetAnotherThings(T *testing.T) {
 		exampleThing := fake.BuildFakeThing()
 		exampleAnotherThing := fake.BuildFakeAnotherThing()
 		filter := (*v1.QueryFilter)(nil)
+
+		expectedPath := fmt.Sprintf("/api/v1/things/%d/another_things/%d/yet_another_things", exampleThing.ID, exampleAnotherThing.ID)
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
@@ -1265,13 +1271,13 @@ import (
 func TestV1Client_CreateItem(T *testing.T) {
 	T.Parallel()
 
-	const expectedPath = "/api/v1/items"
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
 		exampleItem := fake.BuildFakeItem()
 		exampleInput := fake.BuildFakeItemCreationInputFromItem(exampleItem)
+
+		expectedPath := "/api/v1/items"
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(
@@ -1328,6 +1334,7 @@ package example
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
@@ -1340,8 +1347,6 @@ import (
 func TestV1Client_CreateYetAnotherThing(T *testing.T) {
 	T.Parallel()
 
-	const expectedPath = "/api/v1/things/%d/another_things/%d/yet_another_things"
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
@@ -1350,6 +1355,8 @@ func TestV1Client_CreateYetAnotherThing(T *testing.T) {
 		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		expectedPath := fmt.Sprintf("/api/v1/things/%d/another_things/%d/yet_another_things", exampleThing.ID, exampleAnotherThing.ID)
 
 		ts := httptest.NewTLSServer(
 			http.HandlerFunc(

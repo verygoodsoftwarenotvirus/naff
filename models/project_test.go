@@ -43,6 +43,119 @@ func buildExampleTodoListProject() *Project {
 	}
 }
 
+func buildExampleForumsListProject() *Project {
+	p := &Project{
+		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
+		Name:       wordsmith.FromSingularPascalCase("Discussion"),
+		DataTypes: []DataType{
+			{
+				Name: wordsmith.FromSingularPascalCase("Forum"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				IsEnumeration: true,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Subforum"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Name"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToStruct: wordsmith.FromSingularPascalCase("Forum"),
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Thread"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Title"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
+				BelongsToUser:    true,
+				RestrictedToUser: false,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Post"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Content"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
+				BelongsToUser:    true,
+				RestrictedToUser: false,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("ReactionIcon"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Icon"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				IsEnumeration: true,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("PostReaction"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("PostReactionIcon"),
+						Type:                  "uint64",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Post"),
+				BelongsToUser:    true,
+				RestrictedToUser: false,
+			},
+			{
+				Name: wordsmith.FromSingularPascalCase("Notification"),
+				Fields: []DataField{
+					{
+						Name:                  wordsmith.FromSingularPascalCase("Text"),
+						Type:                  "string",
+						Pointer:               false,
+						ValidForCreationInput: true,
+						ValidForUpdateInput:   true,
+					},
+				},
+				BelongsToUser:    true,
+				RestrictedToUser: true,
+			},
+		},
+	}
+
+	p.EnableDatabase(Postgres)
+	p.EnableDatabase(Sqlite)
+	p.EnableDatabase(MariaDB)
+
+	return p
+}
+
 func TestProject_Validate(T *testing.T) {
 	T.Parallel()
 
@@ -268,7 +381,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToNobody: true,
+			IsEnumeration: true,
 		}
 		subForumType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Subforum"),
@@ -352,7 +465,7 @@ func TestProject_FindType(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToNobody: true,
+			IsEnumeration: true,
 		}
 		subForumType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Subforum"),
@@ -440,7 +553,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToNobody: true,
+			IsEnumeration: true,
 		}
 		subForumType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Subforum"),
@@ -1221,8 +1334,8 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser:   false,
-				BelongsToNobody: true,
+				BelongsToUser: false,
+				IsEnumeration: true,
 			},
 		}
 		expectedImports := []string{

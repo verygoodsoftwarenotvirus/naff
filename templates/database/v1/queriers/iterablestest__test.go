@@ -15,7 +15,7 @@ import (
 func Test_iterablesTestDotGo(T *testing.T) {
 	T.Parallel()
 
-	T.Run("postgres", func(t *testing.T) {
+	T.Run("postgres todo", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -41,6 +41,7 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
+
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -484,11 +485,12 @@ func TestPostgres_buildGetItemsQuery(T *testing.T) {
 func TestPostgres_GetItems(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
 	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1 ORDER BY items.id LIMIT 20"
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -518,6 +520,8 @@ func TestPostgres_GetItems(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
@@ -537,6 +541,8 @@ func TestPostgres_GetItems(T *testing.T) {
 
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -607,20 +613,20 @@ func TestPostgres_buildGetItemsWithIDsQuery(T *testing.T) {
 func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		p, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(exampleUser.ID).
@@ -632,7 +638,7 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -643,17 +649,19 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(exampleUser.ID).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -665,17 +673,19 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(exampleUser.ID).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -686,11 +696,13 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		exampleItem := fake.BuildFakeItem()
 
@@ -698,7 +710,7 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 			WithArgs(exampleUser.ID).
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, 0, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -962,7 +974,1101 @@ func TestPostgres_ArchiveItem(T *testing.T) {
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite", func(t *testing.T) {
+	T.Run("postgres every type", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+		x := iterablesTestDotGo(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	gosqlmock "github.com/DATA-DOG/go-sqlmock"
+	assert "github.com/stretchr/testify/assert"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+	"time"
+)
+
+func buildMockRowsFromEveryTypes(everyTypes ...*v1.EveryType) *gosqlmock.Rows {
+	includeCount := len(everyTypes) > 1
+	columns := everyTypesTableColumns
+
+	if includeCount {
+		columns = append(columns, "count")
+	}
+
+	exampleRows := gosqlmock.NewRows(columns)
+
+	for _, x := range everyTypes {
+		rowValues := []driver.Value{
+			x.ID,
+			x.String,
+			x.PointerToString,
+			x.Bool,
+			x.PointerToBool,
+			x.Int,
+			x.PointerToInt,
+			x.Int8,
+			x.PointerToInt8,
+			x.Int16,
+			x.PointerToInt16,
+			x.Int32,
+			x.PointerToInt32,
+			x.Int64,
+			x.PointerToInt64,
+			x.Uint,
+			x.PointerToUint,
+			x.Uint8,
+			x.PointerToUint8,
+			x.Uint16,
+			x.PointerToUint16,
+			x.Uint32,
+			x.PointerToUint32,
+			x.Uint64,
+			x.PointerToUint64,
+			x.Float32,
+			x.PointerToFloat32,
+			x.Float64,
+			x.PointerToFloat64,
+			x.CreatedOn,
+			x.LastUpdatedOn,
+			x.ArchivedOn,
+		}
+
+		if includeCount {
+			rowValues = append(rowValues, len(everyTypes))
+		}
+
+		exampleRows.AddRow(rowValues...)
+	}
+
+	return exampleRows
+}
+
+func buildErroneousMockRowFromEveryType(x *v1.EveryType) *gosqlmock.Rows {
+	exampleRows := gosqlmock.NewRows(everyTypesTableColumns).AddRow(
+		x.ArchivedOn,
+		x.String,
+		x.PointerToString,
+		x.Bool,
+		x.PointerToBool,
+		x.Int,
+		x.PointerToInt,
+		x.Int8,
+		x.PointerToInt8,
+		x.Int16,
+		x.PointerToInt16,
+		x.Int32,
+		x.PointerToInt32,
+		x.Int64,
+		x.PointerToInt64,
+		x.Uint,
+		x.PointerToUint,
+		x.Uint8,
+		x.PointerToUint8,
+		x.Uint16,
+		x.PointerToUint16,
+		x.Uint32,
+		x.PointerToUint32,
+		x.Uint64,
+		x.PointerToUint64,
+		x.Float32,
+		x.PointerToFloat32,
+		x.Float64,
+		x.PointerToFloat64,
+		x.CreatedOn,
+		x.LastUpdatedOn,
+		x.ID,
+	)
+
+	return exampleRows
+}
+
+func TestPostgres_ScanEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	T.Run("surfaces row errors", func(t *testing.T) {
+		p, _ := buildTestService(t)
+		mockRows := &v11.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(errors.New("blah"))
+
+		_, _, err := p.scanEveryTypes(mockRows)
+		assert.Error(t, err)
+	})
+
+	T.Run("logs row closing errors", func(t *testing.T) {
+		p, _ := buildTestService(t)
+		mockRows := &v11.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(nil)
+		mockRows.On("Close").Return(errors.New("blah"))
+
+		_, _, err := p.scanEveryTypes(mockRows)
+		assert.NoError(t, err)
+	})
+}
+
+func TestPostgres_buildEveryTypeExistsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "SELECT EXISTS ( SELECT every_types.id FROM every_types WHERE every_types.id = $1 )"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := p.buildEveryTypeExistsQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_EveryTypeExists(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT EXISTS ( SELECT every_types.id FROM every_types WHERE every_types.id = $1 )"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnRows(gosqlmock.NewRows([]string{"exists"}).AddRow(true))
+
+		actual, err := p.EveryTypeExists(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.True(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.EveryTypeExists(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.False(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildGetEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id = $1"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := p.buildGetEveryTypeQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_GetEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id = $1"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnRows(buildMockRowsFromEveryTypes(exampleEveryType))
+
+		actual, err := p.GetEveryType(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryType, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildGetAllEveryTypesCountQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		expectedQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+		actualQuery := p.buildGetAllEveryTypesCountQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, []interface{}{})
+		assert.Equal(t, expectedQuery, actualQuery)
+	})
+}
+
+func TestPostgres_GetAllEveryTypesCount(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		expectedQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+		expectedCount := uint64(123)
+
+		p, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+
+		actualCount, err := p.GetAllEveryTypesCount(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedCount, actualCount)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildGetBatchOfEveryTypesQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		beginID, endID := uint64(1), uint64(1000)
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id > $1 AND every_types.id < $2"
+		expectedArgs := []interface{}{
+			beginID,
+			endID,
+		}
+		actualQuery, actualArgs := p.buildGetBatchOfEveryTypesQuery(beginID, endID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_GetAllEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedCountQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+	expectedGetQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id > $1 AND every_types.id < $2"
+
+	T.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		out := make(chan []v1.EveryType)
+		doneChan := make(chan bool, 1)
+
+		err := p.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		var stillQuerying = true
+		for stillQuerying {
+			select {
+			case batch := <-out:
+				assert.NotEmpty(t, batch)
+				doneChan <- true
+			case <-time.After(time.Second):
+				t.FailNow()
+			case <-doneChan:
+				stillQuerying = false
+			}
+		}
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error fetching initial count", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnError(errors.New("blah"))
+
+		out := make(chan []v1.EveryType)
+
+		err := p.GetAllEveryTypes(ctx, out)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows returned", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		out := make(chan []v1.EveryType)
+
+		err := p.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error querying database", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnError(errors.New("blah"))
+
+		out := make(chan []v1.EveryType)
+
+		err := p.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with invalid response from database", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		exampleEveryType := fake.BuildFakeEveryType()
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		out := make(chan []v1.EveryType)
+
+		err := p.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildGetEveryTypesQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		filter := fake.BuildFleshedOutQueryFilter()
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL AND every_types.created_on > $1 AND every_types.created_on < $2 AND every_types.last_updated_on > $3 AND every_types.last_updated_on < $4 ORDER BY every_types.id LIMIT 20 OFFSET 180"
+		expectedArgs := []interface{}{
+			filter.CreatedAfter,
+			filter.CreatedBefore,
+			filter.UpdatedAfter,
+			filter.UpdatedBefore,
+		}
+		actualQuery, actualArgs := p.buildGetEveryTypesQuery(filter)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_GetEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL ORDER BY every_types.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := p.GetEveryTypes(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := p.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := p.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildGetEveryTypesWithIDsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleIDs := []uint64{
+			789,
+			123,
+			456,
+		}
+		exampleIDsAsStrings := joinUint64s(exampleIDs)
+
+		expectedQuery := fmt.Sprintf("SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM (SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS every_types WHERE every_types.archived_on IS NULL", exampleIDsAsStrings, defaultLimit)
+		expectedArgs := []interface{}(nil)
+		actualQuery, actualArgs := p.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_GetEveryTypesWithIDs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery := fmt.Sprintf("SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM (SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS every_types WHERE every_types.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs().
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := p.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList.EveryTypes, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleIDs := []uint64{123, 456, 789}
+
+		expectedQuery := fmt.Sprintf("SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM (SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS every_types WHERE every_types.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs().
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := p.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleIDs := []uint64{123, 456, 789}
+
+		expectedQuery := fmt.Sprintf("SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM (SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS every_types WHERE every_types.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs().
+			WillReturnError(errors.New("blah"))
+
+		actual, err := p.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleIDs := []uint64{123, 456, 789}
+
+		expectedQuery := fmt.Sprintf("SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM (SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS every_types WHERE every_types.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs().
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := p.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildCreateEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "INSERT INTO every_types (string,pointer_to_string,bool,pointer_to_bool,int,pointer_to_int,int8,pointer_to_int8,int16,pointer_to_int16,int32,pointer_to_int32,int64,pointer_to_int64,uint,pointer_to_uint,uint8,pointer_to_uint8,uint16,pointer_to_uint16,uint32,pointer_to_uint32,uint64,pointer_to_uint64,float32,pointer_to_float32,float64,pointer_to_float64) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28) RETURNING id, created_on"
+		expectedArgs := []interface{}{
+			exampleEveryType.String,
+			exampleEveryType.PointerToString,
+			exampleEveryType.Bool,
+			exampleEveryType.PointerToBool,
+			exampleEveryType.Int,
+			exampleEveryType.PointerToInt,
+			exampleEveryType.Int8,
+			exampleEveryType.PointerToInt8,
+			exampleEveryType.Int16,
+			exampleEveryType.PointerToInt16,
+			exampleEveryType.Int32,
+			exampleEveryType.PointerToInt32,
+			exampleEveryType.Int64,
+			exampleEveryType.PointerToInt64,
+			exampleEveryType.Uint,
+			exampleEveryType.PointerToUint,
+			exampleEveryType.Uint8,
+			exampleEveryType.PointerToUint8,
+			exampleEveryType.Uint16,
+			exampleEveryType.PointerToUint16,
+			exampleEveryType.Uint32,
+			exampleEveryType.PointerToUint32,
+			exampleEveryType.Uint64,
+			exampleEveryType.PointerToUint64,
+			exampleEveryType.Float32,
+			exampleEveryType.PointerToFloat32,
+			exampleEveryType.Float64,
+			exampleEveryType.PointerToFloat64,
+		}
+		actualQuery, actualArgs := p.buildCreateEveryTypeQuery(exampleEveryType)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_CreateEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedCreationQuery := "INSERT INTO every_types (string,pointer_to_string,bool,pointer_to_bool,int,pointer_to_int,int8,pointer_to_int8,int16,pointer_to_int16,int32,pointer_to_int32,int64,pointer_to_int64,uint,pointer_to_uint,uint8,pointer_to_uint8,uint16,pointer_to_uint16,uint32,pointer_to_uint32,uint64,pointer_to_uint64,float32,pointer_to_float32,float64,pointer_to_float64) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28) RETURNING id, created_on"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+		exampleInput := fake.BuildFakeEveryTypeCreationInputFromEveryType(exampleEveryType)
+
+		exampleRows := gosqlmock.NewRows([]string{"id", "created_on"}).AddRow(exampleEveryType.ID, exampleEveryType.CreatedOn)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+			).WillReturnRows(exampleRows)
+
+		actual, err := p.CreateEveryType(ctx, exampleInput)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryType, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+		exampleInput := fake.BuildFakeEveryTypeCreationInputFromEveryType(exampleEveryType)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+			).WillReturnError(errors.New("blah"))
+
+		actual, err := p.CreateEveryType(ctx, exampleInput)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildUpdateEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "UPDATE every_types SET string = $1, pointer_to_string = $2, bool = $3, pointer_to_bool = $4, int = $5, pointer_to_int = $6, int8 = $7, pointer_to_int8 = $8, int16 = $9, pointer_to_int16 = $10, int32 = $11, pointer_to_int32 = $12, int64 = $13, pointer_to_int64 = $14, uint = $15, pointer_to_uint = $16, uint8 = $17, pointer_to_uint8 = $18, uint16 = $19, pointer_to_uint16 = $20, uint32 = $21, pointer_to_uint32 = $22, uint64 = $23, pointer_to_uint64 = $24, float32 = $25, pointer_to_float32 = $26, float64 = $27, pointer_to_float64 = $28, last_updated_on = extract(epoch FROM NOW()) WHERE id = $29 RETURNING last_updated_on"
+		expectedArgs := []interface{}{
+			exampleEveryType.String,
+			exampleEveryType.PointerToString,
+			exampleEveryType.Bool,
+			exampleEveryType.PointerToBool,
+			exampleEveryType.Int,
+			exampleEveryType.PointerToInt,
+			exampleEveryType.Int8,
+			exampleEveryType.PointerToInt8,
+			exampleEveryType.Int16,
+			exampleEveryType.PointerToInt16,
+			exampleEveryType.Int32,
+			exampleEveryType.PointerToInt32,
+			exampleEveryType.Int64,
+			exampleEveryType.PointerToInt64,
+			exampleEveryType.Uint,
+			exampleEveryType.PointerToUint,
+			exampleEveryType.Uint8,
+			exampleEveryType.PointerToUint8,
+			exampleEveryType.Uint16,
+			exampleEveryType.PointerToUint16,
+			exampleEveryType.Uint32,
+			exampleEveryType.PointerToUint32,
+			exampleEveryType.Uint64,
+			exampleEveryType.PointerToUint64,
+			exampleEveryType.Float32,
+			exampleEveryType.PointerToFloat32,
+			exampleEveryType.Float64,
+			exampleEveryType.PointerToFloat64,
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := p.buildUpdateEveryTypeQuery(exampleEveryType)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_UpdateEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "UPDATE every_types SET string = $1, pointer_to_string = $2, bool = $3, pointer_to_bool = $4, int = $5, pointer_to_int = $6, int8 = $7, pointer_to_int8 = $8, int16 = $9, pointer_to_int16 = $10, int32 = $11, pointer_to_int32 = $12, int64 = $13, pointer_to_int64 = $14, uint = $15, pointer_to_uint = $16, uint8 = $17, pointer_to_uint8 = $18, uint16 = $19, pointer_to_uint16 = $20, uint32 = $21, pointer_to_uint32 = $22, uint64 = $23, pointer_to_uint64 = $24, float32 = $25, pointer_to_float32 = $26, float64 = $27, pointer_to_float64 = $28, last_updated_on = extract(epoch FROM NOW()) WHERE id = $29 RETURNING last_updated_on"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		exampleRows := gosqlmock.NewRows([]string{"last_updated_on"}).AddRow(uint64(time.Now().Unix()))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+				exampleEveryType.ID,
+			).WillReturnRows(exampleRows)
+
+		err := p.UpdateEveryType(ctx, exampleEveryType)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+				exampleEveryType.ID,
+			).WillReturnError(errors.New("blah"))
+
+		err := p.UpdateEveryType(ctx, exampleEveryType)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestPostgres_buildArchiveEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "UPDATE every_types SET last_updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND id = $1 RETURNING archived_on"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := p.buildArchiveEveryTypeQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestPostgres_ArchiveEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "UPDATE every_types SET last_updated_on = extract(epoch FROM NOW()), archived_on = extract(epoch FROM NOW()) WHERE archived_on IS NULL AND id = $1 RETURNING archived_on"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnResult(gosqlmock.NewResult(1, 1))
+
+		err := p.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("returns sql.ErrNoRows with no rows affected", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnResult(gosqlmock.NewResult(0, 0))
+
+		err := p.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		p, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnError(errors.New("blah"))
+
+		err := p.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("sqlite todo", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -988,6 +2094,7 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
+
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -1431,11 +2538,12 @@ func TestSqlite_buildGetItemsQuery(T *testing.T) {
 func TestSqlite_GetItems(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
 	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = ? ORDER BY items.id LIMIT 20"
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		s, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -1465,6 +2573,8 @@ func TestSqlite_GetItems(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
@@ -1484,6 +2594,8 @@ func TestSqlite_GetItems(T *testing.T) {
 
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		s, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -1556,20 +2668,20 @@ func TestSqlite_buildGetItemsWithIDsQuery(T *testing.T) {
 func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
@@ -1581,7 +2693,7 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -1592,21 +2704,23 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -1618,21 +2732,23 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -1643,15 +2759,17 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		exampleItem := fake.BuildFakeItem()
 
@@ -1659,7 +2777,7 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, 0, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -1927,7 +3045,1120 @@ func TestSqlite_ArchiveItem(T *testing.T) {
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb", func(t *testing.T) {
+	T.Run("sqlite every type", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+		x := iterablesTestDotGo(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"database/sql/driver"
+	"errors"
+	gosqlmock "github.com/DATA-DOG/go-sqlmock"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+	"time"
+)
+
+func buildMockRowsFromEveryTypes(everyTypes ...*v1.EveryType) *gosqlmock.Rows {
+	includeCount := len(everyTypes) > 1
+	columns := everyTypesTableColumns
+
+	if includeCount {
+		columns = append(columns, "count")
+	}
+
+	exampleRows := gosqlmock.NewRows(columns)
+
+	for _, x := range everyTypes {
+		rowValues := []driver.Value{
+			x.ID,
+			x.String,
+			x.PointerToString,
+			x.Bool,
+			x.PointerToBool,
+			x.Int,
+			x.PointerToInt,
+			x.Int8,
+			x.PointerToInt8,
+			x.Int16,
+			x.PointerToInt16,
+			x.Int32,
+			x.PointerToInt32,
+			x.Int64,
+			x.PointerToInt64,
+			x.Uint,
+			x.PointerToUint,
+			x.Uint8,
+			x.PointerToUint8,
+			x.Uint16,
+			x.PointerToUint16,
+			x.Uint32,
+			x.PointerToUint32,
+			x.Uint64,
+			x.PointerToUint64,
+			x.Float32,
+			x.PointerToFloat32,
+			x.Float64,
+			x.PointerToFloat64,
+			x.CreatedOn,
+			x.LastUpdatedOn,
+			x.ArchivedOn,
+		}
+
+		if includeCount {
+			rowValues = append(rowValues, len(everyTypes))
+		}
+
+		exampleRows.AddRow(rowValues...)
+	}
+
+	return exampleRows
+}
+
+func buildErroneousMockRowFromEveryType(x *v1.EveryType) *gosqlmock.Rows {
+	exampleRows := gosqlmock.NewRows(everyTypesTableColumns).AddRow(
+		x.ArchivedOn,
+		x.String,
+		x.PointerToString,
+		x.Bool,
+		x.PointerToBool,
+		x.Int,
+		x.PointerToInt,
+		x.Int8,
+		x.PointerToInt8,
+		x.Int16,
+		x.PointerToInt16,
+		x.Int32,
+		x.PointerToInt32,
+		x.Int64,
+		x.PointerToInt64,
+		x.Uint,
+		x.PointerToUint,
+		x.Uint8,
+		x.PointerToUint8,
+		x.Uint16,
+		x.PointerToUint16,
+		x.Uint32,
+		x.PointerToUint32,
+		x.Uint64,
+		x.PointerToUint64,
+		x.Float32,
+		x.PointerToFloat32,
+		x.Float64,
+		x.PointerToFloat64,
+		x.CreatedOn,
+		x.LastUpdatedOn,
+		x.ID,
+	)
+
+	return exampleRows
+}
+
+func TestSqlite_ScanEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	T.Run("surfaces row errors", func(t *testing.T) {
+		s, _ := buildTestService(t)
+		mockRows := &v11.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(errors.New("blah"))
+
+		_, _, err := s.scanEveryTypes(mockRows)
+		assert.Error(t, err)
+	})
+
+	T.Run("logs row closing errors", func(t *testing.T) {
+		s, _ := buildTestService(t)
+		mockRows := &v11.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(nil)
+		mockRows.On("Close").Return(errors.New("blah"))
+
+		_, _, err := s.scanEveryTypes(mockRows)
+		assert.NoError(t, err)
+	})
+}
+
+func TestSqlite_buildEveryTypeExistsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "SELECT EXISTS ( SELECT every_types.id FROM every_types WHERE every_types.id = ? )"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := s.buildEveryTypeExistsQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_EveryTypeExists(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT EXISTS ( SELECT every_types.id FROM every_types WHERE every_types.id = ? )"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		s, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnRows(gosqlmock.NewRows([]string{"exists"}).AddRow(true))
+
+		actual, err := s.EveryTypeExists(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.True(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		s, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := s.EveryTypeExists(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.False(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildGetEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id = ?"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := s.buildGetEveryTypeQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_GetEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id = ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		s, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnRows(buildMockRowsFromEveryTypes(exampleEveryType))
+
+		actual, err := s.GetEveryType(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryType, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		s, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := s.GetEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildGetAllEveryTypesCountQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		expectedQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+		actualQuery := s.buildGetAllEveryTypesCountQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, []interface{}{})
+		assert.Equal(t, expectedQuery, actualQuery)
+	})
+}
+
+func TestSqlite_GetAllEveryTypesCount(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		expectedQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+		expectedCount := uint64(123)
+
+		s, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+
+		actualCount, err := s.GetAllEveryTypesCount(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedCount, actualCount)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildGetBatchOfEveryTypesQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		beginID, endID := uint64(1), uint64(1000)
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id > ? AND every_types.id < ?"
+		expectedArgs := []interface{}{
+			beginID,
+			endID,
+		}
+		actualQuery, actualArgs := s.buildGetBatchOfEveryTypesQuery(beginID, endID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_GetAllEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedCountQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+	expectedGetQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id > ? AND every_types.id < ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		out := make(chan []v1.EveryType)
+		doneChan := make(chan bool, 1)
+
+		err := s.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		var stillQuerying = true
+		for stillQuerying {
+			select {
+			case batch := <-out:
+				assert.NotEmpty(t, batch)
+				doneChan <- true
+			case <-time.After(time.Second):
+				t.FailNow()
+			case <-doneChan:
+				stillQuerying = false
+			}
+		}
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error fetching initial count", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnError(errors.New("blah"))
+
+		out := make(chan []v1.EveryType)
+
+		err := s.GetAllEveryTypes(ctx, out)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows returned", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		out := make(chan []v1.EveryType)
+
+		err := s.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error querying database", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnError(errors.New("blah"))
+
+		out := make(chan []v1.EveryType)
+
+		err := s.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with invalid response from database", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		exampleEveryType := fake.BuildFakeEveryType()
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		out := make(chan []v1.EveryType)
+
+		err := s.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildGetEveryTypesQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		filter := fake.BuildFleshedOutQueryFilter()
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL AND every_types.created_on > ? AND every_types.created_on < ? AND every_types.last_updated_on > ? AND every_types.last_updated_on < ? ORDER BY every_types.id LIMIT 20 OFFSET 180"
+		expectedArgs := []interface{}{
+			filter.CreatedAfter,
+			filter.CreatedBefore,
+			filter.UpdatedAfter,
+			filter.UpdatedBefore,
+		}
+		actualQuery, actualArgs := s.buildGetEveryTypesQuery(filter)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_GetEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL ORDER BY every_types.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildGetEveryTypesWithIDsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		exampleIDs := []uint64{
+			789,
+			123,
+			456,
+		}
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.archived_on IS NULL AND every_types.id IN (?,?,?) ORDER BY CASE every_types.id WHEN 789 THEN 0 WHEN 123 THEN 1 WHEN 456 THEN 2 END LIMIT 20"
+		expectedArgs := []interface{}{
+			exampleIDs[0],
+			exampleIDs[1],
+			exampleIDs[2],
+		}
+		actualQuery, actualArgs := s.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_GetEveryTypesWithIDs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := s.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := s.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList.EveryTypes, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := s.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := s.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := s.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := s.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := s.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := s.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildCreateEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "INSERT INTO every_types (string,pointer_to_string,bool,pointer_to_bool,int,pointer_to_int,int8,pointer_to_int8,int16,pointer_to_int16,int32,pointer_to_int32,int64,pointer_to_int64,uint,pointer_to_uint,uint8,pointer_to_uint8,uint16,pointer_to_uint16,uint32,pointer_to_uint32,uint64,pointer_to_uint64,float32,pointer_to_float32,float64,pointer_to_float64) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		expectedArgs := []interface{}{
+			exampleEveryType.String,
+			exampleEveryType.PointerToString,
+			exampleEveryType.Bool,
+			exampleEveryType.PointerToBool,
+			exampleEveryType.Int,
+			exampleEveryType.PointerToInt,
+			exampleEveryType.Int8,
+			exampleEveryType.PointerToInt8,
+			exampleEveryType.Int16,
+			exampleEveryType.PointerToInt16,
+			exampleEveryType.Int32,
+			exampleEveryType.PointerToInt32,
+			exampleEveryType.Int64,
+			exampleEveryType.PointerToInt64,
+			exampleEveryType.Uint,
+			exampleEveryType.PointerToUint,
+			exampleEveryType.Uint8,
+			exampleEveryType.PointerToUint8,
+			exampleEveryType.Uint16,
+			exampleEveryType.PointerToUint16,
+			exampleEveryType.Uint32,
+			exampleEveryType.PointerToUint32,
+			exampleEveryType.Uint64,
+			exampleEveryType.PointerToUint64,
+			exampleEveryType.Float32,
+			exampleEveryType.PointerToFloat32,
+			exampleEveryType.Float64,
+			exampleEveryType.PointerToFloat64,
+		}
+		actualQuery, actualArgs := s.buildCreateEveryTypeQuery(exampleEveryType)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_CreateEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedCreationQuery := "INSERT INTO every_types (string,pointer_to_string,bool,pointer_to_bool,int,pointer_to_int,int8,pointer_to_int8,int16,pointer_to_int16,int32,pointer_to_int32,int64,pointer_to_int64,uint,pointer_to_uint,uint8,pointer_to_uint8,uint16,pointer_to_uint16,uint32,pointer_to_uint32,uint64,pointer_to_uint64,float32,pointer_to_float32,float64,pointer_to_float64) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+		exampleInput := fake.BuildFakeEveryTypeCreationInputFromEveryType(exampleEveryType)
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+			).WillReturnResult(gosqlmock.NewResult(int64(exampleEveryType.ID), 1))
+
+		mtt := &mockTimeTeller{}
+		mtt.On("Now").Return(exampleEveryType.CreatedOn)
+		s.timeTeller = mtt
+
+		actual, err := s.CreateEveryType(ctx, exampleInput)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryType, actual)
+
+		mock.AssertExpectationsForObjects(t, mtt)
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+		exampleInput := fake.BuildFakeEveryTypeCreationInputFromEveryType(exampleEveryType)
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+			).WillReturnError(errors.New("blah"))
+
+		actual, err := s.CreateEveryType(ctx, exampleInput)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildUpdateEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "UPDATE every_types SET string = ?, pointer_to_string = ?, bool = ?, pointer_to_bool = ?, int = ?, pointer_to_int = ?, int8 = ?, pointer_to_int8 = ?, int16 = ?, pointer_to_int16 = ?, int32 = ?, pointer_to_int32 = ?, int64 = ?, pointer_to_int64 = ?, uint = ?, pointer_to_uint = ?, uint8 = ?, pointer_to_uint8 = ?, uint16 = ?, pointer_to_uint16 = ?, uint32 = ?, pointer_to_uint32 = ?, uint64 = ?, pointer_to_uint64 = ?, float32 = ?, pointer_to_float32 = ?, float64 = ?, pointer_to_float64 = ?, last_updated_on = (strftime('%s','now')) WHERE id = ?"
+		expectedArgs := []interface{}{
+			exampleEveryType.String,
+			exampleEveryType.PointerToString,
+			exampleEveryType.Bool,
+			exampleEveryType.PointerToBool,
+			exampleEveryType.Int,
+			exampleEveryType.PointerToInt,
+			exampleEveryType.Int8,
+			exampleEveryType.PointerToInt8,
+			exampleEveryType.Int16,
+			exampleEveryType.PointerToInt16,
+			exampleEveryType.Int32,
+			exampleEveryType.PointerToInt32,
+			exampleEveryType.Int64,
+			exampleEveryType.PointerToInt64,
+			exampleEveryType.Uint,
+			exampleEveryType.PointerToUint,
+			exampleEveryType.Uint8,
+			exampleEveryType.PointerToUint8,
+			exampleEveryType.Uint16,
+			exampleEveryType.PointerToUint16,
+			exampleEveryType.Uint32,
+			exampleEveryType.PointerToUint32,
+			exampleEveryType.Uint64,
+			exampleEveryType.PointerToUint64,
+			exampleEveryType.Float32,
+			exampleEveryType.PointerToFloat32,
+			exampleEveryType.Float64,
+			exampleEveryType.PointerToFloat64,
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := s.buildUpdateEveryTypeQuery(exampleEveryType)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_UpdateEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "UPDATE every_types SET string = ?, pointer_to_string = ?, bool = ?, pointer_to_bool = ?, int = ?, pointer_to_int = ?, int8 = ?, pointer_to_int8 = ?, int16 = ?, pointer_to_int16 = ?, int32 = ?, pointer_to_int32 = ?, int64 = ?, pointer_to_int64 = ?, uint = ?, pointer_to_uint = ?, uint8 = ?, pointer_to_uint8 = ?, uint16 = ?, pointer_to_uint16 = ?, uint32 = ?, pointer_to_uint32 = ?, uint64 = ?, pointer_to_uint64 = ?, float32 = ?, pointer_to_float32 = ?, float64 = ?, pointer_to_float64 = ?, last_updated_on = (strftime('%s','now')) WHERE id = ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		exampleRows := gosqlmock.NewResult(int64(exampleEveryType.ID), 1)
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+				exampleEveryType.ID,
+			).WillReturnResult(exampleRows)
+
+		err := s.UpdateEveryType(ctx, exampleEveryType)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+				exampleEveryType.ID,
+			).WillReturnError(errors.New("blah"))
+
+		err := s.UpdateEveryType(ctx, exampleEveryType)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestSqlite_buildArchiveEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		s, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "UPDATE every_types SET last_updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND id = ?"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := s.buildArchiveEveryTypeQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestSqlite_ArchiveEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "UPDATE every_types SET last_updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND id = ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnResult(gosqlmock.NewResult(1, 1))
+
+		err := s.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("returns sql.ErrNoRows with no rows affected", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnResult(gosqlmock.NewResult(0, 0))
+
+		err := s.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnError(errors.New("blah"))
+
+		err := s.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb todo", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
@@ -1953,6 +4184,7 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
+
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -2396,11 +4628,12 @@ func TestMariaDB_buildGetItemsQuery(T *testing.T) {
 func TestMariaDB_GetItems(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
 	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = ? ORDER BY items.id LIMIT 20"
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		m, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -2430,6 +4663,8 @@ func TestMariaDB_GetItems(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
@@ -2449,6 +4684,8 @@ func TestMariaDB_GetItems(T *testing.T) {
 
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		m, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -2521,20 +4758,20 @@ func TestMariaDB_buildGetItemsWithIDsQuery(T *testing.T) {
 func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
@@ -2546,7 +4783,7 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -2557,21 +4794,23 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -2583,21 +4822,23 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -2608,15 +4849,17 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		exampleItem := fake.BuildFakeItem()
 
@@ -2624,7 +4867,7 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, 0, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -2891,6 +5134,1119 @@ func TestMariaDB_ArchiveItem(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("mariadb every type", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+		x := iterablesTestDotGo(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"database/sql/driver"
+	"errors"
+	gosqlmock "github.com/DATA-DOG/go-sqlmock"
+	assert "github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+	"time"
+)
+
+func buildMockRowsFromEveryTypes(everyTypes ...*v1.EveryType) *gosqlmock.Rows {
+	includeCount := len(everyTypes) > 1
+	columns := everyTypesTableColumns
+
+	if includeCount {
+		columns = append(columns, "count")
+	}
+
+	exampleRows := gosqlmock.NewRows(columns)
+
+	for _, x := range everyTypes {
+		rowValues := []driver.Value{
+			x.ID,
+			x.String,
+			x.PointerToString,
+			x.Bool,
+			x.PointerToBool,
+			x.Int,
+			x.PointerToInt,
+			x.Int8,
+			x.PointerToInt8,
+			x.Int16,
+			x.PointerToInt16,
+			x.Int32,
+			x.PointerToInt32,
+			x.Int64,
+			x.PointerToInt64,
+			x.Uint,
+			x.PointerToUint,
+			x.Uint8,
+			x.PointerToUint8,
+			x.Uint16,
+			x.PointerToUint16,
+			x.Uint32,
+			x.PointerToUint32,
+			x.Uint64,
+			x.PointerToUint64,
+			x.Float32,
+			x.PointerToFloat32,
+			x.Float64,
+			x.PointerToFloat64,
+			x.CreatedOn,
+			x.LastUpdatedOn,
+			x.ArchivedOn,
+		}
+
+		if includeCount {
+			rowValues = append(rowValues, len(everyTypes))
+		}
+
+		exampleRows.AddRow(rowValues...)
+	}
+
+	return exampleRows
+}
+
+func buildErroneousMockRowFromEveryType(x *v1.EveryType) *gosqlmock.Rows {
+	exampleRows := gosqlmock.NewRows(everyTypesTableColumns).AddRow(
+		x.ArchivedOn,
+		x.String,
+		x.PointerToString,
+		x.Bool,
+		x.PointerToBool,
+		x.Int,
+		x.PointerToInt,
+		x.Int8,
+		x.PointerToInt8,
+		x.Int16,
+		x.PointerToInt16,
+		x.Int32,
+		x.PointerToInt32,
+		x.Int64,
+		x.PointerToInt64,
+		x.Uint,
+		x.PointerToUint,
+		x.Uint8,
+		x.PointerToUint8,
+		x.Uint16,
+		x.PointerToUint16,
+		x.Uint32,
+		x.PointerToUint32,
+		x.Uint64,
+		x.PointerToUint64,
+		x.Float32,
+		x.PointerToFloat32,
+		x.Float64,
+		x.PointerToFloat64,
+		x.CreatedOn,
+		x.LastUpdatedOn,
+		x.ID,
+	)
+
+	return exampleRows
+}
+
+func TestMariaDB_ScanEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	T.Run("surfaces row errors", func(t *testing.T) {
+		m, _ := buildTestService(t)
+		mockRows := &v11.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(errors.New("blah"))
+
+		_, _, err := m.scanEveryTypes(mockRows)
+		assert.Error(t, err)
+	})
+
+	T.Run("logs row closing errors", func(t *testing.T) {
+		m, _ := buildTestService(t)
+		mockRows := &v11.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(nil)
+		mockRows.On("Close").Return(errors.New("blah"))
+
+		_, _, err := m.scanEveryTypes(mockRows)
+		assert.NoError(t, err)
+	})
+}
+
+func TestMariaDB_buildEveryTypeExistsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "SELECT EXISTS ( SELECT every_types.id FROM every_types WHERE every_types.id = ? )"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := m.buildEveryTypeExistsQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_EveryTypeExists(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT EXISTS ( SELECT every_types.id FROM every_types WHERE every_types.id = ? )"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		m, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnRows(gosqlmock.NewRows([]string{"exists"}).AddRow(true))
+
+		actual, err := m.EveryTypeExists(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.True(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		m, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := m.EveryTypeExists(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.False(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildGetEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id = ?"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := m.buildGetEveryTypeQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_GetEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id = ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		m, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnRows(buildMockRowsFromEveryTypes(exampleEveryType))
+
+		actual, err := m.GetEveryType(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryType, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		m, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := m.GetEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildGetAllEveryTypesCountQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		expectedQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+		actualQuery := m.buildGetAllEveryTypesCountQuery()
+
+		ensureArgCountMatchesQuery(t, actualQuery, []interface{}{})
+		assert.Equal(t, expectedQuery, actualQuery)
+	})
+}
+
+func TestMariaDB_GetAllEveryTypesCount(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		expectedQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+		expectedCount := uint64(123)
+
+		m, mockDB := buildTestService(t)
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+
+		actualCount, err := m.GetAllEveryTypesCount(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedCount, actualCount)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildGetBatchOfEveryTypesQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		beginID, endID := uint64(1), uint64(1000)
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id > ? AND every_types.id < ?"
+		expectedArgs := []interface{}{
+			beginID,
+			endID,
+		}
+		actualQuery, actualArgs := m.buildGetBatchOfEveryTypesQuery(beginID, endID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_GetAllEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedCountQuery := "SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL"
+	expectedGetQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.id > ? AND every_types.id < ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		out := make(chan []v1.EveryType)
+		doneChan := make(chan bool, 1)
+
+		err := m.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		var stillQuerying = true
+		for stillQuerying {
+			select {
+			case batch := <-out:
+				assert.NotEmpty(t, batch)
+				doneChan <- true
+			case <-time.After(time.Second):
+				t.FailNow()
+			case <-doneChan:
+				stillQuerying = false
+			}
+		}
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error fetching initial count", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnError(errors.New("blah"))
+
+		out := make(chan []v1.EveryType)
+
+		err := m.GetAllEveryTypes(ctx, out)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with no rows returned", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		out := make(chan []v1.EveryType)
+
+		err := m.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error querying database", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnError(errors.New("blah"))
+
+		out := make(chan []v1.EveryType)
+
+		err := m.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with invalid response from database", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		exampleEveryType := fake.BuildFakeEveryType()
+		expectedCount := uint64(20)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedCountQuery)).
+			WillReturnRows(gosqlmock.NewRows([]string{"count"}).AddRow(expectedCount))
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedGetQuery)).
+			WithArgs(
+				uint64(1),
+				uint64(1001),
+			).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		out := make(chan []v1.EveryType)
+
+		err := m.GetAllEveryTypes(ctx, out)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildGetEveryTypesQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		filter := fake.BuildFleshedOutQueryFilter()
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL AND every_types.created_on > ? AND every_types.created_on < ? AND every_types.last_updated_on > ? AND every_types.last_updated_on < ? ORDER BY every_types.id LIMIT 20 OFFSET 180"
+		expectedArgs := []interface{}{
+			filter.CreatedAfter,
+			filter.CreatedBefore,
+			filter.UpdatedAfter,
+			filter.UpdatedBefore,
+		}
+		actualQuery, actualArgs := m.buildGetEveryTypesQuery(filter)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_GetEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL ORDER BY every_types.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildGetEveryTypesWithIDsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		exampleIDs := []uint64{
+			789,
+			123,
+			456,
+		}
+
+		expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types WHERE every_types.archived_on IS NULL AND every_types.id IN (?,?,?) ORDER BY CASE every_types.id WHEN 789 THEN 0 WHEN 123 THEN 1 WHEN 456 THEN 2 END LIMIT 20"
+		expectedArgs := []interface{}{
+			exampleIDs[0],
+			exampleIDs[1],
+			exampleIDs[2],
+		}
+		actualQuery, actualArgs := m.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_GetEveryTypesWithIDs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := m.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := m.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList.EveryTypes, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := m.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := m.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := m.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := m.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+		var exampleIDs []uint64
+		for _, everyType := range exampleEveryTypeList.EveryTypes {
+			exampleIDs = append(exampleIDs, everyType.ID)
+		}
+
+		expectedQuery, expectedArgs := m.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(interfacesToDriverValues(expectedArgs)...).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := m.GetEveryTypesWithIDs(ctx, defaultLimit, exampleIDs)
+
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildCreateEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "INSERT INTO every_types (string,pointer_to_string,bool,pointer_to_bool,int,pointer_to_int,int8,pointer_to_int8,int16,pointer_to_int16,int32,pointer_to_int32,int64,pointer_to_int64,uint,pointer_to_uint,uint8,pointer_to_uint8,uint16,pointer_to_uint16,uint32,pointer_to_uint32,uint64,pointer_to_uint64,float32,pointer_to_float32,float64,pointer_to_float64) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		expectedArgs := []interface{}{
+			exampleEveryType.String,
+			exampleEveryType.PointerToString,
+			exampleEveryType.Bool,
+			exampleEveryType.PointerToBool,
+			exampleEveryType.Int,
+			exampleEveryType.PointerToInt,
+			exampleEveryType.Int8,
+			exampleEveryType.PointerToInt8,
+			exampleEveryType.Int16,
+			exampleEveryType.PointerToInt16,
+			exampleEveryType.Int32,
+			exampleEveryType.PointerToInt32,
+			exampleEveryType.Int64,
+			exampleEveryType.PointerToInt64,
+			exampleEveryType.Uint,
+			exampleEveryType.PointerToUint,
+			exampleEveryType.Uint8,
+			exampleEveryType.PointerToUint8,
+			exampleEveryType.Uint16,
+			exampleEveryType.PointerToUint16,
+			exampleEveryType.Uint32,
+			exampleEveryType.PointerToUint32,
+			exampleEveryType.Uint64,
+			exampleEveryType.PointerToUint64,
+			exampleEveryType.Float32,
+			exampleEveryType.PointerToFloat32,
+			exampleEveryType.Float64,
+			exampleEveryType.PointerToFloat64,
+		}
+		actualQuery, actualArgs := m.buildCreateEveryTypeQuery(exampleEveryType)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_CreateEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedCreationQuery := "INSERT INTO every_types (string,pointer_to_string,bool,pointer_to_bool,int,pointer_to_int,int8,pointer_to_int8,int16,pointer_to_int16,int32,pointer_to_int32,int64,pointer_to_int64,uint,pointer_to_uint,uint8,pointer_to_uint8,uint16,pointer_to_uint16,uint32,pointer_to_uint32,uint64,pointer_to_uint64,float32,pointer_to_float32,float64,pointer_to_float64) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+		exampleInput := fake.BuildFakeEveryTypeCreationInputFromEveryType(exampleEveryType)
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+			).WillReturnResult(gosqlmock.NewResult(int64(exampleEveryType.ID), 1))
+
+		mtt := &mockTimeTeller{}
+		mtt.On("Now").Return(exampleEveryType.CreatedOn)
+		m.timeTeller = mtt
+
+		actual, err := m.CreateEveryType(ctx, exampleInput)
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryType, actual)
+
+		mock.AssertExpectationsForObjects(t, mtt)
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+		exampleInput := fake.BuildFakeEveryTypeCreationInputFromEveryType(exampleEveryType)
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedCreationQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+			).WillReturnError(errors.New("blah"))
+
+		actual, err := m.CreateEveryType(ctx, exampleInput)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildUpdateEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "UPDATE every_types SET string = ?, pointer_to_string = ?, bool = ?, pointer_to_bool = ?, int = ?, pointer_to_int = ?, int8 = ?, pointer_to_int8 = ?, int16 = ?, pointer_to_int16 = ?, int32 = ?, pointer_to_int32 = ?, int64 = ?, pointer_to_int64 = ?, uint = ?, pointer_to_uint = ?, uint8 = ?, pointer_to_uint8 = ?, uint16 = ?, pointer_to_uint16 = ?, uint32 = ?, pointer_to_uint32 = ?, uint64 = ?, pointer_to_uint64 = ?, float32 = ?, pointer_to_float32 = ?, float64 = ?, pointer_to_float64 = ?, last_updated_on = UNIX_TIMESTAMP() WHERE id = ?"
+		expectedArgs := []interface{}{
+			exampleEveryType.String,
+			exampleEveryType.PointerToString,
+			exampleEveryType.Bool,
+			exampleEveryType.PointerToBool,
+			exampleEveryType.Int,
+			exampleEveryType.PointerToInt,
+			exampleEveryType.Int8,
+			exampleEveryType.PointerToInt8,
+			exampleEveryType.Int16,
+			exampleEveryType.PointerToInt16,
+			exampleEveryType.Int32,
+			exampleEveryType.PointerToInt32,
+			exampleEveryType.Int64,
+			exampleEveryType.PointerToInt64,
+			exampleEveryType.Uint,
+			exampleEveryType.PointerToUint,
+			exampleEveryType.Uint8,
+			exampleEveryType.PointerToUint8,
+			exampleEveryType.Uint16,
+			exampleEveryType.PointerToUint16,
+			exampleEveryType.Uint32,
+			exampleEveryType.PointerToUint32,
+			exampleEveryType.Uint64,
+			exampleEveryType.PointerToUint64,
+			exampleEveryType.Float32,
+			exampleEveryType.PointerToFloat32,
+			exampleEveryType.Float64,
+			exampleEveryType.PointerToFloat64,
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := m.buildUpdateEveryTypeQuery(exampleEveryType)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_UpdateEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "UPDATE every_types SET string = ?, pointer_to_string = ?, bool = ?, pointer_to_bool = ?, int = ?, pointer_to_int = ?, int8 = ?, pointer_to_int8 = ?, int16 = ?, pointer_to_int16 = ?, int32 = ?, pointer_to_int32 = ?, int64 = ?, pointer_to_int64 = ?, uint = ?, pointer_to_uint = ?, uint8 = ?, pointer_to_uint8 = ?, uint16 = ?, pointer_to_uint16 = ?, uint32 = ?, pointer_to_uint32 = ?, uint64 = ?, pointer_to_uint64 = ?, float32 = ?, pointer_to_float32 = ?, float64 = ?, pointer_to_float64 = ?, last_updated_on = UNIX_TIMESTAMP() WHERE id = ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		exampleRows := gosqlmock.NewResult(int64(exampleEveryType.ID), 1)
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+				exampleEveryType.ID,
+			).WillReturnResult(exampleRows)
+
+		err := m.UpdateEveryType(ctx, exampleEveryType)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.String,
+				exampleEveryType.PointerToString,
+				exampleEveryType.Bool,
+				exampleEveryType.PointerToBool,
+				exampleEveryType.Int,
+				exampleEveryType.PointerToInt,
+				exampleEveryType.Int8,
+				exampleEveryType.PointerToInt8,
+				exampleEveryType.Int16,
+				exampleEveryType.PointerToInt16,
+				exampleEveryType.Int32,
+				exampleEveryType.PointerToInt32,
+				exampleEveryType.Int64,
+				exampleEveryType.PointerToInt64,
+				exampleEveryType.Uint,
+				exampleEveryType.PointerToUint,
+				exampleEveryType.Uint8,
+				exampleEveryType.PointerToUint8,
+				exampleEveryType.Uint16,
+				exampleEveryType.PointerToUint16,
+				exampleEveryType.Uint32,
+				exampleEveryType.PointerToUint32,
+				exampleEveryType.Uint64,
+				exampleEveryType.PointerToUint64,
+				exampleEveryType.Float32,
+				exampleEveryType.PointerToFloat32,
+				exampleEveryType.Float64,
+				exampleEveryType.PointerToFloat64,
+				exampleEveryType.ID,
+			).WillReturnError(errors.New("blah"))
+
+		err := m.UpdateEveryType(ctx, exampleEveryType)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+
+func TestMariaDB_buildArchiveEveryTypeQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		m, _ := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		expectedQuery := "UPDATE every_types SET last_updated_on = UNIX_TIMESTAMP(), archived_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND id = ?"
+		expectedArgs := []interface{}{
+			exampleEveryType.ID,
+		}
+		actualQuery, actualArgs := m.buildArchiveEveryTypeQuery(exampleEveryType.ID)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+
+func TestMariaDB_ArchiveEveryType(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "UPDATE every_types SET last_updated_on = UNIX_TIMESTAMP(), archived_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND id = ?"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnResult(gosqlmock.NewResult(1, 1))
+
+		err := m.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("returns sql.ErrNoRows with no rows affected", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnResult(gosqlmock.NewResult(0, 0))
+
+		err := m.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error writing to database", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectExec(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleEveryType.ID,
+			).WillReturnError(errors.New("blah"))
+
+		err := m.ArchiveEveryType(ctx, exampleEveryType.ID)
+		assert.Error(t, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildBuildMockRowsFromSomething(T *testing.T) {
@@ -2912,6 +6268,7 @@ import (
 
 func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 	columns := itemsTableColumns
+
 	exampleRows := gosqlmock.NewRows(columns)
 
 	for _, x := range items {
@@ -2923,6 +6280,58 @@ func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
 			x.LastUpdatedOn,
 			x.ArchivedOn,
 			x.BelongsToUser,
+		}
+
+		exampleRows.AddRow(rowValues...)
+	}
+
+	return exampleRows
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with enumeration", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildBuildMockRowsFromSomething(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"database/sql/driver"
+	gosqlmock "github.com/DATA-DOG/go-sqlmock"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+)
+
+func buildMockRowsFromItems(items ...*v1.Item) *gosqlmock.Rows {
+	includeCount := len(items) > 1
+	columns := itemsTableColumns
+
+	if includeCount {
+		columns = append(columns, "count")
+	}
+
+	exampleRows := gosqlmock.NewRows(columns)
+
+	for _, x := range items {
+		rowValues := []driver.Value{
+			x.ID,
+			x.Name,
+			x.Details,
+			x.CreatedOn,
+			x.LastUpdatedOn,
+			x.ArchivedOn,
+			x.BelongsToUser,
+		}
+
+		if includeCount {
+			rowValues = append(rowValues, len(items))
 		}
 
 		exampleRows.AddRow(rowValues...)
@@ -3395,6 +6804,56 @@ func TestPostgres_ScanItems(T *testing.T) {
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("postgres with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildTestScanListOfThings(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	"testing"
+)
+
+func TestPostgres_ScanItems(T *testing.T) {
+	T.Parallel()
+
+	T.Run("surfaces row errors", func(t *testing.T) {
+		p, _ := buildTestService(t)
+		mockRows := &v1.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(errors.New("blah"))
+
+		_, _, err := p.scanItems(mockRows)
+		assert.Error(t, err)
+	})
+
+	T.Run("logs row closing errors", func(t *testing.T) {
+		p, _ := buildTestService(t)
+		mockRows := &v1.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(nil)
+		mockRows.On("Close").Return(errors.New("blah"))
+
+		_, _, err := p.scanItems(mockRows)
+		assert.NoError(t, err)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("sqlite", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
@@ -3443,6 +6902,56 @@ func TestSqlite_ScanItems(T *testing.T) {
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
+	T.Run("sqlite with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildTestScanListOfThings(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	"testing"
+)
+
+func TestSqlite_ScanItems(T *testing.T) {
+	T.Parallel()
+
+	T.Run("surfaces row errors", func(t *testing.T) {
+		s, _ := buildTestService(t)
+		mockRows := &v1.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(errors.New("blah"))
+
+		_, _, err := s.scanItems(mockRows)
+		assert.Error(t, err)
+	})
+
+	T.Run("logs row closing errors", func(t *testing.T) {
+		s, _ := buildTestService(t)
+		mockRows := &v1.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(nil)
+		mockRows.On("Close").Return(errors.New("blah"))
+
+		_, _, err := s.scanItems(mockRows)
+		assert.NoError(t, err)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
 	T.Run("mariadb", func(t *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
@@ -3482,6 +6991,56 @@ func TestMariaDB_ScanItems(T *testing.T) {
 		mockRows.On("Close").Return(errors.New("blah"))
 
 		_, err := m.scanItems(mockRows)
+		assert.NoError(t, err)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb with enumeration", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		typ.IsEnumeration = true
+
+		x := buildTestScanListOfThings(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
+	"testing"
+)
+
+func TestMariaDB_ScanItems(T *testing.T) {
+	T.Parallel()
+
+	T.Run("surfaces row errors", func(t *testing.T) {
+		m, _ := buildTestService(t)
+		mockRows := &v1.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(errors.New("blah"))
+
+		_, _, err := m.scanItems(mockRows)
+		assert.Error(t, err)
+	})
+
+	T.Run("logs row closing errors", func(t *testing.T) {
+		m, _ := buildTestService(t)
+		mockRows := &v1.MockResultIterator{}
+
+		mockRows.On("Next").Return(false)
+		mockRows.On("Err").Return(nil)
+		mockRows.On("Close").Return(errors.New("blah"))
+
+		_, _, err := m.scanItems(mockRows)
 		assert.NoError(t, err)
 	})
 }
@@ -4592,7 +8151,7 @@ func Test_buildTestDBGetBatchOfSomethingQueryFuncDecl(T *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildTestDBGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)
+		x := buildTestDBGetBatchOfSomethingQueryFuncDecl(dbvendor, typ)
 
 		expected := `
 package example
@@ -4632,7 +8191,7 @@ func TestPostgres_buildGetBatchOfItemsQuery(T *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildTestDBGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)
+		x := buildTestDBGetBatchOfSomethingQueryFuncDecl(dbvendor, typ)
 
 		expected := `
 package example
@@ -4672,7 +8231,7 @@ func TestSqlite_buildGetBatchOfItemsQuery(T *testing.T) {
 		dbvendor := buildMariaDBWord()
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildTestDBGetBatchOfSomethingQueryFuncDecl(proj, dbvendor, typ)
+		x := buildTestDBGetBatchOfSomethingQueryFuncDecl(dbvendor, typ)
 
 		expected := `
 package example
@@ -5414,12 +8973,13 @@ import (
 func TestPostgres_GetItems(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
 	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1 ORDER BY items.id LIMIT 20"
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
@@ -5448,6 +9008,8 @@ func TestPostgres_GetItems(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
@@ -5467,6 +9029,8 @@ func TestPostgres_GetItems(T *testing.T) {
 
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
@@ -5513,253 +9077,11 @@ func TestPostgres_GetItems(T *testing.T) {
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("sqlite", func(t *testing.T) {
-		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
-		proj := testprojects.BuildTodoApp()
-		typ := proj.DataTypes[0]
-		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
-
-		expected := `
-package example
-
-import (
-	"context"
-	"database/sql"
-	"errors"
-	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
-	"testing"
-)
-
-func TestSqlite_GetItems(T *testing.T) {
-	T.Parallel()
-
-	exampleUser := fake.BuildFakeUser()
-	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = ? ORDER BY items.id LIMIT 20"
-
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-
-		s, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		exampleItemList := fake.BuildFakeItemList()
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnRows(
-				buildMockRowsFromItems(
-					&exampleItemList.Items[0],
-					&exampleItemList.Items[1],
-					&exampleItemList.Items[2],
-				),
-			)
-
-		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
-
-		assert.NoError(t, err)
-		assert.Equal(t, exampleItemList, actual)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-
-	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
-		ctx := context.Background()
-
-		s, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnError(sql.ErrNoRows)
-
-		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
-		assert.Error(t, err)
-		assert.Nil(t, actual)
-		assert.Equal(t, sql.ErrNoRows, err)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-
-	T.Run("with error executing read query", func(t *testing.T) {
-		ctx := context.Background()
-
-		s, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnError(errors.New("blah"))
-
-		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
-		assert.Error(t, err)
-		assert.Nil(t, actual)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-
-	T.Run("with error scanning item", func(t *testing.T) {
-		ctx := context.Background()
-
-		s, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		exampleUser := fake.BuildFakeUser()
-		exampleItem := fake.BuildFakeItem()
-		exampleItem.BelongsToUser = exampleUser.ID
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
-
-		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
-		assert.Error(t, err)
-		assert.Nil(t, actual)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-}
-`
-		actual := testutils.RenderOuterStatementToString(t, x...)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-
-	T.Run("mariadb", func(t *testing.T) {
-		dbvendor := buildMariaDBWord()
-		proj := testprojects.BuildTodoApp()
-		typ := proj.DataTypes[0]
-		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
-
-		expected := `
-package example
-
-import (
-	"context"
-	"database/sql"
-	"errors"
-	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
-	"testing"
-)
-
-func TestMariaDB_GetItems(T *testing.T) {
-	T.Parallel()
-
-	exampleUser := fake.BuildFakeUser()
-	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = ? ORDER BY items.id LIMIT 20"
-
-	T.Run("happy path", func(t *testing.T) {
-		ctx := context.Background()
-
-		m, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		exampleItemList := fake.BuildFakeItemList()
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnRows(
-				buildMockRowsFromItems(
-					&exampleItemList.Items[0],
-					&exampleItemList.Items[1],
-					&exampleItemList.Items[2],
-				),
-			)
-
-		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
-
-		assert.NoError(t, err)
-		assert.Equal(t, exampleItemList, actual)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-
-	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
-		ctx := context.Background()
-
-		m, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnError(sql.ErrNoRows)
-
-		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
-		assert.Error(t, err)
-		assert.Nil(t, actual)
-		assert.Equal(t, sql.ErrNoRows, err)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-
-	T.Run("with error executing read query", func(t *testing.T) {
-		ctx := context.Background()
-
-		m, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnError(errors.New("blah"))
-
-		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
-		assert.Error(t, err)
-		assert.Nil(t, actual)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-
-	T.Run("with error scanning item", func(t *testing.T) {
-		ctx := context.Background()
-
-		m, mockDB := buildTestService(t)
-		filter := v1.DefaultQueryFilter()
-
-		exampleUser := fake.BuildFakeUser()
-		exampleItem := fake.BuildFakeItem()
-		exampleItem.BelongsToUser = exampleUser.ID
-
-		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
-
-		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
-		assert.Error(t, err)
-		assert.Nil(t, actual)
-
-		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
-	})
-}
-`
-		actual := testutils.RenderOuterStatementToString(t, x...)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-
-	T.Run("postgres while belonging to nobody", func(t *testing.T) {
+	T.Run("postgres with enumeration", func(t *testing.T) {
 		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
-		proj := testprojects.BuildTodoApp()
+		proj := testprojects.BuildEveryTypeApp()
 		typ := proj.DataTypes[0]
-		typ.BelongsToNobody = true
+
 		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
 
 		expected := `
@@ -5775,11 +9097,10 @@ import (
 	"testing"
 )
 
-func TestPostgres_GetItems(T *testing.T) {
+func TestPostgres_GetEveryTypes(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1 ORDER BY items.id LIMIT 20"
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL ORDER BY every_types.id LIMIT 20"
 
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
@@ -5787,24 +9108,21 @@ func TestPostgres_GetItems(T *testing.T) {
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
-		exampleItemList := fake.BuildFakeItemList()
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
 			WillReturnRows(
-				buildMockRowsFromItems(
-					&exampleItemList.Items[0],
-					&exampleItemList.Items[1],
-					&exampleItemList.Items[2],
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
 				),
 			)
 
-		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		actual, err := p.GetEveryTypes(ctx, filter)
 
 		assert.NoError(t, err)
-		assert.Equal(t, exampleItemList, actual)
+		assert.Equal(t, exampleEveryTypeList, actual)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
@@ -5818,7 +9136,7 @@ func TestPostgres_GetItems(T *testing.T) {
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		actual, err := p.GetEveryTypes(ctx, filter)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 		assert.Equal(t, sql.ErrNoRows, err)
@@ -5833,35 +9151,27 @@ func TestPostgres_GetItems(T *testing.T) {
 		filter := v1.DefaultQueryFilter()
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		actual, err := p.GetEveryTypes(ctx, filter)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
 		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
 	})
 
-	T.Run("with error scanning item", func(t *testing.T) {
+	T.Run("with error scanning every type", func(t *testing.T) {
 		ctx := context.Background()
 
 		p, mockDB := buildTestService(t)
 		filter := v1.DefaultQueryFilter()
 
-		exampleUser := fake.BuildFakeUser()
-		exampleItem := fake.BuildFakeItem()
-		exampleItem.BelongsToUser = exampleUser.ID
+		exampleEveryType := fake.BuildFakeEveryType()
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(
-				exampleUser.ID,
-			).
-			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
 
-		actual, err := p.GetItems(ctx, exampleUser.ID, filter)
+		actual, err := p.GetEveryTypes(ctx, filter)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 
@@ -5979,6 +9289,472 @@ func TestPostgres_GetItems(T *testing.T) {
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
+
+	T.Run("sqlite", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestSqlite_GetItems(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = ? ORDER BY items.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleItemList := fake.BuildFakeItemList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnRows(
+				buildMockRowsFromItems(
+					&exampleItemList.Items[0],
+					&exampleItemList.Items[1],
+					&exampleItemList.Items[2],
+				),
+			)
+
+		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning item", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleUser := fake.BuildFakeUser()
+		exampleItem := fake.BuildFakeItem()
+		exampleItem.BelongsToUser = exampleUser.ID
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
+
+		actual, err := s.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("sqlite with enumeration", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Sqlite")
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+
+		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestSqlite_GetEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL ORDER BY every_types.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		s, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := s.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildTodoApp()
+		typ := proj.DataTypes[0]
+		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestMariaDB_GetItems(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items WHERE items.archived_on IS NULL AND items.belongs_to_user = ? ORDER BY items.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleItemList := fake.BuildFakeItemList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnRows(
+				buildMockRowsFromItems(
+					&exampleItemList.Items[0],
+					&exampleItemList.Items[1],
+					&exampleItemList.Items[2],
+				),
+			)
+
+		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleItemList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning item", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleUser := fake.BuildFakeUser()
+		exampleItem := fake.BuildFakeItem()
+		exampleItem.BelongsToUser = exampleUser.ID
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WithArgs(
+				exampleUser.ID,
+			).
+			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
+
+		actual, err := m.GetItems(ctx, exampleUser.ID, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("mariadb with enumeration", func(t *testing.T) {
+		dbvendor := buildMariaDBWord()
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+
+		x := buildTestDBGetListOfSomethingFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	"testing"
+)
+
+func TestMariaDB_GetEveryTypes(T *testing.T) {
+	T.Parallel()
+
+	expectedQuery := "SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on, (SELECT COUNT(every_types.id) FROM every_types WHERE every_types.archived_on IS NULL) FROM every_types WHERE every_types.archived_on IS NULL ORDER BY every_types.id LIMIT 20"
+
+	T.Run("happy path", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryTypeList := fake.BuildFakeEveryTypeList()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(
+				buildMockRowsFromEveryTypes(
+					&exampleEveryTypeList.EveryTypes[0],
+					&exampleEveryTypeList.EveryTypes[1],
+					&exampleEveryTypeList.EveryTypes[2],
+				),
+			)
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+
+		assert.NoError(t, err)
+		assert.Equal(t, exampleEveryTypeList, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error executing read query", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnError(errors.New("blah"))
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+
+	T.Run("with error scanning every type", func(t *testing.T) {
+		ctx := context.Background()
+
+		m, mockDB := buildTestService(t)
+		filter := v1.DefaultQueryFilter()
+
+		exampleEveryType := fake.BuildFakeEveryType()
+
+		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
+			WillReturnRows(buildErroneousMockRowFromEveryType(exampleEveryType))
+
+		actual, err := m.GetEveryTypes(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, actual)
+
+		assert.NoError(t, mockDB.ExpectationsWereMet(), "not all database expectations were met")
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
 }
 
 func Test_buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(T *testing.T) {
@@ -6019,6 +9795,49 @@ func TestPostgres_buildGetItemsWithIDsQuery(T *testing.T) {
 			exampleUser.ID,
 		}
 		actualQuery, actualArgs := p.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
+
+		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
+		assert.Equal(t, expectedQuery, actualQuery)
+		assert.Equal(t, expectedArgs, actualArgs)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("postgres every type", func(t *testing.T) {
+		dbvendor := wordsmith.FromSingularPascalCase("Postgres")
+		proj := testprojects.BuildEveryTypeApp()
+		typ := proj.DataTypes[0]
+		x := buildTestDBGetListOfSomethingWithIDsQueryFuncDecl(proj, dbvendor, typ)
+
+		expected := `
+package example
+
+import (
+	"fmt"
+	assert "github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestPostgres_buildGetEveryTypesWithIDsQuery(T *testing.T) {
+	T.Parallel()
+
+	T.Run("happy path", func(t *testing.T) {
+		p, _ := buildTestService(t)
+
+		exampleIDs := []uint64{
+			789,
+			123,
+			456,
+		}
+		exampleIDsAsStrings := joinUint64s(exampleIDs)
+
+		expectedQuery := fmt.Sprintf("SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM (SELECT every_types.id, every_types.string, every_types.pointer_to_string, every_types.bool, every_types.pointer_to_bool, every_types.int, every_types.pointer_to_int, every_types.int8, every_types.pointer_to_int8, every_types.int16, every_types.pointer_to_int16, every_types.int32, every_types.pointer_to_int32, every_types.int64, every_types.pointer_to_int64, every_types.uint, every_types.pointer_to_uint, every_types.uint8, every_types.pointer_to_uint8, every_types.uint16, every_types.pointer_to_uint16, every_types.uint32, every_types.pointer_to_uint32, every_types.uint64, every_types.pointer_to_uint64, every_types.float32, every_types.pointer_to_float32, every_types.float64, every_types.pointer_to_float64, every_types.created_on, every_types.last_updated_on, every_types.archived_on FROM every_types JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS every_types WHERE every_types.archived_on IS NULL", exampleIDsAsStrings, defaultLimit)
+		expectedArgs := []interface{}(nil)
+		actualQuery, actualArgs := p.buildGetEveryTypesWithIDsQuery(defaultLimit, exampleIDs)
 
 		ensureArgCountMatchesQuery(t, actualQuery, actualArgs)
 		assert.Equal(t, expectedQuery, actualQuery)
@@ -6153,20 +9972,20 @@ import (
 func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		p, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(exampleUser.ID).
@@ -6178,7 +9997,7 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -6189,17 +10008,19 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(exampleUser.ID).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6211,17 +10032,19 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(exampleUser.ID).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6232,11 +10055,13 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_user FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL AND items.belongs_to_user = $1", joinUint64s(exampleIDs), defaultLimit)
 
 		exampleItem := fake.BuildFakeItem()
 
@@ -6244,7 +10069,7 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 			WithArgs(exampleUser.ID).
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, 0, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6279,20 +10104,20 @@ import (
 func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
@@ -6304,7 +10129,7 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -6315,21 +10140,23 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6341,21 +10168,23 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6366,15 +10195,17 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		s, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := s.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		exampleItem := fake.BuildFakeItem()
 
@@ -6382,7 +10213,7 @@ func TestSqlite_GetItemsWithIDs(T *testing.T) {
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, 0, exampleItemIDs)
+		actual, err := s.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6417,20 +10248,20 @@ import (
 func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Parallel()
 
-	exampleUser := fake.BuildFakeUser()
-
 	T.Run("happy path", func(t *testing.T) {
 		ctx := context.Background()
+
+		exampleUser := fake.BuildFakeUser()
 
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
@@ -6442,7 +10273,7 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -6453,21 +10284,23 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Run("surfaces sql.ErrNoRows", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6479,21 +10312,23 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error executing read query", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnError(errors.New("blah"))
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6504,15 +10339,17 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 	T.Run("with error scanning item", func(t *testing.T) {
 		ctx := context.Background()
 
+		exampleUser := fake.BuildFakeUser()
+
 		m, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleItemIDs)
+		expectedQuery, expectedArgs := m.buildGetItemsWithIDsQuery(exampleUser.ID, defaultLimit, exampleIDs)
 
 		exampleItem := fake.BuildFakeItem()
 
@@ -6520,7 +10357,7 @@ func TestMariaDB_GetItemsWithIDs(T *testing.T) {
 			WithArgs(interfacesToDriverValues(expectedArgs)...).
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, 0, exampleItemIDs)
+		actual, err := m.GetItemsWithIDs(ctx, exampleUser.ID, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6563,15 +10400,15 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 		p, mockDB := buildTestService(t)
 
 		exampleItemList := fake.BuildFakeItemList()
-		var exampleItemIDs []uint64
+		var exampleIDs []uint64
 		for _, item := range exampleItemList.Items {
-			exampleItemIDs = append(exampleItemIDs, item.ID)
+			exampleIDs = append(exampleIDs, item.ID)
 		}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(exampleUser.ID).
+			WithArgs().
 			WillReturnRows(
 				buildMockRowsFromItems(
 					&exampleItemList.Items[0],
@@ -6580,7 +10417,7 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 				),
 			)
 
-		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleIDs)
 
 		assert.NoError(t, err)
 		assert.Equal(t, exampleItemList.Items, actual)
@@ -6593,15 +10430,15 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(exampleUser.ID).
+			WithArgs().
 			WillReturnError(sql.ErrNoRows)
 
-		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6615,15 +10452,15 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(exampleUser.ID).
+			WithArgs().
 			WillReturnError(errors.New("blah"))
 
-		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)
@@ -6636,17 +10473,17 @@ func TestPostgres_GetItemsWithIDs(T *testing.T) {
 
 		p, mockDB := buildTestService(t)
 
-		exampleItemIDs := []uint64{123, 456, 789}
+		exampleIDs := []uint64{123, 456, 789}
 
-		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleItemIDs), defaultLimit)
+		expectedQuery := fmt.Sprintf("SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM (SELECT items.id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on FROM items JOIN unnest('{%s}'::int[]) WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d) AS items WHERE items.archived_on IS NULL", joinUint64s(exampleIDs), defaultLimit)
 
 		exampleItem := fake.BuildFakeItem()
 
 		mockDB.ExpectQuery(formatQueryForSQLMock(expectedQuery)).
-			WithArgs(exampleUser.ID).
+			WithArgs().
 			WillReturnRows(buildErroneousMockRowFromItem(exampleItem))
 
-		actual, err := p.GetItemsWithIDs(ctx, 0, exampleItemIDs)
+		actual, err := p.GetItemsWithIDs(ctx, defaultLimit, exampleIDs)
 
 		assert.Error(t, err)
 		assert.Nil(t, actual)

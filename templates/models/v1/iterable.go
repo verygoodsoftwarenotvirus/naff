@@ -20,22 +20,11 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildUpdateSomething(typ)...)
 	code.Add(buildSomethingToUpdateInput(typ)...)
 
-	return code
-}
-
-func buildUpdateSomething(typ models.DataType) []jen.Code {
-	n := typ.Name
-	sn := n.Singular()
-	cnwp := n.SingularCommonNameWithPrefix()
-
-	lines := []jen.Code{
-		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
-		jen.Line(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Body(buildUpdateFunctionLogic(typ.Fields)...),
-		jen.Line(),
+	if typ.SearchEnabled && len(proj.FindOwnerTypeChain(typ)) > 0 {
+		code.Add(buildSomethingToSearchHelper(proj, typ)...)
 	}
 
-	return lines
+	return code
 }
 
 func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType) []jen.Code {
@@ -43,12 +32,17 @@ func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType
 	pn := n.Plural()
 	pcn := n.PluralCommonName()
 
-	lines := []jen.Code{
-		jen.Const().Defs(
-			jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
-			jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
-		),
-		jen.Line(),
+	lines := []jen.Code{}
+
+	if typ.SearchEnabled {
+		lines = append(
+			lines,
+			jen.Const().Defs(
+				jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
+				jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
+			),
+			jen.Line(),
+		)
 	}
 
 	return lines
@@ -62,7 +56,7 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 	pcn := n.PluralCommonName()
 	prn := n.PluralRouteName()
 
-	lines := []jen.Code{jen.Type().Defs(
+	lines := []jen.Code{
 		jen.Commentf("%s represents %s.", sn, cnwp),
 		jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
 		jen.Line(),
@@ -71,6 +65,22 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 			jen.ID("Pagination"),
 			jen.ID(pn).Index().ID(sn).Tag(jsonTag(prn)),
 		),
+	}
+
+	if typ.SearchEnabled && len(proj.FindOwnerTypeChain(typ)) > 0 {
+		fields := buildBaseModelStructFields(typ)
+		for _, o := range proj.FindOwnerTypeChain(typ) {
+			fields = append(fields, jen.IDf("BelongsTo%s", o.Name.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongsTo%s", o.Name.Singular()))))
+		}
+
+		lines = append(lines,
+			jen.Commentf("%sSearchHelper contains all the owner IDs for search purposes.", sn),
+			jen.IDf("%sSearchHelper", sn).Struct(fields...),
+			jen.Line(),
+		)
+	}
+
+	lines = append(lines,
 		jen.Line(),
 		jen.Commentf("%sCreationInput represents what a user could set as input for creating %s.", sn, pcn),
 		jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
@@ -120,7 +130,24 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			),
 		),
-	),
+	)
+
+	return []jen.Code{
+		jen.Type().Defs(
+			lines...,
+		),
+	}
+}
+
+func buildUpdateSomething(typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	cnwp := n.SingularCommonNameWithPrefix()
+
+	lines := []jen.Code{
+		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Body(buildUpdateFunctionLogic(typ.Fields)...),
 		jen.Line(),
 	}
 
@@ -149,6 +176,45 @@ func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
 				}
 
 				return jen.Return(jen.AddressOf().IDf("%sUpdateInput", sn).Valuesln(lines...))
+			}(),
+		),
+		jen.Line(),
+	}
+
+	return lines
+}
+
+func buildSomethingToSearchHelper(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+	cnwp := n.SingularCommonNameWithPrefix()
+
+	owners := proj.FindOwnerTypeChain(typ)
+
+	params := []jen.Code{}
+	for _, o := range owners {
+		params = append(params, jen.IDf("%sID", o.Name.UnexportedVarName()).Uint64())
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("ToSearchHelper creates a %sSearchHelper struct for %s.", sn, cnwp),
+		jen.Line(),
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToSearchHelper").Params(params...).ReturnParams(
+			jen.PointerTo().IDf("%sSearchHelper", sn),
+		).Body(
+			func() jen.Code {
+				lines := []jen.Code{}
+
+				for _, typ := range typ.Fields {
+					fsn := typ.Name.Singular()
+					lines = append(lines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
+				}
+
+				for _, o := range owners {
+					lines = append(lines, jen.IDf("BelongsTo%s", o.Name.Singular()).MapAssign().IDf("%sID", o.Name.UnexportedVarName()))
+				}
+
+				return jen.Return(jen.AddressOf().IDf("%sSearchHelper", sn).Valuesln(lines...))
 			}(),
 		),
 		jen.Line(),
@@ -235,6 +301,8 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	sn := n.Singular()
 	pn := n.Plural()
 
+	getWithIDsParams := typ.BuildGetListOfSomethingFromIDsParams(proj)
+
 	interfaceMethods := []jen.Code{
 		jen.IDf("%sExists", sn).Params(typ.BuildInterfaceDefinitionExistenceMethodParams(proj)...).Params(jen.Bool(), jen.Error()),
 		jen.IDf("Get%s", sn).Params(typ.BuildInterfaceDefinitionRetrievalMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
@@ -244,12 +312,7 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 			jen.ID("resultChannel").Chan().Index().ID(sn),
 		).Params(jen.Error()),
 		jen.IDf("Get%s", pn).Params(typ.BuildInterfaceDefinitionListRetrievalMethodParams(proj)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
-		jen.IDf("Get%sWithIDs", pn).Params(
-			constants.CtxParam(),
-			constants.UserIDParam(),
-			jen.ID("limit").Uint8(),
-			jen.ID("ids").Index().Uint64(),
-		).Params(jen.Index().ID(sn), jen.Error()),
+		jen.IDf("Get%sWithIDs", pn).Params(getWithIDsParams...).Params(jen.Index().ID(sn), jen.Error()),
 	}
 
 	interfaceMethods = append(interfaceMethods,

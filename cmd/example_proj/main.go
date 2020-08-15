@@ -11,28 +11,18 @@ import (
 )
 
 const (
-	projectDiscussion = "discussion"
-	projectTodo       = "todo"
-	projectGamut      = "gamut"
+	projectForums = "forums"
+	projectTodo   = "todo"
+	projectGamut  = "every_type"
 )
 
 var (
 	projects = map[string]*models.Project{
-		projectTodo:       testprojects.TodoApp,
-		projectDiscussion: testprojects.ForumsApp,
-		projectGamut:      testprojects.EveryTypeApp,
+		projectTodo:   testprojects.BuildTodoApp(),
+		projectForums: testprojects.BuildForumsApp(),
+		projectGamut:  testprojects.BuildEveryTypeApp(),
 	}
 )
-
-func init() {
-	projects[projectGamut].EnableDatabase(models.Postgres)
-
-	projects[projectDiscussion].EnableDatabase(models.Postgres)
-
-	projects[projectTodo].EnableDatabase(models.Postgres)
-	projects[projectTodo].EnableDatabase(models.Sqlite)
-	projects[projectTodo].EnableDatabase(models.MariaDB)
-}
 
 const (
 	this = "gitlab.com/verygoodsoftwarenotvirus/naff"
@@ -50,9 +40,7 @@ func main() {
 			chosenProject.OutputPath = filepath.Join(this, outputDir)
 		}
 
-		if err := project.RenderProject(chosenProject); err != nil {
-			log.Fatal(err)
-		}
+		project.RenderProject(chosenProject)
 	} else {
 		log.Fatal("no project selected")
 	}

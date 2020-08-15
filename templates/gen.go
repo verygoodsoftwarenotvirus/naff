@@ -16,9 +16,11 @@ import (
 	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1"
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1/client"
 	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1/queriers"
+	environments "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments"
 	composefiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	deploy "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/deploy"
 	dockerfiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
+	frontendv1 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/v1"
 	frontendsrc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/v1/src"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/auth"
 	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/auth/mock"
@@ -58,7 +60,7 @@ type renderHelper struct {
 const async = true
 
 // RenderProject renders a project
-func RenderProject(proj *naffmodels.Project) error {
+func RenderProject(proj *naffmodels.Project) {
 	allActive := true
 	searchActive := false
 
@@ -105,10 +107,12 @@ func RenderProject(proj *naffmodels.Project) error {
 		{name: "loadtests", renderFunc: loadtests.RenderPackage, activated: allActive},
 		{name: "queriers", renderFunc: queriers.RenderPackage, activated: allActive},
 		{name: "composefiles", renderFunc: composefiles.RenderPackage, activated: allActive},
+		{name: "environments", renderFunc: environments.RenderPackage, activated: allActive},
 		{name: "deployfiles", renderFunc: deploy.RenderPackage, activated: allActive},
 		{name: "dockerfiles", renderFunc: dockerfiles.RenderPackage, activated: allActive},
 		{name: "miscellaneous", renderFunc: misc.RenderPackage, activated: allActive},
 		{name: "frontendsrc", renderFunc: frontendsrc.RenderPackage, activated: allActive},
+		{name: "frontendv1", renderFunc: frontendv1.RenderPackage, activated: allActive},
 	}
 
 	var wg sync.WaitGroup
@@ -133,8 +137,6 @@ func RenderProject(proj *naffmodels.Project) error {
 	time.Sleep(2 * time.Second)
 	wg.Done()
 	wg.Wait()
-
-	return nil
 }
 
 func renderTask(proj *naffmodels.Project, wg *sync.WaitGroup, renderer renderHelper, progressBar *uiprogress.Bar) {

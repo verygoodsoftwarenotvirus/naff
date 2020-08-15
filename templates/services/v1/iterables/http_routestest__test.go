@@ -2239,9 +2239,20 @@ func TestYetAnotherThingsService_CreateHandler(T *testing.T) {
 	T.Run("happy path", func(t *testing.T) {
 		s := buildTestService()
 
+		s.thingIDFetcher = thingIDFetcher
+		s.anotherThingIDFetcher = anotherThingIDFetcher
+
 		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		thingDataManager := &mock.ThingDataManager{}
+		thingDataManager.On("ThingExists", mock1.Anything, exampleThing.ID).Return(true, nil)
+		s.thingDataManager = thingDataManager
+
+		anotherThingDataManager := &mock.AnotherThingDataManager{}
+		anotherThingDataManager.On("AnotherThingExists", mock1.Anything, exampleThing.ID, exampleAnotherThing.ID).Return(true, nil)
+		s.anotherThingDataManager = anotherThingDataManager
 
 		yetAnotherThingDataManager := &mock.YetAnotherThingDataManager{}
 		yetAnotherThingDataManager.On("CreateYetAnotherThing", mock1.Anything, mock1.AnythingOfType("*models.YetAnotherThingCreationInput")).Return(exampleYetAnotherThing, nil)
@@ -2280,6 +2291,9 @@ func TestYetAnotherThingsService_CreateHandler(T *testing.T) {
 	T.Run("without input attached", func(t *testing.T) {
 		s := buildTestService()
 
+		s.thingIDFetcher = thingIDFetcher
+		s.anotherThingIDFetcher = anotherThingIDFetcher
+
 		res := httptest.NewRecorder()
 		req, err := http.NewRequest(
 			http.MethodGet,
@@ -2297,9 +2311,20 @@ func TestYetAnotherThingsService_CreateHandler(T *testing.T) {
 	T.Run("with error creating yet another thing", func(t *testing.T) {
 		s := buildTestService()
 
+		s.thingIDFetcher = thingIDFetcher
+		s.anotherThingIDFetcher = anotherThingIDFetcher
+
 		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		thingDataManager := &mock.ThingDataManager{}
+		thingDataManager.On("ThingExists", mock1.Anything, exampleThing.ID).Return(true, nil)
+		s.thingDataManager = thingDataManager
+
+		anotherThingDataManager := &mock.AnotherThingDataManager{}
+		anotherThingDataManager.On("AnotherThingExists", mock1.Anything, exampleThing.ID, exampleAnotherThing.ID).Return(true, nil)
+		s.anotherThingDataManager = anotherThingDataManager
 
 		yetAnotherThingDataManager := &mock.YetAnotherThingDataManager{}
 		yetAnotherThingDataManager.On("CreateYetAnotherThing", mock1.Anything, mock1.AnythingOfType("*models.YetAnotherThingCreationInput")).Return((*v1.YetAnotherThing)(nil), errors.New("blah"))
@@ -2326,9 +2351,20 @@ func TestYetAnotherThingsService_CreateHandler(T *testing.T) {
 	T.Run("with error encoding response", func(t *testing.T) {
 		s := buildTestService()
 
+		s.thingIDFetcher = thingIDFetcher
+		s.anotherThingIDFetcher = anotherThingIDFetcher
+
 		exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 		exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 		exampleInput := fake.BuildFakeYetAnotherThingCreationInputFromYetAnotherThing(exampleYetAnotherThing)
+
+		thingDataManager := &mock.ThingDataManager{}
+		thingDataManager.On("ThingExists", mock1.Anything, exampleThing.ID).Return(true, nil)
+		s.thingDataManager = thingDataManager
+
+		anotherThingDataManager := &mock.AnotherThingDataManager{}
+		anotherThingDataManager.On("AnotherThingExists", mock1.Anything, exampleThing.ID, exampleAnotherThing.ID).Return(true, nil)
+		s.anotherThingDataManager = anotherThingDataManager
 
 		yetAnotherThingDataManager := &mock.YetAnotherThingDataManager{}
 		yetAnotherThingDataManager.On("CreateYetAnotherThing", mock1.Anything, mock1.AnythingOfType("*models.YetAnotherThingCreationInput")).Return(exampleYetAnotherThing, nil)
@@ -2362,6 +2398,250 @@ func TestYetAnotherThingsService_CreateHandler(T *testing.T) {
 		assert.Equal(t, http.StatusCreated, res.Code)
 
 		mock1.AssertExpectationsForObjects(t, yetAnotherThingDataManager, mc, r, ed)
+	})
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with forums app", func(t *testing.T) {
+		proj := testprojects.BuildForumsApp()
+		typ := proj.DataTypes[3]
+		x := buildTestServiceCreateFuncDecl(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"context"
+	"errors"
+	assert "github.com/stretchr/testify/assert"
+	mock1 "github.com/stretchr/testify/mock"
+	require "github.com/stretchr/testify/require"
+	mock4 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
+	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock3 "gitlab.com/verygoodsoftwarenotvirus/newsman/mock"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestPostsService_CreateHandler(T *testing.T) {
+	T.Parallel()
+
+	exampleUser := fake.BuildFakeUser()
+	userIDFetcher := func(_ *http.Request) uint64 {
+		return exampleUser.ID
+	}
+
+	exampleForum := fake.BuildFakeForum()
+	forumIDFetcher := func(_ *http.Request) uint64 {
+		return exampleForum.ID
+	}
+
+	exampleSubforum := fake.BuildFakeSubforum()
+	exampleSubforum.BelongsToForum = exampleForum.ID
+	subforumIDFetcher := func(_ *http.Request) uint64 {
+		return exampleSubforum.ID
+	}
+
+	exampleThread := fake.BuildFakeThread()
+	exampleThread.BelongsToSubforum = exampleSubforum.ID
+	exampleThread.BelongsToUser = exampleUser.ID
+	threadIDFetcher := func(_ *http.Request) uint64 {
+		return exampleThread.ID
+	}
+
+	T.Run("happy path", func(t *testing.T) {
+		s := buildTestService()
+
+		s.forumIDFetcher = forumIDFetcher
+		s.subforumIDFetcher = subforumIDFetcher
+		s.threadIDFetcher = threadIDFetcher
+		s.userIDFetcher = userIDFetcher
+
+		examplePost := fake.BuildFakePost()
+		examplePost.BelongsToThread = exampleThread.ID
+		examplePost.BelongsToUser = exampleUser.ID
+		exampleInput := fake.BuildFakePostCreationInputFromPost(examplePost)
+
+		forumDataManager := &mock.ForumDataManager{}
+		forumDataManager.On("ForumExists", mock1.Anything, exampleForum.ID).Return(true, nil)
+		s.forumDataManager = forumDataManager
+
+		subforumDataManager := &mock.SubforumDataManager{}
+		subforumDataManager.On("SubforumExists", mock1.Anything, exampleForum.ID, exampleSubforum.ID).Return(true, nil)
+		s.subforumDataManager = subforumDataManager
+
+		threadDataManager := &mock.ThreadDataManager{}
+		threadDataManager.On("ThreadExists", mock1.Anything, exampleForum.ID, exampleSubforum.ID, exampleThread.ID).Return(true, nil)
+		s.threadDataManager = threadDataManager
+
+		postDataManager := &mock.PostDataManager{}
+		postDataManager.On("CreatePost", mock1.Anything, mock1.AnythingOfType("*models.PostCreationInput")).Return(examplePost, nil)
+		s.postDataManager = postDataManager
+
+		mc := &mock2.UnitCounter{}
+		mc.On("Increment", mock1.Anything)
+		s.postCounter = mc
+
+		r := &mock3.Reporter{}
+		r.On("Report", mock1.AnythingOfType("newsman.Event")).Return()
+		s.reporter = r
+
+		ed := &mock4.EncoderDecoder{}
+		ed.On("EncodeResponse", mock1.Anything, mock1.AnythingOfType("*models.Post")).Return(nil)
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		req = req.WithContext(context.WithValue(req.Context(), createMiddlewareCtxKey, exampleInput))
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, http.StatusCreated, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, postDataManager, mc, r, ed)
+	})
+
+	T.Run("without input attached", func(t *testing.T) {
+		s := buildTestService()
+
+		s.forumIDFetcher = forumIDFetcher
+		s.subforumIDFetcher = subforumIDFetcher
+		s.threadIDFetcher = threadIDFetcher
+		s.userIDFetcher = userIDFetcher
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+	})
+
+	T.Run("with error creating post", func(t *testing.T) {
+		s := buildTestService()
+
+		s.forumIDFetcher = forumIDFetcher
+		s.subforumIDFetcher = subforumIDFetcher
+		s.threadIDFetcher = threadIDFetcher
+		s.userIDFetcher = userIDFetcher
+
+		examplePost := fake.BuildFakePost()
+		examplePost.BelongsToThread = exampleThread.ID
+		examplePost.BelongsToUser = exampleUser.ID
+		exampleInput := fake.BuildFakePostCreationInputFromPost(examplePost)
+
+		forumDataManager := &mock.ForumDataManager{}
+		forumDataManager.On("ForumExists", mock1.Anything, exampleForum.ID).Return(true, nil)
+		s.forumDataManager = forumDataManager
+
+		subforumDataManager := &mock.SubforumDataManager{}
+		subforumDataManager.On("SubforumExists", mock1.Anything, exampleForum.ID, exampleSubforum.ID).Return(true, nil)
+		s.subforumDataManager = subforumDataManager
+
+		threadDataManager := &mock.ThreadDataManager{}
+		threadDataManager.On("ThreadExists", mock1.Anything, exampleForum.ID, exampleSubforum.ID, exampleThread.ID).Return(true, nil)
+		s.threadDataManager = threadDataManager
+
+		postDataManager := &mock.PostDataManager{}
+		postDataManager.On("CreatePost", mock1.Anything, mock1.AnythingOfType("*models.PostCreationInput")).Return((*v1.Post)(nil), errors.New("blah"))
+		s.postDataManager = postDataManager
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		req = req.WithContext(context.WithValue(req.Context(), createMiddlewareCtxKey, exampleInput))
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, postDataManager)
+	})
+
+	T.Run("with error encoding response", func(t *testing.T) {
+		s := buildTestService()
+
+		s.forumIDFetcher = forumIDFetcher
+		s.subforumIDFetcher = subforumIDFetcher
+		s.threadIDFetcher = threadIDFetcher
+		s.userIDFetcher = userIDFetcher
+
+		examplePost := fake.BuildFakePost()
+		examplePost.BelongsToThread = exampleThread.ID
+		examplePost.BelongsToUser = exampleUser.ID
+		exampleInput := fake.BuildFakePostCreationInputFromPost(examplePost)
+
+		forumDataManager := &mock.ForumDataManager{}
+		forumDataManager.On("ForumExists", mock1.Anything, exampleForum.ID).Return(true, nil)
+		s.forumDataManager = forumDataManager
+
+		subforumDataManager := &mock.SubforumDataManager{}
+		subforumDataManager.On("SubforumExists", mock1.Anything, exampleForum.ID, exampleSubforum.ID).Return(true, nil)
+		s.subforumDataManager = subforumDataManager
+
+		threadDataManager := &mock.ThreadDataManager{}
+		threadDataManager.On("ThreadExists", mock1.Anything, exampleForum.ID, exampleSubforum.ID, exampleThread.ID).Return(true, nil)
+		s.threadDataManager = threadDataManager
+
+		postDataManager := &mock.PostDataManager{}
+		postDataManager.On("CreatePost", mock1.Anything, mock1.AnythingOfType("*models.PostCreationInput")).Return(examplePost, nil)
+		s.postDataManager = postDataManager
+
+		mc := &mock2.UnitCounter{}
+		mc.On("Increment", mock1.Anything)
+		s.postCounter = mc
+
+		r := &mock3.Reporter{}
+		r.On("Report", mock1.AnythingOfType("newsman.Event")).Return()
+		s.reporter = r
+
+		ed := &mock4.EncoderDecoder{}
+		ed.On("EncodeResponse", mock1.Anything, mock1.AnythingOfType("*models.Post")).Return(errors.New("blah"))
+		s.encoderDecoder = ed
+
+		res := httptest.NewRecorder()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			"http://todo.verygoodsoftwarenotvirus.ru",
+			nil,
+		)
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		req = req.WithContext(context.WithValue(req.Context(), createMiddlewareCtxKey, exampleInput))
+
+		s.CreateHandler(res, req)
+
+		assert.Equal(t, http.StatusCreated, res.Code)
+
+		mock1.AssertExpectationsForObjects(t, postDataManager, mc, r, ed)
 	})
 }
 `

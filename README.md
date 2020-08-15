@@ -54,14 +54,6 @@ NAFF has support for multiple database providers. Currently those are:
 
 Each of these may be (de)activated to your liking.
 
-## state of the codebase
-
-The codebase is rough, and will probably remain rough for a very long time. It started life as mostly generated, and has been mangled many hundreds of times by poorly constructed regular expressions.
-
-By the time this README is in master, the code will be generating everything appropriately. At some point I will go back and add unit tests for all the functions to test all the cases and only then will I consider refactoring the codebase.
-
-There are some unit tests for things I just had to verify, but they're not run in CI or anything (another thing on my todo list), so they're likely broken.
-
 ## usage
 
 Start by defining any arbitrary Go package with some types in it. For instance, say I have a Go package `gitlab.com/verygoodsoftwarenotvirus/addressbook`, with a file `types.go` with the following:

@@ -12,7 +12,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code)
 
 	code.Add(buildMainConstantDefs()...)
-	code.Add(buildMainTypeDefs()...)
+	code.Add(buildMainTypeDefs(proj)...)
 	code.Add(buildMainErrorInterfaceImplementation()...)
 	code.Add(buildMainErrorResponseDotError()...)
 
@@ -33,7 +33,7 @@ func buildMainConstantDefs() []jen.Code {
 	return lines
 }
 
-func buildMainTypeDefs() []jen.Code {
+func buildMainTypeDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("ContextKey represents strings to be used in Context objects. From the docs:"),
@@ -46,6 +46,7 @@ func buildMainTypeDefs() []jen.Code {
 			jen.ID("Pagination").Struct(
 				jen.ID("Page").Uint64().Tag(jsonTag("page")),
 				jen.ID("Limit").Uint8().Tag(jsonTag("limit")),
+				jen.ID("TotalCount").Uint64().Tag(jsonTag("totalCount")),
 			),
 			jen.Line(),
 			jen.Comment("CountResponse is what we respond with when a user requests a count of data types."),

@@ -513,13 +513,13 @@ func main() {
 
 	// AnotherThings
 	anotherThingPath := "another_things"
-	anotherThingsRouteWithPrefix := fmt.Sprintf("/%s", anotherThingsRoute)
-	anotherThingRouteParam := fmt.Sprintf(numericIDPattern, anotherthings.URIParamKey)
 	anotherThingsRoute := filepath.Join(
 		thingPath,
 		thingRouteParam,
 		anotherThingPath,
 	)
+	anotherThingsRouteWithPrefix := fmt.Sprintf("/%s", anotherThingsRoute)
+	anotherThingRouteParam := fmt.Sprintf(numericIDPattern, anotherthings.URIParamKey)
 	v1Router.Route(anotherThingsRouteWithPrefix, func(anotherThingsRouter chi.Router) {
 		anotherThingsRouter.With(s.anotherThingsService.CreationInputMiddleware).Post(root, s.anotherThingsService.CreateHandler)
 		anotherThingsRouter.Route(anotherThingRouteParam, func(singleAnotherThingRouter chi.Router) {
@@ -533,8 +533,6 @@ func main() {
 
 	// YetAnotherThings
 	yetAnotherThingPath := "yet_another_things"
-	yetAnotherThingsRouteWithPrefix := fmt.Sprintf("/%s", yetAnotherThingsRoute)
-	yetAnotherThingRouteParam := fmt.Sprintf(numericIDPattern, yetanotherthings.URIParamKey)
 	yetAnotherThingsRoute := filepath.Join(
 		thingPath,
 		thingRouteParam,
@@ -542,6 +540,8 @@ func main() {
 		anotherThingRouteParam,
 		yetAnotherThingPath,
 	)
+	yetAnotherThingsRouteWithPrefix := fmt.Sprintf("/%s", yetAnotherThingsRoute)
+	yetAnotherThingRouteParam := fmt.Sprintf(numericIDPattern, yetanotherthings.URIParamKey)
 	v1Router.Route(yetAnotherThingsRouteWithPrefix, func(yetAnotherThingsRouter chi.Router) {
 		yetAnotherThingsRouter.With(s.yetAnotherThingsService.CreationInputMiddleware).Post(root, s.yetAnotherThingsService.CreateHandler)
 		yetAnotherThingsRouter.Route(yetAnotherThingRouteParam, func(singleYetAnotherThingRouter chi.Router) {
