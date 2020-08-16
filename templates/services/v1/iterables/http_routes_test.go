@@ -896,7 +896,7 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 		Topics:    []string{topicName},
 		EventType: string(v1.Create),
 	})
-	if searchIndexErr := s.search.Index(ctx, x.ID, x.ToSearchHelper()); searchIndexErr != nil {
+	if searchIndexErr := s.search.Index(ctx, x.ID, x.ToSearchHelper(thingID, anotherThingID)); searchIndexErr != nil {
 		logger.Error(searchIndexErr, "adding yet another thing to search index")
 	}
 
@@ -1099,6 +1099,99 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	})
 	if searchIndexErr := s.search.Index(ctx, x.ID, x); searchIndexErr != nil {
 		logger.Error(searchIndexErr, "updating item in search index")
+	}
+
+	// encode our response and peace.
+	if err = s.encoderDecoder.EncodeResponse(res, x); err != nil {
+		logger.Error(err, "encoding response")
+	}
+}
+`
+		actual := testutils.RenderOuterStatementToString(t, x...)
+
+		assert.Equal(t, expected, actual, "expected and actual output do not match")
+	})
+
+	T.Run("with ownership chain and search", func(t *testing.T) {
+		proj := testprojects.BuildTodoApp()
+		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
+		typ := proj.LastDataType()
+		typ.SearchEnabled = true
+
+		x := buildUpdateHandlerFuncDecl(proj, typ)
+
+		expected := `
+package example
+
+import (
+	"database/sql"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
+	"net/http"
+)
+
+// UpdateHandler returns a handler that updates a yet another thing.
+func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
+	ctx, span := tracing.StartSpan(req.Context(), "UpdateHandler")
+	defer span.End()
+
+	logger := s.logger.WithRequest(req)
+
+	// check for parsed input attached to request context.
+	input, ok := ctx.Value(updateMiddlewareCtxKey).(*v1.YetAnotherThingUpdateInput)
+	if !ok {
+		logger.Info("no input attached to request")
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// determine thing ID.
+	thingID := s.thingIDFetcher(req)
+	logger = logger.WithValue("thing_id", thingID)
+	tracing.AttachThingIDToSpan(span, thingID)
+
+	// determine another thing ID.
+	anotherThingID := s.anotherThingIDFetcher(req)
+	logger = logger.WithValue("another_thing_id", anotherThingID)
+	tracing.AttachAnotherThingIDToSpan(span, anotherThingID)
+
+	input.BelongsToAnotherThing = anotherThingID
+
+	// determine yet another thing ID.
+	yetAnotherThingID := s.yetAnotherThingIDFetcher(req)
+	logger = logger.WithValue("yet_another_thing_id", yetAnotherThingID)
+	tracing.AttachYetAnotherThingIDToSpan(span, yetAnotherThingID)
+
+	// fetch yet another thing from database.
+	x, err := s.yetAnotherThingDataManager.GetYetAnotherThing(ctx, thingID, anotherThingID, yetAnotherThingID)
+	if err == sql.ErrNoRows {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		logger.Error(err, "error encountered getting yet another thing")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// update the data structure.
+	x.Update(input)
+
+	// update yet another thing in database.
+	if err = s.yetAnotherThingDataManager.UpdateYetAnotherThing(ctx, x); err != nil {
+		logger.Error(err, "error encountered updating yet another thing")
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// notify relevant parties.
+	s.reporter.Report(newsman.Event{
+		Data:      x,
+		Topics:    []string{topicName},
+		EventType: string(v1.Update),
+	})
+	if searchIndexErr := s.search.Index(ctx, x.ID, x.ToSearchHelper(thingID, anotherThingID)); searchIndexErr != nil {
+		logger.Error(searchIndexErr, "updating yet another thing in search index")
 	}
 
 	// encode our response and peace.
