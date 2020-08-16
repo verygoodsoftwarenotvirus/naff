@@ -111,10 +111,7 @@ and run:
 				return err
 			}
 
-			if err := project.RenderProject(p); err != nil {
-				return err
-			}
-
+			project.RenderProject(p)
 			return nil
 		},
 	}
