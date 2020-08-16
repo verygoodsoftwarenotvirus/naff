@@ -350,7 +350,12 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 					jen.ID("x").Dot("ID"),
 					func() jen.Code {
 						if len(proj.FindOwnerTypeChain(typ)) > 0 {
-							return jen.ID("x").Dot("ToSearchHelper").Call()
+							args := []jen.Code{}
+							for _, o := range proj.FindOwnerTypeChain(typ) {
+								args = append(args, jen.IDf("%sID", o.Name.UnexportedVarName()))
+							}
+
+							return jen.ID("x").Dot("ToSearchHelper").Call(args...)
 						}
 						return jen.ID("x")
 					}(),
@@ -539,7 +544,17 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 				jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(
 					constants.CtxVar(),
 					jen.ID("x").Dot("ID"),
-					jen.ID("x"),
+					func() jen.Code {
+						if len(proj.FindOwnerTypeChain(typ)) > 0 {
+							args := []jen.Code{}
+							for _, o := range proj.FindOwnerTypeChain(typ) {
+								args = append(args, jen.IDf("%sID", o.Name.UnexportedVarName()))
+							}
+
+							return jen.ID("x").Dot("ToSearchHelper").Call(args...)
+						}
+						return jen.ID("x")
+					}(),
 				),
 				jen.ID("searchIndexErr").DoesNotEqual().Nil(),
 			).Body(
