@@ -14,10 +14,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildMainServiceAttacker(proj)...)
 	code.Add(buildMainSetup()...)
-	code.Add(buildMainDo()...)
+	code.Add(buildMainDo(proj)...)
 	code.Add(buildMainTeardown()...)
 	code.Add(buildMainClone()...)
-	code.Add(buildMainMain()...)
+	code.Add(buildMainMain(proj)...)
 
 	return code
 }
@@ -27,7 +27,7 @@ func buildMainServiceAttacker(proj *models.Project) []jen.Code {
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
-			jen.ID("todoClient").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
 		),
 		jen.Line(),
 	}
@@ -48,7 +48,7 @@ func buildMainSetup() []jen.Code {
 	return lines
 }
 
-func buildMainDo() []jen.Code {
+func buildMainDo(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Do implements hazana's Attacker interface."),
 		jen.Line(),
@@ -57,7 +57,7 @@ func buildMainDo() []jen.Code {
 		).Params(jen.Qual("github.com/emicklei/hazana", "DoResult")).Body(
 			jen.Comment("Do performs one request and is executed in a separate goroutine."),
 			jen.Comment("The context is used to cancel the request on timeout."),
-			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dot("todoClient")),
+			jen.ID("act").Assign().ID("RandomAction").Call(jen.ID("a").Dotf("%sClient", proj.Name.UnexportedVarName())),
 			jen.Line(),
 			jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("act").Dot("Action").Call(),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID(constants.RequestVarName).IsEqualTo().ID("nil")).Body(
@@ -85,7 +85,7 @@ func buildMainDo() []jen.Code {
 				jen.ID(constants.RequestVarName).Dot("Body").Equals().ID("rdr"),
 			),
 			jen.Line(),
-			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID("a").Dot("todoClient").Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID(constants.RequestVarName)),
+			jen.List(jen.ID(constants.ResponseVarName), jen.Err()).Assign().ID("a").Dotf("%sClient", proj.Name.UnexportedVarName()).Dot("AuthenticatedClient").Call().Dot("Do").Call(jen.ID(constants.RequestVarName)),
 			jen.If(jen.ID(constants.ResponseVarName).DoesNotEqual().ID("nil")).Body(
 				jen.ID("sc").Equals().ID(constants.ResponseVarName).Dot("StatusCode"),
 				jen.ID("bo").Equals().ID(constants.ResponseVarName).Dot("ContentLength"),
@@ -131,10 +131,10 @@ func buildMainClone() []jen.Code {
 	return lines
 }
 
-func buildMainMain() []jen.Code {
+func buildMainMain(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("main").Params().Body(
-			jen.ID("todoClient").Assign().ID("initializeClient").Call(jen.ID("oa2Client")),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Assign().ID("initializeClient").Call(jen.ID("oa2Client")),
 			jen.Line(),
 			jen.Var().ID("runTime").Equals().Lit(10).Times().Qual("time", "Minute"),
 			jen.If(jen.ID("rt").Assign().Qual("os", "Getenv").Call(jen.Lit("LOADTEST_RUN_TIME")), jen.ID("rt").DoesNotEqual().EmptyString()).Body(
@@ -145,7 +145,7 @@ func buildMainMain() []jen.Code {
 				jen.ID("runTime").Equals().ID("_rt"),
 			),
 			jen.Line(),
-			jen.ID("attacker").Assign().AddressOf().ID("ServiceAttacker").Values(jen.ID("todoClient").MapAssign().ID("todoClient")),
+			jen.ID("attacker").Assign().AddressOf().ID("ServiceAttacker").Values(jen.IDf("%sClient", proj.Name.UnexportedVarName()).MapAssign().IDf("%sClient", proj.Name.UnexportedVarName())),
 			jen.ID("cfg").Assign().Qual("github.com/emicklei/hazana", "Config").Valuesln(
 				jen.ID("RPS").MapAssign().Lit(50),
 				jen.ID("AttackTimeSec").MapAssign().ID("int").Call(jen.ID("runTime").Dot("Seconds").Call()),

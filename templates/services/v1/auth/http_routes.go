@@ -12,7 +12,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(buildHTTPRoutesConstantDefs()...)
+	code.Add(buildHTTPRoutesConstantDefs(proj)...)
 	code.Add(buildDecodeCookieFromRequest(proj)...)
 
 	// if proj.EnableNewsman {
@@ -37,11 +37,11 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	return code
 }
 
-func buildHTTPRoutesConstantDefs() []jen.Code {
+func buildHTTPRoutesConstantDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("CookieName is the name of the cookie we attach to requests."),
-			jen.ID("CookieName").Equals().Lit("todocookie"),
+			jen.ID("CookieName").Equals().Litf("%s_cookie", proj.Name.LowercaseAbbreviation()),
 			jen.ID("cookieErrorLogName").Equals().Lit("_COOKIE_CONSTRUCTION_ERROR_"),
 			jen.Line(),
 			jen.ID("sessionInfoKey").Equals().Lit("session_info"),

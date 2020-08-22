@@ -33,7 +33,7 @@ import (
 
 const (
 	// CookieName is the name of the cookie we attach to requests.
-	CookieName         = "todocookie"
+	CookieName         = "t_cookie"
 	cookieErrorLogName = "_COOKIE_CONSTRUCTION_ERROR_"
 
 	sessionInfoKey = "session_info"
@@ -390,7 +390,8 @@ func Test_buildHTTPRoutesConstantDefs(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildHTTPRoutesConstantDefs()
+		proj := testprojects.BuildTodoApp()
+		x := buildHTTPRoutesConstantDefs(proj)
 
 		expected := `
 package example
@@ -399,7 +400,7 @@ import ()
 
 const (
 	// CookieName is the name of the cookie we attach to requests.
-	CookieName         = "todocookie"
+	CookieName         = "t_cookie"
 	cookieErrorLogName = "_COOKIE_CONSTRUCTION_ERROR_"
 
 	sessionInfoKey = "session_info"

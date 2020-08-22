@@ -12,7 +12,7 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(buildRoundtripperConstDecls()...)
+	code.Add(buildRoundtripperConstDecls(proj)...)
 	code.Add(buildDefaultRoundTripper()...)
 	code.Add(buildNewDefaultRoundTripper()...)
 	code.Add(buildRoundTrip()...)
@@ -21,11 +21,11 @@ func roundtripperDotGo(proj *models.Project) *jen.File {
 	return code
 }
 
-func buildRoundtripperConstDecls() []jen.Code {
+func buildRoundtripperConstDecls(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("userAgentHeader").Equals().Lit("User-Agent"),
-			jen.ID("userAgent").Equals().Lit("TODO Service Client"),
+			jen.ID("userAgent").Equals().Litf("%s Service Client", proj.Name.Singular()),
 		),
 		jen.Line(),
 	}

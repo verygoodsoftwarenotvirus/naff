@@ -141,7 +141,8 @@ func Test_buildMetricsConstantsDeclarations(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildMetricsConstantsDeclarations()
+		proj := testprojects.BuildTodoApp()
+		x := buildMetricsConstantsDeclarations(proj)
 
 		expected := `
 package example

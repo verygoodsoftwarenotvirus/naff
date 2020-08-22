@@ -54,7 +54,7 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 	pn := n.Plural()
 	cnwp := n.SingularCommonNameWithPrefix()
 	pcn := n.PluralCommonName()
-	prn := n.PluralRouteName()
+	puvn := n.PluralUnexportedVarName()
 
 	lines := []jen.Code{
 		jen.Commentf("%s represents %s.", sn, cnwp),
@@ -63,7 +63,7 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 		jen.Commentf("%sList represents a list of %s.", sn, pcn),
 		jen.IDf("%sList", sn).Struct(
 			jen.ID("Pagination"),
-			jen.ID(pn).Index().ID(sn).Tag(jsonTag(prn)),
+			jen.ID(pn).Index().ID(sn).Tag(jsonTag(puvn)),
 		),
 	}
 

@@ -26,7 +26,7 @@ import (
 
 const (
 	userAgentHeader = "User-Agent"
-	userAgent       = "TODO Service Client"
+	userAgent       = "Todo Service Client"
 )
 
 type defaultRoundTripper struct {
@@ -72,7 +72,8 @@ func Test_buildRoundtripperConstDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildRoundtripperConstDecls()
+		proj := testprojects.BuildTodoApp()
+		x := buildRoundtripperConstDecls(proj)
 
 		expected := `
 package example
@@ -81,7 +82,7 @@ import ()
 
 const (
 	userAgentHeader = "User-Agent"
-	userAgent       = "TODO Service Client"
+	userAgent       = "Todo Service Client"
 )
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)

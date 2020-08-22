@@ -2,13 +2,14 @@ package client
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func docDotGo() *jen.File {
+func docDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	code.PackageComment(`Package client provides an HTTP client that can communicate with and interpret the responses
-of an instance of the todo service.`)
+	code.PackageCommentf(`Package client provides an HTTP client that can communicate with and interpret the responses
+of an instance of the %s service.`, proj.Name.SingularCommonName())
 
 	return code
 }

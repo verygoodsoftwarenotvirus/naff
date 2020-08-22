@@ -203,7 +203,8 @@ func Test_buildServerConstantDefinitions(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildServerConstantDefinitions()
+		proj := testprojects.BuildTodoApp()
+		x := buildServerConstantDefinitions(proj)
 
 		expected := `
 package example

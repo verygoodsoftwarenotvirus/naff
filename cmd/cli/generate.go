@@ -25,13 +25,13 @@ import (
 )
 
 var (
-	projectName   string
-	sourceModels  string
+	projectName,
+	sourceModels,
 	outputPackage string
 
-	//postgresEnabled bool
-	//sqliteEnabled   bool
-	//mariaDBEnabled  bool
+	postgresEnabled,
+	sqliteEnabled,
+	mariaDBEnabled bool
 
 	// generateCmd represents the generate command
 	generateCmd = &cobra.Command{
@@ -122,9 +122,9 @@ func init() {
 	generateCmd.Flags().StringVarP(&sourceModels, "source-models", "m", "", "input models package")
 	generateCmd.Flags().StringVarP(&outputPackage, "output-dir", "o", "", "package to generate")
 
-	//generateCmd.Flags().BoolVarP(&postgresEnabled, "enable-postgres", "", false, "enable postgres support")
-	//generateCmd.Flags().BoolVarP(&sqliteEnabled, "enable-sqlite", "", false, "enable sqlite support")
-	//generateCmd.Flags().BoolVarP(&mariaDBEnabled, "enable-mariadb", "", false, "enable mariadb support")
+	generateCmd.Flags().BoolVarP(&postgresEnabled, "enable-postgres", "", false, "enable postgres support")
+	generateCmd.Flags().BoolVarP(&sqliteEnabled, "enable-sqlite", "", false, "enable sqlite support")
+	generateCmd.Flags().BoolVarP(&mariaDBEnabled, "enable-mariadb", "", false, "enable mariadb support")
 
 	rootCmd.AddCommand(generateCmd)
 }
