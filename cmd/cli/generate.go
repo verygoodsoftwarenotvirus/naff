@@ -98,7 +98,14 @@ and run:
 	That will set your dependencies up, and then you should be good to code.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			p, err := models.CompleteSurvey(projectName, sourceModels, outputPackage)
+			p, err := models.CompleteSurvey(
+				projectName,
+				sourceModels,
+				outputPackage,
+				postgresEnabled,
+				sqliteEnabled,
+				mariaDBEnabled,
+			)
 			if err != nil {
 				return err
 			}
