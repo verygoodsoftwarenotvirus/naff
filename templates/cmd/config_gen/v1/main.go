@@ -93,7 +93,7 @@ func determineConstants(proj *models.Project) []jen.Code {
 		if typ.SearchEnabled {
 			lines = append(
 				lines,
-				jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()).Equals().Litf("search.%s_index_path", typ.Name.PluralRouteName()),
+				jen.IDf("%sSearchIndexPath", typ.Name.UnexportedVarName()).Equals().Litf("search.%s_index_path", typ.Name.PluralRouteName()),
 			)
 		}
 	}
@@ -175,7 +175,7 @@ func buildDevelopmentConfig(proj *models.Project) []jen.Code {
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			block = append(block,
-				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
+				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.UnexportedVarName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
 			)
 		}
 	}
@@ -235,7 +235,7 @@ func buildFrontendTestsConfig(proj *models.Project) []jen.Code {
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			block = append(block,
-				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
+				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.UnexportedVarName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
 			)
 		}
 	}
@@ -285,7 +285,7 @@ func buildCoverageConfig(proj *models.Project) []jen.Code {
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			block = append(block,
-				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
+				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.UnexportedVarName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
 				jen.Line(),
 			)
 		}
@@ -345,7 +345,7 @@ func buildBuildIntegrationTestForDBImplementation(proj *models.Project) []jen.Co
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			block = append(block,
-				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.PluralCommonName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
+				jen.ID("cfg").Dot("Set").Call(jen.IDf("%sSearchIndexPath", typ.Name.UnexportedVarName()), jen.IDf("default%sSearchIndexPath", typ.Name.Plural())),
 				jen.Line(),
 			)
 		}

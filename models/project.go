@@ -572,40 +572,37 @@ func CompleteSurvey(
 		return nil, surveyErr
 	}
 
-	dbOptions := []string{string(Postgres), string(Sqlite), string(MariaDB)}
+	dbOptions := []string{}
 	supportedDBs := []string{}
 	addOther := postgresEnabled || sqliteEnabled || mariaDBEnabled
 
-	indexOf := func(s []string, x string) int {
-		for i, y := range s {
-			if x == y {
-				return i
-			}
+	if d := string(Postgres); true {
+		if !postgresEnabled {
+			dbOptions = append(dbOptions, d)
+		} else {
+			supportedDBs = append(supportedDBs, d)
 		}
-		return -1
 	}
 
-	if !postgresEnabled {
-		d := string(Postgres)
-		dbOptions = append(dbOptions[:indexOf(dbOptions, d)], dbOptions[indexOf(dbOptions, d)+1:]...)
-		supportedDBs = append(supportedDBs, d)
+	if d := string(Sqlite); true {
+		if !sqliteEnabled {
+			dbOptions = append(dbOptions, d)
+		} else {
+			supportedDBs = append(supportedDBs, d)
+		}
 	}
 
-	if !sqliteEnabled {
-		d := string(Sqlite)
-		dbOptions = append(dbOptions[:indexOf(dbOptions, d)], dbOptions[indexOf(dbOptions, d)+1:]...)
-		supportedDBs = append(supportedDBs, d)
-	}
-
-	if !mariaDBEnabled {
-		d := string(MariaDB)
-		dbOptions = append(dbOptions[:indexOf(dbOptions, d)], dbOptions[indexOf(dbOptions, d)+1:]...)
-		supportedDBs = append(supportedDBs, d)
+	if d := string(MariaDB); true {
+		if !mariaDBEnabled {
+			dbOptions = append(dbOptions, d)
+		} else {
+			supportedDBs = append(supportedDBs, d)
+		}
 	}
 
 	dbPromptMsg := "Which databases would you like to generate code for?"
 	if addOther {
-		dbPromptMsg = "Which additional databases would you like to generate code for?"
+		dbPromptMsg = "Any additional databases you'd like to generate code for?"
 	}
 
 	dbSupportPrompt := &survey.MultiSelect{
