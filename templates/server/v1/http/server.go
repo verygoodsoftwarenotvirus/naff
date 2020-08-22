@@ -14,7 +14,7 @@ func serverDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(buildServerConstantDefinitions()...)
+	code.Add(buildServerConstantDefinitions(proj)...)
 	code.Add(buildServerTypeDefinitions(proj)...)
 	code.Add(buildServerProvideServer(proj)...)
 	code.Add(buildCommentedOutLogRoutesMethod()...)
@@ -24,11 +24,11 @@ func serverDotGo(proj *models.Project) *jen.File {
 	return code
 }
 
-func buildServerConstantDefinitions() []jen.Code {
+func buildServerConstantDefinitions(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.ID("maxTimeout").Equals().Lit(120).Times().Qual("time", "Second"),
-			jen.ID("serverNamespace").Equals().Lit("todo-service"),
+			jen.ID("serverNamespace").Equals().Litf("%s-service", proj.Name.KebabName()),
 		),
 		jen.Line(),
 	}

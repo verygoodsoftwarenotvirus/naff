@@ -49,7 +49,7 @@ func renderFileMap(proj *models.Project) []jen.Code {
 				}(),
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
-						return jen.Lit("environments/testing/config_files/integration-tests-mariadb.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("mariadb"), jen.Lit("dbuser:hunter2@tcp(database:3306)/todo"))
+						return jen.Lit("environments/testing/config_files/integration-tests-mariadb.toml").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(jen.ID("mariadb"), jen.Litf("dbuser:hunter2@tcp(database:3306)/%s", proj.Name.RouteName()))
 					}
 					return jen.Null()
 				}(),
@@ -65,7 +65,7 @@ func determineConstants(proj *models.Project) []jen.Code {
 		jen.ID("oneDay").Equals().Lit(24).Times().Qual("time", "Hour"),
 		jen.ID("debugCookieSecret").Equals().Lit("HEREISA32CHARSECRETWHICHISMADEUP"),
 		jen.ID("defaultFrontendFilepath").Equals().Lit("/frontend"),
-		jen.ID("postgresDBConnDetails").Equals().Lit("postgres://dbuser:hunter2@database:5432/todo?sslmode=disable"),
+		jen.ID("postgresDBConnDetails").Equals().Litf("postgres://dbuser:hunter2@database:5432/%s?sslmode=disable", proj.Name.RouteName()),
 		jen.ID("metaDebug").Equals().Lit("meta.debug"),
 		jen.ID("metaRunMode").Equals().Lit("meta.run_mode"),
 		jen.ID("metaStartupDeadline").Equals().Lit("meta.startup_deadline"),

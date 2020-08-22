@@ -12,7 +12,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code)
 
-	code.Add(buildMetricsConstantsDeclarations()...)
+	code.Add(buildMetricsConstantsDeclarations(proj)...)
 	code.Add(buildMetricsTypeDeclarations()...)
 	code.Add(buildMetricsVarDeclarations()...)
 	code.Add(buildProvideInstrumentationHandler(proj)...)
@@ -21,11 +21,11 @@ func metricsDotGo(proj *models.Project) *jen.File {
 	return code
 }
 
-func buildMetricsConstantsDeclarations() []jen.Code {
+func buildMetricsConstantsDeclarations(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("MetricsNamespace is the namespace under which we register metrics."),
-			jen.ID("MetricsNamespace").Equals().Lit("todo_server"),
+			jen.ID("MetricsNamespace").Equals().Litf("%s_server", proj.Name.RouteName()),
 			jen.Line(),
 			jen.Comment("MinimumRuntimeCollectionInterval is the smallest interval we can collect metrics at"),
 			jen.Comment("this value is used to guard against zero values."),

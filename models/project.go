@@ -21,6 +21,8 @@ import (
 	"gopkg.in/AlecAivazis/survey.v1"
 )
 
+type validDatabase string
+
 const (
 	metaFieldName = "_META_"
 
@@ -36,8 +38,6 @@ const (
 type depWrapper struct {
 	dependency string
 }
-
-type validDatabase string
 
 var (
 	validDatabaseMap = map[validDatabase]struct{}{
@@ -351,7 +351,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 								if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
 									dt.RestrictedToUser = true
 								}
-								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) && dt.BelongsToUser && dt.BelongsToStruct == nil {
+								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) {
 									dt.SearchEnabled = true
 								}
 								if dt.SearchEnabled {
@@ -509,7 +509,14 @@ type projectSurvey struct {
 }
 
 // CompleteSurvey asks the user questions to determine core project information
-func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, error) {
+func CompleteSurvey(
+	projectName,
+	sourceModels,
+	outputPackage string,
+	postgresEnabled,
+	sqliteEnabled,
+	mariaDBEnabled bool,
+) (*Project, error) {
 	// the questions to ask
 	questions := []*survey.Question{}
 	p := projectSurvey{}
@@ -565,10 +572,45 @@ func CompleteSurvey(projectName, sourceModels, outputPackage string) (*Project, 
 		return nil, surveyErr
 	}
 
+	dbOptions := []string{string(Postgres), string(Sqlite), string(MariaDB)}
 	supportedDBs := []string{}
+	addOther := postgresEnabled || sqliteEnabled || mariaDBEnabled
+
+	indexOf := func(s []string, x string) int {
+		for i, y := range s {
+			if x == y {
+				return i
+			}
+		}
+		return -1
+	}
+
+	if !postgresEnabled {
+		d := string(Postgres)
+		dbOptions = append(dbOptions[:indexOf(dbOptions, d)], dbOptions[indexOf(dbOptions, d)+1:]...)
+		supportedDBs = append(supportedDBs, d)
+	}
+
+	if !sqliteEnabled {
+		d := string(Sqlite)
+		dbOptions = append(dbOptions[:indexOf(dbOptions, d)], dbOptions[indexOf(dbOptions, d)+1:]...)
+		supportedDBs = append(supportedDBs, d)
+	}
+
+	if !mariaDBEnabled {
+		d := string(MariaDB)
+		dbOptions = append(dbOptions[:indexOf(dbOptions, d)], dbOptions[indexOf(dbOptions, d)+1:]...)
+		supportedDBs = append(supportedDBs, d)
+	}
+
+	dbPromptMsg := "Which databases would you like to generate code for?"
+	if addOther {
+		dbPromptMsg = "Which additional databases would you like to generate code for?"
+	}
+
 	dbSupportPrompt := &survey.MultiSelect{
-		Message: "Which databases would you like to generate code for?",
-		Options: []string{string(Postgres), string(Sqlite), string(MariaDB)},
+		Message: dbPromptMsg,
+		Options: dbOptions,
 	}
 
 	if dbPromptErr := survey.AskOne(dbSupportPrompt, &supportedDBs, nil); dbPromptErr != nil {

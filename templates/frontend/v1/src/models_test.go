@@ -29,8 +29,8 @@ export class Item {
 
   constructor() {
     this.id = 0;
-    name = "";
-    details = "";
+    this.name = "";
+    this.details = "";
     this.createdOn = 0;
   }
 
@@ -47,7 +47,7 @@ static areEqual = function(
   }
 }
 
-export const fakeValidIngredientFactory = Factory.Sync.makeFactory<ValidIngredient> ({
+export const fakeValidIngredientFactory = Factory.Sync.makeFactory<Item> ({
   name: Factory.Sync.each(() =>  faker.random.word()),
   details: Factory.Sync.each(() =>  faker.random.word()),
   ...defaultFactories,
@@ -102,34 +102,34 @@ export class EveryType {
 
   constructor() {
     this.id = 0;
-    string = "";
-    pointerToString = "";
-    bool = false;
-    pointerToBool = false;
-    int = 0;
-    pointerToInt = 0;
-    int8 = 0;
-    pointerToInt8 = 0;
-    int16 = 0;
-    pointerToInt16 = 0;
-    int32 = 0;
-    pointerToInt32 = 0;
-    int64 = 0;
-    pointerToInt64 = 0;
-    uint = 0;
-    pointerToUint = 0;
-    uint8 = 0;
-    pointerToUint8 = 0;
-    uint16 = 0;
-    pointerToUint16 = 0;
-    uint32 = 0;
-    pointerToUint32 = 0;
-    uint64 = 0;
-    pointerToUint64 = 0;
-    float32 = 0;
-    pointerToFloat32 = 0;
-    float64 = 0;
-    pointerToFloat64 = 0;
+    this.string = "";
+    this.pointerToString = "";
+    this.bool = false;
+    this.pointerToBool = false;
+    this.int = 0;
+    this.pointerToInt = 0;
+    this.int8 = 0;
+    this.pointerToInt8 = 0;
+    this.int16 = 0;
+    this.pointerToInt16 = 0;
+    this.int32 = 0;
+    this.pointerToInt32 = 0;
+    this.int64 = 0;
+    this.pointerToInt64 = 0;
+    this.uint = 0;
+    this.pointerToUint = 0;
+    this.uint8 = 0;
+    this.pointerToUint8 = 0;
+    this.uint16 = 0;
+    this.pointerToUint16 = 0;
+    this.uint32 = 0;
+    this.pointerToUint32 = 0;
+    this.uint64 = 0;
+    this.pointerToUint64 = 0;
+    this.float32 = 0;
+    this.pointerToFloat32 = 0;
+    this.float64 = 0;
+    this.pointerToFloat64 = 0;
     this.createdOn = 0;
   }
 
@@ -172,7 +172,7 @@ static areEqual = function(
   }
 }
 
-export const fakeValidIngredientFactory = Factory.Sync.makeFactory<ValidIngredient> ({
+export const fakeValidIngredientFactory = Factory.Sync.makeFactory<EveryType> ({
   string: Factory.Sync.each(() =>  faker.random.word()),
   pointerToString: Factory.Sync.each(() =>  faker.random.word()),
   bool: Factory.Sync.each(() =>  faker.random.boolean()),

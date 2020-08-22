@@ -146,7 +146,7 @@ export class %s {
 
 	for _, field := range typ.Fields {
 		output += fmt.Sprintf(
-			"    %s = %s;\n",
+			"    this.%s = %s;\n",
 			field.Name.UnexportedVarName(),
 			typeToDefaultJSValue(field.Type),
 		)
@@ -178,8 +178,8 @@ static areEqual = function(
   }
 }
 
-export const fakeValidIngredientFactory = Factory.Sync.makeFactory<ValidIngredient> ({
-`, abbr, abbr)
+export const fakeValidIngredientFactory = Factory.Sync.makeFactory<%s> ({
+`, abbr, abbr, sn)
 
 	for _, field := range typ.Fields {
 		output += fmt.Sprintf(

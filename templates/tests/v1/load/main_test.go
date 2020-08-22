@@ -188,7 +188,8 @@ func Test_buildMainDo(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildMainDo()
+		proj := testprojects.BuildTodoApp()
+		x := buildMainDo(proj)
 
 		expected := `
 package example
@@ -306,7 +307,8 @@ func Test_buildMainMain(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildMainMain()
+		proj := testprojects.BuildTodoApp()
+		x := buildMainMain(proj)
 
 		expected := `
 package example

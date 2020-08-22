@@ -172,7 +172,7 @@ type (
 	// YetAnotherThingList represents a list of yet another things.
 	YetAnotherThingList struct {
 		Pagination
-		YetAnotherThings []YetAnotherThing ` + "`" + `json:"yet_another_things"` + "`" + `
+		YetAnotherThings []YetAnotherThing ` + "`" + `json:"yetAnotherThings"` + "`" + `
 	}
 	// YetAnotherThingSearchHelper contains all the owner IDs for search purposes.
 	YetAnotherThingSearchHelper struct {
@@ -437,7 +437,7 @@ type (
 	// YetAnotherThingList represents a list of yet another things.
 	YetAnotherThingList struct {
 		Pagination
-		YetAnotherThings []YetAnotherThing ` + "`" + `json:"yet_another_things"` + "`" + `
+		YetAnotherThings []YetAnotherThing ` + "`" + `json:"yetAnotherThings"` + "`" + `
 	}
 	// YetAnotherThingSearchHelper contains all the owner IDs for search purposes.
 	YetAnotherThingSearchHelper struct {

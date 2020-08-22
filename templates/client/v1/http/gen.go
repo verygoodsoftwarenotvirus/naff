@@ -17,7 +17,7 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"client/v1/http/doc.go":                   docDotGo(),
+		"client/v1/http/doc.go":                   docDotGo(proj),
 		"client/v1/http/client.go":                mainDotGo(proj),
 		"client/v1/http/client_test.go":           mainTestDotGo(proj),
 		"client/v1/http/helpers.go":               helpersDotGo(proj),
