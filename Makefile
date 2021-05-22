@@ -49,6 +49,8 @@ install-tojen-fork:
 clean-coverage:
 	@rm -f $(COVERAGE_OUT) profile.out;
 
+test: coverage
+
 .PHONY: coverage
 coverage: clean-coverage $(ARTIFACTS_DIR)
 	go test -coverprofile=$(COVERAGE_OUT) -covermode=atomic -race $(PACKAGE_LIST)
