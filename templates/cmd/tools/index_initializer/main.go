@@ -10,14 +10,20 @@ import (
 	"strings"
 )
 
+const (
+	packageName = "main"
+
+	basePackagePath = "cmd/tools/index_initializer"
+)
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"cmd/tools/index_initializer/main.go": mainDotGo(proj),
+		"main.go": mainDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(proj, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
@@ -26,7 +32,7 @@ func RenderPackage(proj *models.Project) error {
 }
 
 func mainDotGo(proj *models.Project) *jen.File {
-	code := jen.NewFile("main")
+	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code)
 

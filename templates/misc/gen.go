@@ -31,12 +31,10 @@ func RenderPackage(project *models.Project) error {
 
 		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			log.Printf("error opening file: %v", err)
 			return err
 		}
 
-		if _, err := f.WriteString(file(project)); err != nil {
-			log.Printf("error writing to file: %v", err)
+		if _, err = f.WriteString(file(project)); err != nil {
 			return err
 		}
 	}

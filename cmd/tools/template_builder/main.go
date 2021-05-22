@@ -138,7 +138,7 @@ func doTheThingForPackage(pkg, pkgPath string) error {
 
 	genDotGo := buildGenDotGo(pkg, fileMap)
 	ggfp := fmt.Sprintf("%s/gen.go", outputPath)
-	if err := ioutil.WriteFile(ggfp, []byte(genDotGo), 0644); err != nil {
+	if err = ioutil.WriteFile(ggfp, []byte(genDotGo), 0644); err != nil {
 		return err
 	}
 

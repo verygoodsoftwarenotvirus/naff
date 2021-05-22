@@ -1,4 +1,4 @@
-package misc
+package dockerfiles
 
 import (
 	"fmt"
