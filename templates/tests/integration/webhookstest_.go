@@ -10,7 +10,7 @@ import (
 func webhooksTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildCheckWebhookEquality(proj)...)
 	code.Add(buildReverse()...)
@@ -21,7 +21,7 @@ func webhooksTestDotGo(proj *models.Project) *jen.File {
 
 func buildCheckWebhookEquality(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Body(
+		jen.Func().ID("checkWebhookEquality").Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.TypesPackage(), "Webhook")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
@@ -100,7 +100,7 @@ func buildTestWebhooks(proj *models.Project) []jen.Code {
 					utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
 					jen.Line(),
 					jen.Comment("Create webhooks."),
-					jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+					jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), "Webhook"),
 					jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 						utils.BuildFakeVar(proj, "Webhook"),
 						utils.BuildFakeVarWithCustomName(

@@ -9,7 +9,7 @@ import (
 func wireTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	// if proj.EnableNewsman {
 	code.Add(buildTestProvideUserDataManager(proj)...)
@@ -27,7 +27,7 @@ func buildTestProvideUserDataManager(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				utils.AssertNotNil(jen.ID("ProvideUserDataManager").Call(
-					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				), nil),
 			)),
 		),

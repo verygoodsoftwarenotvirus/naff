@@ -26,7 +26,7 @@ import (
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
 )
@@ -151,7 +151,7 @@ func Test_buildUsersServiceVarDefs(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 var (
@@ -179,7 +179,7 @@ import (
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
 )
@@ -237,7 +237,7 @@ import (
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 )
 

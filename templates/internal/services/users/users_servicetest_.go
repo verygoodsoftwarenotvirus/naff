@@ -10,7 +10,7 @@ import (
 func usersServiceTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildTestService(proj)...)
 	code.Add(buildTestProvideUsersService(proj)...)
@@ -25,27 +25,27 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.ID("expectedUserCount").Assign().Uint64().Call(jen.Lit(123)),
 			jen.Line(),
-			jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+			jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 			jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 				jen.Lit("GetAllUsersCount"),
 				jen.Qual(constants.MockPkg, "Anything"),
 			).Dot("Return").Call(jen.ID("expectedUserCount"), jen.Nil()),
 			jen.Line(),
-			jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-			jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-				jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+			jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+			jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+				jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 				jen.ID("description").String(),
-			).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
+			).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"), jen.Error()).Body(
 				jen.Return().List(jen.ID("uc"), jen.Nil()),
 			),
 			jen.Line(),
 			jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
-				jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
+				jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
 				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+				jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-				jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 			),
 			utils.RequireNoError(jen.Err(), nil),
@@ -67,21 +67,21 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 					jen.Error(),
 				).Body(
-					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
+					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
-					jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
+					jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Nil(),
 				),
@@ -91,20 +91,20 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with nil userIDFetcher",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 					jen.Error()).Body(
-					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
+					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
-					jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
+					jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
 					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
-					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Nil(),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Nil(),
 				),
@@ -114,24 +114,24 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error initializing counter",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
-					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
+					jen.ID("description").String()).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 					jen.Error(),
 				).Body(
 					jen.Return().List(
-						jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+						jen.AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 						constants.ObligatoryError(),
 					),
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
-					jen.Qual(proj.InternalConfigV1Package(), "AuthSettings").Values(),
+					jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(), jen.ID("ucp"), jen.Nil(),
 				),
 				utils.AssertError(jen.Err(), nil),
 				utils.AssertNil(jen.ID("service"), nil),

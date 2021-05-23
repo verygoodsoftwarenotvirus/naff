@@ -10,7 +10,7 @@ import (
 func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTest_randString()...)
 	code.Add(buildBuildRequest()...)
@@ -75,7 +75,7 @@ func buildTest_fetchUserID(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -115,7 +115,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "OAuth2ClientList"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -124,7 +124,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -137,7 +137,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -153,16 +153,16 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				"with no rows returned",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -174,7 +174,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -190,20 +190,20 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				"with error fetching from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("*models.QueryFilter")),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")).Call(jen.Nil()), constants.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -221,7 +221,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "OAuth2ClientList"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientsForUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -230,7 +230,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2ClientList")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -242,7 +242,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -275,7 +275,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Callln(
 					jen.Lit("GetUserByUsername"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Username")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")),
@@ -288,7 +288,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("a").Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -300,11 +300,11 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("a"),
 				jen.Line(),
-				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("oauth2ClientCounter").Equals().ID("uc"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -323,7 +323,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -354,12 +354,12 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Username"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -373,7 +373,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -393,7 +393,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -405,7 +405,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 					jen.ID(utils.BuildFakeVarName("Input"))).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("a").Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -428,7 +428,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -448,7 +448,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -461,7 +461,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("a").Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -484,7 +484,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -504,7 +504,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -514,10 +514,10 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 					jen.Lit("CreateOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), constants.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("a").Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -540,7 +540,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -560,7 +560,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Callln(
 					jen.Lit("GetUserByUsername"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -573,7 +573,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("a").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("a").Dot("On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -585,11 +585,11 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("a"),
 				jen.Line(),
-				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("oauth2ClientCounter").Equals().ID("uc"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -608,7 +608,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -643,7 +643,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -652,7 +652,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -664,7 +664,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -686,7 +686,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -699,7 +699,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -721,20 +721,20 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")).Dot(constants.UserOwnershipFieldName),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), constants.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -756,7 +756,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -765,7 +765,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("OAuth2Client")), jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -777,7 +777,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -812,7 +812,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("ArchiveOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -821,7 +821,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("database").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("uc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("uc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("oauth2ClientCounter").Equals().ID("uc"),
 				jen.Line(),
@@ -829,7 +829,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -851,7 +851,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("ArchiveOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -864,7 +864,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
@@ -886,7 +886,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("OAuth2Client")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("ArchiveOAuth2Client"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -899,7 +899,7 @@ func buildTestService_ArchiveHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),

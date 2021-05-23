@@ -10,7 +10,7 @@ import (
 func helpersTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildHelperTestingType()...)
 	code.Add(buildTestArgIsNotPointerOrNil()...)
@@ -278,7 +278,7 @@ func buildTestUnmarshalBody(proj *models.Project) []jen.Code {
 									jen.ID("bs"),
 									jen.Err(),
 								).Assign().Qual("encoding/json", "Marshal").Call(
-									jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
+									jen.AddressOf().Qual(proj.TypesPackage(), "ErrorResponse").Values(),
 								),
 								utils.RequireNoError(jen.Err(), nil),
 								jen.Return().String().Call(

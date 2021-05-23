@@ -21,7 +21,7 @@ package example
 import (
 	"context"
 	"database/sql"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"io"
 )
 
@@ -111,7 +111,7 @@ package example
 import (
 	"context"
 	"database/sql"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"io"
 )
 

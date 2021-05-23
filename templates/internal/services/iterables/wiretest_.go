@@ -9,7 +9,7 @@ import (
 func wireTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestProvideSomethingDataManager(proj, typ)...)
 	code.Add(buildTestProvideSomethingDataServer(typ)...)
@@ -25,7 +25,7 @@ func buildTestProvideSomethingDataManager(proj *models.Project, typ models.DataT
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-				jen.IDf("Provide%sDataManager", sn).Call(jen.Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call()),
+				jen.IDf("Provide%sDataManager", sn).Call(jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call()),
 			)),
 		),
 	}

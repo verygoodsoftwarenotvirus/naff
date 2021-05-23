@@ -10,7 +10,7 @@ import (
 func usersServiceDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildUsersServiceConstDefs(proj)...)
 	code.Add(buildUsersServiceVarDefs(proj)...)
@@ -26,7 +26,7 @@ func buildUsersServiceConstDefs(proj *models.Project) []jen.Code {
 			jen.ID("serviceName").Equals().Lit("users_service"),
 			jen.ID("topicName").Equals().Lit("users"),
 			jen.ID("counterDescription").Equals().Lit("number of users managed by the users service"),
-			jen.ID("counterName").Equals().Qual(proj.InternalMetricsV1Package(), "CounterName").Call(jen.ID("serviceName")),
+			jen.ID("counterName").Equals().Qual(proj.InternalMetricsPackage(), "CounterName").Call(jen.ID("serviceName")),
 		),
 		jen.Line(),
 	}
@@ -37,7 +37,7 @@ func buildUsersServiceConstDefs(proj *models.Project) []jen.Code {
 func buildUsersServiceVarDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Var().Defs(
-			jen.Underscore().Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.TypesPackage(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -64,12 +64,12 @@ func buildUsersServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Comment("Service handles our users."),
 			jen.ID("Service").Struct(
 				jen.ID("cookieSecret").Index().Byte(),
-				jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
-				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
+				jen.ID("userDataManager").Qual(proj.TypesPackage(), "UserDataManager"),
+				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 				constants.LoggerParam(),
-				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
-				jen.ID("userCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				jen.ID("userCounter").Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.ID("secretGenerator").ID("secretGenerator"),
 				jen.ID("userCreationEnabled").Bool(),
@@ -87,12 +87,12 @@ func buildProvideUsersService(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideUsersService builds a new UsersService."),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
-			jen.ID("authSettings").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
+			jen.ID("authSettings").Qual(proj.InternalConfigPackage(), "AuthSettings"),
 			constants.LoggerParam(),
-			jen.ID("userDataManager").Qual(proj.ModelsV1Package(), "UserDataManager"),
-			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
-			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
+			jen.ID("userDataManager").Qual(proj.TypesPackage(), "UserDataManager"),
+			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
+			jen.ID("counterProvider").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider"),
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.If(jen.ID("userIDFetcher").IsEqualTo().ID("nil")).Body(

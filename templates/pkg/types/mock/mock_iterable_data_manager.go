@@ -12,13 +12,13 @@ import (
 func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	n := typ.Name
 	sn := n.Singular()
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -73,10 +73,10 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function.", sn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -114,7 +114,7 @@ func buildGetAllSomethings(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%s", pn).Params(
 			constants.CtxParam(),
-			jen.ID("results").Chan().Index().Qual(proj.ModelsV1Package(), sn),
+			jen.ID("results").Chan().Index().Qual(proj.TypesPackage(), sn),
 		).Params(jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("results")),
 			jen.Return().List(
@@ -138,12 +138,12 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function.", pn),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
-					jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)),
+					jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)),
 				),
 				jen.ID("args").Dot("Error").Call(jen.One()),
 			),
@@ -167,12 +167,12 @@ func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sWithIDs", pn).
 			Params(params...).
-			Params(jen.Index().Qual(proj.ModelsV1Package(), sn), jen.Error()).
+			Params(jen.Index().Qual(proj.TypesPackage(), sn), jen.Error()).
 			Body(
 				jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 				jen.Return().List(
 					jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
-						jen.Index().Qual(proj.ModelsV1Package(), sn),
+						jen.Index().Qual(proj.TypesPackage(), sn),
 					),
 					jen.ID("args").Dot("Error").Call(jen.One()),
 				),
@@ -195,12 +195,12 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(
 			params...,
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(
 				args...,
 			),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}

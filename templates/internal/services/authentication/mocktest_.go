@@ -10,7 +10,7 @@ import (
 func mockTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
 		jen.Var().Underscore().ID("OAuth2ClientValidator").Equals().Parens(jen.PointerTo().ID("mockOAuth2ClientValidator")).Call(jen.Nil()),
@@ -56,11 +56,11 @@ func buildMockOAuth2ClientValidatorExtractOAuth2ClientFromRequest(proj *models.P
 		jen.Func().Params(jen.ID("m").PointerTo().ID("mockOAuth2ClientValidator")).ID("ExtractOAuth2ClientFromRequest").Params(
 			constants.CtxParam(),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 			jen.Return().List(
-				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")),
+				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")),
 				jen.ID("args").Dot("Error").Call(jen.One()),
 			),
 		),

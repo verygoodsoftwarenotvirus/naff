@@ -26,7 +26,7 @@ import (
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -132,7 +132,7 @@ import (
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -185,7 +185,7 @@ import (
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // ProvideAuthService builds a new AuthService.

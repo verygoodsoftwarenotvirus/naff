@@ -29,7 +29,7 @@ import (
 	totp "github.com/pquerna/otp/totp"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"image/png"
 	"net/http"
@@ -536,7 +536,7 @@ import (
 	"context"
 	"database/sql"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -601,7 +601,7 @@ package example
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -648,7 +648,7 @@ package example
 import (
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
 )
@@ -897,7 +897,7 @@ package example
 import (
 	totp "github.com/pquerna/otp/totp"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -962,7 +962,7 @@ package example
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -1051,7 +1051,7 @@ package example
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 
@@ -1136,7 +1136,7 @@ package example
 
 import (
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
 )

@@ -28,8 +28,8 @@ import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -677,8 +677,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -1331,8 +1331,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -1982,7 +1982,7 @@ package example
 import (
 	"database/sql/driver"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2031,7 +2031,7 @@ package example
 
 import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2069,7 +2069,7 @@ package example
 
 import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2107,7 +2107,7 @@ package example
 
 import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2294,7 +2294,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -2334,7 +2334,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -2374,7 +2374,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -2421,7 +2421,7 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -2518,7 +2518,7 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -2615,7 +2615,7 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3091,7 +3091,7 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3186,7 +3186,7 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3281,7 +3281,7 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3377,7 +3377,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3421,7 +3421,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3465,7 +3465,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3516,8 +3516,8 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3620,8 +3620,8 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3724,8 +3724,8 @@ import (
 	"database/sql"
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -3829,7 +3829,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -3876,7 +3876,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -3923,7 +3923,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -3977,7 +3977,7 @@ import (
 	"errors"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4058,7 +4058,7 @@ import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4144,7 +4144,7 @@ import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4230,7 +4230,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4278,7 +4278,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4326,7 +4326,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4381,7 +4381,7 @@ import (
 	"errors"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4459,7 +4459,7 @@ import (
 	"errors"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4537,7 +4537,7 @@ import (
 	"errors"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"strings"
 	"testing"
 )
@@ -4616,7 +4616,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -4656,7 +4656,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -4696,7 +4696,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -4742,7 +4742,7 @@ import (
 	"context"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -4785,7 +4785,7 @@ import (
 	"context"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -4828,7 +4828,7 @@ import (
 	"context"
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 

@@ -11,7 +11,7 @@ import (
 func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildRequest()...)
 	code.Add(buildTestService_StaticDir(proj)...)
@@ -119,7 +119,7 @@ func buildTestService_buildStaticFileServer(proj *models.Project) []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID("config").MapAssign().Qual(proj.InternalConfigV1Package(), "FrontendSettings").Valuesln(
+					jen.ID("config").MapAssign().Qual(proj.InternalConfigPackage(), "FrontendSettings").Valuesln(
 						jen.ID("CacheStaticFiles").MapAssign().True(),
 					),
 				),

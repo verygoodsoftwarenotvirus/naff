@@ -28,7 +28,7 @@ import (
 	pq "github.com/lib/pq"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 const (
@@ -477,7 +477,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 const (
@@ -925,7 +925,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 const (
@@ -1438,7 +1438,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanUser provides a consistent way to scan something like a *sql.Row into a User struct.
@@ -1484,7 +1484,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanUser provides a consistent way to scan something like a *sql.Row into a User struct.
@@ -1530,7 +1530,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanUser provides a consistent way to scan something like a *sql.Row into a User struct.
@@ -1581,7 +1581,7 @@ package example
 import (
 	"fmt"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanUsers takes database rows and loads them into a slice of User structs.
@@ -1626,7 +1626,7 @@ package example
 import (
 	"fmt"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanUsers takes database rows and loads them into a slice of User structs.
@@ -1671,7 +1671,7 @@ package example
 import (
 	"fmt"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanUsers takes database rows and loads them into a slice of User structs.
@@ -1840,7 +1840,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUser fetches a user.
@@ -1871,7 +1871,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUser fetches a user.
@@ -1902,7 +1902,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUser fetches a user.
@@ -2055,7 +2055,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUserWithUnverifiedTwoFactorSecret fetches a user with an unverified two factor secret
@@ -2086,7 +2086,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUserWithUnverifiedTwoFactorSecret fetches a user with an unverified two factor secret
@@ -2117,7 +2117,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUserWithUnverifiedTwoFactorSecret fetches a user with an unverified two factor secret
@@ -2275,7 +2275,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUserByUsername fetches a user by their username.
@@ -2311,7 +2311,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUserByUsername fetches a user by their username.
@@ -2347,7 +2347,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUserByUsername fetches a user by their username.
@@ -2577,7 +2577,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetUsersQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere
@@ -2618,7 +2618,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetUsersQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere
@@ -2659,7 +2659,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetUsersQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere
@@ -2704,7 +2704,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUsers fetches a list of users from the database that meet a particular filter.
@@ -2748,7 +2748,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUsers fetches a list of users from the database that meet a particular filter.
@@ -2792,7 +2792,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetUsers fetches a list of users from the database that meet a particular filter.
@@ -2839,7 +2839,7 @@ package example
 
 import (
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildCreateUserQuery returns a SQL query (and arguments) that would create a given User
@@ -2889,7 +2889,7 @@ func (p *Postgres) buildCreateUserQuery(input v1.UserDatabaseCreationInput) (que
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildCreateUserQuery returns a SQL query (and arguments) that would create a given User
@@ -2938,7 +2938,7 @@ func (s *Sqlite) buildCreateUserQuery(input v1.UserDatabaseCreationInput) (query
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildCreateUserQuery returns a SQL query (and arguments) that would create a given User
@@ -2995,7 +2995,7 @@ import (
 	"fmt"
 	pq "github.com/lib/pq"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateUser creates a user.
@@ -3038,7 +3038,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateUser creates a user.
@@ -3083,7 +3083,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateUser creates a user.
@@ -3132,7 +3132,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row
@@ -3173,7 +3173,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row
@@ -3213,7 +3213,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row
@@ -3257,7 +3257,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateUser receives a complete User struct and updates its place in the db.
@@ -3283,7 +3283,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateUser receives a complete User struct and updates its place in the db.
@@ -3310,7 +3310,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateUser receives a complete User struct and updates its place in the db.

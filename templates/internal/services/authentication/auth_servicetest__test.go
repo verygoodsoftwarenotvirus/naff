@@ -27,7 +27,7 @@ import (
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"testing"
 )
 
@@ -112,7 +112,7 @@ import (
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"testing"
 )
 
@@ -169,7 +169,7 @@ import (
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"testing"
 )
 

@@ -26,7 +26,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 	"sync"
 )
@@ -450,7 +450,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 	"sync"
 )
@@ -880,7 +880,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 	"sync"
 )
@@ -1372,7 +1372,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -1422,7 +1422,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -1472,7 +1472,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -1526,7 +1526,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients.
@@ -1569,7 +1569,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients.
@@ -1612,7 +1612,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients.
@@ -1774,7 +1774,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientByClientID gets an OAuth2 client.
@@ -1799,7 +1799,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientByClientID gets an OAuth2 client.
@@ -1824,7 +1824,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientByClientID gets an OAuth2 client.
@@ -1994,7 +1994,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2Clients gets a list of OAuth2 clients regardless of ownership.
@@ -2032,7 +2032,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2Clients gets a list of OAuth2 clients regardless of ownership.
@@ -2070,7 +2070,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2Clients gets a list of OAuth2 clients regardless of ownership.
@@ -2112,7 +2112,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2ClientsForUser gets a list of OAuth2 clients belonging to a given user.
@@ -2152,7 +2152,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2ClientsForUser gets a list of OAuth2 clients belonging to a given user.
@@ -2192,7 +2192,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2ClientsForUser gets a list of OAuth2 clients belonging to a given user.
@@ -2348,7 +2348,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2Client retrieves an OAuth2 client from the database.
@@ -2384,7 +2384,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2Client retrieves an OAuth2 client from the database.
@@ -2420,7 +2420,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2Client retrieves an OAuth2 client from the database.
@@ -2677,7 +2677,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetOAuth2ClientsForUserQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that
@@ -2720,7 +2720,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetOAuth2ClientsForUserQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that
@@ -2763,7 +2763,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetOAuth2ClientsForUserQuery returns a SQL query (and arguments) that will retrieve a list of OAuth2 clients that
@@ -2811,7 +2811,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientsForUser gets a list of OAuth2 clients.
@@ -2864,7 +2864,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientsForUser gets a list of OAuth2 clients.
@@ -2917,7 +2917,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientsForUser gets a list of OAuth2 clients.
@@ -2972,7 +2972,7 @@ package example
 
 import (
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3020,7 +3020,7 @@ func (p *Postgres) buildCreateOAuth2ClientQuery(input *v1.OAuth2Client) (query s
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3067,7 +3067,7 @@ func (s *Sqlite) buildCreateOAuth2ClientQuery(input *v1.OAuth2Client) (query str
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3120,7 +3120,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateOAuth2Client creates an OAuth2 client.
@@ -3159,7 +3159,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateOAuth2Client creates an OAuth2 client.
@@ -3206,7 +3206,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateOAuth2Client creates an OAuth2 client.
@@ -3257,7 +3257,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3299,7 +3299,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3340,7 +3340,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3385,7 +3385,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateOAuth2Client updates a OAuth2 client.
@@ -3410,7 +3410,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateOAuth2Client updates a OAuth2 client.
@@ -3436,7 +3436,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateOAuth2Client updates a OAuth2 client.

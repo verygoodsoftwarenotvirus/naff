@@ -22,8 +22,8 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -202,7 +202,7 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -287,7 +287,7 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -330,8 +330,8 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -393,7 +393,7 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -437,7 +437,7 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -481,7 +481,7 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 

@@ -9,7 +9,7 @@ import (
 func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestSomething_Update(typ)...)
 	code.Add(buildTestSomething_ToUpdateInput(proj, typ)...)

@@ -45,7 +45,7 @@ import (
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
 	bleve "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/bleve"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"log"
 	"time"
 )
@@ -277,7 +277,7 @@ import (
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
 	bleve "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/bleve"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"log"
 	"time"
 )

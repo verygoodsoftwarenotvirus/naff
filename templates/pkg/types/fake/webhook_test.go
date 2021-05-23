@@ -20,7 +20,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeWebhook builds a faked Webhook.
@@ -110,7 +110,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeWebhook builds a faked Webhook.
@@ -147,7 +147,7 @@ func Test_buildBuildFakeWebhookList(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeWebhookList builds a faked WebhookList.
@@ -185,7 +185,7 @@ func Test_buildBuildFakeWebhookUpdateInputFromWebhook(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeWebhookUpdateInputFromWebhook builds a faked WebhookUpdateInput.
@@ -219,7 +219,7 @@ func Test_buildBuildFakeWebhookCreationInput(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeWebhookCreationInput builds a faked WebhookCreationInput.
@@ -245,7 +245,7 @@ func Test_buildBuildFakeWebhookCreationInputFromWebhook(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeWebhookCreationInputFromWebhook builds a faked WebhookCreationInput.

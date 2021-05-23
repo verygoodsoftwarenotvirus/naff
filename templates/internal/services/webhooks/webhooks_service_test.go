@@ -23,7 +23,7 @@ import (
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
 )
@@ -115,7 +115,7 @@ package example
 
 import (
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 const (
@@ -147,7 +147,7 @@ func Test_buildWebhooksServiceVarDefs(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 var (
@@ -174,7 +174,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
 )
@@ -225,7 +225,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 )
 

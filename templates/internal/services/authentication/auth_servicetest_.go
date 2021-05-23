@@ -10,7 +10,7 @@ import (
 func authServiceTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.ImportName("github.com/alexedwards/scs/v2/memstore", "memstore")
 
@@ -26,13 +26,13 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.ID("cfg").Assign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
+			jen.ID("cfg").Assign().Qual(proj.InternalConfigPackage(), "AuthSettings").Valuesln(
 				jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 			),
-			jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-			jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
+			jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+			jen.ID("userDB").Assign().AddressOf().Qual(proj.TypesPackage("mock"), "UserDataManager").Values(),
 			jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
-			jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
+			jen.ID("ed").Assign().Qual(proj.InternalEncodingPackage(), "ProvideResponseEncoder").Call(),
 			jen.Line(),
 			jen.ID("sm").Assign().Qual(constants.SessionManagerLibrary, "New").Call(),
 			jen.Comment("this is currently the default, but in case that changes"),
@@ -64,13 +64,13 @@ func buildTestProvideAuthService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("cfg").Assign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
+				jen.ID("cfg").Assign().Qual(proj.InternalConfigPackage(), "AuthSettings").Valuesln(
 					jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 				),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.ID("userDB").Assign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataManager").Values(),
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.ID("userDB").Assign().AddressOf().Qual(proj.TypesPackage("mock"), "UserDataManager").Values(),
 				jen.ID("oauth").Assign().AddressOf().ID("mockOAuth2ClientValidator").Values(),
-				jen.ID("ed").Assign().Qual(proj.InternalEncodingV1Package(), "ProvideResponseEncoder").Call(),
+				jen.ID("ed").Assign().Qual(proj.InternalEncodingPackage(), "ProvideResponseEncoder").Call(),
 				jen.ID("sm").Assign().Qual(constants.SessionManagerLibrary, "New").Call(),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(

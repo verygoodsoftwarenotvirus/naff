@@ -10,7 +10,7 @@ import (
 func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	for _, typ := range proj.DataTypes {
 		if typ.OwnedByAUserAtSomeLevel(proj) {
@@ -173,7 +173,7 @@ func buildTest_userIDFetcherFromRequestContext(proj *models.Project) []jen.Code 
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID("expected"),
 					),
 				),
@@ -213,7 +213,7 @@ func buildTest_buildRouteParamUserIDFetcher(proj *models.Project) []jen.Code {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceUsersPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
@@ -237,7 +237,7 @@ func buildTest_buildRouteParamUserIDFetcher(proj *models.Project) []jen.Code {
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceUsersPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
@@ -331,7 +331,7 @@ func buildTest_buildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code 
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceWebhooksPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
@@ -355,7 +355,7 @@ func buildTest_buildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code 
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceWebhooksPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
@@ -388,7 +388,7 @@ func buildTest_buildRouteParamOAuth2ClientIDFetcher(proj *models.Project) []jen.
 						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceOAuth2ClientsPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
@@ -412,7 +412,7 @@ func buildTest_buildRouteParamOAuth2ClientIDFetcher(proj *models.Project) []jen.
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceOAuth2ClientsPackage(), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),

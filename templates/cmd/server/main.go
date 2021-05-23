@@ -12,7 +12,7 @@ import (
 func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMain(proj)...)
 
@@ -41,7 +41,7 @@ func buildMain(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("only allow initialization to take so long."),
 			jen.List(constants.CtxVar(), jen.ID("cancel")).Assign().Qual("context", "WithTimeout").Call(jen.Qual("context", "Background").Call(), jen.ID("cfg").Dot("Meta").Dot("StartupDeadline")),
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("initialization")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.CtxVar(), jen.Lit("initialization")),
 			jen.Line(),
 			jen.Comment("connect to our database."),
 			jen.ID("logger").Dot("Debug").Call(jen.Lit("connecting to database")),

@@ -9,7 +9,7 @@ import (
 
 func userDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildFakeUser(proj)...)
 	code.Add(buildBuildDatabaseCreationResponse(proj)...)
@@ -33,10 +33,10 @@ func buildBuildFakeUser(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().Uint64().Call(utils.FakeUint32Func()),
 					jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 					jen.Comment(`HashedPassword: ""`),
@@ -78,12 +78,12 @@ func buildBuildDatabaseCreationResponse(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().ID("user").Dot("ID"),
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"),
@@ -108,19 +108,19 @@ func buildBuildFakeUserList(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.ID(utils.BuildFakeVarName("User1")).Assign().ID("BuildFakeUser").Call(),
 			jen.ID(utils.BuildFakeVarName("User2")).Assign().ID("BuildFakeUser").Call(),
 			jen.ID(utils.BuildFakeVarName("User3")).Assign().ID("BuildFakeUser").Call(),
 			jen.Line(),
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
-					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 					),
-					jen.ID("Users").MapAssign().Index().Qual(proj.ModelsV1Package(), "User").Valuesln(
+					jen.ID("Users").MapAssign().Index().Qual(proj.TypesPackage(), "User").Valuesln(
 						jen.PointerTo().ID("exampleUser1"),
 						jen.PointerTo().ID("exampleUser2"),
 						jen.PointerTo().ID("exampleUser3"),
@@ -141,11 +141,11 @@ func buildBuildFakeUserCreationInput(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.ID(utils.BuildFakeVarName("User")).Assign().ID("BuildFakeUser").Call(),
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
@@ -164,12 +164,12 @@ func buildBuildFakeUserCreationInputFromUser(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 				),
@@ -188,12 +188,12 @@ func buildBuildFakeUserDatabaseCreationInputFromUser(proj *models.Project) []jen
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Params(
-			jen.Qual(proj.ModelsV1Package(), typeName),
+			jen.Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("HashedPassword").MapAssign().ID("user").Dot("HashedPassword"),
 					jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"),
@@ -213,12 +213,12 @@ func buildBuildFakeUserLoginInputFromUser(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 					jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
@@ -238,10 +238,10 @@ func buildBuildFakePasswordUpdateInput(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("NewPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
@@ -261,10 +261,10 @@ func buildBuildFakeTOTPSecretRefreshInput(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("CurrentPassword").MapAssign().Add(utils.FakePasswordFunc()),
 					jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),
 				),
@@ -283,9 +283,9 @@ func buildBuildFakeTOTPSecretValidationInputForUser(proj *models.Project) []jen.
 		jen.Commentf("%s builds a faked %s for a given user", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.List(jen.ID("token"), jen.Err()).Assign().Qual("github.com/pquerna/otp/totp", "GenerateCode").Call(
 				jen.ID("user").Dot("TwoFactorSecret"),
@@ -299,7 +299,7 @@ func buildBuildFakeTOTPSecretValidationInputForUser(proj *models.Project) []jen.
 			),
 			jen.Line(),
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID(constants.UserIDFieldName).MapAssign().ID("user").Dot("ID"),
 					jen.ID("TOTPToken").MapAssign().ID("token"),
 				),

@@ -21,7 +21,7 @@ package example
 import (
 	"fmt"
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeOAuth2Client builds a faked OAuth2Client.
@@ -97,7 +97,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeOAuth2Client builds a faked OAuth2Client.
@@ -136,7 +136,7 @@ func Test_buildBuildFakeOAuth2ClientList(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeOAuth2ClientList builds a faked OAuth2ClientList.
@@ -177,7 +177,7 @@ package example
 import (
 	"fmt"
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeOAuth2ClientCreationInputFromClient builds a faked OAuth2ClientCreationInput.

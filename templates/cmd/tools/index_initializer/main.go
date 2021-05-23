@@ -34,7 +34,7 @@ func RenderPackage(proj *models.Project) error {
 func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.PackageComment(`Command index_initializer is a CLI that takes in some data via flags about your 
 database and the type you want to index, and hydrates a Bleve index full of that type.
@@ -82,9 +82,9 @@ func buildVarDeclarations(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.ID("validDatabaseTypes").Equals().Map(jen.String()).Struct().Valuesln(
-				jen.Qual(proj.InternalConfigV1Package(), "PostgresProviderKey").MapAssign().Values(),
-				jen.Qual(proj.InternalConfigV1Package(), "MariaDBProviderKey").MapAssign().Values(),
-				jen.Qual(proj.InternalConfigV1Package(), "SqliteProviderKey").MapAssign().Values(),
+				jen.Qual(proj.InternalConfigPackage(), "PostgresProviderKey").MapAssign().Values(),
+				jen.Qual(proj.InternalConfigPackage(), "MariaDBProviderKey").MapAssign().Values(),
+				jen.Qual(proj.InternalConfigPackage(), "SqliteProviderKey").MapAssign().Values(),
 			),
 		),
 		jen.Line(),
@@ -159,7 +159,7 @@ func buildMain(proj *models.Project) []jen.Code {
 
 			switchCases = append(switchCases,
 				jen.Case(jen.Lit(typ.Name.RouteName())).Body(
-					jen.ID("outputChan").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), typ.Name.Singular())),
+					jen.ID("outputChan").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), typ.Name.Singular())),
 					jen.If(
 						jen.ID("queryErr").Assign().ID("dbClient").Dotf("GetAll%s", pn).Call(
 							constants.CtxVar(),
@@ -236,21 +236,21 @@ func buildMain(proj *models.Project) []jen.Code {
 				jen.Return(),
 			),
 			jen.Line(),
-			jen.List(jen.ID("im"), jen.Err().Assign().Qual(proj.InternalSearchV1Package("bleve"), "NewBleveIndexManager").Call(
-				jen.Qual(proj.InternalSearchV1Package(), "IndexPath").Call(jen.ID("indexOutputPath")),
-				jen.Qual(proj.InternalSearchV1Package(), "IndexName").Call(jen.ID("typeName")),
+			jen.List(jen.ID("im"), jen.Err().Assign().Qual(proj.InternalSearchPackage("bleve"), "NewBleveIndexManager").Call(
+				jen.Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("indexOutputPath")),
+				jen.Qual(proj.InternalSearchPackage(), "IndexName").Call(jen.ID("typeName")),
 				jen.ID(constants.LoggerVarName),
 			)),
 			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
-				jen.ID("Database").MapAssign().Qual(proj.InternalConfigV1Package(), "DatabaseSettings").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "ServerConfig").Valuesln(
+				jen.ID("Database").MapAssign().Qual(proj.InternalConfigPackage(), "DatabaseSettings").Valuesln(
 					jen.ID("Provider").MapAssign().ID("databaseType"),
-					jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("dbConnectionDetails")),
+					jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.ID("dbConnectionDetails")),
 				),
-				jen.ID("Metrics").MapAssign().Qual(proj.InternalConfigV1Package(), "MetricsSettings").Valuesln(
+				jen.ID("Metrics").MapAssign().Qual(proj.InternalConfigPackage(), "MetricsSettings").Valuesln(
 					jen.ID("DBMetricsCollectionInterval").MapAssign().Qual("time", "Second"),
 				),
 			),

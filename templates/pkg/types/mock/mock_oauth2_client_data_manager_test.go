@@ -21,7 +21,7 @@ package example
 import (
 	"context"
 	mock "github.com/stretchr/testify/mock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 var _ v1.OAuth2ClientDataManager = (*OAuth2ClientDataManager)(nil)
@@ -119,7 +119,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2Client is a mock function.
@@ -146,7 +146,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientByClientID is a mock function.
@@ -198,7 +198,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllOAuth2Clients is a mock function.
@@ -225,7 +225,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetOAuth2ClientsForUser is a mock function.
@@ -252,7 +252,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateOAuth2Client is a mock function.
@@ -279,7 +279,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateOAuth2Client is a mock function.

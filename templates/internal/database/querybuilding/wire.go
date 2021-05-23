@@ -12,9 +12,9 @@ func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File 
 	sn := dbvendor.Singular()
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	var dbTrail string
 

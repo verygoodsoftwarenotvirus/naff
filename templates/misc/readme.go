@@ -118,8 +118,7 @@ It's a good idea to run `+"`"+`make quicktest lintegration-tests`+"`"+` before c
 ## working on the frontend
 
 1. run `+"`"+`make dev`+"`"+`
-2. in a different terminal, cd into `+"`"+`frontend/v1`+"`"+` and run `+"`"+`npm run autobuild`+"`"+`
-3. edit and have fun
+2. edit and have fun
 `, projectName.Singular())
 
 	return f

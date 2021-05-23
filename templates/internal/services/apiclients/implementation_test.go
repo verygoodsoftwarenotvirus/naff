@@ -24,7 +24,7 @@ import (
 	errors1 "errors"
 	"fmt"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	oauth2v3 "gopkg.in/oauth2.v3"
 	errors "gopkg.in/oauth2.v3/errors"
 	server "gopkg.in/oauth2.v3/server"
@@ -359,7 +359,7 @@ package example
 import (
 	"errors"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	server "gopkg.in/oauth2.v3/server"
 	"net/http"
 	"strconv"

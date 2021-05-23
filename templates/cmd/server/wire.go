@@ -13,7 +13,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 	code.HeaderComment("+build wireinject")
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	// if proj.EnableNewsman {
 	code.Add(buildProvideReporter()...)
@@ -83,7 +83,7 @@ func buildWireBuildCallArgs(proj *models.Project) []jen.Code {
 
 	if proj.SearchEnabled() {
 		args = append(args,
-			jen.Qual(proj.InternalSearchV1Package("bleve"), "Providers"),
+			jen.Qual(proj.InternalSearchPackage("bleve"), "Providers"),
 		)
 	}
 

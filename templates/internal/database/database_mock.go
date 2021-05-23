@@ -16,7 +16,7 @@ const (
 func databaseMockDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
 		utils.BuildInterfaceCheck("DataManager", "MockDatabase"),
@@ -33,7 +33,7 @@ func databaseMockDotGo(proj *models.Project) *jen.File {
 }
 
 func buildBuildMockDatabase(proj *models.Project) []jen.Code {
-	mockModelsImp := proj.ModelsV1Package("mock")
+	mockModelsImp := proj.TypesPackage("mock")
 
 	var mockDatabaseLines []jen.Code
 
@@ -62,7 +62,7 @@ func buildBuildMockDatabase(proj *models.Project) []jen.Code {
 }
 
 func buildMockDatabase(proj *models.Project) []jen.Code {
-	mockModelsImp := proj.ModelsV1Package("mock")
+	mockModelsImp := proj.TypesPackage("mock")
 
 	mockDBLines := []jen.Code{
 		jen.Qual(mockImp, "Mock"),

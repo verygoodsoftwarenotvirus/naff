@@ -49,19 +49,19 @@ func ParallelTest(tee *jen.Statement) jen.Code {
 }
 
 func NilQueryFilter(proj *models.Project) jen.Code {
-	return jen.Call(jen.PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil())
 }
 
 func DefaultQueryFilter(proj *models.Project) jen.Code {
-	return jen.Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+	return jen.Qual(proj.TypesPackage(), "DefaultQueryFilter").Call()
 }
 
 func CreateNilQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil())
 }
 
 func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+	return jen.ID(constants.FilterVarName).Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call()
 }
 
 func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
@@ -164,7 +164,7 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 // QueryFilterParam does
 func QueryFilterParam(proj *models.Project) jen.Code {
 	if proj != nil {
-		return jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")
+		return jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter")
 	}
 	return jen.ID(constants.FilterVarName).PointerTo().ID("QueryFilter")
 }

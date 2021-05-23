@@ -10,7 +10,7 @@ import (
 func frontendServiceTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestProvideFrontendService(proj)...)
 
@@ -24,7 +24,7 @@ func buildTestProvideFrontendService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("ProvideFrontendService").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values()),
+				jen.ID("ProvideFrontendService").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.Qual(proj.InternalConfigPackage(), "FrontendSettings").Values()),
 			),
 		),
 		jen.Line(),

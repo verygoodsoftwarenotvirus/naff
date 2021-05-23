@@ -18,9 +18,9 @@ const (
 func iterablesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildIterableConstants(typ)...)
 	code.Add(buildIterableVariableDecs(proj, typ)...)
@@ -165,7 +165,7 @@ func buildScanSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPa
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct", sn, pscnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("scan%s", sn).Params(
-			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
+			jen.ID("scan").Qual(proj.DatabasePackage(), "Scanner"),
 			func() jen.Code {
 				if typ.IsEnumeration {
 					return jen.ID("includeCount").Bool()
@@ -173,7 +173,7 @@ func buildScanSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPa
 				return jen.Null()
 			}(),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), sn),
+			jen.PointerTo().Qual(proj.TypesPackage(), sn),
 			func() jen.Code {
 				if typ.IsEnumeration {
 					return jen.Uint64()
@@ -184,7 +184,7 @@ func buildScanSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPa
 		).Body(
 			func() []jen.Code {
 				body := []jen.Code{
-					jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Values(),
+					jen.ID("x").Assign().AddressOf().Qual(proj.TypesPackage(), sn).Values(),
 					func() jen.Code {
 						if typ.IsEnumeration {
 							return jen.Var().ID("count").Uint64()
@@ -250,9 +250,9 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.S
 		jen.Commentf("scan%s takes a logger and some database rows and turns them into a slice of %s.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("scan%s", pn).Params(
-			jen.ID("rows").Qual(proj.DatabaseV1Package(), "ResultIterator"),
+			jen.ID("rows").Qual(proj.DatabasePackage(), "ResultIterator"),
 		).Params(
-			jen.Index().Qual(proj.ModelsV1Package(), sn),
+			jen.Index().Qual(proj.TypesPackage(), sn),
 			func() jen.Code {
 				if typ.IsEnumeration {
 					return jen.Uint64()
@@ -262,7 +262,7 @@ func buildScanListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.S
 			jen.Error(),
 		).Body(
 			jen.Var().Defs(
-				jen.ID("list").Index().Qual(proj.ModelsV1Package(), sn),
+				jen.ID("list").Index().Qual(proj.TypesPackage(), sn),
 				func() jen.Code {
 					if typ.IsEnumeration {
 						return jen.ID("count").Uint64()
@@ -522,7 +522,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.SuperPal
 		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", sn).Params(params...).
-			Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(body...),
+			Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.Error()).Body(body...),
 		jen.Line(),
 	}
 }
@@ -634,7 +634,7 @@ func buildGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Sup
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("GetAll%s", pn).Params(
 			constants.CtxParam(),
-			jen.ID("resultChannel").Chan().Index().Qual(proj.ModelsV1Package(), sn),
+			jen.ID("resultChannel").Chan().Index().Qual(proj.TypesPackage(), sn),
 		).Params(jen.Error()).Body(
 			jen.List(jen.ID("count"), jen.Err()).Assign().ID(dbfl).Dotf("GetAll%sCount", pn).Call(constants.CtxVar()),
 			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
@@ -776,7 +776,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%s", pn).Params(
 			params...,
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)), jen.Error()).Body(
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)), jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sQuery", pn).Call(queryBuildingParams...),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
@@ -797,8 +797,8 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Su
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("list").Assign().AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+			jen.ID("list").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID(constants.FilterVarName).Dot("Page"),
 					jen.ID("Limit").MapAssign().ID(constants.FilterVarName).Dot("Limit"),
 					func() jen.Code {
@@ -959,11 +959,11 @@ func buildGetListOfSomethingWithIDsFuncDecl(proj *models.Project, dbvendor words
 		jen.Commentf("Get%sWithIDs fetches a list of %s from the database that exist within a given set of IDs.", pn, pcn),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Get%sWithIDs", pn).Params(params...).Params(
-			jen.Index().Qual(proj.ModelsV1Package(), sn),
+			jen.Index().Qual(proj.TypesPackage(), sn),
 			jen.Error(),
 		).Body(
 			jen.If(jen.ID("limit").IsEqualTo().Zero()).Body(
-				jen.ID("limit").Equals().Uint8().Call(jen.Qual(proj.ModelsV1Package(), "DefaultLimit")),
+				jen.ID("limit").Equals().Uint8().Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 			),
 			jen.Line(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildGet%sWithIDsQuery", pn).Call(
@@ -1109,7 +1109,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 	}
 
 	baseCreateFuncBody := []jen.Code{
-		jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(createInitColumns...),
+		jen.ID("x").Assign().AddressOf().Qual(proj.TypesPackage(), sn).Valuesln(createInitColumns...),
 		jen.Line(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dotf("buildCreate%sQuery", sn).Call(
 			queryBuildingArgs...,
@@ -1155,7 +1155,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, dbvendor wordsmith.Super
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("Create%s", sn).Params(
 			params...,
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn), jen.Error()).Body(
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.Error()).Body(
 			baseCreateFuncBody...,
 		),
 		jen.Line(),

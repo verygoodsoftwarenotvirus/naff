@@ -26,8 +26,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 	"time"
@@ -255,8 +255,8 @@ import (
 	"context"
 	totp "github.com/pquerna/otp/totp"
 	require "github.com/stretchr/testify/require"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 	"time"
@@ -301,7 +301,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 )
 
@@ -334,7 +334,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 )
 
@@ -369,7 +369,7 @@ import (
 	totp "github.com/pquerna/otp/totp"
 	assert "github.com/stretchr/testify/assert"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 	"time"
 )

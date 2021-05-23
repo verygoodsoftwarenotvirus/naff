@@ -10,7 +10,7 @@ import (
 func authServiceDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildAuthServiceConstantDefs()...)
 	code.Add(buildAuthServiceTypeDefs(proj)...)
@@ -36,7 +36,7 @@ func buildAuthServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Comment("OAuth2ClientValidator is a stand-in interface, where we needed to abstract"),
 			jen.Comment("a regular structure with an interface for testing purposes."),
 			jen.ID("OAuth2ClientValidator").Interface(
-				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()),
+				jen.ID("ExtractOAuth2ClientFromRequest").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"), jen.Error()),
 			),
 			jen.Line(),
 			jen.Comment("cookieEncoderDecoder is a stand-in interface for gorilla/securecookie"),
@@ -47,12 +47,12 @@ func buildAuthServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(
-				jen.ID("config").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
+				jen.ID("config").Qual(proj.InternalConfigPackage(), "AuthSettings"),
 				constants.LoggerParam(),
-				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
-				jen.ID("userDB").Qual(proj.ModelsV1Package(), "UserDataManager"),
+				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
+				jen.ID("userDB").Qual(proj.TypesPackage(), "UserDataManager"),
 				jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
-				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 				jen.ID("cookieManager").ID("cookieEncoderDecoder"),
 				jen.ID("sessionManager").PointerTo().Qual(constants.SessionManagerLibrary, "SessionManager"),
 			),
@@ -69,12 +69,12 @@ func buildProvideAuthService(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
 			constants.LoggerParam(),
-			jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "AuthSettings"),
-			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
-			jen.ID("database").Qual(proj.ModelsV1Package(), "UserDataManager"),
+			jen.ID("cfg").Qual(proj.InternalConfigPackage(), "AuthSettings"),
+			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
+			jen.ID("database").Qual(proj.TypesPackage(), "UserDataManager"),
 			jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
 			jen.ID("sessionManager").PointerTo().Qual(constants.SessionManagerLibrary, "SessionManager"),
-			jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+			jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),

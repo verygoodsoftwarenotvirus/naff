@@ -10,7 +10,7 @@ import (
 func configDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildConfigConstantVariableDeclarations()...)
 	code.Add(buildConfigVariableDeclarations()...)
@@ -82,7 +82,7 @@ func buildTypeDefinitions(proj *models.Project) []jen.Code {
 		if typ.SearchEnabled {
 			searchSettingsFields = append(searchSettingsFields,
 				jen.Commentf("%sIndexPath indicates where our %s search index files should go.", typ.Name.Plural(), typ.Name.PluralCommonName()),
-				jen.IDf("%sIndexPath", typ.Name.Plural()).Qual(proj.InternalSearchV1Package(), "IndexPath").Tag(map[string]string{
+				jen.IDf("%sIndexPath", typ.Name.Plural()).Qual(proj.InternalSearchPackage(), "IndexPath").Tag(map[string]string{
 					"mapstructure": fmt.Sprintf("%s_index_path", typ.Name.PluralRouteName()),
 					"json":         fmt.Sprintf("%s_index_path", typ.Name.PluralRouteName()),
 					"toml":         fmt.Sprintf("%s_index_path,omitempty", typ.Name.PluralRouteName()),
@@ -210,7 +210,7 @@ func buildTypeDefinitions(proj *models.Project) []jen.Code {
 				"toml":         "provider,omitempty",
 			}),
 			jen.Comment("ConnectionDetails indicates how our database driver should connect to the instance."),
-			jen.ID("ConnectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails").Tag(map[string]string{
+			jen.ID("ConnectionDetails").Qual(proj.DatabasePackage(), "ConnectionDetails").Tag(map[string]string{
 				"mapstructure": "connection_details",
 				"json":         "connection_details",
 				"toml":         "connection_details,omitempty",

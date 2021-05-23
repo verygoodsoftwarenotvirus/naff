@@ -12,7 +12,7 @@ import (
 func iterableServiceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildSomethingServiceConstantDefs(proj, typ)...)
 	code.Add(buildSomethingServiceVarDefs(proj, typ)...)
@@ -36,11 +36,11 @@ func buildSomethingServiceConstantDefs(proj *models.Project, typ models.DataType
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Commentf("createMiddlewareCtxKey is a string alias we can use for referring to %s input data in contexts.", cn),
-			jen.ID("createMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
+			jen.ID("createMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
 			jen.Commentf("updateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts.", cn),
-			jen.ID("updateMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
+			jen.ID("updateMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
-			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit(puvn),
+			jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName").Equals().Lit(puvn),
 			jen.ID("counterDescription").String().Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
 			jen.ID("topicName").String().Equals().Lit(prn),
 			jen.ID("serviceName").String().Equals().Lit(fmt.Sprintf("%s_service", prn)),
@@ -56,7 +56,7 @@ func buildSomethingServiceVarDefs(proj *models.Project, typ models.DataType) []j
 
 	lines := []jen.Code{
 		jen.Var().Defs(
-			jen.Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
 		jen.Line(),
 	}
@@ -77,10 +77,10 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 	// data managers
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		structFields = append(structFields,
-			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", ot.Name.Singular())),
+			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", ot.Name.Singular())),
 		)
 	}
-	structFields = append(structFields, jen.ID(fmt.Sprintf("%sDataManager", uvn)).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)))
+	structFields = append(structFields, jen.ID(fmt.Sprintf("%sDataManager", uvn)).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)))
 
 	// id fetchers
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
@@ -97,11 +97,11 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 	}
 
 	structFields = append(structFields,
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 	)
 
 	structFields = append(structFields,
-		jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+		jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 
@@ -109,7 +109,7 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 	if typ.SearchEnabled {
 		typeDefs = append(typeDefs,
 			jen.Comment("SearchIndex is a type alias for dependency injection's sake"),
-			jen.ID("SearchIndex").Qual(proj.InternalSearchV1Package(), "IndexManager"),
+			jen.ID("SearchIndex").Qual(proj.InternalSearchPackage(), "IndexManager"),
 			jen.Line(),
 		)
 		structFields = append(structFields,
@@ -163,9 +163,9 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
-		params = append(params, jen.IDf("%sDataManager", ot.Name.UnexportedVarName()).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", ot.Name.Singular())))
+		params = append(params, jen.IDf("%sDataManager", ot.Name.UnexportedVarName()).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", ot.Name.Singular())))
 	}
-	params = append(params, jen.IDf("%sDataManager", uvn).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn)))
+	params = append(params, jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)))
 
 	serviceValues := []jen.Code{
 		jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),
@@ -194,8 +194,8 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	)
 
 	params = append(params,
-		jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
+		jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
+		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(proj.InternalMetricsPackage(), "UnitCounterProvider"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 	serviceValues = append(serviceValues,
@@ -238,8 +238,8 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 		jen.Commentf("Provide%sServiceSearchIndex provides a search index for the service", pn),
 		jen.Line(),
 		jen.Func().IDf("Provide%sServiceSearchIndex", pn).Paramsln(
-			jen.ID("searchSettings").Qual(proj.InternalConfigV1Package(), "SearchSettings"),
-			jen.ID("indexProvider").Qual(proj.InternalSearchV1Package(), "IndexManagerProvider"),
+			jen.ID("searchSettings").Qual(proj.InternalConfigPackage(), "SearchSettings"),
+			jen.ID("indexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider"),
 			jen.ID(constants.LoggerVarName).Qual(constants.LoggingPkg, "Logger"),
 		).Params(jen.ID("SearchIndex"), jen.Error()).Body(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(
@@ -249,7 +249,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 			jen.Line(),
 			jen.List(jen.ID("searchIndex"), jen.ID("indexInitErr")).Assign().ID("indexProvider").Call(
 				jen.ID("searchSettings").Dotf("%sIndexPath", pn),
-				jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sSearchIndexName", pn)),
+				jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", pn)),
 				jen.ID(constants.LoggerVarName),
 			),
 			jen.If(jen.ID("indexInitErr").DoesNotEqual().Nil()).Body(

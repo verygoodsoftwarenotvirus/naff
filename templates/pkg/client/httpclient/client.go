@@ -15,7 +15,7 @@ func newClientMethod(name string) *jen.Statement {
 func mainDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildClientConstDecls()...)
 	code.Add(buildClientVarDecls()...)

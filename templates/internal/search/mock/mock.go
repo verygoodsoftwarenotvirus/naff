@@ -10,7 +10,7 @@ import (
 func mockDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildInterfaceImplementationStatement(proj)...)
 	code.Add(buildIndexManager()...)
@@ -20,7 +20,7 @@ func mockDotGo(proj *models.Project) *jen.File {
 
 func buildInterfaceImplementationStatement(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(proj.InternalSearchV1Package(), "IndexManager").Equals().Parens(jen.PointerTo().ID("IndexManager")).Parens(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalSearchPackage(), "IndexManager").Equals().Parens(jen.PointerTo().ID("IndexManager")).Parens(jen.Nil()),
 		jen.Line(),
 	}
 

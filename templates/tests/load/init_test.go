@@ -23,7 +23,7 @@ import (
 	"fmt"
 	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
 	http1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
 	"net/http"
 	"net/url"
@@ -106,7 +106,7 @@ func Test_buildInitVarDefs(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 var (
@@ -208,7 +208,7 @@ import (
 	"context"
 	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/url"
 )
 

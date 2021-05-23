@@ -28,7 +28,7 @@ import (
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"net/http"
 	"testing"
 )
@@ -112,7 +112,7 @@ import (
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"net/http"
 )
 
@@ -148,7 +148,7 @@ import (
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"net/http"
 )
 
@@ -192,7 +192,7 @@ import (
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"net/http"
 	"testing"
 )
@@ -262,7 +262,7 @@ import (
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"net/http"
 	"testing"
 )

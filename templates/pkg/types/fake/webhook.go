@@ -9,7 +9,7 @@ import (
 
 func webhookDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildFakeWebhook(proj)...)
 	code.Add(buildBuildFakeWebhookList(proj)...)
@@ -28,10 +28,10 @@ func buildBuildFakeWebhook(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 					jen.ID("ContentType").MapAssign().Add(utils.FakeContentTypeFunc()),
@@ -59,18 +59,18 @@ func buildBuildFakeWebhookList(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.ID(utils.BuildFakeVarName("Webhook1")).Assign().ID("BuildFakeWebhook").Call(),
 			jen.ID(utils.BuildFakeVarName("Webhook2")).Assign().ID("BuildFakeWebhook").Call(),
 			jen.ID(utils.BuildFakeVarName("Webhook3")).Assign().ID("BuildFakeWebhook").Call(),
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
-					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 					),
-					jen.ID("Webhooks").MapAssign().Index().Qual(proj.ModelsV1Package(), "Webhook").Valuesln(
+					jen.ID("Webhooks").MapAssign().Index().Qual(proj.TypesPackage(), "Webhook").Valuesln(
 						jen.PointerTo().ID("exampleWebhook1"),
 						jen.PointerTo().ID("exampleWebhook2"),
 						jen.PointerTo().ID("exampleWebhook3"),
@@ -91,12 +91,12 @@ func buildBuildFakeWebhookUpdateInputFromWebhook(proj *models.Project) []jen.Cod
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("webhook").PointerTo().Qual(proj.TypesPackage(), "Webhook"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("Name").MapAssign().ID("webhook").Dot("Name"),
 					jen.ID("ContentType").MapAssign().ID("webhook").Dot("ContentType"),
 					jen.ID("URL").MapAssign().ID("webhook").Dot("URL"),
@@ -121,7 +121,7 @@ func buildBuildFakeWebhookCreationInput(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.ID("webhook").Assign().ID("BuildFakeWebhook").Call(),
 			jen.Return(
@@ -141,12 +141,12 @@ func buildBuildFakeWebhookCreationInputFromWebhook(proj *models.Project) []jen.C
 		jen.Commentf("%s builds a faked %s.", funcName, typeName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("webhook").PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("webhook").PointerTo().Qual(proj.TypesPackage(), "Webhook"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), typeName),
+			jen.PointerTo().Qual(proj.TypesPackage(), typeName),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), typeName).Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), typeName).Valuesln(
 					jen.ID("Name").MapAssign().ID("webhook").Dot("Name"),
 					jen.ID("ContentType").MapAssign().ID("webhook").Dot("ContentType"),
 					jen.ID("URL").MapAssign().ID("webhook").Dot("URL"),

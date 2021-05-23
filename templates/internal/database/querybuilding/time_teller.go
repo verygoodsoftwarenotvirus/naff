@@ -11,9 +11,9 @@ import (
 func timeTellerDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(jen.Type().ID("timeTeller").Interface(jen.ID("Now").Call().Uint64()))
 

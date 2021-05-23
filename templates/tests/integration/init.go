@@ -10,7 +10,7 @@ import (
 func initDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildInitConstDefs()...)
 	code.Add(buildInitVarDefs(proj)...)
@@ -48,19 +48,19 @@ func buildInitVarDefs(proj *models.Project) []jen.Code {
 func buildInitInit(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("init").Params().Body(
-			jen.ID("urlToUse").Equals().Qual(proj.TestUtilV1Package(), "DetermineServiceURL").Call(),
+			jen.ID("urlToUse").Equals().Qual(proj.TestUtilPackage(), "DetermineServiceURL").Call(),
 			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
-			jen.Qual(proj.TestUtilV1Package(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
+			jen.Qual(proj.TestUtilPackage(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
 			jen.Line(),
 			jen.Line(),
-			jen.List(jen.ID("ogUser"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
+			jen.List(jen.ID("ogUser"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryUser").Call(jen.ID("urlToUse"), jen.ID("debug")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("oa2Client"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("ogUser")),
+			jen.List(jen.ID("oa2Client"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("ogUser")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Fatal").Call(jen.Err()),
 			),
@@ -95,7 +95,7 @@ func buildInitBuildHTTPClient() []jen.Code {
 
 func buildInitInitializeClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Body(
+		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Body(
 			jen.List(jen.ID("uri"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),

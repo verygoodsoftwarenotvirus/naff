@@ -11,7 +11,7 @@ import (
 
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildFakeSomething(proj, typ)...)
 	code.Add(buildBuildFakeSomethingList(proj, typ)...)
@@ -74,8 +74,8 @@ func buildBuildFakeSomething(proj *models.Project, typ models.DataType) []jen.Co
 	lines := []jen.Code{
 		jen.Commentf("%s builds a faked %s.", funcName, scn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Body(
-			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), sn).Valuesln(block...)),
+		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Body(
+			jen.Return(jen.AddressOf().Qual(proj.TypesPackage(), sn).Valuesln(block...)),
 		),
 	}
 
@@ -90,14 +90,14 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("%s builds a faked %sList.", funcName, sn),
 		jen.Line(),
-		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn))).Body(
+		jen.Func().ID(funcName).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Body(
 			jen.IDf("example%s1", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.IDf("example%s2", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.IDf("example%s3", sn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.Line(),
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", sn)).Valuesln(
-					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 						func() jen.Code {
@@ -107,7 +107,7 @@ func buildBuildFakeSomethingList(proj *models.Project, typ models.DataType) []je
 							return jen.Null()
 						}(),
 					),
-					jen.ID(pn).MapAssign().Index().Qual(proj.ModelsV1Package(), sn).Valuesln(
+					jen.ID(pn).MapAssign().Index().Qual(proj.TypesPackage(), sn).Valuesln(
 						jen.PointerTo().IDf("example%s1", sn),
 						jen.PointerTo().IDf("example%s2", sn),
 						jen.PointerTo().IDf("example%s3", sn),
@@ -154,11 +154,11 @@ func buildBuildFakeSomethingUpdateInputFromSomething(proj *models.Project, typ m
 		jen.Commentf("%s builds a faked %sUpdateInput from %s.", funcName, sn, scnwp),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), sn),
+			jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)),
+			jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)),
 		).Body(
-			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(block...)),
+			jen.Return(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(block...)),
 		),
 	}
 
@@ -174,7 +174,7 @@ func buildBuildFakeSomethingCreationInput(proj *models.Project, typ models.DataT
 		jen.Commentf("%s builds a faked %sCreationInput.", funcName, sn),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)),
+			jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)),
 		).Body(
 			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.Return(jen.IDf("BuildFake%sCreationInputFrom%s", sn, sn).Call(jen.ID(uvn))),
@@ -218,11 +218,11 @@ func buildBuildFakeSomethingCreationInputFromSomething(proj *models.Project, typ
 		jen.Commentf("%s builds a faked %sCreationInput from %s.", funcName, sn, scnwp),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), sn),
+			jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)),
+			jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)),
 		).Body(
-			jen.Return(jen.AddressOf().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(block...)),
+			jen.Return(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(block...)),
 		),
 	}
 

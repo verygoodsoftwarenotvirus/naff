@@ -10,7 +10,7 @@ import (
 func usersDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(jen.Const().ID("usersBasePath").Equals().Lit("users"))
 
@@ -108,7 +108,7 @@ func buildGetUser(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			constants.UserIDParam(),
 		).Params(
-			jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 			jen.Err().Error(),
 		).Body(block...),
 		jen.Line(),
@@ -140,7 +140,7 @@ func buildBuildGetUsersRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -156,7 +156,7 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.ID("users").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserList").Values(),
+		jen.ID("users").Assign().AddressOf().Qual(proj.TypesPackage(), "UserList").Values(),
 		jen.Line(),
 		jen.List(
 			jen.ID(constants.RequestVarName),
@@ -188,9 +188,9 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "UserList"),
 			jen.Error(),
 		).Body(block...),
 		jen.Line(),
@@ -222,7 +222,7 @@ func buildBuildCreateUserRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("body").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
+			jen.ID("body").PointerTo().Qual(proj.TypesPackage(), "UserCreationInput"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -238,7 +238,7 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 
 	block := []jen.Code{
 		utils.StartSpan(proj, true, funcName),
-		jen.ID("user").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Values(),
+		jen.ID("user").Assign().AddressOf().Qual(proj.TypesPackage(), "UserCreationResponse").Values(),
 		jen.Line(),
 		jen.List(
 			jen.ID(constants.RequestVarName),
@@ -270,9 +270,9 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
+			jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "UserCreationInput"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "UserCreationResponse"),
 			jen.Error(),
 		).Body(block...),
 		jen.Line(),
@@ -397,7 +397,7 @@ func buildBuildLoginRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
+			jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "UserLoginInput"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Request"),
 			jen.Error(),
@@ -466,7 +466,7 @@ func buildLogin(proj *models.Project) []jen.Code {
 		jen.Line(),
 		newClientMethod(funcName).Params(
 			constants.CtxParam(),
-			jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"),
+			jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "UserLoginInput"),
 		).Params(
 			jen.PointerTo().Qual("net/http", "Cookie"),
 			jen.Error(),
@@ -495,7 +495,7 @@ func buildBuildVerifyTOTPSecretRequest(proj *models.Project) []jen.Code {
 			constants.CtxVar(),
 			jen.Qual("net/http", "MethodPost"),
 			jen.ID("uri"),
-			jen.AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretVerificationInput").Valuesln(
+			jen.AddressOf().Qual(proj.TypesPackage(), "TOTPSecretVerificationInput").Valuesln(
 				jen.ID("TOTPToken").MapAssign().ID("token"),
 				jen.ID(constants.UserIDFieldName).MapAssign().ID(constants.UserIDVarName),
 			),

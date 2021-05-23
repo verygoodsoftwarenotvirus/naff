@@ -11,7 +11,7 @@ import (
 func serverDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildServerConstantDefinitions(proj)...)
 	code.Add(buildServerTypeDefinitions(proj)...)
@@ -39,29 +39,29 @@ func buildServerTypeDefinitions(proj *models.Project) []jen.Code {
 		jen.ID("DebugMode").Bool(),
 		jen.Line(),
 		jen.Comment("Services."),
-		jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),
-		jen.ID("frontendService").PointerTo().Qual(proj.ServiceV1FrontendPackage(), "Service"),
-		jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
-		jen.ID("oauth2ClientsService").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
-		jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
+		jen.ID("authService").PointerTo().Qual(proj.ServiceAuthPackage(), "Service"),
+		jen.ID("frontendService").PointerTo().Qual(proj.ServiceFrontendPackage(), "Service"),
+		jen.ID("usersService").Qual(proj.TypesPackage(), "UserDataServer"),
+		jen.ID("oauth2ClientsService").Qual(proj.TypesPackage(), "OAuth2ClientDataServer"),
+		jen.ID("webhooksService").Qual(proj.TypesPackage(), "WebhookDataServer"),
 	}
 
 	for _, typ := range proj.DataTypes {
 		tsn := typ.Name.Singular()
 		tpuvn := typ.Name.PluralUnexportedVarName()
 		serverStructDeclLines = append(serverStructDeclLines,
-			jen.IDf("%sService", tpuvn).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", tsn)))
+			jen.IDf("%sService", tpuvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", tsn)))
 	}
 
 	serverStructDeclLines = append(serverStructDeclLines,
 		jen.Line(),
 		jen.Comment("infra things."),
-		jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
-		jen.ID("config").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
+		jen.ID("db").Qual(proj.DatabasePackage(), "DataManager"),
+		jen.ID("config").PointerTo().Qual(proj.InternalConfigPackage(), "ServerConfig"),
 		jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
 		jen.ID("httpServer").PointerTo().Qual("net/http", "Server"),
 		constants.LoggerParam(),
-		jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+		jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 	)
 
 	// if proj.EnableNewsman {
@@ -86,22 +86,22 @@ func buildServerTypeDefinitions(proj *models.Project) []jen.Code {
 func buildServerProvideServer(proj *models.Project) []jen.Code {
 	provideServerParams := []jen.Code{
 		constants.CtxParam(),
-		jen.ID("cfg").PointerTo().Qual(proj.InternalConfigV1Package(), "ServerConfig"),
-		jen.ID("authService").PointerTo().Qual(proj.ServiceV1AuthPackage(), "Service"),
-		jen.ID("frontendService").PointerTo().Qual(proj.ServiceV1FrontendPackage(), "Service"),
+		jen.ID("cfg").PointerTo().Qual(proj.InternalConfigPackage(), "ServerConfig"),
+		jen.ID("authService").PointerTo().Qual(proj.ServiceAuthPackage(), "Service"),
+		jen.ID("frontendService").PointerTo().Qual(proj.ServiceFrontendPackage(), "Service"),
 	}
 
 	for _, typ := range proj.DataTypes {
-		provideServerParams = append(provideServerParams, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
+		provideServerParams = append(provideServerParams, jen.IDf("%sService", typ.Name.PluralUnexportedVarName()).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", typ.Name.Singular())))
 	}
 
 	provideServerParams = append(provideServerParams,
-		jen.ID("usersService").Qual(proj.ModelsV1Package(), "UserDataServer"),
-		jen.ID("oauth2Service").Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer"),
-		jen.ID("webhooksService").Qual(proj.ModelsV1Package(), "WebhookDataServer"),
-		jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
+		jen.ID("usersService").Qual(proj.TypesPackage(), "UserDataServer"),
+		jen.ID("oauth2Service").Qual(proj.TypesPackage(), "OAuth2ClientDataServer"),
+		jen.ID("webhooksService").Qual(proj.TypesPackage(), "WebhookDataServer"),
+		jen.ID("db").Qual(proj.DatabasePackage(), "DataManager"),
 		constants.LoggerParam(),
-		jen.ID("encoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+		jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 	)
 
 	// if proj.EnableNewsman {
@@ -152,7 +152,7 @@ func buildServerProvideServer(proj *models.Project) []jen.Code {
 			serverDecLines...,
 		),
 		jen.Line(),
-		jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID(constants.LoggerVarName)), jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigV1Package(), "ErrInvalidTracingProvider")).Body(
+		jen.If(jen.Err().Assign().ID("cfg").Dot("ProvideTracing").Call(jen.ID(constants.LoggerVarName)), jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalConfigPackage(), "ErrInvalidTracingProvider")).Body(
 			jen.Return().List(jen.Nil(), jen.Err()),
 		),
 		jen.Line(),

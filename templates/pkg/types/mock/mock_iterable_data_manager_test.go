@@ -22,7 +22,7 @@ package example
 import (
 	"context"
 	mock "github.com/stretchr/testify/mock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 var _ v1.ItemDataManager = (*ItemDataManager)(nil)
@@ -130,7 +130,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem is a mock function.
@@ -185,7 +185,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllItems is a mock function.
@@ -213,7 +213,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems is a mock function.
@@ -241,7 +241,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs is a mock function.
@@ -269,7 +269,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateItem is a mock function.
@@ -297,7 +297,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateItem is a mock function.

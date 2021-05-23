@@ -10,7 +10,7 @@ import (
 func helpersDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildArgIsNotPointer()...)
 	code.Add(buildArgIsNotNil()...)
@@ -131,7 +131,7 @@ func buildUnmarshalBody(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.If(jen.ID(constants.ResponseVarName).Dot("StatusCode").Op(">=").Qual("net/http", "StatusBadRequest")).Body(
-				jen.ID("apiErr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(),
+				jen.ID("apiErr").Assign().AddressOf().Qual(proj.TypesPackage(), "ErrorResponse").Values(),
 				jen.If(jen.Err().Equals().Qual("encoding/json", "Unmarshal").Call(
 					jen.ID("bodyBytes"),
 					jen.AddressOf().ID("apiErr"),

@@ -29,7 +29,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"sync"
 )
 
@@ -465,7 +465,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"sync"
 )
 
@@ -915,7 +915,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"sync"
 )
 
@@ -1588,7 +1588,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an Item struct
@@ -1628,7 +1628,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an Item struct
@@ -1668,7 +1668,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an Item struct
@@ -1710,7 +1710,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an Item struct
@@ -1759,7 +1759,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItems takes a logger and some database rows and turns them into a slice of items.
@@ -1804,7 +1804,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItems takes a logger and some database rows and turns them into a slice of items.
@@ -1849,7 +1849,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItems takes a logger and some database rows and turns them into a slice of items.
@@ -1896,7 +1896,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanItems takes a logger and some database rows and turns them into a slice of items.
@@ -2775,7 +2775,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem fetches an item from the database.
@@ -2803,7 +2803,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem fetches an item from the database.
@@ -2830,7 +2830,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem fetches an item from the database.
@@ -2858,7 +2858,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem fetches an item from the database.
@@ -2885,7 +2885,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem fetches an item from the database.
@@ -2913,7 +2913,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItem fetches an item from the database.
@@ -3272,7 +3272,7 @@ package example
 import (
 	"context"
 	"database/sql"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllItems fetches every item from the database and writes them to a channel. This method primarily exists
@@ -3331,7 +3331,7 @@ package example
 import (
 	"context"
 	"database/sql"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllItems fetches every item from the database and writes them to a channel. This method primarily exists
@@ -3390,7 +3390,7 @@ package example
 import (
 	"context"
 	"database/sql"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllItems fetches every item from the database and writes them to a channel. This method primarily exists
@@ -3453,7 +3453,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
@@ -3499,7 +3499,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
@@ -3543,7 +3543,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
@@ -3589,7 +3589,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
@@ -3633,7 +3633,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
@@ -3679,7 +3679,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter and belong to a given user,
@@ -3727,7 +3727,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetYetAnotherThingsQuery builds a SQL query selecting yet another things that adhere to a given QueryFilter and belong to a given another thing,
@@ -3779,7 +3779,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetYetAnotherThingsQuery builds a SQL query selecting yet another things that adhere to a given QueryFilter, and belong to a given user and another thing,
@@ -3831,7 +3831,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetYetAnotherThingsQuery builds a SQL query selecting yet another things that adhere to a given QueryFilter,
@@ -3876,7 +3876,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetItemsQuery builds a SQL query selecting items that adhere to a given QueryFilter,
@@ -3923,7 +3923,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems fetches a list of items from the database that meet a particular filter.
@@ -3970,7 +3970,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems fetches a list of items from the database that meet a particular filter.
@@ -4016,7 +4016,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems fetches a list of items from the database that meet a particular filter.
@@ -4063,7 +4063,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems fetches a list of items from the database that meet a particular filter.
@@ -4109,7 +4109,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems fetches a list of items from the database that meet a particular filter.
@@ -4156,7 +4156,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItems fetches a list of items from the database that meet a particular filter.
@@ -4689,7 +4689,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs fetches a list of items from the database that exist within a given set of IDs.
@@ -4731,7 +4731,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetYetAnotherThingsWithIDs fetches a list of yet another things from the database that exist within a given set of IDs.
@@ -4774,7 +4774,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs fetches a list of items from the database that exist within a given set of IDs.
@@ -4815,7 +4815,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs fetches a list of items from the database that exist within a given set of IDs.
@@ -4857,7 +4857,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetYetAnotherThingsWithIDs fetches a list of yet another things from the database that exist within a given set of IDs.
@@ -4900,7 +4900,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs fetches a list of items from the database that exist within a given set of IDs.
@@ -4941,7 +4941,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs fetches a list of items from the database that exist within a given set of IDs.
@@ -4983,7 +4983,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetYetAnotherThingsWithIDs fetches a list of yet another things from the database that exist within a given set of IDs.
@@ -5026,7 +5026,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetItemsWithIDs fetches a list of items from the database that exist within a given set of IDs.
@@ -5168,7 +5168,7 @@ package example
 
 import (
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.
@@ -5210,7 +5210,7 @@ func (p *Postgres) buildCreateItemQuery(input *v1.Item) (query string, args []in
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.
@@ -5251,7 +5251,7 @@ func (s *Sqlite) buildCreateItemQuery(input *v1.Item) (query string, args []inte
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildCreateItemQuery takes an item and returns a creation query for that item and the relevant arguments.
@@ -5298,7 +5298,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateItem creates an item in the database.
@@ -5337,7 +5337,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateItem creates an item in the database.
@@ -5384,7 +5384,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateItem creates an item in the database.
@@ -5440,7 +5440,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateYetAnotherThing creates a yet another thing in the database.
@@ -5478,7 +5478,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateYetAnotherThing creates a yet another thing in the database.
@@ -5524,7 +5524,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateYetAnotherThing creates a yet another thing in the database.
@@ -5573,7 +5573,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters.
@@ -5615,7 +5615,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateYetAnotherThingQuery takes a yet another thing and returns an update SQL query, with the relevant query parameters.
@@ -5653,7 +5653,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters.
@@ -5693,7 +5693,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateYetAnotherThingQuery takes a yet another thing and returns an update SQL query, with the relevant query parameters.
@@ -5730,7 +5730,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateItemQuery takes an item and returns an update SQL query, with the relevant query parameters.
@@ -5770,7 +5770,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildUpdateYetAnotherThingQuery takes a yet another thing and returns an update SQL query, with the relevant query parameters.
@@ -5811,7 +5811,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateItem updates a particular item. Note that UpdateItem expects the provided input to have a valid ID.
@@ -5836,7 +5836,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateItem updates a particular item. Note that UpdateItem expects the provided input to have a valid ID.
@@ -5862,7 +5862,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateItem updates a particular item. Note that UpdateItem expects the provided input to have a valid ID.

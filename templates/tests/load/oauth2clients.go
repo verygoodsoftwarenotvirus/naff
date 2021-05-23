@@ -10,7 +10,7 @@ import (
 func apiClientsDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildFetchRandomOAuth2Client(proj)...)
 	code.Add(buildMustBuildCode()...)
@@ -23,13 +23,13 @@ func buildFetchRandomOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients."),
 		jen.Line(),
-		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.TypesPackage(),
 			"OAuth2Client",
 		)).Body(
 			jen.List(jen.ID("clientsRes"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(constants.InlineCtx(), jen.Nil()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("clientsRes").IsEqualTo().ID("nil").Or().ID("len").Call(jen.ID("clientsRes").Dot("Clients")).Op("<=").One()).Body(jen.Return().ID("nil")),
 			jen.Line(),
-			jen.Var().ID("selectedClient").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.Var().ID("selectedClient").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.For(jen.ID("selectedClient").IsEqualTo().ID("nil")).Body(
 				jen.ID("ri").Assign().Qual("math/rand", "Intn").Call(jen.Len(jen.ID("clientsRes").Dot("Clients"))),
 				jen.ID("c").Assign().AddressOf().ID("clientsRes").Dot("Clients").Index(jen.ID("ri")),
@@ -74,7 +74,7 @@ func buildBuildOAuth2ClientActions(proj *models.Project) []jen.Code {
 							jen.Return().ID("c").Dot("BuildHealthCheckRequest").Call(constants.CtxVar()),
 						),
 						jen.Line(),
-						jen.ID("uli").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+						jen.ID("uli").Assign().AddressOf().Qual(proj.TypesPackage(), "UserLoginInput").Valuesln(
 							jen.ID("Username").MapAssign().ID("ui").Dot("Username"),
 							jen.ID("Password").MapAssign().ID("ui").Dot("Password"),
 							jen.ID("TOTPToken").MapAssign().ID("mustBuildCode").Call(jen.ID("u").Dot("TwoFactorSecret")),
@@ -88,7 +88,7 @@ func buildBuildOAuth2ClientActions(proj *models.Project) []jen.Code {
 						jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().ID("c").Dot("BuildCreateOAuth2ClientRequest").Callln(
 							constants.CtxVar(),
 							jen.ID("cookie"),
-							jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
+							jen.AddressOf().Qual(proj.TypesPackage(), "OAuth2ClientCreationInput").Valuesln(
 								jen.ID("UserLoginInput").MapAssign().PointerTo().ID("uli"),
 							),
 						),

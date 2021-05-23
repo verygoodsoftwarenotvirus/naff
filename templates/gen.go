@@ -9,6 +9,7 @@ import (
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server"
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
 	indexinitializercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/index_initializer"
+	templategencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/template_gen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/deploy"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
@@ -55,6 +56,7 @@ func RenderProject(proj *naffmodels.Project) {
 		"requests":            requests.RenderPackage,
 		"configgen":           configgencmd.RenderPackage,
 		"servercmd":           servercmd.RenderPackage,
+		"templategencmd":      templategencmd.RenderPackage,
 		"indexinitializercmd": indexinitializercmd.RenderPackage,
 		"database":            database.RenderPackage,
 		"internalauth":        authentication.RenderPackage,

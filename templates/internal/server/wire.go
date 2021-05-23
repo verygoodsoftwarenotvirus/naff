@@ -10,7 +10,7 @@ import (
 func wireDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildWireVarDeclarations(proj)...)
 	code.Add(buildProvideNamespace(proj)...)
@@ -49,7 +49,7 @@ func buildProvideNamespace(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideNamespace provides a namespace."),
 		jen.Line(),
-		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(proj.InternalMetricsV1Package(), "Namespace")).Body(
+		jen.Func().ID("ProvideNamespace").Params().Params(jen.Qual(proj.InternalMetricsPackage(), "Namespace")).Body(
 			jen.Return().ID("serverNamespace"),
 		),
 		jen.Line(),

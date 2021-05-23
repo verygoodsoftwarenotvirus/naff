@@ -10,7 +10,7 @@ import (
 func webhooksServiceTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildTestService(proj)...)
 	code.Add(buildTestProvideWebhooksService(proj)...)
@@ -23,11 +23,11 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Body(
 			jen.Return().AddressOf().ID("Service").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.ID("webhookCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
-				jen.ID("webhookDataManager").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+				jen.ID("webhookCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("webhookDataManager").MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataManager").Values(),
 				jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 				jen.ID("webhookIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("eventManager").MapAssign().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 			),
 		),
@@ -44,19 +44,19 @@ func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
-					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
+				).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"), jen.Error()).Body(
+					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+					jen.AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataManager").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 				),
 				jen.Line(),
@@ -66,19 +66,19 @@ func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error providing counter",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
+				).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"), jen.Error()).Body(
 					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-					jen.AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataManager").Values(),
+					jen.AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataManager").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 					jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewNewsman").Call(jen.Nil(), jen.Nil()),
 				),

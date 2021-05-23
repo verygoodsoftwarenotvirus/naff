@@ -10,7 +10,7 @@ import (
 func mappingsDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {

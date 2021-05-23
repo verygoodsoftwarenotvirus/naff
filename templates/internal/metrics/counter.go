@@ -15,7 +15,7 @@ const (
 func counterDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildOpencensusCounter()...)
 	code.Add(buildSubtractFromCount()...)

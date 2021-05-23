@@ -12,12 +12,12 @@ import (
 func mockIterableDataServerDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().IDf("%sDataServer", sn)).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().IDf("%sDataServer", sn)).Call(jen.Nil()),
 		jen.Line(),
 	)
 

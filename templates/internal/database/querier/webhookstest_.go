@@ -10,7 +10,7 @@ import (
 func webhooksTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestClient_GetWebhook(proj)...)
 	code.Add(buildTestClient_GetAllWebhooksCount(proj)...)

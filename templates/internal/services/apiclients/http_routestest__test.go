@@ -29,8 +29,8 @@ import (
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 )
@@ -820,8 +820,8 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -877,8 +877,8 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 )
@@ -1027,8 +1027,8 @@ import (
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 )
@@ -1354,8 +1354,8 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 )
@@ -1518,8 +1518,8 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
 	"testing"
 )

@@ -24,7 +24,7 @@ import (
 	require "github.com/stretchr/testify/require"
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"os"
 	"testing"
 )
@@ -324,7 +324,7 @@ import (
 	require "github.com/stretchr/testify/require"
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"os"
 	"testing"
 )
@@ -377,7 +377,7 @@ import (
 	require "github.com/stretchr/testify/require"
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"os"
 	"testing"
 )
@@ -500,7 +500,7 @@ import (
 	require "github.com/stretchr/testify/require"
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"os"
 	"testing"
 )

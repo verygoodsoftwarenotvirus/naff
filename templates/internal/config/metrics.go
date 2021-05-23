@@ -10,7 +10,7 @@ import (
 func metricsDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMetricsConstantsDeclarations(proj)...)
 	code.Add(buildMetricsTypeDeclarations()...)
@@ -80,7 +80,7 @@ func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(
 			constants.LoggerParam(),
 		).Params(
-			jen.Qual(proj.InternalMetricsV1Package(), "InstrumentationHandler"),
+			jen.Qual(proj.InternalMetricsPackage(), "InstrumentationHandler"),
 		).Body(
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("metrics_provider"), jen.ID("cfg").Dot("Metrics").Dot("MetricsProvider")),
 			jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("setting metrics provider")),
@@ -101,11 +101,11 @@ func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 					),
 					jen.Qual("go.opencensus.io/stats/view", "RegisterExporter").Call(jen.ID("p")), jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("metrics provider registered")),
 					jen.Line(),
-					jen.If(jen.Err().Assign().Qual(proj.InternalMetricsV1Package(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
+					jen.If(jen.Err().Assign().Qual(proj.InternalMetricsPackage(), "RegisterDefaultViews").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 						jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("registering default metric views")),
 						jen.Return(jen.Nil()),
 					),
-					jen.Qual(proj.InternalMetricsV1Package(), "RecordRuntimeStats").Call(
+					jen.Qual(proj.InternalMetricsPackage(), "RecordRuntimeStats").Call(
 						jen.Qual("time", "Duration").Callln(
 							jen.Qual("math", "Max").Callln(
 								jen.ID("float64").Call(jen.ID("MinimumRuntimeCollectionInterval")),

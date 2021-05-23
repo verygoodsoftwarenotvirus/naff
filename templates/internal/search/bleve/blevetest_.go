@@ -10,7 +10,7 @@ import (
 func bleveTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBleveTestTypeDefinitions()...)
 	code.Add(buildTestNewBleveIndexManager(proj)...)
@@ -47,7 +47,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("happy path",
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("constructor_test_happy_path.bleve"),
 				),
 				jen.Line(),
@@ -62,7 +62,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("invalid path",
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit(""),
 				),
 				jen.Line(),
@@ -75,7 +75,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext("invalid name",
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("constructor_test_invalid_name.bleve"),
 				),
 				jen.Line(),
@@ -101,7 +101,7 @@ func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest("obligatory",
 				jen.Const().ID("exampleQuery").Equals().Lit("index_test"),
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("index_test_obligatory.bleve"),
 				),
 				jen.Line(),
@@ -144,7 +144,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest("obligatory",
 				jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("search_test_obligatory.bleve"),
 				),
 				jen.Line(),
@@ -182,7 +182,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			utils.BuildSubTest("with empty index and search",
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("search_test_empty_index.bleve"),
 				),
 				jen.Line(),
@@ -207,7 +207,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest("with closed index",
 				jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("search_test_closed_index.bleve"),
 				),
 				jen.Line(),
@@ -251,7 +251,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest("with invalid ID",
 				jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("search_test_invalid_id.bleve"),
 				),
 				jen.Line(),
@@ -301,7 +301,7 @@ func buildTestBleveIndexManager_Delete(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest("obligatory",
 				jen.Const().ID("exampleQuery").Equals().Lit("delete_test"),
-				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchV1Package(), "IndexPath").Call(
+				jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(
 					jen.Lit("delete_test.bleve"),
 				),
 				jen.Line(),

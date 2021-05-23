@@ -10,7 +10,7 @@ import (
 func mockReadCloserTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMockReadCloserInterfaceAssurance()...)
 	code.Add(buildMockReadCloserDecl()...)

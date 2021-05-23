@@ -36,9 +36,9 @@ var (
 func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildMockRowsFromOAuth2Client(proj, dbvendor)...)
 	code.Add(buildBuildErroneousMockRowFromOAuth2Client(proj, dbvendor)...)
@@ -67,7 +67,7 @@ func oauth2ClientsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabr
 func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildMockRowsFromOAuth2Client").Params(
-			jen.ID("clients").Spread().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.ID("clients").Spread().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Body(
@@ -100,7 +100,7 @@ func buildBuildMockRowsFromOAuth2Client(proj *models.Project, dbvendor wordsmith
 
 func buildBuildErroneousMockRowFromOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
+		jen.Func().ID("buildErroneousMockRowFromOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("oauth2ClientsTableColumns")).Dot("AddRow").Callln(
 				jen.ID("c").Dot("ArchivedOn"),
 				jen.ID("c").Dot("Name"),
@@ -133,7 +133,7 @@ func buildTestScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPa
 			utils.BuildSubTestWithoutContext(
 				"surfaces row errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
@@ -148,7 +148,7 @@ func buildTestScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPa
 			utils.BuildSubTestWithoutContext(
 				"logs row closing errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
@@ -311,7 +311,7 @@ func buildTestDB_GetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.Su
 			utils.BuildSubTest(
 				"happy path",
 				utils.BuildFakeVar(proj, "OAuth2Client"),
-				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client").Valuesln(
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
 					jen.ID(utils.BuildFakeVarName("OAuth2Client")),
@@ -405,7 +405,7 @@ func buildTestDB_GetAllOAuth2ClientsForUser(proj *models.Project, dbvendor words
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVar(proj, "OAuth2ClientList"),
 				jen.Line(),
-				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.ID("expected").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client").Valuesln(
 					jen.AddressOf().ID(utils.BuildFakeVarName("OAuth2ClientList")).Dot("Clients").Index(jen.Zero()),
 					jen.AddressOf().ID(utils.BuildFakeVarName("OAuth2ClientList")).Dot("Clients").Index(jen.One()),
 					jen.AddressOf().ID(utils.BuildFakeVarName("OAuth2ClientList")).Dot("Clients").Index(jen.Lit(2)),

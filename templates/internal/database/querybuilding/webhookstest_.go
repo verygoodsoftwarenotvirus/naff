@@ -36,9 +36,9 @@ var (
 func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildMockRowsFromWebhook(proj)...)
 	code.Add(buildBuildErroneousMockRowFromWebhook(proj, dbvendor)...)
@@ -64,7 +64,7 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 func buildBuildMockRowsFromWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildMockRowsFromWebhook").Params(
-			jen.ID("webhooks").Spread().PointerTo().Qual(proj.ModelsV1Package(), "Webhook"),
+			jen.ID("webhooks").Spread().PointerTo().Qual(proj.TypesPackage(), "Webhook"),
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Body(
@@ -100,7 +100,7 @@ func buildBuildMockRowsFromWebhook(proj *models.Project) []jen.Code {
 
 func buildBuildErroneousMockRowFromWebhook(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
+		jen.Func().ID("buildErroneousMockRowFromWebhook").Params(jen.ID("w").PointerTo().Qual(proj.TypesPackage(), "Webhook")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("webhooksTableColumns")).Dot("AddRow").Callln(
 				jen.ID("w").Dot("ArchivedOn"),
 				jen.ID("w").Dot(constants.UserOwnershipFieldName),
@@ -135,7 +135,7 @@ func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra
 			utils.BuildSubTestWithoutContext(
 				"surfaces row errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
@@ -150,7 +150,7 @@ func buildTestScanWebhooks(proj *models.Project, dbvendor wordsmith.SuperPalabra
 			utils.BuildSubTestWithoutContext(
 				"logs row closing errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),

@@ -9,7 +9,7 @@ import (
 
 func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildFakeOAuth2Client(proj)...)
 	code.Add(buildBuildFakeOAuth2ClientList(proj)...)
@@ -25,10 +25,10 @@ func buildBuildFakeOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked OAuth2Client.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), "OAuth2Client").Valuesln(
 					jen.ID("ID").MapAssign().Add(utils.FakeUint64Func()),
 					jen.ID("Name").MapAssign().Add(utils.FakeStringFunc()),
 					jen.ID("ClientID").MapAssign().Add(utils.FakeUUIDFunc()),
@@ -57,19 +57,19 @@ func buildBuildFakeOAuth2ClientList(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a faked OAuth2ClientList.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList"),
 		).Body(
 			jen.ID(utils.BuildFakeVarName("OAuth2Client1")).Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client2")).Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.ID(utils.BuildFakeVarName("OAuth2Client3")).Assign().ID("BuildFakeOAuth2Client").Call(),
 			jen.Line(),
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
-					jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), "OAuth2ClientList").Valuesln(
+					jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), "Pagination").Valuesln(
 						jen.ID("Page").MapAssign().One(),
 						jen.ID("Limit").MapAssign().Lit(20),
 					),
-					jen.ID("Clients").MapAssign().Index().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+					jen.ID("Clients").MapAssign().Index().Qual(proj.TypesPackage(), "OAuth2Client").Valuesln(
 						jen.PointerTo().ID("exampleOAuth2Client1"),
 						jen.PointerTo().ID("exampleOAuth2Client2"),
 						jen.PointerTo().ID("exampleOAuth2Client3"),
@@ -89,13 +89,13 @@ func buildBuildFakeOAuth2ClientCreationInputFromClient(proj *models.Project) []j
 		jen.Commentf("%s builds a faked OAuth2ClientCreationInput.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params(
-			jen.ID("client").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.ID("client").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientCreationInput"),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput").Valuesln(
-					jen.ID("UserLoginInput").MapAssign().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), "OAuth2ClientCreationInput").Valuesln(
+					jen.ID("UserLoginInput").MapAssign().Qual(proj.TypesPackage(), "UserLoginInput").Valuesln(
 						jen.ID("Username").MapAssign().Add(utils.FakeUsernameFunc()),
 						jen.ID("Password").MapAssign().Add(utils.FakePasswordFunc()),
 						jen.ID("TOTPToken").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit(`0%s`), jen.Qual(constants.FakeLibrary, "Zip").Call()),

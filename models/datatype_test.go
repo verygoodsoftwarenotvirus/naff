@@ -1764,7 +1764,7 @@ func TestDataType_BuildDBQuerierSomethingExistsQueryBuilderTestPreQueryLines(T *
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1792,7 +1792,7 @@ func TestDataType_BuildDBQuerierGetSomethingQueryBuilderTestPreQueryLines(T *tes
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1820,7 +1820,7 @@ func TestDataType_BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLines(
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1846,7 +1846,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1880,7 +1880,7 @@ func TestDataType_BuildDBQuerierCreateSomethingQueryBuilderTestPreQueryLines(T *
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1908,7 +1908,7 @@ func TestDataType_BuildDBQuerierUpdateSomethingQueryBuilderTestPreQueryLines(T *
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1936,7 +1936,7 @@ func TestDataType_BuildDBQuerierUpdateSomethingTestPrerequisiteVariables(T *test
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1964,7 +1964,7 @@ func TestDataType_BuildDBQuerierArchiveSomethingTestPrerequisiteVariables(T *tes
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -1992,7 +1992,7 @@ func TestDataType_BuildDBQuerierArchiveSomethingQueryBuilderTestPreQueryLines(T 
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -2155,10 +2155,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.buildGetListOfSomethingParams(p, false))
 
@@ -2206,10 +2206,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildMockDataManagerListRetrievalMethodParams(p))
 
@@ -2259,10 +2259,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBClientListRetrievalMethodParams(p))
 
@@ -2286,10 +2286,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierListRetrievalMethodParams(p))
 
@@ -2312,10 +2312,10 @@ func TestDataType_BuildDBQuerierListRetrievalQueryBuildingMethodParams(T *testin
 package main
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(filter *v1.QueryFilter) {}
+func example(filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierListRetrievalQueryBuildingMethodParams(p))
 
@@ -2361,10 +2361,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, input *types.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.buildCreateSomethingParams(p, false))
 
@@ -2388,10 +2388,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, input *types.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildMockInterfaceDefinitionCreationMethodParams(p))
 
@@ -2441,10 +2441,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, input *types.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBClientCreationMethodParams(p))
 
@@ -2468,10 +2468,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, input *types.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierCreationMethodParams(p))
 
@@ -2517,10 +2517,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.Thing) {}
+func example(ctx context.Context, input *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierCreationQueryBuildingMethodParams(p, false))
 
@@ -2864,10 +2864,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, updated *v1.Thing) {}
+func example(ctx context.Context, updated *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.buildUpdateSomethingParams(p, "updated", false))
 
@@ -2906,10 +2906,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, updated *v1.Thing) {}
+func example(ctx context.Context, updated *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBClientUpdateMethodParams(p, "updated"))
 
@@ -2933,10 +2933,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, updated *v1.Thing) {}
+func example(ctx context.Context, updated *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierUpdateMethodParams(p, "updated"))
 
@@ -2959,10 +2959,10 @@ func TestDataType_BuildDBQuerierUpdateQueryBuildingMethodParams(T *testing.T) {
 package main
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(updated *v1.Thing) {}
+func example(updated *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildDBQuerierUpdateQueryBuildingMethodParams(p, "updated"))
 
@@ -3012,10 +3012,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, updated *v1.Thing) {}
+func example(ctx context.Context, updated *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildMockDataManagerUpdateMethodParams(p, "updated"))
 
@@ -3316,7 +3316,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWithOwnerStruct(T *testi
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3342,7 +3342,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3372,7 +3372,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3398,7 +3398,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3434,7 +3434,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildCreationRequestMethodTe
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3462,7 +3462,7 @@ func TestDataType_BuildDependentObjectsForDBQueriersExistenceMethodTest(T *testi
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3490,7 +3490,7 @@ func TestDataType_BuildDependentObjectsForDBQueriersCreationMethodTest(T *testin
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3519,7 +3519,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWhereEachStructIsImporta
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3545,7 +3545,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3577,7 +3577,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAreI
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3603,7 +3603,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3633,7 +3633,7 @@ func TestDataType_BuildHTTPClientRetrievalMethodTestDependentObjects(T *testing.
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3661,7 +3661,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildArchiveRequestMethodTes
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3689,7 +3689,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildExistenceRequestMethodT
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3717,7 +3717,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientExistenceMethodTest(T *testi
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3745,7 +3745,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildRetrievalRequestMethodT
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3773,7 +3773,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientRetrievalMethodTest(T *testi
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3801,7 +3801,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientArchiveMethodTest(T *testing
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3827,7 +3827,7 @@ func TestDataType_buildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3854,7 +3854,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientListRetrievalTest(T *testing
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3881,7 +3881,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMet
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3908,7 +3908,7 @@ func TestDataType_buildVarDeclarationsOfDependentStructsForUpdateFunction(T *tes
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3935,7 +3935,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientUpdateMethodTest(T *testing.
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3962,7 +3962,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientBuildUpdateRequestMethodTest
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -3989,7 +3989,7 @@ func TestDataType_BuildDependentObjectsForHTTPClientCreationMethodTest(T *testin
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -4775,10 +4775,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, input *types.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
 
@@ -4800,10 +4800,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thingID uint64, input *v1.YetAnotherThingCreationInput) {}
+func example(ctx context.Context, thingID uint64, input *types.YetAnotherThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientCreateRequestBuildingMethod(p))
 
@@ -4827,10 +4827,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, input *v1.ThingCreationInput) {}
+func example(ctx context.Context, input *types.ThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientCreateMethod(p))
 
@@ -4852,10 +4852,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thingID uint64, input *v1.YetAnotherThingCreationInput) {}
+func example(ctx context.Context, thingID uint64, input *types.YetAnotherThingCreationInput) {}
 `
 		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientCreateMethod(p))
 
@@ -4879,10 +4879,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thing *v1.Thing) {}
+func example(ctx context.Context, thing *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
 
@@ -4904,10 +4904,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thingID uint64, yetAnotherThing *v1.YetAnotherThing) {}
+func example(ctx context.Context, thingID uint64, yetAnotherThing *types.YetAnotherThing) {}
 `
 		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientUpdateRequestBuildingMethod(p))
 
@@ -4981,10 +4981,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thing *v1.Thing) {}
+func example(ctx context.Context, thing *types.Thing) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientUpdateMethod(p))
 
@@ -5006,10 +5006,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thingID uint64, yetAnotherThing *v1.YetAnotherThing) {}
+func example(ctx context.Context, thingID uint64, yetAnotherThing *types.YetAnotherThing) {}
 `
 		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientUpdateMethod(p))
 
@@ -5561,10 +5561,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientListRequestMethod(p))
 
@@ -5586,10 +5586,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thingID, anotherThingID uint64, filter *v1.QueryFilter) {}
+func example(ctx context.Context, thingID, anotherThingID uint64, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientListRequestMethod(p))
 
@@ -5613,10 +5613,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, filter *v1.QueryFilter) {}
+func example(ctx context.Context, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, dt.BuildParamsForHTTPClientMethodThatFetchesAList(p))
 
@@ -5638,10 +5638,10 @@ package main
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/example/models/v1"
+	types "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types"
 )
 
-func example(ctx context.Context, thingID, anotherThingID uint64, filter *v1.QueryFilter) {}
+func example(ctx context.Context, thingID, anotherThingID uint64, filter *types.QueryFilter) {}
 `
 		actual := renderFunctionParamsToString(t, p.LastDataType().BuildParamsForHTTPClientMethodThatFetchesAList(p))
 
@@ -5865,7 +5865,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -5891,7 +5891,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -5918,7 +5918,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -5957,7 +5957,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -5983,7 +5983,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6010,7 +6010,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6044,7 +6044,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6074,7 +6074,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(T *testin
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6103,7 +6103,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6132,7 +6132,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6165,7 +6165,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6196,7 +6196,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6230,7 +6230,7 @@ func TestDataType_BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(T *te
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6256,7 +6256,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6315,7 +6315,7 @@ func main() {}
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6343,7 +6343,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBClientListRetrievalMethodTest(T *te
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6370,7 +6370,7 @@ func TestDataType_BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(T *t
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6395,7 +6395,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -6423,7 +6423,7 @@ func main() {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -7080,7 +7080,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {
@@ -7111,7 +7111,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/example/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
 )
 
 func main() {

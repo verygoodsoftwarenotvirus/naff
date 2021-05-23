@@ -20,7 +20,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFleshedOutQueryFilter builds a fully fleshed out QueryFilter.
@@ -54,7 +54,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFleshedOutQueryFilter builds a fully fleshed out QueryFilter.

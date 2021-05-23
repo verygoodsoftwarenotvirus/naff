@@ -11,7 +11,7 @@ import (
 func spanAttachersDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildConstants(proj)...)
 	code.Add(buildAttachUint64ToSpan()...)
@@ -110,7 +110,7 @@ func buildAttachFilterToSpan(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("AttachFilterToSpan").Params(
 			jen.ID(utils.SpanVarName).PointerTo().Qual(constants.TracingLibrary, "Span"),
-			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
 		).Body(
 			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().Nil().And().ID(utils.SpanVarName).DoesNotEqual().Nil()).Body(
 				jen.ID(utils.SpanVarName).Dot("AddAttributes").Callln(

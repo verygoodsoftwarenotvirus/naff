@@ -26,7 +26,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 	"sync"
 )
@@ -425,7 +425,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 	"sync"
 )
@@ -831,7 +831,7 @@ import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 	"sync"
 )
@@ -1308,7 +1308,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -1368,7 +1368,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -1428,7 +1428,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -1492,7 +1492,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks.
@@ -1535,7 +1535,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks.
@@ -1578,7 +1578,7 @@ package example
 
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // scanWebhooks provides a consistent way to turn sql rows into a slice of webhooks.
@@ -1731,7 +1731,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetWebhook fetches a webhook from the database.
@@ -1762,7 +1762,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetWebhook fetches a webhook from the database.
@@ -1793,7 +1793,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetWebhook fetches a webhook from the database.
@@ -2169,7 +2169,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllWebhooks fetches a list of all webhooks from the database.
@@ -2214,7 +2214,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllWebhooks fetches a list of all webhooks from the database.
@@ -2259,7 +2259,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetAllWebhooks fetches a list of all webhooks from the database.
@@ -2307,7 +2307,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetWebhooksQuery returns a SQL query (and arguments) that would return a
@@ -2349,7 +2349,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetWebhooksQuery returns a SQL query (and arguments) that would return a
@@ -2391,7 +2391,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // buildGetWebhooksQuery returns a SQL query (and arguments) that would return a
@@ -2438,7 +2438,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetWebhooks fetches a list of webhooks from the database that meet a particular filter.
@@ -2486,7 +2486,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetWebhooks fetches a list of webhooks from the database that meet a particular filter.
@@ -2534,7 +2534,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // GetWebhooks fetches a list of webhooks from the database that meet a particular filter.
@@ -2584,7 +2584,7 @@ package example
 
 import (
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2636,7 +2636,7 @@ func (p *Postgres) buildWebhookCreationQuery(x *v1.Webhook) (query string, args 
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2687,7 +2687,7 @@ func (s *Sqlite) buildWebhookCreationQuery(x *v1.Webhook) (query string, args []
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2744,7 +2744,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateWebhook creates a webhook in the database.
@@ -2784,7 +2784,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateWebhook creates a webhook in the database.
@@ -2833,7 +2833,7 @@ package example
 import (
 	"context"
 	"fmt"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // CreateWebhook creates a webhook in the database.
@@ -2886,7 +2886,7 @@ package example
 import (
 	"fmt"
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2931,7 +2931,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -2975,7 +2975,7 @@ package example
 
 import (
 	squirrel "github.com/Masterminds/squirrel"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strings"
 )
 
@@ -3023,7 +3023,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID.
@@ -3047,7 +3047,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID.
@@ -3072,7 +3072,7 @@ package example
 
 import (
 	"context"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // UpdateWebhook updates a particular webhook. Note that UpdateWebhook expects the provided input to have a valid ID.

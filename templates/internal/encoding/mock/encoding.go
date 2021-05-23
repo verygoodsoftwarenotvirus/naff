@@ -10,7 +10,7 @@ import (
 func encodingDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildInterfaceImplementationDeclaration(proj)...)
 	code.Add(buildEncoderDecoder()...)
@@ -22,7 +22,7 @@ func encodingDotGo(proj *models.Project) *jen.File {
 
 func buildInterfaceImplementationDeclaration(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(proj.InternalEncodingV1Package(), "EncoderDecoder").Equals().Parens(jen.PointerTo().ID("EncoderDecoder")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalEncodingPackage(), "EncoderDecoder").Equals().Parens(jen.PointerTo().ID("EncoderDecoder")).Call(jen.Nil()),
 		jen.Line(),
 	}
 

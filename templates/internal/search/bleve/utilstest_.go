@@ -9,7 +9,7 @@ import (
 func utilsTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestEnsureQueryIsRestrictedToUser(proj)...)
 

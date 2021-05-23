@@ -10,7 +10,7 @@ import (
 func oauth2ClientsServiceTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildTestService(proj)...)
 	code.Add(buildTestProvideOAuth2ClientsService(proj)...)
@@ -33,12 +33,12 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 			jen.ID("server").Assign().Qual("gopkg.in/oauth2.v3/server", "NewDefaultServer").Call(jen.ID("manager")),
 			jen.Line(),
 			jen.ID("service").Assign().AddressOf().ID("Service").Valuesln(
-				jen.ID("database").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("database").MapAssign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
-				jen.ID("authenticator").MapAssign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("authenticator").MapAssign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("urlClientIDExtractor").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-				jen.ID("oauth2ClientCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("oauth2ClientCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("oauth2Handler").MapAssign().ID("server"),
 			),
 			jen.Line(),
@@ -57,17 +57,17 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual(constants.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
+				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client").Values(), jen.Nil()),
 				jen.Line(),
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
 				).Params(
-					jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 					jen.Error(),
 				).Body(
 					jen.Return(jen.Nil(), jen.Nil()),
@@ -75,9 +75,9 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("mockDB"),
-					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 				),
 				utils.AssertNoError(jen.Err(), nil),
@@ -88,17 +88,17 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error providing counter",
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
 					jen.Lit("GetAllOAuth2Clients"),
 					jen.Qual(constants.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(), jen.Nil()),
+				).Dot("Return").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client").Values(), jen.Nil()),
 				jen.Line(),
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
 				).Params(
-					jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+					jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 					jen.Error(),
 				).Body(
 					jen.Return(jen.Nil(), constants.ObligatoryError()),
@@ -107,9 +107,9 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
 					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 					jen.ID("mockDB"),
-					jen.AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
+					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
-					jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 					jen.ID("ucp"),
 				),
 				utils.AssertError(jen.Err(), nil),
@@ -133,7 +133,7 @@ func buildTest_clientStore_GetByID(proj *models.Project) []jen.Code {
 				"happy path",
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -155,12 +155,12 @@ func buildTest_clientStore_GetByID(proj *models.Project) []jen.Code {
 				"with no rows",
 				jen.ID(utils.BuildFakeVarName("ID")).Assign().Lit("blah"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("ID")),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("clientStore").Values(jen.ID("database").MapAssign().ID("mockDB")),
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("c").Dot("GetByID").Call(jen.ID(utils.BuildFakeVarName("ID"))),
@@ -174,13 +174,13 @@ func buildTest_clientStore_GetByID(proj *models.Project) []jen.Code {
 				"with error reading from database",
 				jen.ID(utils.BuildFakeVarName("ID")).Assign().Lit("blah"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Callln(
 					jen.Lit("GetOAuth2ClientByClientID"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("ID")),
 				).Dot("Return").Call(
-					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
+					jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Call(jen.Nil()),
 					utils.BuildError(jen.ID("exampleID")),
 				),
 				jen.Line(),

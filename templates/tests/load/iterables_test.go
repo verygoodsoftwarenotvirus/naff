@@ -24,8 +24,8 @@ import (
 	"context"
 	"fmt"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"math/rand"
 	http1 "net/http"
 )
@@ -192,7 +192,7 @@ package example
 import (
 	"context"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"math/rand"
 )
 
@@ -278,7 +278,7 @@ func Test_buildRequisiteCreationCode(T *testing.T) {
 package main
 
 import (
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
 func main() {
@@ -413,7 +413,7 @@ import (
 	"context"
 	"fmt"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	http1 "net/http"
 )
 
@@ -505,7 +505,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
 func main() {
@@ -533,7 +533,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
 func main() {
@@ -777,7 +777,7 @@ package main
 
 import (
 	"context"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
 func main() {
@@ -811,7 +811,7 @@ package main
 import (
 	"context"
 	"fmt"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
 func main() {

@@ -14,9 +14,9 @@ import (
 func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMigrationVarDeclarations(proj, dbvendor))
 	code.Add(buildBuildMigrationFuncDecl(dbvendor)...)

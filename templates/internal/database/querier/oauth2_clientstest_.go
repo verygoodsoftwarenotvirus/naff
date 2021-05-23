@@ -10,7 +10,7 @@ import (
 func oauth2ClientsTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestClient_GetOAuth2Client(proj)...)
 	code.Add(buildTestClient_GetOAuth2ClientByClientID(proj)...)
@@ -54,7 +54,7 @@ func buildTestClient_GetOAuth2Client(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"with error returned from querier",
 				utils.BuildFakeVar(proj, "OAuth2Client"),
-				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
+				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -305,7 +305,7 @@ func buildTestClient_GetOAuth2ClientsForUser(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"with error returned from querier",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
-				jen.ID(utils.BuildFakeVarName("OAuth2ClientList")).Assign().Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")).Call(jen.Nil()),
+				jen.ID(utils.BuildFakeVarName("OAuth2ClientList")).Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList")).Call(jen.Nil()),
 				utils.CreateDefaultQueryFilter(proj),
 				jen.Line(),
 				jen.ID("mockDB").Dot("OAuth2ClientDataManager").Dot("On").Call(
@@ -361,7 +361,7 @@ func buildTestClient_CreateOAuth2Client(proj *models.Project) []jen.Code {
 				"with error returned from querier",
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.Line(),
-				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Call(jen.Nil()),
+				jen.ID("expected").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Call(jen.Nil()),
 				utils.BuildFakeVar(proj, "OAuth2Client"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "OAuth2ClientCreationInputFromClient", jen.ID(utils.BuildFakeVarName("OAuth2Client"))),
 				jen.Line(),

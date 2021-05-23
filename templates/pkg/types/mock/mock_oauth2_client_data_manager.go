@@ -10,10 +10,10 @@ import (
 func mockOauth2ClientDataManagerDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataManager").Equals().Parens(jen.PointerTo().ID("OAuth2ClientDataManager")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.TypesPackage(), "OAuth2ClientDataManager").Equals().Parens(jen.PointerTo().ID("OAuth2ClientDataManager")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -45,10 +45,10 @@ func buildGetOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetOAuth2Client is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("clientID"), jen.ID(constants.UserIDVarName)),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -60,10 +60,10 @@ func buildGetOAuth2ClientByClientID(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetOAuth2ClientByClientID is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientByClientID").Params(constants.CtxParam(), jen.ID("identifier").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientByClientID").Params(constants.CtxParam(), jen.ID("identifier").String()).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("identifier")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -89,10 +89,10 @@ func buildGetAllOAuth2Clients(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetAllOAuth2Clients is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetAllOAuth2Clients").Params(constants.CtxParam()).Params(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetAllOAuth2Clients").Params(constants.CtxParam()).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -107,11 +107,11 @@ func buildGetOAuth2ClientsForUser(proj *models.Project) []jen.Code {
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("GetOAuth2ClientsForUser").Params(
 			constants.CtxParam(),
 			constants.UserIDParam(),
-			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
-		).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -123,10 +123,10 @@ func buildCreateOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateOAuth2Client is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("input")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -140,7 +140,7 @@ func buildUpdateOAuth2Client(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("m").PointerTo().ID("OAuth2ClientDataManager")).ID("UpdateOAuth2Client").Params(
 			constants.CtxParam(),
-			jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.ID("updated").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 		).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("updated")).Dot("Error").Call(jen.Zero()),
 		),

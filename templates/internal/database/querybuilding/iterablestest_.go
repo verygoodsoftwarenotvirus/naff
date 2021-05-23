@@ -22,9 +22,9 @@ const (
 func iterablesTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra, typ models.DataType) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildMockRowsFromSomething(proj, typ)...)
 	code.Add(buildBuildErroneousMockRowFromSomething(proj, typ)...)
@@ -61,7 +61,7 @@ func buildBuildMockRowsFromSomething(proj *models.Project, typ models.DataType) 
 
 	lines := []jen.Code{
 		jen.Func().IDf("buildMockRowsFrom%s", pn).Params(
-			jen.ID(puvn).Spread().PointerTo().Qual(proj.ModelsV1Package(), sn),
+			jen.ID(puvn).Spread().PointerTo().Qual(proj.TypesPackage(), sn),
 		).Params(
 			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
 		).Body(
@@ -119,7 +119,7 @@ func buildBuildErroneousMockRowFromSomething(proj *models.Project, typ models.Da
 
 	lines := []jen.Code{
 		jen.Func().IDf("buildErroneousMockRowFrom%s", sn).Params(
-			jen.ID("x").PointerTo().Qual(proj.ModelsV1Package(), sn),
+			jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn),
 		).Params(
 			jen.PointerTo().Qual(sqlMockPkg, "Rows"),
 		).Body(
@@ -317,7 +317,7 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 			utils.BuildSubTestWithoutContext(
 				"surfaces row errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
@@ -339,7 +339,7 @@ func buildTestScanListOfThings(proj *models.Project, dbvendor wordsmith.SuperPal
 			utils.BuildSubTestWithoutContext(
 				"logs row closing errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
@@ -716,7 +716,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 				Dotln("WillReturnRows").Call(jen.Qual(sqlMockPkg, "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 			expectQueryMock,
 			jen.Line(),
-			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), sn)),
+			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), sn)),
 			jen.ID("doneChan").Assign().Make(jen.Chan().Bool(), jen.One()),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("GetAll%s", pn).Call(constants.CtxVar(), jen.ID("out")),
@@ -754,7 +754,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 			jen.ID("mockDB").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("expectedCountQuery"))).
 				Dotln("WillReturnError").Call(constants.ObligatoryError()),
 			jen.Line(),
-			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), sn)),
+			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), sn)),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("GetAll%s", pn).Call(constants.CtxVar(), jen.ID("out")),
 			utils.AssertError(jen.Err(), nil),
@@ -785,7 +785,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 				Dotln("WillReturnRows").Call(jen.Qual(sqlMockPkg, "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 			expectQueryMock,
 			jen.Line(),
-			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), sn)),
+			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), sn)),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("GetAll%s", pn).Call(constants.CtxVar(), jen.ID("out")),
 			utils.AssertNoError(jen.Err(), nil),
@@ -818,7 +818,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 				Dotln("WillReturnRows").Call(jen.Qual(sqlMockPkg, "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 			expectQueryMock,
 			jen.Line(),
-			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), sn)),
+			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), sn)),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("GetAll%s", pn).Call(constants.CtxVar(), jen.ID("out")),
 			utils.AssertNoError(jen.Err(), nil),
@@ -854,7 +854,7 @@ func buildTestDBGetAllOfSomethingFuncDecl(proj *models.Project, dbvendor wordsmi
 				Dotln("WillReturnRows").Call(jen.Qual(sqlMockPkg, "NewRows").Call(jen.Index().String().Values(jen.Lit("count"))).Dot("AddRow").Call(jen.ID("expectedCount"))),
 			expectQueryMock,
 			jen.Line(),
-			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), sn)),
+			jen.ID("out").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), sn)),
 			jen.Line(),
 			jen.Err().Assign().ID(dbfl).Dotf("GetAll%s", pn).Call(constants.CtxVar(), jen.ID("out")),
 			utils.AssertNoError(jen.Err(), nil),

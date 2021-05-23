@@ -62,8 +62,8 @@ import (
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	items "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
@@ -358,8 +358,8 @@ import (
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	anotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/anotherthings"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	things "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/things"
@@ -986,8 +986,8 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 

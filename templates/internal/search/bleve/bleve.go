@@ -13,7 +13,7 @@ const searchPackage = "github.com/blevesearch/bleve"
 func bleveDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildConstantDefinitions(proj)...)
 	code.Add(buildInterfaceImplementationStatement(proj)...)
@@ -33,7 +33,7 @@ func buildConstantDefinitions(proj *models.Project) []jen.Code {
 			jen.ID("bitSize").Equals().Lit(64),
 			jen.Line(),
 			jen.Comment("testingSearchIndexName is an index name that is only valid for testing's sake."),
-			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit("testing"),
+			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchPackage(), "IndexName").Equals().Lit("testing"),
 		),
 	}
 
@@ -42,7 +42,7 @@ func buildConstantDefinitions(proj *models.Project) []jen.Code {
 
 func buildInterfaceImplementationStatement(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(proj.InternalSearchV1Package(), "IndexManager").Equals().Parens(jen.PointerTo().ID("bleveIndexManager")).Parens(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalSearchPackage(), "IndexManager").Equals().Parens(jen.PointerTo().ID("bleveIndexManager")).Parens(jen.Nil()),
 		jen.Line(),
 	}
 
@@ -83,7 +83,7 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			nameCases = append(nameCases,
-				jen.Case(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Body(
+				jen.Case(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Body(
 					jen.List(jen.ID("index"), jen.ID("newIndexErr")).Equals().Qual(searchPackage, "New").Call(
 						jen.String().Call(jen.ID("path")),
 						jen.IDf("build%sMapping", typ.Name.Singular()).Call(),
@@ -113,11 +113,11 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 		jen.Comment("NewBleveIndexManager instantiates a bleve index"),
 		jen.Line(),
 		jen.Func().ID("NewBleveIndexManager").Params(
-			jen.ID("path").Qual(proj.InternalSearchV1Package(), "IndexPath"),
-			jen.ID("name").Qual(proj.InternalSearchV1Package(), "IndexName"),
+			jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
+			jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"),
 			constants.LoggerParam(),
 		).Params(
-			jen.Qual(proj.InternalSearchV1Package(), "IndexManager"),
+			jen.Qual(proj.InternalSearchPackage(), "IndexManager"),
 			jen.Error(),
 		).Body(
 			jen.Var().ID("index").Qual(searchPackage, "Index"),
@@ -203,7 +203,7 @@ func buildNewBleveIndexManager_Search(proj *models.Project) []jen.Code {
 		).Body(
 			utils.StartSpan(proj, false, "Search"),
 			jen.ID("query").Equals().ID("ensureQueryIsRestrictedToUser").Call(jen.ID("query"), jen.ID(constants.UserIDVarName)),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachSearchQueryToSpan").Call(jen.ID("span"), jen.ID("query")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachSearchQueryToSpan").Call(jen.ID("span"), jen.ID("query")),
 			jen.ID("sm").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.Lit("search_query").MapAssign().ID("query"),
 				jen.Lit("user_id").MapAssign().ID(constants.UserIDVarName),

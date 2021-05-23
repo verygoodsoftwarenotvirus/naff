@@ -10,7 +10,7 @@ import (
 func counterTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTest_opencensusCounter_Increment()...)
 	code.Add(buildTest_opencensusCounter_IncrementBy()...)

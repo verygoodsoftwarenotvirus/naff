@@ -10,7 +10,7 @@ import (
 func wireDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildWireProviders()...)
 
@@ -64,7 +64,7 @@ func buildWireProvideOAuth2ClientValidator(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideOAuth2ClientValidator converts an oauth2clients.Service to an OAuth2ClientValidator"),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").PointerTo().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Body(
+		jen.Func().ID("ProvideOAuth2ClientValidator").Params(jen.ID("s").PointerTo().Qual(proj.ServiceOAuth2ClientsPackage(), "Service")).Params(jen.ID("OAuth2ClientValidator")).Body(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

@@ -10,10 +10,10 @@ import (
 func mockUserDataServerDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("UserDataServer")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.TypesPackage(), "UserDataServer").Equals().Parens(jen.PointerTo().ID("UserDataServer")).Call(jen.Nil()),
 		jen.Line(),
 	)
 

@@ -12,7 +12,7 @@ import (
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildFetchRandomSomething(proj, typ)...)
 	code.Add(buildRandomActionMap(proj, typ)...)
@@ -62,7 +62,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 	lines := []jen.Code{
 		jen.Commentf("fetchRandom%s retrieves a random %s from the list of available %s.", sn, scn, pcn),
 		jen.Line(),
-		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), sn)).Body(
+		jen.Func().IDf("fetchRandom%s", sn).Params(paramArgs...).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Body(
 			jen.List(jen.IDf("%sRes", puvn), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 				callArgs...,
 			),

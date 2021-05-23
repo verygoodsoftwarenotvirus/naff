@@ -10,10 +10,10 @@ import (
 func clientDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.DatabasePackage(), "DataManager").Equals().Parens(jen.PointerTo().ID("Client")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -39,7 +39,7 @@ func buildClientDeclaration(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
-		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
+		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("debug").Bool(), constants.LoggerParam()),
 		jen.Line(),
 	}
@@ -88,10 +88,10 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 		jen.Func().ID(funcName).Paramsln(
 			constants.CtxParam(),
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
-			jen.ID("querier").Qual(proj.DatabaseV1Package(), "DataManager"),
+			jen.ID("querier").Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("debug").Bool(),
 			constants.LoggerParam(),
-		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Body(
+		).Params(jen.Qual(proj.DatabasePackage(), "DataManager"), jen.Error()).Body(
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("querier").MapAssign().ID("querier"),
@@ -100,7 +100,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.If(jen.ID("debug")).Body(
-				jen.ID("c").Dot(constants.LoggerVarName).Dot("SetLevel").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1", "DebugLevel")),
+				jen.ID("c").Dot(constants.LoggerVarName).Dot("SetLevel").Call(jen.Qual(proj.InternalLoggingPackage(), "DebugLevel")),
 			),
 			jen.Line(),
 			jen.ID("c").Dot(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("migrating querier")),

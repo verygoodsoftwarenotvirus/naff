@@ -37,9 +37,9 @@ var (
 func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildMockRowsFromUser(proj)...)
 	code.Add(buildBuildErroneousMockRowFromUser(proj)...)
@@ -71,7 +71,7 @@ func usersTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.
 func buildBuildMockRowsFromUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildMockRowsFromUser").Params(
-			jen.ID("users").Spread().PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("users").Spread().PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Params(
 			jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows"),
 		).Body(
@@ -109,7 +109,7 @@ func buildBuildMockRowsFromUser(proj *models.Project) []jen.Code {
 
 func buildBuildErroneousMockRowFromUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
+		jen.Func().ID("buildErroneousMockRowFromUser").Params(jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User")).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
 			jen.ID(utils.BuildFakeVarName("Rows")).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.ID("usersTableColumns")).Dot("AddRow").Callln(
 				jen.ID("user").Dot("ArchivedOn"),
 				jen.ID("user").Dot("ID"),
@@ -144,7 +144,7 @@ func buildTestScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 			utils.BuildSubTestWithoutContext(
 				"surfaces row errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(constants.ObligatoryError()),
@@ -159,7 +159,7 @@ func buildTestScanUsers(proj *models.Project, dbvendor wordsmith.SuperPalabra) [
 			utils.BuildSubTestWithoutContext(
 				"logs row closing errors",
 				jen.List(jen.ID(dbfl), jen.Underscore()).Assign().ID("buildTestService").Call(jen.ID("t")),
-				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabaseV1Package(), "MockResultIterator").Values(),
+				jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 				jen.Line(),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 				jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
@@ -729,7 +729,7 @@ func buildTestDB_CreateUser(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID(dbfl).Dot("CreateUser").Call(constants.CtxVar(), jen.ID("expectedInput")),
 			utils.AssertError(jen.Err(), nil),
 			utils.AssertNil(jen.ID("actual"), nil),
-			utils.AssertEqual(jen.Err(), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists"), nil),
+			utils.AssertEqual(jen.Err(), jen.Qual(proj.DatabasePackage("client"), "ErrUserExists"), nil),
 			jen.Line(),
 			utils.AssertNoError(jen.ID("mockDB").Dot("ExpectationsWereMet").Call(), jen.Lit("not all database expectations were met")),
 		)

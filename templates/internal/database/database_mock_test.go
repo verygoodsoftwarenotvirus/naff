@@ -21,7 +21,7 @@ package example
 import (
 	"context"
 	mock1 "github.com/stretchr/testify/mock"
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 )
 
 var _ DataManager = (*MockDatabase)(nil)
@@ -100,7 +100,7 @@ func Test_buildBuildMockDatabase(T *testing.T) {
 package example
 
 import (
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 )
 
 // BuildMockDatabase builds a mock database.
@@ -131,7 +131,7 @@ package example
 
 import (
 	mock "github.com/stretchr/testify/mock"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 )
 
 // MockDatabase is our mock database structure.

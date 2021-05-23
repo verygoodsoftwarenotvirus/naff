@@ -10,7 +10,7 @@ import (
 func metricsTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestServerConfig_ProvideInstrumentationHandler()...)
 	code.Add(buildTestServerConfig_ProvideTracing()...)

@@ -10,7 +10,7 @@ import (
 func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildUsersHTTPRoutesVarDeclarations(proj)...)
 	code.Add(buildUsersHTTPRoutesValidateCredentialChangeRequest(proj)...)
@@ -51,8 +51,8 @@ func buildUsersHTTPRoutesValidateCredentialChangeRequest(proj *models.Project) [
 			constants.CtxParam(),
 			constants.UserIDParam(),
 			jen.Listln(jen.ID("password"), jen.ID("totpToken")).String(),
-		).Params(jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.ID("httpStatus").ID("int")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("validateCredentialChangeRequest")),
+		).Params(jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User"), jen.ID("httpStatus").ID("int")).Body(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.CtxVar(), jen.Lit("validateCredentialChangeRequest")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
@@ -97,13 +97,13 @@ func buildUsersHTTPRoutesListHandler(proj *models.Project) []jen.Code {
 		jen.Comment("ListHandler is a handler for responding with a list of users."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ListHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ListHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.Comment("determine desired filter."),
-			jen.ID("qf").Assign().Qual(proj.ModelsV1Package(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
+			jen.ID("qf").Assign().Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.Comment("fetch user data."),
 			jen.List(jen.ID("users"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUsers").Call(constants.CtxVar(), jen.ID("qf")),
@@ -129,7 +129,7 @@ func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 		jen.Comment("CreateHandler is our user creation route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreateHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreateHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -145,13 +145,13 @@ func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.Comment("fetch parsed input from request context."),
 			jen.List(jen.ID("userInput"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(
 				jen.ID("userCreationMiddlewareCtxKey"),
-			).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput")),
+			).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "UserCreationInput")),
 			jen.If(jen.Not().ID("ok")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to UsersService CreateHandler request")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 				jen.Return(),
 			),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userInput").Dot("Username")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("userInput").Dot("Username")),
 			jen.Line(),
 			jen.Comment("NOTE: I feel comfortable letting username be in the logger, since"),
 			jen.Comment("the logging statements below are only in the event of errors. If"),
@@ -166,7 +166,7 @@ func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 				jen.Return(),
 			),
 			jen.Line(),
-			jen.ID("input").Assign().Qual(proj.ModelsV1Package(), "UserDatabaseCreationInput").Valuesln(
+			jen.ID("input").Assign().Qual(proj.TypesPackage(), "UserDatabaseCreationInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("userInput").Dot("Username"),
 				jen.ID("HashedPassword").MapAssign().ID("hp"),
 				jen.ID("TwoFactorSecret").MapAssign().EmptyString(),
@@ -192,7 +192,7 @@ func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.Comment("create the user."),
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("CreateUser").Call(constants.CtxVar(), jen.ID("input")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.If(jen.Err().IsEqualTo().Qual(proj.DatabaseV1Package("client"), "ErrUserExists")).Body(
+				jen.If(jen.Err().IsEqualTo().Qual(proj.DatabasePackage("client"), "ErrUserExists")).Body(
 					jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("duplicate username attempted")),
 					utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
 					jen.Return(),
@@ -205,7 +205,7 @@ func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("UserCreationResponse is a struct we can use to notify the user of"),
 			jen.Comment("their two factor secret, but ideally just this once and then never again."),
-			jen.ID("ucr").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationResponse").Valuesln(
+			jen.ID("ucr").Assign().AddressOf().Qual(proj.TypesPackage(), "UserCreationResponse").Valuesln(
 				jen.ID("ID").MapAssign().ID("user").Dot("ID"),
 				jen.ID("Username").MapAssign().ID("user").Dot("Username"),
 				jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"),
@@ -217,10 +217,10 @@ func buildUsersHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.Comment("notify the relevant parties."),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
 			jen.ID("s").Dot("userCounter").Dot("Increment").Call(constants.CtxVar()),
 			jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-				jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Create")),
+				jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.TypesPackage(), "Create")),
 				jen.ID("Data").MapAssign().ID("ucr"),
 				jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 			)),
@@ -242,7 +242,7 @@ func buildUsersHTTPRoutesBuildQRCode(proj *models.Project) []jen.Code {
 		jen.Comment("buildQRCode builds a QR code for a given username and secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("buildQRCode").Params(constants.CtxParam(), jen.List(jen.ID("username"), jen.ID("twoFactorSecret")).String()).Params(jen.String()).Body(
-			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("buildQRCode")),
+			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.CtxVar(), jen.Lit("buildQRCode")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("encode two factor secret as authenticator-friendly QR code"),
@@ -291,7 +291,7 @@ func buildUsersHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
 		jen.Comment("ReadHandler is our read route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ReadHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ReadHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -301,7 +301,7 @@ func buildUsersHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 			jen.Line(),
 			jen.Comment("document it for posterity."),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 			jen.Line(),
 			jen.Comment("fetch user data."),
 			jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("userDataManager").Dot("GetUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
@@ -333,13 +333,13 @@ func buildUsersHTTPRoutesTOTPSecretVerificationHandler(proj *models.Project) []j
 		jen.Comment("is validated by the user's TOTP secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretVerificationHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretVerificationHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretVerificationHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.Comment("check request context for parsed input."),
-			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.ID("totpSecretVerificationMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(),
+			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.ID("totpSecretVerificationMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(),
 				"TOTPSecretVerificationInput",
 			)),
 			jen.If(jen.Not().ID("ok").Or().ID("input").IsEqualTo().Nil()).Body(
@@ -357,8 +357,8 @@ func buildUsersHTTPRoutesTOTPSecretVerificationHandler(proj *models.Project) []j
 				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 				jen.Return(),
 			),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
 			jen.Line(),
 			jen.If(jen.ID("user").Dot("TwoFactorSecretVerifiedOn").DoesNotEqual().Nil()).Body(
 				jen.Comment("I suppose if this happens too many times, we'll want to keep track of that"),
@@ -401,13 +401,13 @@ func buildUsersHTTPRoutesNewTOTPSecretHandler(proj *models.Project) []jen.Code {
 		jen.Comment("that information received from TOTPSecretRefreshInputContextMiddleware is valid."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("NewTOTPSecretHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("NewTOTPSecretHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("NewTOTPSecretHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.Comment("check request context for parsed input."),
-			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.ID("totpSecretRefreshMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(),
+			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.ID("totpSecretRefreshMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(),
 				"TOTPSecretRefreshInput",
 			)),
 			jen.If(jen.Not().ID("ok")).Body(
@@ -417,7 +417,7 @@ func buildUsersHTTPRoutesNewTOTPSecretHandler(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.Comment("also check for the user's ID."),
-			jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+			jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.TypesPackage(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "SessionInfo")),
 			jen.If(jen.Not().ID("ok").Or().ID("si").IsEqualTo().Nil()).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user ID attached to TOTP secret refresh request")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
@@ -439,8 +439,8 @@ func buildUsersHTTPRoutesNewTOTPSecretHandler(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.Comment("document who this is for."),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("si").Dot(constants.UserIDFieldName)),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("si").Dot(constants.UserIDFieldName)),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user"), jen.ID("user").Dot("ID")),
 			jen.Line(),
 			jen.Comment("set the two factor secret."),
@@ -462,7 +462,7 @@ func buildUsersHTTPRoutesNewTOTPSecretHandler(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("let the requester know we're all good."),
 			utils.WriteXHeader(constants.ResponseVarName, "StatusAccepted"),
-			jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.AddressOf().Qual(proj.ModelsV1Package(), "TOTPSecretRefreshResponse").Values(jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"))), jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.AddressOf().Qual(proj.TypesPackage(), "TOTPSecretRefreshResponse").Values(jen.ID("TwoFactorSecret").MapAssign().ID("user").Dot("TwoFactorSecret"))), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
 			),
 		),
@@ -479,13 +479,13 @@ func buildUsersHTTPRoutesUpdatePasswordHandler(proj *models.Project) []jen.Code 
 		jen.Comment("from PasswordUpdateInputContextMiddleware is valid."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UpdatePasswordHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdatePasswordHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdatePasswordHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
 			jen.Comment("check request context for parsed value."),
-			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("passwordChangeMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "PasswordUpdateInput")),
+			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("passwordChangeMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "PasswordUpdateInput")),
 			jen.If(jen.Not().ID("ok")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no input found on UpdatePasswordHandler request")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
@@ -493,7 +493,7 @@ func buildUsersHTTPRoutesUpdatePasswordHandler(proj *models.Project) []jen.Code 
 			),
 			jen.Line(),
 			jen.Comment("check request context for user ID."),
-			jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+			jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.TypesPackage(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "SessionInfo")),
 			jen.If(jen.Not().ID("ok").Or().ID("si").IsEqualTo().Nil()).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user ID attached to UpdatePasswordHandler request")),
 				utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
@@ -501,7 +501,7 @@ func buildUsersHTTPRoutesUpdatePasswordHandler(proj *models.Project) []jen.Code 
 			),
 			jen.Line(),
 			jen.Comment("determine relevant user ID."),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("si").Dot(constants.UserIDFieldName)),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("si").Dot(constants.UserIDFieldName)),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID("si").Dot(constants.UserIDFieldName)),
 			jen.Line(),
 			jen.Comment("make sure everything's on the up-and-up"),
@@ -518,7 +518,7 @@ func buildUsersHTTPRoutesUpdatePasswordHandler(proj *models.Project) []jen.Code 
 				jen.Return(),
 			),
 			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("Username")),
 			jen.Line(),
 			jen.Comment("hash the new password."),
 			jen.List(jen.ID("newPasswordHash"), jen.Err()).Assign().ID("s").Dot("authenticator").Dot("HashPassword").Call(constants.CtxVar(), jen.ID("input").Dot("NewPassword")),
@@ -553,7 +553,7 @@ func buildUsersHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
 		jen.Comment("ArchiveHandler is a handler for archiving a user."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ArchiveHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ArchiveHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -561,7 +561,7 @@ func buildUsersHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
 			jen.Comment("figure out who this is for."),
 			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("userIDFetcher").Call(jen.ID(constants.RequestVarName)),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 			jen.Line(),
 			jen.Comment("do the deed."),
 			jen.If(jen.Err().Assign().ID("s").Dot("userDataManager").Dot("ArchiveUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)), jen.Err().DoesNotEqual().ID("nil")).Body(
@@ -573,8 +573,8 @@ func buildUsersHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
 			jen.Comment("inform the relatives."),
 			jen.ID("s").Dot("userCounter").Dot("Decrement").Call(constants.CtxVar()),
 			jen.ID("s").Dot("reporter").Dot("Report").Call(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Event").Valuesln(
-				jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.ModelsV1Package(), "Archive")),
-				jen.ID("Data").MapAssign().Qual(proj.ModelsV1Package(), "User").Values(jen.ID("ID").MapAssign().ID(constants.UserIDVarName)),
+				jen.ID("EventType").MapAssign().String().Call(jen.Qual(proj.TypesPackage(), "Archive")),
+				jen.ID("Data").MapAssign().Qual(proj.TypesPackage(), "User").Values(jen.ID("ID").MapAssign().ID(constants.UserIDVarName)),
 				jen.ID("Topics").MapAssign().Index().String().Values(jen.ID("topicName")),
 			)),
 			jen.Line(),

@@ -10,7 +10,7 @@ import (
 func oauth2ClientTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestOAuth2Client_GetID()...)
 	code.Add(buildTestOAuth2Client_GetSecret()...)

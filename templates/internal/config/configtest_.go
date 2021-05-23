@@ -9,7 +9,7 @@ import (
 func configTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTest_randString()...)
 	code.Add(buildTestBuildConfig()...)
@@ -84,7 +84,7 @@ connection_details = "%s"
 					jen.ID("Database").MapAssign().ID("DatabaseSettings").Valuesln(
 						jen.ID("Provider").MapAssign().Lit("postgres"),
 						jen.ID("Debug").MapAssign().True(),
-						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabaseV1Package(), "ConnectionDetails").Call(jen.ID("expected")),
+						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.ID("expected")),
 					),
 				),
 				jen.Line(),

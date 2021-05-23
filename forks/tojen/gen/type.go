@@ -22,9 +22,9 @@ func arrayType(s *ast.ArrayType) jen.Code {
 }
 
 func structType(s *ast.StructType) jen.Code {
-	return jen.Dot("Struct").Call(fieldList(s.Fields)...)
+	return jen.Dot("Struct").Callln(fieldList(s.Fields)...)
 }
 
 func interfaceType(s *ast.InterfaceType) jen.Code {
-	return jen.Dot("Interface").Call(fieldList(s.Methods)...)
+	return jen.Dot("Interface").Callln(fieldList(s.Methods)...)
 }

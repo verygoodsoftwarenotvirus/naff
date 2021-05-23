@@ -6,8 +6,6 @@ import (
 
 const (
 	CoreOAuth2Pkg          = "golang.org/x/oauth2"
-	LoggingPkg             = "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	NoopLoggingPkg         = "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	AssertPkg              = "github.com/stretchr/testify/assert"
 	MustAssertPkg          = "github.com/stretchr/testify/require"
 	MockPkg                = "github.com/stretchr/testify/mock"
@@ -20,7 +18,7 @@ const (
 	// UserIDVarName is what we normally call a user ID
 	UserIDVarName = "userID"
 
-	// UserIDVarName is what we normally call a user ID in a struct definition
+	// UserIDFieldName is what we normally call a user ID in a struct definition
 	UserIDFieldName = "UserID"
 
 	// UserOwnershipFieldName represents the allowed field name for representing ownership by a user

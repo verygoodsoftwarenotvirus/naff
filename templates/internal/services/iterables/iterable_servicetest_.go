@@ -12,7 +12,7 @@ import (
 func iterableServiceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildbuildTestServiceFuncDecl(proj, typ)...)
 	code.Add(buildTestProvideServiceFuncDecl(proj, typ)...)
@@ -26,15 +26,15 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 
 	serviceValues := []jen.Code{
 		jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		serviceValues = append(serviceValues,
-			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values(),
+			jen.ID(fmt.Sprintf("%sDataManager", ot.Name.UnexportedVarName())).MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values(),
 		)
 	}
-	serviceValues = append(serviceValues, jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
+	serviceValues = append(serviceValues, jen.ID(fmt.Sprintf("%sDataManager", uvn)).MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
 		serviceValues = append(serviceValues,
@@ -50,13 +50,13 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	}
 
 	serviceValues = append(serviceValues,
-		jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("reporter").MapAssign().ID("nil"),
 	)
 
 	if typ.SearchEnabled {
 		serviceValues = append(serviceValues,
-			jen.ID("search").MapAssign().AddressOf().Qual(proj.InternalSearchV1Package("mock"), "IndexManager").Values(),
+			jen.ID("search").MapAssign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 		)
 	}
 
@@ -79,9 +79,9 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
-		provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values())
+		provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", ot.Name.Singular())).Values())
 	}
-	provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
+	provideServiceLines = append(provideServiceLines, jen.AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values())
 
 	for range proj.FindOwnerTypeChain(typ) {
 		provideServiceLines = append(provideServiceLines, jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()))
@@ -92,14 +92,14 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 
 	provideServiceLines = append(provideServiceLines,
-		jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ucp"),
 		jen.Nil(),
 	)
 
 	if typ.SearchEnabled {
 		provideServiceLines = append(provideServiceLines,
-			jen.AddressOf().Qual(proj.InternalSearchV1Package("mock"), "IndexManager").Values(),
+			jen.AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 		)
 	}
 
@@ -109,12 +109,12 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 					jen.Error()).Body(
-					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(), jen.Nil()),
+					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
@@ -127,10 +127,10 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error providing unit counter",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsV1Package(), "UnitCounter"), jen.Error()).Body(
+				).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"), jen.Error()).Body(
 					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
 				),
 				jen.Line(),

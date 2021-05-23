@@ -25,7 +25,7 @@ import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strconv"
 )
 
@@ -235,7 +235,7 @@ import (
 	bleve "github.com/blevesearch/bleve"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // NewBleveIndexManager instantiates a bleve index

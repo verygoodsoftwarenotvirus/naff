@@ -10,7 +10,7 @@ import (
 func middlewareTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMockHTTPHandler()...)
 	code.Add(buildTestService_CreationInputMiddleware(proj)...)
@@ -45,7 +45,7 @@ func buildTestService_CreationInputMiddleware(proj *models.Project) []jen.Code {
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual(constants.MockPkg, "Anything"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -69,7 +69,7 @@ func buildTestService_CreationInputMiddleware(proj *models.Project) []jen.Code {
 				"with error decoding request",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual(constants.MockPkg, "Anything"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -102,7 +102,7 @@ func buildTestService_UpdateInputMiddleware(proj *models.Project) []jen.Code {
 				"happy path",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual(constants.MockPkg, "Anything"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),
@@ -126,7 +126,7 @@ func buildTestService_UpdateInputMiddleware(proj *models.Project) []jen.Code {
 				"with error decoding request",
 				jen.ID("s").Assign().ID("buildTestService").Call(),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(jen.Lit("DecodeRequest"), jen.Qual(constants.MockPkg, "Anything"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
 				jen.Line(),

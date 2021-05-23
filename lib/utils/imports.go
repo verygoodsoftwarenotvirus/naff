@@ -14,52 +14,58 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func AddImports(proj *models.Project, file *jen.File) {
+func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bool) {
 	pkgRoot := proj.OutputPath
 
 	file.ImportAlias(proj.HTTPClientV1Package(), "client")
 
-	file.ImportAlias(proj.DatabaseV1Package(), "database")
+	file.ImportAlias(proj.DatabasePackage(), "database")
 
-	file.ImportName(proj.InternalAuthV1Package(), "auth")
-	file.ImportAlias(proj.InternalAuthV1Package("mock"), "mockauth")
-	file.ImportName(proj.InternalConfigV1Package(), "config")
-	file.ImportName(proj.InternalEncodingV1Package(), "encoding")
-	file.ImportAlias(proj.InternalEncodingV1Package("mock"), "mockencoding")
-	file.ImportName(proj.InternalMetricsV1Package(), "metrics")
-	file.ImportAlias(proj.InternalMetricsV1Package("mock"), "mockmetrics")
-	file.ImportName(proj.InternalTracingV1Package(), "tracing")
-	file.ImportName(proj.InternalSearchV1Package(), "search")
-	file.ImportName(proj.InternalSearchV1Package("bleve"), "bleve")
-	file.ImportName(proj.InternalSearchV1Package("mock"), "mocksearch")
+	if includeEmbedAnonymously {
+		file.Anon("embed")
+	} else {
+		file.ImportName("embed", "embed")
+	}
 
-	file.ImportAlias(proj.DatabaseV1Package("client"), "dbclient")
-	file.ImportName(proj.DatabaseV1Package("queriers", "mariadb"), "mariadb")
-	file.ImportName(proj.DatabaseV1Package("queriers", "postgres"), "postgres")
-	file.ImportName(proj.DatabaseV1Package("queriers", "sqlite"), "sqlite")
+	file.ImportName(proj.InternalAuthPackage(), "auth")
+	file.ImportAlias(proj.InternalAuthPackage("mock"), "mockauth")
+	file.ImportName(proj.InternalConfigPackage(), "config")
+	file.ImportName(proj.InternalEncodingPackage(), "encoding")
+	file.ImportAlias(proj.InternalEncodingPackage("mock"), "mockencoding")
+	file.ImportName(proj.InternalMetricsPackage(), "metrics")
+	file.ImportAlias(proj.InternalMetricsPackage("mock"), "mockmetrics")
+	file.ImportName(proj.InternalTracingPackage(), "tracing")
+	file.ImportName(proj.InternalSearchPackage(), "search")
+	file.ImportName(proj.InternalSearchPackage("bleve"), "bleve")
+	file.ImportName(proj.InternalSearchPackage("mock"), "mocksearch")
 
-	file.ImportAlias(proj.ModelsV1Package(), "models")
-	file.ImportAlias(proj.ModelsV1Package("mock"), "mockmodels")
-	file.ImportAlias(proj.ModelsV1Package("fake"), "fakemodels")
+	file.ImportAlias(proj.DatabasePackage("client"), "dbclient")
+	file.ImportName(proj.DatabasePackage("queriers", "mariadb"), "mariadb")
+	file.ImportName(proj.DatabasePackage("queriers", "postgres"), "postgres")
+	file.ImportName(proj.DatabasePackage("queriers", "sqlite"), "sqlite")
 
-	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1"), "server")
-	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1", "http"), "httpserver")
+	file.ImportName(proj.TypesPackage(), "types")
+	file.ImportAlias(proj.TypesPackage("mock"), "mockmodels")
+	file.ImportAlias(proj.TypesPackage("fake"), "fakemodels")
 
-	file.ImportAlias(proj.ServiceV1AuthPackage(), "authservice")
-	file.ImportAlias(proj.ServiceV1FrontendPackage(), "frontendservice")
-	file.ImportAlias(proj.ServiceV1OAuth2ClientsPackage(), "oauth2clientsservice")
-	file.ImportAlias(proj.ServiceV1UsersPackage(), "usersservice")
-	file.ImportAlias(proj.ServiceV1WebhooksPackage(), "webhooksservice")
+	file.ImportName(filepath.Join(pkgRoot, "server"), "server")
+	file.ImportAlias(filepath.Join(pkgRoot, "server", "http"), "httpserver")
+
+	file.ImportAlias(proj.ServiceAuthPackage(), "authservice")
+	file.ImportAlias(proj.ServiceFrontendPackage(), "frontendservice")
+	file.ImportAlias(proj.ServiceOAuth2ClientsPackage(), "oauth2clientsservice")
+	file.ImportAlias(proj.ServiceUsersPackage(), "usersservice")
+	file.ImportAlias(proj.ServiceWebhooksPackage(), "webhooksservice")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
-		file.ImportAlias(filepath.Join(pkgRoot, "services/v1", pn), fmt.Sprintf("%sservice", pn))
+		file.ImportAlias(filepath.Join(pkgRoot, "services", pn), fmt.Sprintf("%sservice", pn))
 	}
 
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "frontend"), "frontend")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "integration"), "integration")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "load"), "load")
-	file.ImportName(proj.TestUtilV1Package(), "testutil")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "frontend"), "frontend")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "integration"), "integration")
+	file.ImportName(filepath.Join(pkgRoot, "tests", "load"), "load")
+	file.ImportName(proj.TestUtilPackage(), "testutil")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 

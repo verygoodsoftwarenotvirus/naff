@@ -10,7 +10,7 @@ import (
 func clientTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
 		jen.Const().Defs(
@@ -28,8 +28,8 @@ func clientTestDotGo(proj *models.Project) *jen.File {
 
 func buildBuildTestClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabaseV1Package(), "MockDatabase")).Body(
-			jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabasePackage(), "MockDatabase")).Body(
+			jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
 				jen.ID("querier").MapAssign().ID("db"),
@@ -49,7 +49,7 @@ func buildTestMigrate(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
@@ -61,7 +61,7 @@ func buildTestMigrate(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"bubbles up errors",
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
@@ -84,7 +84,7 @@ func buildTestIsReady(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"obligatory",
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("IsReady"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.True()),
 				jen.Line(),
 				jen.ID("c").Assign().AddressOf().ID("Client").Values(jen.ID("querier").MapAssign().ID("mockDB")),
@@ -106,7 +106,7 @@ func buildTestProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTest(
 				"happy path",
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.Nil()),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideDatabaseClient").Call(
@@ -125,7 +125,7 @@ func buildTestProvideDatabaseClient(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"with error migrating querier",
 				jen.ID("expected").Assign().Qual("errors", "New").Call(jen.Lit("blah")),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("On").Call(jen.Lit("Migrate"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(jen.ID("expected")),
 				jen.Line(),
 				jen.List(jen.ID("x"), jen.ID("actual")).Assign().ID("ProvideDatabaseClient").Call(

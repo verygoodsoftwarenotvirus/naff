@@ -10,7 +10,7 @@ import (
 func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildHTTPRoutesConstantDefs(proj)...)
 	code.Add(buildDecodeCookieFromRequest(proj)...)
@@ -26,7 +26,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code.Add(buildCycleSecretHandler(proj)...)
 
 	code.Add(
-		jen.Type().ID("loginData").Struct(jen.ID("loginInput").PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput"), jen.ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User")),
+		jen.Type().ID("loginData").Struct(jen.ID("loginInput").PointerTo().Qual(proj.TypesPackage(), "UserLoginInput"), jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User")),
 		jen.Line(),
 	)
 
@@ -60,7 +60,7 @@ func buildDecodeCookieFromRequest(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 		).Params(
-			jen.ID("ca").PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo"),
+			jen.ID("ca").PointerTo().Qual(proj.TypesPackage(), "SessionInfo"),
 			jen.Err().Error(),
 		).Body(
 			utils.StartSpan(proj, true, "DecodeCookieFromRequest"),
@@ -91,7 +91,7 @@ func buildDecodeCookieFromRequest(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID("s").Dot("sessionManager").Dot("Get").Call(
 					jen.ID(constants.ContextVarName),
 					jen.ID("sessionInfoKey"),
-				).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+				).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "SessionInfo")),
 				jen.If(jen.Not().ID("ok")).Body(
 					jen.ID("errToReturn").Assign().Qual("errors", "New").Call(
 						jen.Lit("no session info attached to context"),
@@ -119,7 +119,7 @@ func buildWebsocketAuthFunction(proj *models.Project) []jen.Code {
 		jen.Comment("WebsocketAuthFunction is provided to Newsman to determine if a user has access to websockets."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("WebsocketAuthFunction").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Bool()).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("WebsocketAuthFunction")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -152,7 +152,7 @@ func buildFetchUserFromCookie(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("fetchUserFromCookie takes a request object and fetches the cookie, and then the user for that cookie."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserFromCookie").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"), jen.Error()).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserFromCookie").Params(constants.CtxParam(), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "User"), jen.Error()).Body(
 			utils.StartSpan(proj, true, "fetchUserFromCookie"),
 			jen.List(jen.ID("ca"), jen.ID("decodeErr")).Assign().ID("s").Dot("DecodeCookieFromRequest").Call(constants.CtxVar(), jen.ID(constants.RequestVarName)),
 			jen.If(jen.ID("decodeErr").DoesNotEqual().ID("nil")).Body(
@@ -163,7 +163,7 @@ func buildFetchUserFromCookie(proj *models.Project) []jen.Code {
 			jen.If(jen.ID("userFetchErr").DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("fetching user from request: %w"), jen.ID("userFetchErr"))),
 			),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("ca").Dot("UserID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("ca").Dot("UserID")),
 			jen.Line(),
 			jen.Return().List(jen.ID("user"), jen.Nil()),
 		),
@@ -178,7 +178,7 @@ func buildLoginHandler(proj *models.Project) []jen.Code {
 		jen.Comment("LoginHandler is our login route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LoginHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LoginHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LoginHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -193,8 +193,8 @@ func buildLoginHandler(proj *models.Project) []jen.Code {
 				jen.Return(),
 			),
 			jen.Line(),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("ID")),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("Username")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("ID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("loginData").Dot("user").Dot("Username")),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user"), jen.ID("loginData").Dot("user").Dot("ID")),
 			jen.List(jen.ID("loginValid"), jen.Err()).Assign().ID("s").Dot("validateLogin").Call(constants.CtxVar(), jen.PointerTo().ID("loginData")),
@@ -290,7 +290,7 @@ func buildLogoutHandler(proj *models.Project) []jen.Code {
 		jen.Comment("LogoutHandler is our logout route."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("LogoutHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LogoutHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("LogoutHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -364,24 +364,24 @@ func buildStatusHandler(proj *models.Project) []jen.Code {
 		jen.Comment("StatusHandler returns the user info for the user making the request."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("StatusHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("StatusHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("StatusHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
-			jen.Var().ID("sr").PointerTo().Qual(proj.ModelsV1Package(), "StatusResponse"),
+			jen.Var().ID("sr").PointerTo().Qual(proj.TypesPackage(), "StatusResponse"),
 			jen.List(jen.ID("userInfo"), jen.Err()).Assign().ID("s").Dot("fetchUserFromCookie").Call(
 				constants.CtxVar(),
 				jen.ID(constants.RequestVarName),
 			),
 			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusUnauthorized")),
-				jen.ID("sr").Equals().AddressOf().Qual(proj.ModelsV1Package(), "StatusResponse").Valuesln(
+				jen.ID("sr").Equals().AddressOf().Qual(proj.TypesPackage(), "StatusResponse").Valuesln(
 					jen.ID("Authenticated").MapAssign().False(),
 					jen.ID("IsAdmin").MapAssign().False(),
 				),
 			).Else().Body(
-				jen.ID("sr").Equals().AddressOf().Qual(proj.ModelsV1Package(), "StatusResponse").Valuesln(
+				jen.ID("sr").Equals().AddressOf().Qual(proj.TypesPackage(), "StatusResponse").Valuesln(
 					jen.ID("Authenticated").MapAssign().True(),
 					jen.ID("IsAdmin").MapAssign().ID("userInfo").Dot("IsAdmin"),
 				),
@@ -407,7 +407,7 @@ func buildCycleSecretHandler(proj *models.Project) []jen.Code {
 		jen.Comment("CycleSecretHandler rotates the cookie building secret with a new random secret."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CycleSecretHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
+			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CycleSecretHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -432,22 +432,22 @@ func buildFetchLoginDataFromRequest(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Comment("returns a helper struct with the relevant login information."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("loginData"), jen.PointerTo().Qual(proj.ModelsV1Package(), "ErrorResponse")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchLoginDataFromRequest").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().ID("loginData"), jen.PointerTo().Qual(proj.TypesPackage(), "ErrorResponse")).Body(
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("fetchLoginDataFromRequest")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Line(),
-			jen.List(jen.ID("loginInput"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("userLoginInputMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")),
+			jen.List(jen.ID("loginInput"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("userLoginInputMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "UserLoginInput")),
 			jen.If(jen.Not().ID("ok")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no UserLoginInput found for /login request")),
-				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Valuesln(
+				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.TypesPackage(), "ErrorResponse").Valuesln(
 					jen.ID("Code").MapAssign().Qual("net/http", "StatusUnauthorized")),
 				),
 			),
 			jen.Line(),
 			jen.ID("username").Assign().ID("loginInput").Dot("Username"),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("username")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("username")),
 			jen.Line(),
 			jen.Comment("you could ensure there isn't an unsatisfied password reset token"),
 			jen.Comment("requested before allowing login here."),
@@ -455,12 +455,12 @@ func buildFetchLoginDataFromRequest(proj *models.Project) []jen.Code {
 			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("userDB").Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID("username")),
 			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("no matching user")),
-				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusBadRequest"))),
+				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.TypesPackage(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusBadRequest"))),
 			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching user")),
-				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.ModelsV1Package(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusInternalServerError"))),
+				jen.Return().List(jen.Nil(), jen.AddressOf().Qual(proj.TypesPackage(), "ErrorResponse").Values(jen.ID("Code").MapAssign().Qual("net/http", "StatusInternalServerError"))),
 			),
-			jen.Qual(proj.InternalTracingV1Package(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
 			jen.Line(),
 			jen.ID("ld").Assign().AddressOf().ID("loginData").Valuesln(
 				jen.ID("loginInput").MapAssign().ID("loginInput"),
@@ -482,7 +482,7 @@ func buildValidateLogin(proj *models.Project) []jen.Code {
 		jen.Comment("In the event that there's an error, this function will return false and the error."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("validateLogin").Params(constants.CtxParam(), jen.ID("loginInfo").ID("loginData")).Params(jen.Bool(), jen.Error()).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("validateLogin")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.CtxVar(), jen.Lit("validateLogin")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.Comment("alias the relevant data."),
@@ -500,7 +500,7 @@ func buildValidateLogin(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.Comment("if the login is otherwise valid, but the password is too weak, try to rehash it."),
-			jen.If(jen.Err().IsEqualTo().Qual(proj.InternalAuthV1Package(), "ErrCostTooLow").And().ID("loginValid")).Body(
+			jen.If(jen.Err().IsEqualTo().Qual(proj.InternalAuthPackage(), "ErrCostTooLow").And().ID("loginValid")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("hashed password was deemed to weak, updating its hash")),
 				jen.Line(),
 				jen.Comment("re-hash the password"),
@@ -516,7 +516,7 @@ func buildValidateLogin(proj *models.Project) []jen.Code {
 				),
 				jen.Line(),
 				jen.Return().List(jen.ID("loginValid"), jen.Nil()),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalAuthV1Package(), "ErrCostTooLow")).Body(
+			).Else().If(jen.Err().DoesNotEqual().ID("nil").And().Err().DoesNotEqual().Qual(proj.InternalAuthPackage(), "ErrCostTooLow")).Body(
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("issue validating login")),
 				jen.Return().List(jen.False(), jen.Qual("fmt", "Errorf").Call(jen.Lit("validating login: %w"), jen.Err())),
 			),

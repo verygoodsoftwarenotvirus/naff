@@ -12,7 +12,7 @@ import (
 func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildWireProviders(typ)...)
 	code.Add(buildWireProvideSomethingDataManager(proj, typ)...)
@@ -53,7 +53,7 @@ func buildWireProvideSomethingDataManager(proj *models.Project, typ models.DataT
 	lines := []jen.Code{
 		jen.Commentf("Provide%sDataManager turns a database into an %sDataManager.", sn, sn),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataManager", sn))).Body(
+		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(proj.DatabasePackage(), "DataManager")).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn))).Body(
 			jen.Return().ID("db"),
 		),
 		jen.Line(),
@@ -68,7 +68,7 @@ func buildWireProvideSomethingDataServer(proj *models.Project, typ models.DataTy
 	lines := []jen.Code{
 		jen.Commentf("Provide%sDataServer is an arbitrary function for dependency injection's sake.", sn),
 		jen.Line(),
-		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sDataServer", sn))).Body(
+		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", sn))).Body(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

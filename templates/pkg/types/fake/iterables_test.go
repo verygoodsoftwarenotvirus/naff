@@ -21,7 +21,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeItem builds a faked item.
@@ -97,7 +97,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeItem builds a faked item.
@@ -126,7 +126,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeEveryType builds a faked every type.
@@ -183,7 +183,7 @@ func Test_buildBuildFakeSomethingList(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeItemList builds a faked ItemList.
@@ -223,7 +223,7 @@ func Test_buildBuildFakeSomethingUpdateInputFromSomething(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeItemUpdateInputFromItem builds a faked ItemUpdateInput from an item.
@@ -253,7 +253,7 @@ func Test_buildBuildFakeSomethingCreationInput(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeItemCreationInput builds a faked ItemCreationInput.
@@ -280,7 +280,7 @@ func Test_buildBuildFakeSomethingCreationInputFromSomething(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeItemCreationInputFromItem builds a faked ItemCreationInput from an item.

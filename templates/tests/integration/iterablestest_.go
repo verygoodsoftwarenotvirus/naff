@@ -17,7 +17,7 @@ const (
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildCheckSomethingEquality(proj, typ)...)
 	code.Add(buildTestSomething(proj, typ)...)
@@ -77,7 +77,7 @@ func buildCheckSomethingEquality(proj *models.Project, typ models.DataType) []je
 	sn := typ.Name.Singular()
 
 	lines := []jen.Code{
-		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.ModelsV1Package(), sn)).Body(
+		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.TypesPackage(), sn)).Body(
 			buildEqualityCheckLines(typ)...,
 		),
 		jen.Line(),
@@ -528,7 +528,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Commentf("Create %s.", pcn),
-		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 			jen.Commentf("Create %s.", scn),
 			utils.BuildFakeVar(proj, sn),
@@ -608,7 +608,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 	lines = append(lines,
 		jen.Commentf("Create %s.", pcn),
 		utils.BuildFakeVar(proj, sn),
-		jen.Var().ID("expected").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 			jen.Commentf("Create %s.", scn),
 			func() jen.Code {
@@ -691,13 +691,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 
 	lines = append(lines,
 		jen.Comment("create user and oauth2 client A."),
-		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(
+		jen.List(jen.ID("userA"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(
+		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userA"),
 		),
@@ -717,7 +717,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		jen.Line(),
 		jen.Commentf("Create %s for user A.", pcn),
 		jen.IDf("example%sA", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-		jen.Var().ID("createdForA").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.Var().ID("createdForA").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 			jen.Commentf("Create %s.", scn),
 			func() jen.Code {
@@ -750,13 +750,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		jen.ID("query").Assign().IDf("example%sA", sn).Dot(firstStringField.Singular()),
 		jen.Line(),
 		jen.Comment("create user and oauth2 client B."),
-		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryUser").Call(
+		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilV1Package(), "CreateObligatoryClient").Call(
+		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userB"),
 		),
@@ -777,7 +777,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		jen.Commentf("Create %s for user B.", pcn),
 		jen.IDf("example%sB", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		jen.IDf("example%sB", sn).Dot(firstStringField.Singular()).Equals().ID("reverse").Call(jen.IDf("example%sA", sn).Dot(firstStringField.Singular())),
-		jen.Var().ID("createdForB").Index().PointerTo().Qual(proj.ModelsV1Package(), sn),
+		jen.Var().ID("createdForB").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").LessThan().Lit(5), jen.ID("i").Op("++")).Body(
 			jen.Commentf("Create %s.", scn),
 			func() jen.Code {

@@ -8,7 +8,7 @@ import (
 
 func queryFilterDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildFleshedOutQueryFilter(proj)...)
 
@@ -22,17 +22,17 @@ func buildBuildFleshedOutQueryFilter(proj *models.Project) []jen.Code {
 		jen.Commentf("%s builds a fully fleshed out QueryFilter.", funcName),
 		jen.Line(),
 		jen.Func().ID(funcName).Params().Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
 		).Body(
 			jen.Return(
-				jen.AddressOf().Qual(proj.ModelsV1Package(), "QueryFilter").Valuesln(
+				jen.AddressOf().Qual(proj.TypesPackage(), "QueryFilter").Valuesln(
 					jen.ID("Page").MapAssign().Lit(10),
 					jen.ID("Limit").MapAssign().Lit(20),
 					jen.ID("CreatedAfter").MapAssign().Add(utils.FakeUnixTimeFunc()),
 					jen.ID("CreatedBefore").MapAssign().Add(utils.FakeUnixTimeFunc()),
 					jen.ID("UpdatedAfter").MapAssign().Add(utils.FakeUnixTimeFunc()),
 					jen.ID("UpdatedBefore").MapAssign().Add(utils.FakeUnixTimeFunc()),
-					jen.ID("SortBy").MapAssign().Qual(proj.ModelsV1Package(), "SortAscending"),
+					jen.ID("SortBy").MapAssign().Qual(proj.TypesPackage(), "SortAscending"),
 				),
 			),
 		),

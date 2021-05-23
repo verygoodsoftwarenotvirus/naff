@@ -11,7 +11,7 @@ import (
 func serverTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildTestServer(proj)...)
 	code.Add(buildTestProvideServer(proj)...)
@@ -22,13 +22,13 @@ func serverTestDotGo(proj *models.Project) *jen.File {
 func buildProvideServerArgs(proj *models.Project, cookieSecret string) []jen.Code {
 	provideServerArgs := []jen.Code{
 		constants.CtxVar(),
-		jen.AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Valuesln(
-			jen.ID("Auth").MapAssign().Qual(proj.InternalConfigV1Package(), "AuthSettings").Valuesln(
+		jen.AddressOf().Qual(proj.InternalConfigPackage(), "ServerConfig").Valuesln(
+			jen.ID("Auth").MapAssign().Qual(proj.InternalConfigPackage(), "AuthSettings").Valuesln(
 				jen.ID("CookieSecret").MapAssign().Lit(cookieSecret),
 			),
 		),
-		jen.AddressOf().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
-		jen.AddressOf().Qual(proj.ServiceV1FrontendPackage(), "Service").Values(),
+		jen.AddressOf().Qual(proj.ServiceAuthPackage(), "Service").Values(),
+		jen.AddressOf().Qual(proj.ServiceFrontendPackage(), "Service").Values(),
 	}
 
 	for _, typ := range proj.DataTypes {
@@ -37,11 +37,11 @@ func buildProvideServerArgs(proj *models.Project, cookieSecret string) []jen.Cod
 	}
 
 	provideServerArgs = append(provideServerArgs,
-		jen.AddressOf().Qual(proj.ServiceV1UsersPackage(), "Service").Values(),
-		jen.AddressOf().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values(),
-		jen.AddressOf().Qual(proj.ServiceV1WebhooksPackage(), "Service").Values(),
+		jen.AddressOf().Qual(proj.ServiceUsersPackage(), "Service").Values(),
+		jen.AddressOf().Qual(proj.ServiceOAuth2ClientsPackage(), "Service").Values(),
+		jen.AddressOf().Qual(proj.ServiceWebhooksPackage(), "Service").Values(),
 		jen.ID("mockDB"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-		jen.AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 	)
 
 	// if proj.EnableNewsman {
@@ -56,29 +56,29 @@ func buildProvideServerArgs(proj *models.Project, cookieSecret string) []jen.Cod
 func buildBuildTestServer(proj *models.Project) []jen.Code {
 	buildServerLines := []jen.Code{
 		jen.ID("DebugMode").MapAssign().True(),
-		jen.ID("db").MapAssign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-		jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigV1Package(), "ServerConfig").Values(),
-		jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+		jen.ID("db").MapAssign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+		jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigPackage(), "ServerConfig").Values(),
+		jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
 		jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-		jen.ID("frontendService").MapAssign().Qual(proj.ServiceV1FrontendPackage(), "ProvideFrontendService").Callln(
+		jen.ID("frontendService").MapAssign().Qual(proj.ServiceFrontendPackage(), "ProvideFrontendService").Callln(
 			jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
-			jen.Qual(proj.InternalConfigV1Package(), "FrontendSettings").Values(),
+			jen.Qual(proj.InternalConfigPackage(), "FrontendSettings").Values(),
 		),
-		jen.ID("webhooksService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "WebhookDataServer").Values(),
-		jen.ID("usersService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "UserDataServer").Values(),
-		jen.ID("authService").MapAssign().AddressOf().Qual(proj.ServiceV1AuthPackage(), "Service").Values(),
+		jen.ID("webhooksService").MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataServer").Values(),
+		jen.ID("usersService").MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), "UserDataServer").Values(),
+		jen.ID("authService").MapAssign().AddressOf().Qual(proj.ServiceAuthPackage(), "Service").Values(),
 	}
 	for _, typ := range proj.DataTypes {
 		tpuvn := typ.Name.PluralUnexportedVarName()
 		tsn := typ.Name.Singular()
 		buildServerLines = append(buildServerLines,
-			jen.IDf("%sService", tpuvn).MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
+			jen.IDf("%sService", tpuvn).MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataServer", tsn)).Values(),
 		)
 	}
 
 	buildServerLines = append(buildServerLines,
-		jen.ID("oauth2ClientsService").MapAssign().AddressOf().Qual(proj.ModelsV1Package("mock"), "OAuth2ClientDataServer").Values(),
+		jen.ID("oauth2ClientsService").MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), "OAuth2ClientDataServer").Values(),
 	)
 
 	lines := []jen.Code{
@@ -104,7 +104,7 @@ func buildTestProvideServer(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -128,7 +128,7 @@ func buildTestProvideServer(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "WebhookList"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -150,12 +150,12 @@ func buildTestProvideServer(proj *models.Project) []jen.Code {
 			utils.BuildSubTest(
 				"with error fetching webhooks",
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("WebhookDataManager").Dot("On").Call(
 					jen.Lit("GetAllWebhooks"),
 					jen.Qual(constants.MockPkg, "Anything"),
 				).Dot("Return").Call(
-					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "WebhookList")).Call(jen.Nil()),
+					jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "WebhookList")).Call(jen.Nil()),
 					constants.ObligatoryError(),
 				),
 				jen.Line(),

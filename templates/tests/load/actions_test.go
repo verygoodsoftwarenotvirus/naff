@@ -22,7 +22,7 @@ import (
 	"context"
 	"errors"
 	http1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"math/rand"
 	"net/http"
 	"time"
@@ -171,7 +171,7 @@ package example
 import (
 	"context"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"math/rand"
 	http1 "net/http"
 	"time"

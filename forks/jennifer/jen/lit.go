@@ -58,6 +58,33 @@ func (s *Statement) RawStringf(msg string, args ...interface{}) *Statement {
 	return s
 }
 
+// Octal renders a literal. Octal supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func Octal(v interface{}) *Statement {
+	return newStatement().Octal(v)
+}
+
+// Octal renders a literal. Octal supports only built-in types (bool, string, int, complex128, float64,
+// float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
+// Passing any other type will panic.
+func (g *Group) Octal(v interface{}) *Statement {
+	s := Octal(v)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Octal renders a literal. Octal supports only built-in types (int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64).
+// Passing any other type will panic.
+func (s *Statement) Octal(v interface{}) *Statement {
+	t := token{
+		typ:     octalToken,
+		content: v,
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.

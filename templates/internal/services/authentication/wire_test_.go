@@ -9,7 +9,7 @@ import (
 func wireTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	// if proj.EnableNewsman {
 	code.Add(buildTestProvideWebsocketAuthFunc()...)
@@ -41,7 +41,7 @@ func buildTestProvideOAuth2ClientValidator(proj *models.Project) []jen.Code {
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-				utils.AssertNotNil(jen.ID("ProvideOAuth2ClientValidator").Call(jen.AddressOf().Qual(proj.ServiceV1OAuth2ClientsPackage(), "Service").Values()), nil),
+				utils.AssertNotNil(jen.ID("ProvideOAuth2ClientValidator").Call(jen.AddressOf().Qual(proj.ServiceOAuth2ClientsPackage(), "Service").Values()), nil),
 			)),
 		),
 		jen.Line(),

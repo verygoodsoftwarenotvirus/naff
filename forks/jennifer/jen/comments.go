@@ -6,6 +6,36 @@ import (
 	"strings"
 )
 
+// Directive adds a comment wotjpit a space between the start and the comment.
+// If the provided string contains a newline, the comment is formatted in
+// multiline style. If the comment string starts with "//" or "/*", the automatic
+// formatting is disabled and the string is rendered directly.
+func Directive(str string) *Statement {
+	return newStatement().Directive(str)
+}
+
+// Directive adds a comment. If the provided string contains a newline, the
+// comment is formatted in multiline style. If the comment string starts
+// with "//" or "/*", the automatic formatting is disabled and the string is
+// rendered directly.
+func (g *Group) Directive(str string) *Statement {
+	s := Directive(str)
+	g.items = append(g.items, s)
+	return s
+}
+
+// Directive adds a comment. If the provided string contains a newline, the
+// comment is formatted in multiline style. If the comment string starts
+// with "//" or "/*", the automatic formatting is disabled and the string is
+// rendered directly.
+func (s *Statement) Directive(str string) *Statement {
+	c := comment{
+		comment: str,
+	}
+	*s = append(*s, c)
+	return s
+}
+
 // Comment adds a comment. If the provided string contains a newline, the
 // comment is formatted in multiline style. If the comment string starts
 // with "//" or "/*", the automatic formatting is disabled and the string is

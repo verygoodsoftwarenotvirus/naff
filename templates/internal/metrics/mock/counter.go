@@ -10,7 +10,7 @@ import (
 func counterDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildUnitCounter(proj)...)
 	code.Add(buildIncrement()...)
@@ -22,7 +22,7 @@ func counterDotGo(proj *models.Project) *jen.File {
 
 func buildUnitCounter(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(proj.InternalMetricsV1Package(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalMetricsPackage(), "UnitCounter").Equals().Parens(jen.PointerTo().ID("UnitCounter")).Call(jen.Nil()),
 		jen.Line(),
 		jen.Comment("UnitCounter is a mock metrics.UnitCounter"),
 		jen.Line(),

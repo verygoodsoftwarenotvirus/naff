@@ -10,7 +10,7 @@ import (
 func mockAuthenticatorDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildInterfaceImplementationDeclaration(proj)...)
 	code.Add(buildMockAuthenticator()...)
@@ -24,7 +24,7 @@ func mockAuthenticatorDotGo(proj *models.Project) *jen.File {
 
 func buildInterfaceImplementationDeclaration(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(proj.InternalAuthV1Package(), "Authenticator").Equals().Parens(jen.PointerTo().ID("Authenticator")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.InternalAuthPackage(), "Authenticator").Equals().Parens(jen.PointerTo().ID("Authenticator")).Call(jen.Nil()),
 		jen.Line(),
 	}
 

@@ -26,7 +26,7 @@ import (
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 	"time"
 )
@@ -287,7 +287,7 @@ func Test_buildOAuth2TestBuildDummyOAuth2ClientInput(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 )
 
@@ -324,7 +324,7 @@ func Test_buildOAuth2TestConvertInputToClient(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 func convertInputToClient(input *v1.OAuth2ClientCreationInput) *v1.OAuth2Client {
@@ -355,7 +355,7 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 )
 
@@ -394,7 +394,7 @@ import (
 	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
 	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 )
 

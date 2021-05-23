@@ -10,7 +10,7 @@ import (
 func frontendServiceDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildFrontendConstantDefs()...)
 	code.Add(buildFrontendTypeDefs(proj)...)
@@ -35,7 +35,7 @@ func buildFrontendTypeDefs(proj *models.Project) []jen.Code {
 			jen.Comment("Service is responsible for serving HTML (and other static resources)"),
 			jen.ID("Service").Struct(
 				constants.LoggerParam(),
-				jen.ID("config").Qual(proj.InternalConfigV1Package(), "FrontendSettings"),
+				jen.ID("config").Qual(proj.InternalConfigPackage(), "FrontendSettings"),
 			),
 		),
 		jen.Line(),
@@ -48,7 +48,7 @@ func buildProvideFrontendService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection."),
 		jen.Line(),
-		jen.Func().ID("ProvideFrontendService").Params(constants.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigV1Package(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Body(
+		jen.Func().ID("ProvideFrontendService").Params(constants.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigPackage(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),

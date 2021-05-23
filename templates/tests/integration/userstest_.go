@@ -10,7 +10,7 @@ import (
 func usersTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildUsersTestsInit()...)
 	code.Add(buildUsersTestsRandString()...)
@@ -63,8 +63,8 @@ func buildUsersTestsBuildDummyUser(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			jen.ID("t").PointerTo().Qual("testing", "T"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "UserCreationResponse"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "UserCreationInput"),
 			jen.PointerTo().Qual("net/http", "Cookie"),
 		).Body(
 			jen.ID("t").Dot("Helper").Call(),
@@ -115,8 +115,8 @@ func buildUsersTestsCheckUserCreationEquality(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("checkUserCreationEquality").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
-			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
-			jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationResponse"),
+			jen.ID("expected").PointerTo().Qual(proj.TypesPackage(), "UserCreationInput"),
+			jen.ID("actual").PointerTo().Qual(proj.TypesPackage(), "UserCreationResponse"),
 		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
@@ -141,8 +141,8 @@ func buildUsersTestsCheckUserEquality(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("checkUserEquality").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
-			jen.ID("expected").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
-			jen.ID("actual").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+			jen.ID("expected").PointerTo().Qual(proj.TypesPackage(), "UserCreationInput"),
+			jen.ID("actual").PointerTo().Qual(proj.TypesPackage(), "User"),
 		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),

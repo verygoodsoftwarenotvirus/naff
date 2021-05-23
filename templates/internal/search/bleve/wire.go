@@ -10,7 +10,7 @@ import (
 func wireDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
 		jen.Var().Defs(
@@ -22,7 +22,7 @@ func wireDotGo(proj *models.Project) *jen.File {
 		jen.Line(),
 		jen.Comment("ProvideBleveIndexManagerProvider is a wrapper around NewBleveIndexManager"),
 		jen.Line(),
-		jen.Func().ID("ProvideBleveIndexManagerProvider").Params().Params(jen.Qual(proj.InternalSearchV1Package(), "IndexManagerProvider")).Body(
+		jen.Func().ID("ProvideBleveIndexManagerProvider").Params().Params(jen.Qual(proj.InternalSearchPackage(), "IndexManagerProvider")).Body(
 			jen.Return().ID("NewBleveIndexManager"),
 		),
 	)

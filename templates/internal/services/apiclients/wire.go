@@ -10,7 +10,7 @@ import (
 func wireDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildWireVarDefs()...)
 	code.Add(buildProvideOAuth2ClientDataServer(proj)...)
@@ -37,7 +37,7 @@ func buildProvideOAuth2ClientDataServer(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake."),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer")).Body(
+		jen.Func().ID("ProvideOAuth2ClientDataServer").Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.TypesPackage(), "OAuth2ClientDataServer")).Body(
 			jen.Return().ID("s"),
 		),
 		jen.Line(),

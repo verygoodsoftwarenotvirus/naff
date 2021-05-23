@@ -15,7 +15,7 @@ const (
 func databaseDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 	code.ImportAlias("github.com/alexedwards/scs/v2", "scs")
 
 	if proj.DatabaseIsEnabled(models.Postgres) {
@@ -79,7 +79,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Postgres) {
 						return jen.Case(jen.ID("PostgresProviderKey")).Body(
-							jen.Return(jen.Qual(proj.DatabaseV1Package("queriers", "postgres"), "ProvidePostgresDB").Call(
+							jen.Return(jen.Qual(proj.DatabasePackage("queriers", "postgres"), "ProvidePostgresDB").Call(
 								jen.ID(constants.LoggerVarName),
 								jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"),
 							)),
@@ -90,7 +90,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
 						return jen.Case(jen.ID("MariaDBProviderKey")).Body(
-							jen.Return(jen.Qual(proj.DatabaseV1Package("queriers", "mariadb"), "ProvideMariaDBConnection").Call(
+							jen.Return(jen.Qual(proj.DatabasePackage("queriers", "mariadb"), "ProvideMariaDBConnection").Call(
 								jen.ID(constants.LoggerVarName),
 								jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"),
 							)),
@@ -101,7 +101,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Sqlite) {
 						return jen.Case(jen.ID("SqliteProviderKey")).Body(
-							jen.Return(jen.Qual(proj.DatabaseV1Package("queriers", "sqlite"), "ProvideSqliteDB").Call(
+							jen.Return(jen.Qual(proj.DatabasePackage("queriers", "sqlite"), "ProvideSqliteDB").Call(
 								jen.ID(constants.LoggerVarName),
 								jen.ID("cfg").Dot("Database").Dot("ConnectionDetails"),
 							)),
@@ -130,7 +130,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			constants.LoggerParam(),
 			jen.ID("rawDB").PointerTo().Qual("database/sql", "DB"),
-		).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager"), jen.Error()).Body(
+		).Params(jen.Qual(proj.DatabasePackage(), "DataManager"), jen.Error()).Body(
 			jen.If(jen.ID("rawDB").IsEqualTo().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("nil DB connection provided"))),
 			),
@@ -143,12 +143,12 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				jen.ID("cfg").Dot("Metrics").Dot("DBMetricsCollectionInterval"),
 			),
 			jen.Line(),
-			jen.Var().ID("dbc").Qual(proj.DatabaseV1Package(), "DataManager"),
+			jen.Var().ID("dbc").Qual(proj.DatabasePackage(), "DataManager"),
 			jen.Switch(jen.ID("cfg").Dot("Database").Dot("Provider")).Body(
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Postgres) {
 						return jen.Case(jen.ID("PostgresProviderKey")).Body(
-							jen.ID("dbc").Equals().Qual(proj.DatabaseV1Package("queriers", "postgres"), "ProvidePostgres").Call(
+							jen.ID("dbc").Equals().Qual(proj.DatabasePackage("queriers", "postgres"), "ProvidePostgres").Call(
 								jen.ID("debug"),
 								jen.ID("rawDB"),
 								jen.ID(constants.LoggerVarName),
@@ -160,7 +160,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.MariaDB) {
 						return jen.Case(jen.ID("MariaDBProviderKey")).Body(
-							jen.ID("dbc").Equals().Qual(proj.DatabaseV1Package("queriers", "mariadb"), "ProvideMariaDB").Call(
+							jen.ID("dbc").Equals().Qual(proj.DatabasePackage("queriers", "mariadb"), "ProvideMariaDB").Call(
 								jen.ID("debug"),
 								jen.ID("rawDB"),
 								jen.ID(constants.LoggerVarName),
@@ -172,7 +172,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				func() jen.Code {
 					if proj.DatabaseIsEnabled(models.Sqlite) {
 						return jen.Case(jen.ID("SqliteProviderKey")).Body(
-							jen.ID("dbc").Equals().Qual(proj.DatabaseV1Package("queriers", "sqlite"), "ProvideSqlite").Call(
+							jen.ID("dbc").Equals().Qual(proj.DatabasePackage("queriers", "sqlite"), "ProvideSqlite").Call(
 								jen.ID("debug"),
 								jen.ID("rawDB"),
 								jen.ID(constants.LoggerVarName),
@@ -189,7 +189,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 				),
 			),
 			jen.Line(),
-			jen.Return(jen.Qual(proj.DatabaseV1Package("client"), "ProvideDatabaseClient").Call(
+			jen.Return(jen.Qual(proj.DatabasePackage("client"), "ProvideDatabaseClient").Call(
 				constants.CtxVar(),
 				jen.ID("rawDB"),
 				jen.ID("dbc"),

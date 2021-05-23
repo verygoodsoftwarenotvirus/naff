@@ -25,7 +25,7 @@ import (
 	chi "github.com/go-chi/chi"
 	wire "github.com/google/wire"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	items "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
@@ -149,7 +149,7 @@ import (
 	chi "github.com/go-chi/chi"
 	wire "github.com/google/wire"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	forums "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/forums"
 	notifications "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/notifications"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
@@ -739,7 +739,7 @@ func Test_buildUserIDFetcherFromRequestContext(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
 

@@ -10,7 +10,7 @@ import (
 func implementationDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
 		jen.Comment("gopkg.in/oauth2.v3/server specific implementations"),
@@ -78,7 +78,7 @@ func buildImplementationAuthorizeScopeHandler(proj *models.Project) []jen.Code {
 		jen.Comment("AuthorizeScopeHandler satisfies the oauth2server AuthorizeScopeHandler interface."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthorizeScopeHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.ID("scope").String(), jen.Err().Error()).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AuthorizeScopeHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -142,16 +142,16 @@ func buildImplementationUserAuthorizationHandler(proj *models.Project) []jen.Cod
 			jen.ID(constants.UserIDVarName).String(),
 			jen.Err().Error(),
 		).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
 			jen.Var().ID("uid").Uint64(),
 			jen.Line(),
 			jen.Comment("check context for client."),
-			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")), jen.Not().ID("clientOk")).Body(
+			jen.If(jen.List(jen.ID("client"), jen.ID("clientOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.TypesPackage(), "OAuth2ClientKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")), jen.Not().ID("clientOk")).Body(
 				jen.Comment("check for user instead."),
-				jen.List(jen.ID("si"), jen.ID("userOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+				jen.List(jen.ID("si"), jen.ID("userOk")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.TypesPackage(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "SessionInfo")),
 				jen.If(jen.Not().ID("userOk").Or().ID("si").IsEqualTo().Nil()).Body(jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("no user attached to this request")),
 					jen.Return().List(jen.EmptyString(), utils.Error("user not found")),
 				),
@@ -176,7 +176,7 @@ func buildImplementationClientAuthorizedHandler(proj *models.Project) []jen.Code
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ClientAuthorizedHandler").Params(jen.ID("clientID").String(), jen.ID("grant").Qual("gopkg.in/oauth2.v3", "GrantType")).Params(jen.ID("allowed").Bool(), jen.Err().Error()).Body(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.InlineCtx(), jen.Lit("ClientAuthorizedHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.InlineCtx(), jen.Lit("ClientAuthorizedHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
@@ -215,7 +215,7 @@ func buildImplementationClientScopeHandler(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ClientScopeHandler").Params(jen.List(jen.ID("clientID"), jen.ID("scope")).String()).Params(jen.ID("authed").Bool(), jen.Err().Error()).Body(
 			jen.Comment("NOTE: it's a shame the interface we're implementing doesn't have this as its first argument"),
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.InlineCtx(), jen.Lit("UserAuthorizationHandler")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.InlineCtx(), jen.Lit("UserAuthorizationHandler")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(

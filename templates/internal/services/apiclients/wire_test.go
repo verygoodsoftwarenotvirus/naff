@@ -20,7 +20,7 @@ package example
 
 import (
 	wire "github.com/google/wire"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 var (
@@ -80,7 +80,7 @@ func Test_buildProvideOAuth2ClientDataServer(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // ProvideOAuth2ClientDataServer is an arbitrary function for dependency injection's sake.

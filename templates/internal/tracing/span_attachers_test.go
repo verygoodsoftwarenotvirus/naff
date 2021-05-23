@@ -19,7 +19,7 @@ func Test_spanAttachersDotGo(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	trace "go.opencensus.io/trace"
 	"strconv"
 )
@@ -198,7 +198,7 @@ func Test_buildAttachFilterToSpan(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	trace "go.opencensus.io/trace"
 	"strconv"
 )

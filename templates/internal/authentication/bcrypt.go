@@ -14,7 +14,7 @@ const (
 func bcryptDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBcryptConstDeclarations()...)
 	code.Add(buildBcryptVarDeclarations()...)
@@ -106,7 +106,7 @@ func buildHashPassword(proj *models.Project) []jen.Code {
 			constants.CtxParam(),
 			jen.ID("password").String(),
 		).Params(jen.String(), jen.Error()).Body(
-			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(
+			jen.List(jen.Underscore(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 				constants.CtxVar(),
 				jen.Lit("HashPassword"),
 			),
@@ -139,7 +139,7 @@ func buildValidateLogin(proj *models.Project) []jen.Code {
 				jen.ID("twoFactorCode")).String(),
 			jen.Underscore().Index().Byte(),
 		).Params(jen.ID("passwordMatches").Bool(), jen.Err().Error()).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ValidateLogin")),
+			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(constants.CtxVar(), jen.Lit("ValidateLogin")),
 			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 			jen.Line(),
 			jen.ID("passwordMatches").Equals().ID("b").Dot("PasswordMatches").Call(constants.CtxVar(), jen.ID("hashedPassword"), jen.ID("providedPassword"), jen.Nil()),

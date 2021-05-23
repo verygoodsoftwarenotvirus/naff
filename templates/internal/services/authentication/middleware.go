@@ -10,7 +10,7 @@ import (
 func middlewareDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMiddlewareConstantDefs(proj)...)
 	code.Add(buildCookieAuthenticationMiddleware(proj)...)
@@ -26,7 +26,7 @@ func buildMiddlewareConstantDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("userLoginInputMiddlewareCtxKey is the context key for login input."),
-			jen.ID("userLoginInputMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_login_input"),
+			jen.ID("userLoginInputMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("user_login_input"),
 			jen.Line(),
 			jen.Comment("usernameFormKey is the string we look for in request forms for username information."),
 			jen.ID("usernameFormKey").Equals().Lit("username"),
@@ -47,7 +47,7 @@ func buildCookieAuthenticationMiddleware(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CookieAuthenticationMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CookieAuthenticationMiddleware")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CookieAuthenticationMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("fetch the user from the request."),
@@ -62,7 +62,7 @@ func buildCookieAuthenticationMiddleware(proj *models.Project) []jen.Code {
 					jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 						jen.Qual("context", "WithValue").Callln(
 							jen.ID("ctx"),
-							jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+							jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 							jen.ID("user").Dot("ToSessionInfo").Call(),
 						),
 					),
@@ -87,11 +87,11 @@ func buildAuthenticationMiddleware(proj *models.Project) []jen.Code {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AuthenticationMiddleware").Params(jen.ID("allowValidCookieInLieuOfAValidToken").Bool()).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))).Body(
 			jen.Return().Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 				jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-					jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AuthenticationMiddleware")),
+					jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AuthenticationMiddleware")),
 					jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 					jen.Line(),
 					jen.Comment("let's figure out who the user is."),
-					jen.Var().ID("user").PointerTo().Qual(proj.ModelsV1Package(), "User"),
+					jen.Var().ID("user").PointerTo().Qual(proj.TypesPackage(), "User"),
 					jen.Line(),
 					jen.Comment("check for a cookie first if we can."),
 					jen.If(jen.ID("allowValidCookieInLieuOfAValidToken")).Body(
@@ -120,7 +120,7 @@ func buildAuthenticationMiddleware(proj *models.Project) []jen.Code {
 						),
 						jen.Line(),
 						jen.Comment("attach the oauth2 client and user's info to the request."),
-						constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.ModelsV1Package(), "OAuth2ClientKey"), jen.ID("oauth2Client")),
+						constants.CtxVar().Equals().Qual("context", "WithValue").Call(constants.CtxVar(), jen.Qual(proj.TypesPackage(), "OAuth2ClientKey"), jen.ID("oauth2Client")),
 						jen.List(jen.ID("user"), jen.Err()).Equals().ID("s").Dot("userDB").Dot("GetUser").Call(constants.CtxVar(), jen.ID("oauth2Client").Dot(constants.UserOwnershipFieldName)),
 						jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 							jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error authenticating request")),
@@ -139,7 +139,7 @@ func buildAuthenticationMiddleware(proj *models.Project) []jen.Code {
 					jen.Comment("elsewise, load the request with extra context."),
 					constants.CtxVar().Equals().Qual("context", "WithValue").Call(
 						constants.CtxVar(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID("user").Dot("ToSessionInfo").Call(),
 					),
 					jen.Line(),
@@ -159,11 +159,11 @@ func buildAdminMiddleware(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("AdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AdminMiddleware")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("AdminMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-				jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.ModelsV1Package(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "SessionInfo")),
+				jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.Qual(proj.TypesPackage(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "SessionInfo")),
 				jen.Line(),
 				jen.If(jen.Not().ID("ok").Or().ID("si").IsEqualTo().ID("nil")).Body(
 					jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("AdminMiddleware called without user attached to context")),
@@ -190,9 +190,9 @@ func buildparseLoginInputFromForm(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("parseLoginInputFromForm checks a request for a login form, and returns the parsed login data if relevant."),
 		jen.Line(),
-		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserLoginInput")).Body(
+		jen.Func().ID("parseLoginInputFromForm").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "UserLoginInput")).Body(
 			jen.If(jen.Err().Assign().ID(constants.RequestVarName).Dot("ParseForm").Call(), jen.Err().IsEqualTo().ID("nil")).Body(
-				jen.ID("uli").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserLoginInput").Valuesln(
+				jen.ID("uli").Assign().AddressOf().Qual(proj.TypesPackage(), "UserLoginInput").Valuesln(
 					jen.ID("Username").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("usernameFormKey")),
 					jen.ID("Password").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("passwordFormKey")),
 					jen.ID("TOTPToken").MapAssign().ID(constants.RequestVarName).Dot("FormValue").Call(jen.ID("totpTokenFormKey")),
@@ -216,10 +216,10 @@ func buildUserLoginInputMiddleware(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserLoginInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserLoginInputMiddleware")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserLoginInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "UserLoginInput")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), "UserLoginInput")),
 				jen.If(jen.Err().Assign().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID(constants.RequestVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.If(jen.ID("x").Equals().ID("parseLoginInputFromForm").Call(jen.ID(constants.RequestVarName)), jen.ID("x").IsEqualTo().ID("nil")).Body(
 						jen.ID("s").Dot(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error encountered decoding request body")),

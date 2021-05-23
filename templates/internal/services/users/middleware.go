@@ -10,7 +10,7 @@ import (
 func middlewareDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildMiddlewareConstantDefs(proj)...)
 	code.Add(buildUserInputMiddleware(proj)...)
@@ -25,16 +25,16 @@ func buildMiddlewareConstantDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("userCreationMiddlewareCtxKey is the context key for creation input."),
-			jen.ID("userCreationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_creation_input"),
+			jen.ID("userCreationMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("user_creation_input"),
 			jen.Line(),
 			jen.Comment("passwordChangeMiddlewareCtxKey is the context key for password changes."),
-			jen.ID("passwordChangeMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("user_password_change"),
+			jen.ID("passwordChangeMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("user_password_change"),
 			jen.Line(),
 			jen.Comment("totpSecretVerificationMiddlewareCtxKey is the context key for TOTP token refreshes."),
-			jen.ID("totpSecretVerificationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("totp_verify"),
+			jen.ID("totpSecretVerificationMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("totp_verify"),
 			jen.Line(),
 			jen.Comment("totpSecretRefreshMiddlewareCtxKey is the context key for TOTP token refreshes."),
-			jen.ID("totpSecretRefreshMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("totp_refresh"),
+			jen.ID("totpSecretRefreshMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("totp_refresh"),
 		),
 		jen.Line(),
 	}
@@ -48,8 +48,8 @@ func buildUserInputMiddleware(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "UserCreationInput")),
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserInputMiddleware")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), "UserCreationInput")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UserInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
@@ -76,8 +76,8 @@ func buildPasswordUpdateInputMiddleware(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "PasswordUpdateInput")),
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("PasswordUpdateInputMiddleware")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), "PasswordUpdateInput")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("PasswordUpdateInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
@@ -104,8 +104,8 @@ func buildTOTPSecretVerificationInputMiddleware(proj *models.Project) []jen.Code
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "TOTPSecretVerificationInput")),
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretVerificationInputMiddleware")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), "TOTPSecretVerificationInput")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretVerificationInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),
@@ -132,8 +132,8 @@ func buildTOTPSecretRefreshInputMiddleware(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), "TOTPSecretRefreshInput")),
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretRefreshInputMiddleware")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), "TOTPSecretRefreshInput")),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("TOTPSecretRefreshInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.Comment("decode the request."),

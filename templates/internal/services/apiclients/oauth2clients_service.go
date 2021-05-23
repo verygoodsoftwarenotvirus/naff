@@ -10,7 +10,7 @@ import (
 func oauth2ClientsServiceDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildServiceInit()...)
 	code.Add(buildServiceConstDefs(proj)...)
@@ -44,9 +44,9 @@ func buildServiceConstDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Const().Defs(
 			jen.Comment("creationMiddlewareCtxKey is a string alias for referring to OAuth2 client creation data."),
-			jen.ID("creationMiddlewareCtxKey").Qual(proj.ModelsV1Package(), "ContextKey").Equals().Lit("create_oauth2_client"),
+			jen.ID("creationMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("create_oauth2_client"),
 			jen.Line(),
-			jen.ID("counterName").Qual(proj.InternalMetricsV1Package(), "CounterName").Equals().Lit("oauth2_clients"),
+			jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName").Equals().Lit("oauth2_clients"),
 			jen.ID("counterDescription").String().Equals().Lit("number of oauth2 clients managed by the oauth2 client service"),
 			jen.ID("serviceName").String().Equals().Lit("oauth2_clients_service"),
 		),
@@ -59,7 +59,7 @@ func buildServiceConstDefs(proj *models.Project) []jen.Code {
 func buildServiceVarDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Var().Defs(
-			jen.Underscore().Qual(proj.ModelsV1Package(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
+			jen.Underscore().Qual(proj.TypesPackage(), "OAuth2ClientDataServer").Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 			jen.Underscore().Qual("gopkg.in/oauth2.v3", "ClientStore").Equals().Parens(jen.PointerTo().ID("clientStore")).Call(jen.Nil()),
 		),
 		jen.Line(),
@@ -91,17 +91,17 @@ func buildServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Comment("Service manages our OAuth2 clients via HTTP."),
 			jen.ID("Service").Struct(
 				constants.LoggerParam(),
-				jen.ID("database").Qual(proj.DatabaseV1Package(), "DataManager"),
-				jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
-				jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
+				jen.ID("database").Qual(proj.DatabasePackage(), "DataManager"),
+				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
+				jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 				jen.ID("urlClientIDExtractor").Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 				jen.ID("oauth2Handler").ID("oauth2Handler"),
-				jen.ID("oauth2ClientCounter").Qual(proj.InternalMetricsV1Package(), "UnitCounter"),
+				jen.ID("oauth2ClientCounter").Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 			),
 
 			jen.Line(),
 			jen.ID("clientStore").Struct(
-				jen.ID("database").Qual(proj.DatabaseV1Package(), "DataManager"),
+				jen.ID("database").Qual(proj.DatabasePackage(), "DataManager"),
 			),
 		),
 		jen.Line(),
@@ -112,7 +112,7 @@ func buildServiceTypeDefs(proj *models.Project) []jen.Code {
 
 func buildServiceNewClientStore(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Body(
+		jen.Func().ID("newClientStore").Params(jen.ID("db").Qual(proj.DatabasePackage(), "DataManager")).Params(jen.PointerTo().ID("clientStore")).Body(
 			jen.ID("cs").Assign().AddressOf().ID("clientStore").Valuesln(
 				jen.ID("database").MapAssign().ID("db")),
 			jen.Return().ID("cs"),
@@ -150,10 +150,10 @@ func buildServiceProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
 			constants.LoggerParam(),
-			jen.ID("db").Qual(proj.DatabaseV1Package(), "DataManager"),
-			jen.ID("authenticator").Qual(proj.InternalAuthV1Package(), "Authenticator"),
-			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingV1Package(), "EncoderDecoder"),
-			jen.ID("counterProvider").Qual(proj.InternalMetricsV1Package(), "UnitCounterProvider"),
+			jen.ID("db").Qual(proj.DatabasePackage(), "DataManager"),
+			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
+			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
+			jen.ID("counterProvider").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.ID("manager").Assign().Qual("gopkg.in/oauth2.v3/manage", "NewDefaultManager").Call(),
 			jen.ID("clientStore").Assign().ID("newClientStore").Call(jen.ID("db")),

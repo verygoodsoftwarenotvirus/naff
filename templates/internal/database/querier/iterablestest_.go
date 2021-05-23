@@ -12,7 +12,7 @@ import (
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestClientSomethingExists(proj, typ)...)
 	code.Add(buildTestClientGetSomething(proj, typ)...)
@@ -134,7 +134,7 @@ func buildTestClientGetAllOfSomething(proj *models.Project, typ models.DataType)
 			jen.Line(),
 			utils.BuildSubTest(
 				"obligatory",
-				jen.ID("results").Assign().Make(jen.Chan().Index().Qual(proj.ModelsV1Package(), sn)),
+				jen.ID("results").Assign().Make(jen.Chan().Index().Qual(proj.TypesPackage(), sn)),
 				jen.Line(),
 				jen.List(jen.ID("c"), jen.ID("mockDB")).Assign().ID("buildTestClient").Call(),
 				jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Call(jen.Litf("GetAll%s", pn), jen.Qual(constants.MockPkg, "Anything"), jen.ID("results")).Dot("Return").Call(jen.Nil()),

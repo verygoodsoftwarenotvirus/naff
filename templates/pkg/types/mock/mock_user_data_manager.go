@@ -10,10 +10,10 @@ import (
 func mockUserDataManagerDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.ModelsV1Package(), "UserDataManager").Equals().Parens(jen.PointerTo().ID("UserDataManager")).Call(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.TypesPackage(), "UserDataManager").Equals().Parens(jen.PointerTo().ID("UserDataManager")).Call(jen.Nil()),
 		jen.Line(),
 	)
 
@@ -47,10 +47,10 @@ func buildGetUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetUser is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.TypesPackage(), "User"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -62,10 +62,10 @@ func buildGetUserWithUnverifiedTwoFactorSecret(proj *models.Project) []jen.Code 
 	lines := []jen.Code{
 		jen.Comment("GetUserWithUnverifiedTwoFactorSecret is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUserWithUnverifiedTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUserWithUnverifiedTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().Qual(proj.TypesPackage(), "User"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName)),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -94,10 +94,10 @@ func buildGetUserByUsername(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetUserByUsername is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().Qual(proj.TypesPackage(), "User"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("username")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -123,10 +123,10 @@ func buildGetUsers(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("GetUsers is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("GetUsers").Params(constants.CtxParam(), jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "UserList"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID(constants.FilterVarName)),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "UserList")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -138,10 +138,10 @@ func buildCreateUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateUser is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("CreateUser").Params(constants.CtxParam(), jen.ID("input").Qual(proj.ModelsV1Package(), "UserDatabaseCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "User"),
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("CreateUser").Params(constants.CtxParam(), jen.ID("input").Qual(proj.TypesPackage(), "UserDatabaseCreationInput")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "User"),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("input")),
-			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
+			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "User")), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
 		jen.Line(),
 	}
@@ -153,7 +153,7 @@ func buildUpdateUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("UpdateUser is a mock function."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.Error()).Body(
+		jen.Func().Params(jen.ID("m").PointerTo().ID("UserDataManager")).ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().Qual(proj.TypesPackage(), "User")).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("updated")).Dot("Error").Call(jen.Zero()),
 		),
 		jen.Line(),

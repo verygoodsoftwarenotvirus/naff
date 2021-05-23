@@ -10,7 +10,7 @@ import (
 func encodingTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildEncodingTestTypeDeclarations()...)
 	code.Add(buildTestServerEncoderDecoder_EncodeResponse()...)

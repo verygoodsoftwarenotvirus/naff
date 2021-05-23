@@ -10,7 +10,7 @@ import (
 func usersTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestV1ClientBuildGetUserRequest(proj)...)
 	code.Add(buildTestV1ClientGetUser(proj)...)
@@ -332,7 +332,7 @@ func buildTestV1ClientCreateUser(proj *models.Project) []jen.Code {
 						nil,
 					),
 					jen.Line(),
-					jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), "UserCreationInput"),
+					jen.Var().ID("x").PointerTo().Qual(proj.TypesPackage(), "UserCreationInput"),
 					utils.RequireNoError(
 						jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")),
 						nil,

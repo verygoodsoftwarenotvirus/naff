@@ -40,7 +40,7 @@ func buildCORSHandlerDef() []jen.Code {
 func routesDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(
 		jen.Const().Defs(
@@ -240,7 +240,7 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("UserLoginInputMiddleware")).Dot("Post").Call(jen.Lit("/login"), jen.ID("s").Dot("authService").Dot("LoginHandler")),
 			jen.ID("userRouter").Dot("With").Call(jen.ID("s").Dot("authService").Dot("CookieAuthenticationMiddleware")).Dot("Post").Call(jen.Lit("/logout"), jen.ID("s").Dot("authService").Dot("LogoutHandler")),
 			jen.Line(),
-			jen.ID("userIDPattern").Assign().Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(proj.ServiceV1UsersPackage(), "URIParamKey")),
+			jen.ID("userIDPattern").Assign().Qual("fmt", "Sprintf").Call(jen.ID("oauth2IDPattern"), jen.Qual(proj.ServiceUsersPackage(), "URIParamKey")),
 			jen.Line(),
 			jen.ID("userRouter").Dot("Get").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("ListHandler")),
 			jen.ID("userRouter").Dot("With").Call(
@@ -297,8 +297,8 @@ func buildSetupRouterFuncDef(proj *models.Project) []jen.Code {
 	)
 
 	return []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(proj.InternalConfigV1Package(), "FrontendSettings"),
-			jen.ID("metricsHandler").Qual(proj.InternalMetricsV1Package(), "Handler")).Body(block...),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("Server")).ID("setupRouter").Params(jen.ID("frontendConfig").Qual(proj.InternalConfigPackage(), "FrontendSettings"),
+			jen.ID("metricsHandler").Qual(proj.InternalMetricsPackage(), "Handler")).Body(block...),
 		jen.Line(),
 	}
 }
@@ -310,7 +310,7 @@ func buildWebhookAPIRoutes(proj *models.Project) jen.Code {
 		jen.Comment("Webhooks."),
 		jen.Line(),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/webhooks"), jen.Func().Params(jen.ID("webhookRouter").Qual(routingLibrary, "Router")).Body(
-			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1WebhooksPackage(), "URIParamKey")),
+			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceWebhooksPackage(), "URIParamKey")),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("CreationInputMiddleware")).Dot("Post").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("CreateHandler")),
 			jen.ID("webhookRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("ReadHandler")),
 			jen.ID("webhookRouter").Dot("With").Call(jen.ID("s").Dot("webhooksService").Dot("UpdateInputMiddleware")).Dot("Put").Call(jen.ID("sr"), jen.ID("s").Dot("webhooksService").Dot("UpdateHandler")),
@@ -326,7 +326,7 @@ func buildOAuth2ClientsAPIRoutes(proj *models.Project) []jen.Code {
 	return []jen.Code{
 		jen.Comment("OAuth2 Clients."),
 		jen.ID("v1Router").Dot("Route").Call(jen.Lit("/oauth2/clients"), jen.Func().Params(jen.ID("clientRouter").Qual(routingLibrary, "Router")).Body(
-			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceV1OAuth2ClientsPackage(), "URIParamKey")),
+			jen.ID("sr").Assign().Qual("fmt", "Sprintf").Call(jen.ID("numericIDPattern"), jen.Qual(proj.ServiceOAuth2ClientsPackage(), "URIParamKey")),
 			jen.Comment("CreateHandler is not bound to an OAuth2 authentication token."),
 			jen.Comment("UpdateHandler not supported for OAuth2 clients."),
 			jen.ID("clientRouter").Dot("Get").Call(jen.ID("sr"), jen.ID("s").Dot("oauth2ClientsService").Dot("ReadHandler")),

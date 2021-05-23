@@ -13,11 +13,11 @@ type tokenType string
 const (
 	packageToken          tokenType = "package"
 	identifierToken       tokenType = "identifier"
-	qualifiedToken        tokenType = "qualified"
 	keywordToken          tokenType = "keyword"
 	operatorToken         tokenType = "operator"
 	delimiterToken        tokenType = "delimiter"
 	literalToken          tokenType = "literal"
+	octalToken            tokenType = "octal"
 	literalRawStringToken tokenType = "literal_raw_string"
 	literalRuneToken      tokenType = "literal_rune"
 	literalByteToken      tokenType = "literal_byte"
@@ -71,6 +71,18 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 			out = fmt.Sprintf("%T%#v", t.content, t.content)
 		default:
 			panic(fmt.Sprintf("unsupported type for literal: %T", t.content))
+		}
+		if _, err := w.Write([]byte(out)); err != nil {
+			return err
+		}
+	case octalToken:
+		var out string
+		switch x := t.content.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			// other built-in types need specific type info
+			out = fmt.Sprintf("0%d", x)
+		default:
+			panic(fmt.Sprintf("unsupported type for octal: %T", t.content))
 		}
 		if _, err := w.Write([]byte(out)); err != nil {
 			return err

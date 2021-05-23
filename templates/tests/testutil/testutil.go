@@ -10,7 +10,7 @@ import (
 func testutilDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildInit()...)
 	code.Add(buildDetermineServiceURL()...)
@@ -124,7 +124,7 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateObligatoryUser creates a user for the sake of having an OAuth2 client."),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().ID("CreateObligatoryUser").Params(jen.ID("address").String(), jen.ID("debug").Bool()).Params(jen.PointerTo().Qual(proj.TypesPackage(),
 			"User",
 		), jen.Error()).Body(
 			constants.CreateCtx(),
@@ -141,7 +141,7 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 			jen.Comment("I had difficulty ensuring these values were unique, even when fake.Seed was called. Could've been fake's fault,"),
 			jen.Comment("could've been docker's fault. In either case, it wasn't worth the time to investigate and determine the culprit"),
 			jen.ID("username").Assign().Qual(constants.FakeLibrary, "Username").Call().Plus().Qual(constants.FakeLibrary, "HexColor").Call().Plus().Qual(constants.FakeLibrary, "Country").Call(),
-			jen.ID("in").Assign().AddressOf().Qual(proj.ModelsV1Package(), "UserCreationInput").Valuesln(
+			jen.ID("in").Assign().AddressOf().Qual(proj.TypesPackage(), "UserCreationInput").Valuesln(
 				jen.ID("Username").MapAssign().ID("username"),
 				jen.ID("Password").MapAssign().Qual(constants.FakeLibrary, "Password").Call(jen.True(), jen.True(), jen.True(), jen.True(), jen.True(), jen.Lit(64)),
 			),
@@ -184,7 +184,7 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 				),
 			),
 			jen.Line(),
-			jen.ID("u").Assign().AddressOf().Qual(proj.ModelsV1Package(), "User").Valuesln(
+			jen.ID("u").Assign().AddressOf().Qual(proj.TypesPackage(), "User").Valuesln(
 				jen.ID("ID").MapAssign().ID("ucr").Dot("ID"),
 				jen.ID("Username").MapAssign().ID("ucr").Dot("Username"),
 				jen.Comment("this is a dirty trick to reuse most of this model"),
@@ -227,7 +227,7 @@ func buildBuildURL() []jen.Code {
 
 func buildGetLoginCookie(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(),
+		jen.Func().ID("getLoginCookie").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.TypesPackage(),
 			"User",
 		)).Params(jen.PointerTo().Qual("net/http", "Cookie"), jen.Error()).Body(
 			jen.ID("uri").Assign().ID("buildURL").Call(jen.ID("serviceURL"), jen.Lit("users"), jen.Lit("login")),
@@ -282,7 +282,7 @@ func buildCreateObligatoryClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("CreateObligatoryClient creates the OAuth2 client we need for tests."),
 		jen.Line(),
-		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.ModelsV1Package(), "User")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Body(
+		jen.Func().ID("CreateObligatoryClient").Params(jen.ID("serviceURL").String(), jen.ID("u").PointerTo().Qual(proj.TypesPackage(), "User")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"), jen.Error()).Body(
 			jen.If(jen.ID("u").IsEqualTo().Nil()).Body(
 				jen.Return(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("user is nil"))),
 			),
@@ -328,7 +328,7 @@ cookie problems!
 	`), jen.ID("cookie").IsEqualTo().ID("nil"), jen.Err()),
 			),
 			jen.ID(constants.RequestVarName).Dot("AddCookie").Call(jen.ID("cookie")),
-			jen.Var().ID("o").Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.Var().ID("o").Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Line(),
 			jen.Var().ID("command").Qual("fmt", "Stringer"),
 			jen.If(jen.List(jen.ID("command"), jen.Err()).Equals().Qual("github.com/moul/http2curl", "GetCurlCommand").Call(jen.ID(constants.RequestVarName)), jen.Err().IsEqualTo().ID("nil")).Body(

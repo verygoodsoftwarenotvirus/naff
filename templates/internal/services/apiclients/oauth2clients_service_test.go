@@ -29,7 +29,7 @@ import (
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	oauth2v3 "gopkg.in/oauth2.v3"
 	manage "gopkg.in/oauth2.v3/manage"
 	server "gopkg.in/oauth2.v3/server"
@@ -226,7 +226,7 @@ package example
 
 import (
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 const (
@@ -255,7 +255,7 @@ func Test_buildServiceVarDefs(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	oauth2v3 "gopkg.in/oauth2.v3"
 )
 

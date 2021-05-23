@@ -10,7 +10,7 @@ import (
 func webhooksDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildFetchRandomWebhook(proj)...)
 	code.Add(buildBuildWebhookActions(proj)...)
@@ -22,7 +22,7 @@ func buildFetchRandomWebhook(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("fetchRandomWebhook retrieves a random webhook from the list of available webhooks."),
 		jen.Line(),
-		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "Webhook")).Body(
+		jen.Func().ID("fetchRandomWebhook").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "Webhook")).Body(
 			jen.List(jen.ID("webhooks"), jen.Err()).Assign().ID("c").Dot("GetWebhooks").Call(constants.InlineCtx(), jen.Nil()),
 			jen.If(jen.Err().DoesNotEqual().ID("nil").Or().ID("webhooks").IsEqualTo().ID("nil").Or().ID("len").Call(jen.ID("webhooks").Dot("Webhooks")).IsEqualTo().Zero()).Body(
 				jen.Return().ID("nil"),

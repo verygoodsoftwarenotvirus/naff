@@ -14,9 +14,9 @@ import (
 func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildDBDotGoConsts(dbvendor)...)
 	code.Add(buildDBDotGoInit(dbvendor)...)
@@ -119,7 +119,7 @@ func buildDBDotGoVarDecls(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 	sn := dbvendor.Singular()
 
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(proj.DatabaseV1Package(), "DataManager").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
+		jen.Var().Underscore().Qual(proj.DatabasePackage(), "DataManager").Equals().Params(jen.PointerTo().ID(sn)).Params(jen.Nil()),
 		jen.Line(),
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db.", sn, sn),
@@ -167,7 +167,7 @@ func buildProvideDatabaseConn(proj *models.Project, dbvendor wordsmith.SuperPala
 	lines := []jen.Code{
 		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabaseV1Package(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Body(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabasePackage(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Body(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
@@ -195,7 +195,7 @@ func buildProvideDatabaseClient(proj *models.Project, dbvendor wordsmith.SuperPa
 	lines := []jen.Code{
 		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabaseV1Package(), "DataManager")).Body(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabasePackage(), "DataManager")).Body(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),

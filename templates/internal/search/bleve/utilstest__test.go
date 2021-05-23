@@ -21,7 +21,7 @@ package example
 import (
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 
@@ -78,7 +78,7 @@ package example
 import (
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
-	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1/fake"
+	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
 

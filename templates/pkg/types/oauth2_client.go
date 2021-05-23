@@ -10,7 +10,7 @@ import (
 func oauth2ClientDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildOAuth2ClientsConstantDefs()...)
 	code.Add(buildOAuth2ClientsTypeDefs()...)

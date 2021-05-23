@@ -10,7 +10,7 @@ import (
 func httpRoutesTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildBuildRequest()...)
 	code.Add(buildTestService_validateCredentialChangeRequest(proj)...)
@@ -60,15 +60,15 @@ func buildTestService_validateCredentialChangeRequest(proj *models.Project) []je
 				jen.ID(utils.BuildFakeVarName("TOTPToken")).Assign().Lit("123456"),
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -98,12 +98,12 @@ func buildTestService_validateCredentialChangeRequest(proj *models.Project) []je
 				jen.ID(utils.BuildFakeVarName("TOTPToken")).Assign().Lit("123456"),
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "User")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
@@ -127,8 +127,8 @@ func buildTestService_validateCredentialChangeRequest(proj *models.Project) []je
 				jen.ID(utils.BuildFakeVarName("TOTPToken")).Assign().Lit("123456"),
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
-				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "User")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.ID("sc")).Assign().ID("s").Dot("validateCredentialChangeRequest").Callln(
@@ -152,12 +152,12 @@ func buildTestService_validateCredentialChangeRequest(proj *models.Project) []je
 				jen.ID(utils.BuildFakeVarName("TOTPToken")).Assign().Lit("123456"),
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -189,12 +189,12 @@ func buildTestService_validateCredentialChangeRequest(proj *models.Project) []je
 				jen.ID(utils.BuildFakeVarName("TOTPToken")).Assign().Lit("123456"),
 				jen.ID(utils.BuildFakeVarName("Password")).Assign().Lit("password"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -233,7 +233,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "UserList"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -241,7 +241,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -261,12 +261,12 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				"with error reading from database",
 				jen.ID("s").Assign().ID("buildTestService").Call(jen.ID("t")),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.Qual(constants.MockPkg, "Anything"),
-				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "UserList")).Call(jen.Nil()), constants.ObligatoryError()),
+				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "UserList")).Call(jen.Nil()), constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
@@ -283,7 +283,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				jen.Line(),
 				utils.BuildFakeVar(proj, "UserList"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUsers"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -291,7 +291,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -325,15 +325,15 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -341,7 +341,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -352,7 +352,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -402,8 +402,8 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
@@ -430,15 +430,15 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -469,15 +469,15 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -510,15 +510,15 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -546,20 +546,20 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("models.UserDatabaseCreationInput")),
-				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Qual(proj.DatabaseV1Package("client"), "ErrUserExists")),
+				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Qual(proj.DatabasePackage("client"), "ErrUserExists")),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
@@ -582,15 +582,15 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "User"),
 				utils.BuildFakeVarWithCustomName(proj, "exampleInput", "BuildFakeUserCreationInputFromUser", jen.ID(utils.BuildFakeVarName("User"))),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("Password"),
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("db").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("db").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("CreateUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -598,7 +598,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -609,7 +609,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -650,7 +650,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -658,7 +658,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -683,7 +683,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -708,7 +708,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -733,7 +733,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 					jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -741,7 +741,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -786,12 +786,12 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -801,8 +801,8 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -813,7 +813,7 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -872,12 +872,12 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -890,8 +890,8 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -927,12 +927,12 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -942,8 +942,8 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -981,12 +981,12 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -996,8 +996,8 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -1031,12 +1031,12 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1049,8 +1049,8 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -1061,7 +1061,7 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingV1Package("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1104,7 +1104,7 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1133,7 +1133,7 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 				jen.Line(),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1165,13 +1165,13 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				).Dot("Return").Call(
-					jen.Parens(jen.PointerTo().Qual(proj.ModelsV1Package(), "User")).Parens(jen.Nil()),
+					jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "User")).Parens(jen.Nil()),
 					constants.ObligatoryError(),
 				),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
@@ -1203,7 +1203,7 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 				jen.Line(),
 				jen.ID(utils.BuildFakeVarName("User")).Dot("TwoFactorSecretVerifiedOn").Equals().ID("og"),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1236,7 +1236,7 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1268,7 +1268,7 @@ func buildTestService_TOTPSecretValidationHandler(proj *models.Project) []jen.Co
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("GetUserWithUnverifiedTwoFactorSecret"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1314,12 +1314,12 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -1330,8 +1330,8 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -1340,7 +1340,7 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("TOTPToken"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 				).Dot("Return").Call(jen.True(), jen.Nil()),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("NewPassword")).Dot("Return").Call(jen.Lit("blah"), jen.Nil()),
@@ -1397,12 +1397,12 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -1413,8 +1413,8 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -1448,12 +1448,12 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(
 					jen.ID(utils.BuildFakeVarName("User")),
@@ -1467,8 +1467,8 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -1477,7 +1477,7 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("TOTPToken"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 				).Dot("Return").Call(jen.True(), jen.Nil()),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("NewPassword"),
@@ -1509,12 +1509,12 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Callln(
 					jen.Qual("context", "WithValue").Call(
 						jen.ID(constants.RequestVarName).Dot("Context").Call(),
-						jen.Qual(proj.ModelsV1Package(), "SessionInfoKey"),
+						jen.Qual(proj.TypesPackage(), "SessionInfoKey"),
 						jen.ID(utils.BuildFakeVarName("User")).Dot("ToSessionInfo").Call(),
 					),
 				),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("GetUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
@@ -1525,8 +1525,8 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthV1Package("mock"), "Authenticator").Values(),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Callln(
+				jen.ID("auth").Assign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
+				jen.Qual(proj.InternalAuthPackage(), "On").Callln(
 					jen.Lit("ValidateLogin"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("HashedPassword"),
@@ -1535,7 +1535,7 @@ func buildTestService_UpdatePasswordHandler(proj *models.Project) []jen.Code {
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("TOTPToken"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("Salt"),
 				).Dot("Return").Call(jen.True(), jen.Nil()),
-				jen.Qual(proj.InternalAuthV1Package(), "On").Call(
+				jen.Qual(proj.InternalAuthPackage(), "On").Call(
 					jen.Lit("HashPassword"),
 					jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("Input")).Dot("NewPassword"),
@@ -1570,7 +1570,7 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 				),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(
 					jen.Lit("ArchiveUser"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1585,7 +1585,7 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsV1Package("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -1606,7 +1606,7 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 				),
 				jen.List(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)).Assign().List(jen.ID("httptest").Dot("NewRecorder").Call(), jen.ID("buildRequest").Call(jen.ID("t"))),
 				jen.Line(),
-				jen.ID("mockDB").Assign().Qual(proj.DatabaseV1Package(), "BuildMockDatabase").Call(),
+				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("mockDB").Dot("UserDataManager").Dot("On").Call(jen.Lit("ArchiveUser"), jen.Qual(constants.MockPkg, "Anything"),
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(constants.ObligatoryError()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),

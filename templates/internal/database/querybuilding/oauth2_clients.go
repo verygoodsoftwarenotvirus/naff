@@ -13,9 +13,9 @@ import (
 func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabaseV1Package("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildOAuth2ClientsConstDeclarations()...)
 	code.Add(buildOAuth2ClientsVarDeclarations()...)
@@ -92,13 +92,13 @@ func buildScanOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra
 		jen.Comment("scanOAuth2Client takes a Scanner (i.e. *sql.Row) and scans its results into an OAuth2Client struct."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("scanOAuth2Client").Params(
-			jen.ID("scan").Qual(proj.DatabaseV1Package(), "Scanner"),
+			jen.ID("scan").Qual(proj.DatabasePackage(), "Scanner"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error(),
 		).Body(
 			jen.Var().Defs(
-				jen.ID("x").Equals().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Values(),
+				jen.ID("x").Equals().AddressOf().Qual(proj.TypesPackage(), "OAuth2Client").Values(),
 				jen.ID("scopes").String(),
 			),
 			jen.Line(),
@@ -141,13 +141,13 @@ func buildScanOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Comment("scanOAuth2Clients takes sql rows and turns them into a slice of OAuth2Clients."),
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("scanOAuth2Clients").Params(
-			jen.ID("rows").Qual(proj.DatabaseV1Package(), "ResultIterator"),
+			jen.ID("rows").Qual(proj.DatabasePackage(), "ResultIterator"),
 		).Params(
-			jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error(),
 		).Body(
 			jen.Var().Defs(
-				jen.ID("list").Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+				jen.ID("list").Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			),
 			jen.Line(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Body(
@@ -217,7 +217,7 @@ func buildGetOAuth2ClientByClientID(proj *models.Project, dbvendor wordsmith.Sup
 			constants.CtxParam(),
 			jen.ID("clientID").String(),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error(),
 		).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetOAuth2ClientByClientIDQuery").Call(jen.ID("clientID")),
@@ -284,7 +284,7 @@ func buildGetAllOAuth2Clients(proj *models.Project, dbvendor wordsmith.SuperPala
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllOAuth2Clients").Params(
 			constants.CtxParam(),
 		).Params(
-			jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"),
+			jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"),
 			jen.Error(),
 		).Body(
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID(dbfl).Dot("buildGetAllOAuth2ClientsQuery").Call()),
@@ -315,7 +315,7 @@ func buildGetAllOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmith.Su
 	lines := []jen.Code{
 		jen.Comment("GetAllOAuth2ClientsForUser gets a list of OAuth2 clients belonging to a given user."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllOAuth2ClientsForUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Index().PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Body(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetAllOAuth2ClientsForUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"), jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetOAuth2ClientsForUserQuery").Call(jen.ID(constants.UserIDVarName), jen.Nil()),
 			jen.Line(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID(dbfl).Dot("db").Dot("QueryContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
@@ -377,7 +377,7 @@ func buildGetOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 	lines := []jen.Code{
 		jen.Comment("GetOAuth2Client retrieves an OAuth2 client from the database."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Body(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetOAuth2Client").Params(constants.CtxParam(), jen.List(jen.ID("clientID"), jen.ID(constants.UserIDVarName)).Uint64()).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"), jen.Error()).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetOAuth2ClientQuery").Call(jen.ID("clientID"), jen.ID(constants.UserIDVarName)),
 			jen.ID("row").Assign().ID(dbfl).Dot("db").Dot("QueryRowContext").Call(constants.CtxVar(), jen.ID("query"), jen.ID("args").Spread()),
 			jen.Line(),
@@ -472,7 +472,7 @@ func buildBuildGetOAuth2ClientsForUserQuery(proj *models.Project, dbvendor words
 		jen.Line(),
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildGetOAuth2ClientsForUserQuery").Params(
 			constants.UserIDParam(),
-			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
 		).Params(
 			jen.ID("query").String(),
 			jen.ID("args").Index().Interface(),
@@ -514,9 +514,9 @@ func buildGetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmith.Super
 		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("GetOAuth2ClientsForUser").Params(
 			constants.CtxParam(),
 			constants.UserIDParam(),
-			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter"),
+			jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter"),
 		).Params(
-			jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientList"),
+			jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientList"),
 			jen.Error(),
 		).Body(
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildGetOAuth2ClientsForUserQuery").Call(jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
@@ -534,15 +534,15 @@ func buildGetOAuth2ClientsForUser(proj *models.Project, dbvendor wordsmith.Super
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("scanning response from database: %w"), jen.Err())),
 			),
 			jen.Line(),
-			jen.ID("ocl").Assign().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2ClientList").Valuesln(
-				jen.ID("Pagination").MapAssign().Qual(proj.ModelsV1Package(), "Pagination").Valuesln(
+			jen.ID("ocl").Assign().AddressOf().Qual(proj.TypesPackage(), "OAuth2ClientList").Valuesln(
+				jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), "Pagination").Valuesln(
 					jen.ID("Page").MapAssign().ID(constants.FilterVarName).Dot("Page"),
 					jen.ID("Limit").MapAssign().ID(constants.FilterVarName).Dot("Limit"),
 				),
 			),
 			jen.Line(),
 			jen.Comment("de-pointer-ize clients"),
-			jen.ID("ocl").Dot("Clients").Equals().Make(jen.Index().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Len(jen.ID("list"))),
+			jen.ID("ocl").Dot("Clients").Equals().Make(jen.Index().Qual(proj.TypesPackage(), "OAuth2Client"), jen.Len(jen.ID("list"))),
 			jen.For(jen.List(jen.ID("i"), jen.ID("t")).Assign().Range().ID("list")).Body(
 				jen.ID("ocl").Dot("Clients").Index(jen.ID("i")).Equals().PointerTo().ID("t"),
 			),
@@ -562,7 +562,7 @@ func buildBuildCreateOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.
 	lines := []jen.Code{
 		jen.Comment("buildCreateOAuth2ClientQuery returns a SQL query (and args) that will create the given OAuth2Client in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildCreateOAuth2ClientQuery").Params(jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.Var().Err().Error(),
 			jen.Line(),
 			func() jen.Code {
@@ -614,10 +614,10 @@ func buildCreateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalab
 	lines := []jen.Code{
 		jen.Comment("CreateOAuth2Client creates an OAuth2 client."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client"), jen.Error()).Body(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("CreateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientCreationInput")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2Client"), jen.Error()).Body(
 			func() []jen.Code {
 				out := []jen.Code{
-					jen.ID("x").Assign().AddressOf().Qual(proj.ModelsV1Package(), "OAuth2Client").Valuesln(
+					jen.ID("x").Assign().AddressOf().Qual(proj.TypesPackage(), "OAuth2Client").Valuesln(
 						jen.ID("Name").MapAssign().ID("input").Dot("Name"),
 						jen.ID("ClientID").MapAssign().ID("input").Dot("ClientID"),
 						jen.ID("ClientSecret").MapAssign().ID("input").Dot("ClientSecret"),
@@ -669,7 +669,7 @@ func buildBuildUpdateOAuth2ClientQuery(proj *models.Project, dbvendor wordsmith.
 	lines := []jen.Code{
 		jen.Comment("buildUpdateOAuth2ClientQuery returns a SQL query (and args) that will update a given OAuth2 client in the database"),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("buildUpdateOAuth2ClientQuery").Params(jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			func() []jen.Code {
 				out := []jen.Code{jen.Var().Err().Error(), jen.Line()}
 
@@ -715,7 +715,7 @@ func buildUpdateOAuth2Client(proj *models.Project, dbvendor wordsmith.SuperPalab
 		jen.Line(),
 		jen.Comment("NOTE: this function expects the input's ID field to be valid and non-zero."),
 		jen.Line(),
-		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.ModelsV1Package(), "OAuth2Client")).Params(jen.Error()).Body(
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(sn)).ID("UpdateOAuth2Client").Params(constants.CtxParam(), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.Error()).Body(
 			func() []jen.Code {
 				out := []jen.Code{
 					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID(dbfl).Dot("buildUpdateOAuth2ClientQuery").Call(jen.ID("input")),

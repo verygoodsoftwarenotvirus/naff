@@ -804,7 +804,7 @@ func (typ DataType) buildGetListOfSomethingParams(p *Project, isModelsPackage bo
 	}
 
 	if !isModelsPackage {
-		params = append(params, jen.ID("filter").Op("*").Qual(filepath.Join(p.OutputPath, "models/v1"), "QueryFilter"))
+		params = append(params, jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
 	} else {
 		params = append(params, jen.ID("filter").Op("*").ID("QueryFilter"))
 	}
@@ -1552,7 +1552,7 @@ func (typ DataType) BuildParamsForHTTPClientCreateRequestBuildingMethod(p *Proje
 		}
 	}
 
-	params = append(params, jen.ID("input").PointerTo().Qual(p.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+	params = append(params, jen.ID("input").PointerTo().Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 
 	return params
 }
@@ -1574,7 +1574,7 @@ func (typ DataType) BuildParamsForHTTPClientCreateMethod(p *Project) []jen.Code 
 		}
 	}
 
-	params = append(params, jen.ID("input").PointerTo().Qual(p.ModelsV1Package(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+	params = append(params, jen.ID("input").PointerTo().Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
 
 	return params
 }
@@ -1595,7 +1595,7 @@ func (typ DataType) BuildParamsForHTTPClientUpdateRequestBuildingMethod(p *Proje
 		}
 	}
 
-	params = append(params, jen.ID(typ.Name.UnexportedVarName()).PointerTo().Qual(p.ModelsV1Package(), typ.Name.Singular()))
+	params = append(params, jen.ID(typ.Name.UnexportedVarName()).PointerTo().Qual(p.TypesPackage(), typ.Name.Singular()))
 
 	return params
 }
@@ -1637,7 +1637,7 @@ func (typ DataType) BuildParamsForHTTPClientUpdateMethod(p *Project) []jen.Code 
 		}
 	}
 
-	params = append(params, jen.ID(typ.Name.UnexportedVarName()).PointerTo().Qual(p.ModelsV1Package(), typ.Name.Singular()))
+	params = append(params, jen.ID(typ.Name.UnexportedVarName()).PointerTo().Qual(p.TypesPackage(), typ.Name.Singular()))
 
 	return params
 }
@@ -1815,7 +1815,7 @@ func (typ DataType) BuildParamsForHTTPClientListRequestMethod(p *Project) []jen.
 		params = append(params, jen.List(listParams...).Uint64())
 	}
 
-	params = append(params, jen.ID(constants.FilterVarName).PointerTo().Qual(p.ModelsV1Package(), "QueryFilter"))
+	params = append(params, jen.ID(constants.FilterVarName).PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
 
 	return params
 }
@@ -1832,7 +1832,7 @@ func (typ DataType) BuildParamsForHTTPClientMethodThatFetchesAList(p *Project) [
 		params = append(params, jen.List(listParams...).Uint64())
 	}
 
-	params = append(params, jen.ID(constants.FilterVarName).PointerTo().Qual(p.ModelsV1Package(), "QueryFilter"))
+	params = append(params, jen.ID(constants.FilterVarName).PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
 
 	return params
 }

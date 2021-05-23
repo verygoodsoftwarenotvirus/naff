@@ -23,7 +23,7 @@ import (
 	"fmt"
 	v5 "github.com/brianvoe/gofakeit/v5"
 	totp "github.com/pquerna/otp/totp"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"log"
 	"time"
 )
@@ -159,7 +159,7 @@ package example
 import (
 	"encoding/base32"
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeUser builds a faked User.
@@ -193,7 +193,7 @@ func Test_buildBuildDatabaseCreationResponse(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildDatabaseCreationResponse builds a faked UserCreationResponse.
@@ -227,7 +227,7 @@ func Test_buildBuildFakeUserList(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeUserList builds a faked UserList.
@@ -267,7 +267,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeUserCreationInput builds a faked UserCreationInput.
@@ -297,7 +297,7 @@ package example
 
 import (
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeUserCreationInputFromUser builds a faked UserCreationInput.
@@ -325,7 +325,7 @@ func Test_buildBuildFakeUserDatabaseCreationInputFromUser(T *testing.T) {
 package example
 
 import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeUserDatabaseCreationInputFromUser builds a faked UserDatabaseCreationInput.
@@ -356,7 +356,7 @@ package example
 import (
 	"fmt"
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeUserLoginInputFromUser builds a faked UserLoginInput.
@@ -387,7 +387,7 @@ package example
 import (
 	"fmt"
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakePasswordUpdateInput builds a faked PasswordUpdateInput.
@@ -418,7 +418,7 @@ package example
 import (
 	"fmt"
 	v5 "github.com/brianvoe/gofakeit/v5"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
 // BuildFakeTOTPSecretRefreshInput builds a faked TOTPSecretRefreshInput.
@@ -447,7 +447,7 @@ package example
 
 import (
 	totp "github.com/pquerna/otp/totp"
-	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/models/v1"
+	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"log"
 	"time"
 )

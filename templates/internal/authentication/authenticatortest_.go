@@ -9,7 +9,7 @@ import (
 func authenticatorTestDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(testPackageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestProvideBcryptHashCost(proj)...)
 
@@ -23,7 +23,7 @@ func buildTestProvideBcryptHashCost(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Qual(proj.InternalAuthV1Package(), "ProvideBcryptHashCost").Call(),
+				jen.Qual(proj.InternalAuthPackage(), "ProvideBcryptHashCost").Call(),
 			),
 		),
 		jen.Line(),

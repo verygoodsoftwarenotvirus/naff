@@ -12,7 +12,7 @@ import (
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestV1Client_BuildSomethingExistsRequest(proj, typ)...)
 	code.Add(buildTestV1Client_SomethingExists(proj, typ)...)
@@ -320,7 +320,7 @@ func buildTestV1Client_BuildSearchSomethingRequest(proj *models.Project, typ mod
 
 	subtestLines := append(
 		typ.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(proj),
-		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.Line(),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
@@ -364,7 +364,7 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 	structDecls := typ.BuildDependentObjectsForHTTPClientListRetrievalTest(proj)
 	happyPathSubtestLines := append(
 		structDecls,
-		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.Line(),
 		jen.IDf("example%sList", ts).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", ts)).Call().Dot(tp),
@@ -377,12 +377,12 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "SearchQueryKey")),
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.TypesPackage(), "SearchQueryKey")),
 				jen.ID("exampleQuery"),
 				jen.Lit("expected and actual search query param do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "LimitQueryKey")),
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.TypesPackage(), "LimitQueryKey")),
 				jen.Qual("strconv", "FormatUint").Call(jen.Uint64().Call(jen.ID("limit")), jen.Lit(10)),
 				jen.Lit("expected and actual limit query param do not match"),
 			),
@@ -411,7 +411,7 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 
 	invalidClientURLSubtestLines := append(
 		structDecls,
-		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.Line(),
 		jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
@@ -428,7 +428,7 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 
 	invalidResponseSubtestLines := append(
 		structDecls,
-		jen.ID("limit").Assign().Qual(proj.ModelsV1Package(), "DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.Line(),
 		utils.BuildTestServer(
@@ -439,12 +439,12 @@ func buildTestV1Client_SearchSomething(proj *models.Project, typ models.DataType
 				jen.Lit("expected and actual paths do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "SearchQueryKey")),
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.TypesPackage(), "SearchQueryKey")),
 				jen.ID("exampleQuery"),
 				jen.Lit("expected and actual search query param do not match"),
 			),
 			utils.AssertEqual(
-				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.ModelsV1Package(), "LimitQueryKey")),
+				jen.ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.TypesPackage(), "LimitQueryKey")),
 				jen.Qual("strconv", "FormatUint").Call(jen.Uint64().Call(jen.ID("limit")), jen.Lit(10)),
 				jen.Lit("expected and actual limit query param do not match"),
 			),
@@ -494,7 +494,7 @@ func buildTestV1Client_BuildGetListOfSomethingRequest(proj *models.Project, typ 
 
 	subtestLines := append(
 		typ.BuildDependentObjectsForHTTPClientBuildListRetrievalRequestMethodTest(proj),
-		jen.ID(constants.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")).Call(jen.Nil()),
+		jen.ID(constants.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 		utils.ExpectMethod("expectedMethod", "MethodGet"),
 		jen.ID("ts").Assign().Qual("net/http/httptest", "NewTLSServer").Call(jen.Nil()),
 		jen.Line(),
@@ -718,7 +718,7 @@ func buildTestV1Client_CreateSomething(proj *models.Project, typ models.DataType
 			),
 			utils.AssertEqual(jen.ID(constants.RequestVarName).Dot("Method"), jen.Qual("net/http", "MethodPost"), nil),
 			jen.Line(),
-			jen.Var().ID("x").PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", ts)),
+			jen.Var().ID("x").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", ts)),
 			utils.RequireNoError(jen.Qual("encoding/json", "NewDecoder").Call(jen.ID(constants.RequestVarName).Dot("Body")).Dot("Decode").Call(jen.AddressOf().ID("x")), nil),
 			jen.Line(),
 			func() jen.Code {

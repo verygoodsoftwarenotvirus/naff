@@ -12,7 +12,7 @@ import (
 func middlewareDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(typ.Name.PackageName())
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildCreationInputMiddleware(proj, typ)...)
 	code.Add(buildUpdateInputMiddleware(proj, typ)...)
@@ -31,8 +31,8 @@ func buildCreationInputMiddleware(proj *models.Project, typ models.DataType) []j
 				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			).Body(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sCreationInput", sn))),
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreationInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
@@ -67,8 +67,8 @@ func buildUpdateInputMiddleware(proj *models.Project, typ models.DataType) []jen
 			jen.Qual("net/http", "Handler"),
 		).Body(
 			jen.Return().Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.ModelsV1Package(), fmt.Sprintf("%sUpdateInput", sn))),
-				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingV1Package(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
+				jen.ID("x").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))),
+				jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("UpdateInputMiddleware")),
 				jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
 				jen.Line(),
 				jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),

@@ -13,7 +13,7 @@ import (
 func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 
 	code.Add(buildSomethingConstantDefinitions(proj, typ)...)
 	code.Add(buildSomethingTypeDefinitions(proj, typ)...)
@@ -39,7 +39,7 @@ func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType
 			lines,
 			jen.Const().Defs(
 				jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
-				jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchV1Package(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
+				jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchPackage(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
 			),
 			jen.Line(),
 		)

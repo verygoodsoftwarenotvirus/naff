@@ -14,7 +14,7 @@ import (
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	utils.AddImports(proj, code)
+	utils.AddImports(proj, code, false)
 	code.Add(jen.Const().Defs(
 		jen.IDf("%sBasePath", typ.Name.PluralUnexportedVarName()).Equals().Lit(typ.Name.PluralRouteName())),
 	)
@@ -42,7 +42,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 }
 
 func attachURIToSpanCall(proj *models.Project) jen.Code {
-	return jen.Qual(proj.InternalTracingV1Package(), "AttachRequestURIToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("uri"))
+	return jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("uri"))
 }
 
 func buildV1ClientURLBuildingParamsForSingleInstanceOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
@@ -292,7 +292,7 @@ func buildGetSomethingFuncDecl(proj *models.Project, typ models.DataType) []jen.
 		jen.Commentf("%s retrieves %s.", funcName, commonNameWithPrefix),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientRetrievalMethod(proj, false)...).Params(
-			jen.ID(uvn).PointerTo().Qual(proj.ModelsV1Package(), ts),
+			jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), ts),
 			jen.Err().Error(),
 		).Body(block...,
 		),
@@ -311,11 +311,11 @@ func buildBuildSearchSomethingRequestFuncDecl(proj *models.Project, typ models.D
 		utils.StartSpan(proj, true, funcName),
 		jen.ID("params").Assign().Qual("net/url", "Values").Values(),
 		jen.ID("params").Dot("Set").Call(
-			jen.Qual(proj.ModelsV1Package(), "SearchQueryKey"),
+			jen.Qual(proj.TypesPackage(), "SearchQueryKey"),
 			jen.ID("query"),
 		),
 		jen.ID("params").Dot("Set").Call(
-			jen.Qual(proj.ModelsV1Package(), "LimitQueryKey"),
+			jen.Qual(proj.TypesPackage(), "LimitQueryKey"),
 			jen.Qual("strconv", "FormatUint").Call(
 				jen.Uint64().Call(jen.ID("limit")),
 				jen.Lit(10),
@@ -387,7 +387,7 @@ func buildSearchSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.ID("query").String(),
 			jen.ID("limit").Uint8(),
 		).Params(
-			jen.ID(puvn).Index().Qual(proj.ModelsV1Package(), ts),
+			jen.ID(puvn).Index().Qual(proj.TypesPackage(), ts),
 			jen.Err().Error(),
 		).Body(
 			block...,
@@ -465,7 +465,7 @@ func buildGetListOfSomethingFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.Commentf("%s retrieves a list of %s.", funcName, typ.Name.PluralCommonName()),
 		jen.Line(),
 		newClientMethod(funcName).Params(typ.BuildParamsForHTTPClientMethodThatFetchesAList(proj)...).Params(
-			jen.ID(pvn).PointerTo().Qual(proj.ModelsV1Package(), fmt.Sprintf("%sList", ts)),
+			jen.ID(pvn).PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", ts)),
 			jen.Err().Error(),
 		).Body(block...,
 		),
@@ -553,7 +553,7 @@ func buildCreateSomethingFuncDecl(proj *models.Project, typ models.DataType) []j
 		newClientMethod(funcName).Params(
 			typ.BuildParamsForHTTPClientCreateMethod(proj)...,
 		).Params(
-			jen.ID(vn).PointerTo().Qual(proj.ModelsV1Package(), ts),
+			jen.ID(vn).PointerTo().Qual(proj.TypesPackage(), ts),
 			jen.Err().Error(),
 		).Body(block...,
 		),
