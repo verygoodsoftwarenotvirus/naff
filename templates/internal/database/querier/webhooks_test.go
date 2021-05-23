@@ -20,7 +20,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
@@ -134,7 +134,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
@@ -172,7 +172,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
@@ -207,7 +207,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
@@ -239,7 +239,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 // GetAllWebhooksCount fetches the count of webhooks from the database that meet a particular filter.
@@ -270,7 +270,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
@@ -303,7 +303,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 )
 
@@ -339,7 +339,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 // ArchiveWebhook archives a webhook from the database.

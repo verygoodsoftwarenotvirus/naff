@@ -697,12 +697,12 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userA")),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+				jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 					constants.CtxVar(),
 					jen.ID("ca").Dot("ClientID"),
 					jen.ID("ca").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("ca").Dot("Scopes"),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("ca").Dot("Scopes"),
 					jen.True(),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
@@ -719,12 +719,12 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilPackage(), "CreateObligatoryClient").Call(jen.ID("urlToUse"), jen.ID("userB")),
 				utils.RequireNoError(jen.Err(), nil),
 				jen.Line(),
-				jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+				jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 					constants.CtxVar(),
 					jen.ID("cb").Dot("ClientID"),
 					jen.ID("cb").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("cb").Dot("Scopes"),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("cb").Dot("Scopes"),
 					jen.True(),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientB"), jen.Err()),
@@ -763,12 +763,12 @@ func buildTestAuth(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("cookie"), jen.ID("input")),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 				jen.Line(),
-				jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+				jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 					constants.CtxVar(),
 					jen.ID("premade").Dot("ClientID"),
 					jen.ID("premade").Dot("ClientSecret"),
 					jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("premade").Dot("Scopes"),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(), jen.ID("buildHTTPClient").Call(), jen.ID("premade").Dot("Scopes"),
 					jen.True(),
 				),
 				jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("c"), jen.Err()),

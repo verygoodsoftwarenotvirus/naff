@@ -20,7 +20,6 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 	"time"
 )
@@ -36,7 +35,7 @@ func TestServerConfig_ProvideInstrumentationHandler(T *testing.T) {
 			},
 		}
 
-		assert.NotNil(t, c.ProvideInstrumentationHandler(noop.ProvideNoopLogger()))
+		assert.NotNil(t, c.ProvideInstrumentationHandler(logging.NewNonOperationalLogger()))
 	})
 }
 
@@ -50,7 +49,7 @@ func TestServerConfig_ProvideTracing(T *testing.T) {
 			},
 		}
 
-		assert.NoError(t, c.ProvideTracing(noop.ProvideNoopLogger()))
+		assert.NoError(t, c.ProvideTracing(logging.NewNonOperationalLogger()))
 	})
 }
 `
@@ -71,7 +70,6 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 	"time"
 )
@@ -87,7 +85,7 @@ func TestServerConfig_ProvideInstrumentationHandler(T *testing.T) {
 			},
 		}
 
-		assert.NotNil(t, c.ProvideInstrumentationHandler(noop.ProvideNoopLogger()))
+		assert.NotNil(t, c.ProvideInstrumentationHandler(logging.NewNonOperationalLogger()))
 	})
 }
 `
@@ -108,7 +106,6 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -122,7 +119,7 @@ func TestServerConfig_ProvideTracing(T *testing.T) {
 			},
 		}
 
-		assert.NoError(t, c.ProvideTracing(noop.ProvideNoopLogger()))
+		assert.NoError(t, c.ProvideTracing(logging.NewNonOperationalLogger()))
 	})
 }
 `

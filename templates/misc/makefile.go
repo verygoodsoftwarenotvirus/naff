@@ -56,7 +56,7 @@ wire-clean:
 
 .PHONY: wire
 wire: ensure-wire vendor
-	wire gen ` + fmt.Sprintf("%s/cmd/server/v1", projRoot) + `
+	wire gen ` + fmt.Sprintf("%s/cmd/server", projRoot) + `
 
 .PHONY: rewire
 rewire: ensure-wire wire-clean wire

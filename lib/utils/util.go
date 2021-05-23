@@ -211,7 +211,7 @@ func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen
 				return jen.Underscore()
 			}(),
 			jen.ID(SpanVarName),
-		).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(
+		).Op(":=").Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 			constants.CtxVar(),
 			spanName,
 		),
@@ -240,7 +240,7 @@ func StartSpanWithInlineCtx(proj *models.Project, saveCtx bool, spanName jen.Cod
 				return jen.ID("_")
 			}(),
 			jen.ID(SpanVarName),
-		).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(
+		).Op(":=").Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 			constants.InlineCtx(),
 			spanName,
 		),

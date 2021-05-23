@@ -34,7 +34,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.ID("service").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("database").MapAssign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
-				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("authenticator").MapAssign().AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.ID("urlClientIDExtractor").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -74,7 +74,7 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.ID("mockDB"),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(), jen.ID("mockDB"),
 					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -105,7 +105,7 @@ func buildTestProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 				),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideOAuth2ClientsService").Callln(
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.ID("mockDB"),
 					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),

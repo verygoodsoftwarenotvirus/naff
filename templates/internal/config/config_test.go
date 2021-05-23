@@ -168,8 +168,8 @@ func BuildConfig() *viper.Viper {
 	cfg.SetDefault("meta.startup_deadline", defaultStartupDeadline)
 
 	// auth stuff.
-	cfg.SetDefault("auth.cookie_lifetime", defaultCookieLifetime)
-	cfg.SetDefault("auth.enable_user_signup", true)
+	cfg.SetDefault("authentication.cookie_lifetime", defaultCookieLifetime)
+	cfg.SetDefault("authentication.enable_user_signup", true)
 
 	// metrics stuff.
 	cfg.SetDefault("metrics.database_metrics_collection_interval", defaultMetricsCollectionInterval)
@@ -471,8 +471,8 @@ func BuildConfig() *viper.Viper {
 	cfg.SetDefault("meta.startup_deadline", defaultStartupDeadline)
 
 	// auth stuff.
-	cfg.SetDefault("auth.cookie_lifetime", defaultCookieLifetime)
-	cfg.SetDefault("auth.enable_user_signup", true)
+	cfg.SetDefault("authentication.cookie_lifetime", defaultCookieLifetime)
+	cfg.SetDefault("authentication.enable_user_signup", true)
 
 	// metrics stuff.
 	cfg.SetDefault("metrics.database_metrics_collection_interval", defaultMetricsCollectionInterval)

@@ -114,12 +114,12 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 			jen.List(jen.ID("premade"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dot("CreateOAuth2Client").Call(jen.ID("_ctx"), jen.ID("cookie"), jen.ID("input")),
 			jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("premade"), jen.Err()),
 			jen.Line(),
-			jen.List(jen.ID("testClient"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+			jen.List(jen.ID("testClient"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 				jen.ID("_ctx"),
 				jen.ID("premade").Dot("ClientID"),
 				jen.ID("premade").Dot("ClientSecret"),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("PlainClient").Call(),
 				jen.ID("premade").Dot("Scopes"),
 				jen.ID("debug"),
@@ -214,12 +214,12 @@ func buildOAuth2TestTestOAuth2Clients(proj *models.Project) []jen.Code {
 					jen.Comment("archive oauth2Client."),
 					utils.RequireNoError(jen.ID("testClient").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("premade").Dot("ID")), nil),
 					jen.Line(),
-					jen.List(jen.ID("c2"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+					jen.List(jen.ID("c2"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 						constants.CtxVar(),
 						jen.ID("premade").Dot("ClientID"),
 						jen.ID("premade").Dot("ClientSecret"),
 						jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-						jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+						jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 						jen.ID("buildHTTPClient").Call(),
 						jen.ID("premade").Dot("Scopes"),
 						jen.True(),

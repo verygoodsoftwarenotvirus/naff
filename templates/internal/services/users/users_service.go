@@ -66,7 +66,7 @@ func buildUsersServiceTypeDefs(proj *models.Project) []jen.Code {
 				jen.ID("cookieSecret").Index().Byte(),
 				jen.ID("userDataManager").Qual(proj.TypesPackage(), "UserDataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
 				jen.ID("userCounter").Qual(proj.InternalMetricsPackage(), "UnitCounter"),
@@ -88,7 +88,7 @@ func buildProvideUsersService(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
 			jen.ID("authSettings").Qual(proj.InternalConfigPackage(), "AuthSettings"),
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("userDataManager").Qual(proj.TypesPackage(), "UserDataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),

@@ -23,7 +23,7 @@ import (
 	"database/sql"
 	errors1 "errors"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	oauth2v3 "gopkg.in/oauth2.v3"
 	errors "gopkg.in/oauth2.v3/errors"
@@ -287,7 +287,7 @@ package example
 import (
 	"database/sql"
 	"errors"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	server "gopkg.in/oauth2.v3/server"
 	"net/http"
 )
@@ -358,7 +358,7 @@ package example
 
 import (
 	"errors"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	server "gopkg.in/oauth2.v3/server"
 	"net/http"
@@ -411,7 +411,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	oauth2v3 "gopkg.in/oauth2.v3"
 	server "gopkg.in/oauth2.v3/server"
 )
@@ -468,7 +468,7 @@ package example
 import (
 	"context"
 	"errors"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	server "gopkg.in/oauth2.v3/server"
 )
 

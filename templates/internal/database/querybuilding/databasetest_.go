@@ -14,12 +14,12 @@ import (
 func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.QuerybuildersPackage(spn), spn)
 
 	utils.AddImports(proj, code, false)
 
 	code.Add(buildConstDecls()...)
-	code.Add(buildBuildTestService(dbvendor)...)
+	code.Add(buildBuildTestService(proj, dbvendor)...)
 	code.Add(buildDBVendorTestVarDecls(dbvendor)...)
 
 	code.Add(
@@ -47,7 +47,7 @@ func databaseTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 		code.Add(buildTest_joinUint64s())
 	}
 
-	code.Add(buildTestProviderFunc(dbvendor))
+	code.Add(buildTestProviderFunc(proj, dbvendor))
 
 	return code
 }
@@ -62,7 +62,7 @@ func buildConstDecls() []jen.Code {
 	return lines
 }
 
-func buildBuildTestService(dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildBuildTestService(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := dbvendor.Singular()
 	dbfl := strings.ToLower(string([]byte(sn)[0]))
 
@@ -70,7 +70,7 @@ func buildBuildTestService(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(sn), jen.Qual("github.com/DATA-DOG/go-sqlmock", "Sqlmock")).Body(
 			jen.List(jen.ID("db"), jen.ID("mock"), jen.Err()).Assign().Qual("github.com/DATA-DOG/go-sqlmock", "New").Call(),
 			utils.RequireNoError(jen.Err(), nil),
-			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.True(), jen.ID("db"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID(dbfl).Assign().IDf("Provide%s", sn).Call(jen.True(), jen.ID("db"), jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			jen.Return().List(jen.ID(dbfl).Assert(jen.PointerTo().ID(sn)), jen.ID("mock")),
 		),
 		jen.Line(),
@@ -258,7 +258,7 @@ func buildTest_joinUint64s() jen.Code {
 	)
 }
 
-func buildTestProviderFunc(dbvendor wordsmith.SuperPalabra) jen.Code {
+func buildTestProviderFunc(proj *models.Project, dbvendor wordsmith.SuperPalabra) jen.Code {
 	sn := dbvendor.Singular()
 
 	var providerFuncName string
@@ -276,7 +276,7 @@ func buildTestProviderFunc(dbvendor wordsmith.SuperPalabra) jen.Code {
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("obligatory"), jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID(providerFuncName).Call(
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.EmptyString(),
 				),
 				utils.AssertNoError(jen.Err(), nil),

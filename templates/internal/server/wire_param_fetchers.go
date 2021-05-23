@@ -89,7 +89,7 @@ func buildProvideSomethingServiceUserIDFetcher(proj *models.Project, typ models.
 	lines := []jen.Code{
 		jen.Commentf("Provide%sServiceUserIDFetcher provides a UserIDFetcher.", pn),
 		jen.Line(),
-		jen.Func().IDf("Provide%sServiceUserIDFetcher", pn).Params().Params(jen.Qual(proj.ServiceV1Package(pkgN), "UserIDFetcher")).Body(
+		jen.Func().IDf("Provide%sServiceUserIDFetcher", pn).Params().Params(jen.Qual(proj.ServicePackage(pkgN), "UserIDFetcher")).Body(
 			jen.Return().ID("userIDFetcherFromRequestContext"),
 		),
 		jen.Line(),
@@ -106,7 +106,7 @@ func buildProvideSomethingServiceThingIDFetcher(proj *models.Project, typ models
 	lines := []jen.Code{
 		jen.Commentf("Provide%sService%sIDFetcher provides %s %sIDFetcher.", pn, ots, wordsmith.AOrAn(ots), ots),
 		jen.Line(),
-		jen.Func().IDf("Provide%sService%sIDFetcher", pn, ots).Params(constants.LoggerParam()).Params(jen.Qual(proj.ServiceV1Package(pkgN), fmt.Sprintf("%sIDFetcher", ots))).Body(
+		jen.Func().IDf("Provide%sService%sIDFetcher", pn, ots).Params(proj.LoggerParam()).Params(jen.Qual(proj.ServicePackage(pkgN), fmt.Sprintf("%sIDFetcher", ots))).Body(
 			jen.Return().IDf("buildRouteParam%sIDFetcher", ots).Call(jen.ID(constants.LoggerVarName)),
 		),
 		jen.Line(),
@@ -123,7 +123,7 @@ func buildProvideSomethingServiceOwnerTypeIDFetcher(proj *models.Project, typ mo
 	lines := []jen.Code{
 		jen.Commentf("Provide%sService%sIDFetcher provides %s %sIDFetcher.", pn, sn, wordsmith.AOrAn(sn), sn),
 		jen.Line(),
-		jen.Func().IDf("Provide%sService%sIDFetcher", pn, sn).Params(constants.LoggerParam()).Params(jen.Qual(proj.ServiceV1Package(pkgN), fmt.Sprintf("%sIDFetcher", sn))).Body(
+		jen.Func().IDf("Provide%sService%sIDFetcher", pn, sn).Params(proj.LoggerParam()).Params(jen.Qual(proj.ServicePackage(pkgN), fmt.Sprintf("%sIDFetcher", sn))).Body(
 			jen.Return().IDf("buildRouteParam%sIDFetcher", sn).Call(jen.ID(constants.LoggerVarName)),
 		),
 		jen.Line(),
@@ -136,7 +136,7 @@ func buildProvideUsersServiceUserIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideUsersServiceUserIDFetcher provides a UsernameFetcher."),
 		jen.Line(),
-		jen.Func().ID("ProvideUsersServiceUserIDFetcher").Params(constants.LoggerParam()).Params(jen.Qual(proj.ServiceUsersPackage(), "UserIDFetcher")).Body(
+		jen.Func().ID("ProvideUsersServiceUserIDFetcher").Params(proj.LoggerParam()).Params(jen.Qual(proj.ServiceUsersPackage(), "UserIDFetcher")).Body(
 			jen.Return().ID("buildRouteParamUserIDFetcher").Call(jen.ID(constants.LoggerVarName)),
 		),
 		jen.Line(),
@@ -162,7 +162,7 @@ func buildProvideWebhooksServiceWebhookIDFetcher(proj *models.Project) []jen.Cod
 	lines := []jen.Code{
 		jen.Comment("ProvideWebhooksServiceWebhookIDFetcher provides an WebhookIDFetcher."),
 		jen.Line(),
-		jen.Func().ID("ProvideWebhooksServiceWebhookIDFetcher").Params(constants.LoggerParam()).Params(jen.Qual(proj.ServiceWebhooksPackage(), "WebhookIDFetcher")).Body(
+		jen.Func().ID("ProvideWebhooksServiceWebhookIDFetcher").Params(proj.LoggerParam()).Params(jen.Qual(proj.ServiceWebhooksPackage(), "WebhookIDFetcher")).Body(
 			jen.Return().ID("buildRouteParamWebhookIDFetcher").Call(jen.ID(constants.LoggerVarName)),
 		),
 		jen.Line(),
@@ -175,7 +175,7 @@ func buildProvideOAuth2ClientsServiceClientIDFetcher(proj *models.Project) []jen
 	lines := []jen.Code{
 		jen.Comment("ProvideOAuth2ClientsServiceClientIDFetcher provides a ClientIDFetcher."),
 		jen.Line(),
-		jen.Func().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Params(constants.LoggerParam()).Params(jen.Qual(proj.ServiceOAuth2ClientsPackage(), "ClientIDFetcher")).Body(
+		jen.Func().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Params(proj.LoggerParam()).Params(jen.Qual(proj.ServiceOAuth2ClientsPackage(), "ClientIDFetcher")).Body(
 			jen.Return().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.ID(constants.LoggerVarName)),
 		),
 		jen.Line(),
@@ -204,7 +204,7 @@ func buildBuildRouteParamUserIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("buildRouteParamUserIDFetcher builds a function that fetches a Username from a request routed by chi."),
 		jen.Line(),
-		jen.Func().ID("buildRouteParamUserIDFetcher").Params(constants.LoggerParam()).Params(jen.Qual(proj.ServiceUsersPackage(), "UserIDFetcher")).Body(
+		jen.Func().ID("buildRouteParamUserIDFetcher").Params(proj.LoggerParam()).Params(jen.Qual(proj.ServiceUsersPackage(), "UserIDFetcher")).Body(
 			jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID(constants.RequestVarName), jen.Qual(proj.ServiceUsersPackage(), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
@@ -227,11 +227,11 @@ func buildBuildRouteParamSomethingIDFetcher(proj *models.Project, typ models.Dat
 	lines := []jen.Code{
 		jen.Commentf("buildRouteParam%sIDFetcher builds a function that fetches a %sID from a request routed by chi.", sn, sn),
 		jen.Line(),
-		jen.Func().IDf("buildRouteParam%sIDFetcher", sn).Params(constants.LoggerParam()).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Body(
+		jen.Func().IDf("buildRouteParam%sIDFetcher", sn).Params(proj.LoggerParam()).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Body(
 			jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 				jen.Comment("we can generally disregard this error only because we should be able to validate."),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
-				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID(constants.RequestVarName), jen.Qual(proj.ServiceV1Package(pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
+				jen.List(jen.ID("u"), jen.Err()).Assign().Qual("strconv", "ParseUint").Call(jen.Qual("github.com/go-chi/chi", "URLParam").Call(jen.ID(constants.RequestVarName), jen.Qual(proj.ServicePackage(pn), "URIParamKey")), jen.Lit(10), jen.Lit(64)),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("fetching %sID from request", sn)),
 				),
@@ -248,7 +248,7 @@ func buildBuildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("buildRouteParamWebhookIDFetcher fetches a WebhookID from a request routed by chi."),
 		jen.Line(),
-		jen.Func().ID("buildRouteParamWebhookIDFetcher").Params(constants.LoggerParam()).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Body(
+		jen.Func().ID("buildRouteParamWebhookIDFetcher").Params(proj.LoggerParam()).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Body(
 			jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 				jen.Comment("we can generally disregard this error only because we should be able to validate."),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),
@@ -269,7 +269,7 @@ func buildBuildRouteParamOAuth2ClientIDFetcher(proj *models.Project) []jen.Code 
 	lines := []jen.Code{
 		jen.Comment("buildRouteParamOAuth2ClientIDFetcher fetches a OAuth2ClientID from a request routed by chi."),
 		jen.Line(),
-		jen.Func().ID("buildRouteParamOAuth2ClientIDFetcher").Params(constants.LoggerParam()).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Body(
+		jen.Func().ID("buildRouteParamOAuth2ClientIDFetcher").Params(proj.LoggerParam()).Params(jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64())).Body(
 			jen.Return().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 				jen.Comment("we can generally disregard this error only because we should be able to validate."),
 				jen.Comment("that the string only contains numbers via chi's regex url param feature."),

@@ -40,7 +40,7 @@ package example
 import (
 	"context"
 	pflag "github.com/spf13/pflag"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
@@ -272,7 +272,7 @@ package example
 import (
 	"context"
 	pflag "github.com/spf13/pflag"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"

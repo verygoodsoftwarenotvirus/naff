@@ -863,7 +863,7 @@ type Item struct{
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1125,8 +1125,8 @@ type Item struct{
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1280,8 +1280,8 @@ type Item struct{
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1339,7 +1339,7 @@ type Item struct{
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1398,7 +1398,7 @@ type Item struct{
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1479,7 +1479,7 @@ type Item struct{
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})

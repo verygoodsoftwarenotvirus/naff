@@ -1,9 +1,8 @@
 package config
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -12,13 +11,13 @@ func metricsTestDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTestServerConfig_ProvideInstrumentationHandler()...)
-	code.Add(buildTestServerConfig_ProvideTracing()...)
+	code.Add(buildTestServerConfig_ProvideInstrumentationHandler(proj)...)
+	code.Add(buildTestServerConfig_ProvideTracing(proj)...)
 
 	return code
 }
 
-func buildTestServerConfig_ProvideInstrumentationHandler() []jen.Code {
+func buildTestServerConfig_ProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("TestServerConfig_ProvideInstrumentationHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -32,7 +31,7 @@ func buildTestServerConfig_ProvideInstrumentationHandler() []jen.Code {
 					),
 				),
 				jen.Line(),
-				utils.AssertNotNil(jen.ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
+				utils.AssertNotNil(jen.ID("c").Dot("ProvideInstrumentationHandler").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()), nil),
 			),
 		),
 		jen.Line(),
@@ -41,7 +40,7 @@ func buildTestServerConfig_ProvideInstrumentationHandler() []jen.Code {
 	return lines
 }
 
-func buildTestServerConfig_ProvideTracing() []jen.Code {
+func buildTestServerConfig_ProvideTracing(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("TestServerConfig_ProvideTracing").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -54,7 +53,7 @@ func buildTestServerConfig_ProvideTracing() []jen.Code {
 					),
 				),
 				jen.Line(),
-				utils.AssertNoError(jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()), nil),
+				utils.AssertNoError(jen.ID("c").Dot("ProvideTracing").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()), nil),
 			),
 		),
 		jen.Line(),

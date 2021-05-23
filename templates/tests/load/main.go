@@ -27,7 +27,7 @@ func buildMainServiceAttacker(proj *models.Project) []jen.Code {
 		jen.Comment("ServiceAttacker implements hazana's Attacker interface."),
 		jen.Line(),
 		jen.Type().ID("ServiceAttacker").Struct(
-			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientPackage(), "V1Client"),
 		),
 		jen.Line(),
 	}

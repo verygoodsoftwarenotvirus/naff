@@ -23,7 +23,6 @@ package example
 import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
@@ -35,7 +34,7 @@ import (
 
 func buildTestService() *Service {
 	return &Service{
-		logger:          noop.ProvideNoopLogger(),
+		logger:          logging.NewNonOperationalLogger(),
 		itemCounter:     &mock.UnitCounter{},
 		itemDataManager: &mock1.ItemDataManager{},
 		itemIDFetcher:   func(req *http.Request) uint64 { return 0 },
@@ -55,7 +54,7 @@ func TestProvideItemsService(T *testing.T) {
 		}
 
 		s, err := ProvideItemsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.ItemDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -75,7 +74,7 @@ func TestProvideItemsService(T *testing.T) {
 		}
 
 		s, err := ProvideItemsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.ItemDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -108,7 +107,6 @@ func Test_buildbuildTestServiceFuncDecl(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search/mock"
@@ -118,7 +116,7 @@ import (
 
 func buildTestService() *Service {
 	return &Service{
-		logger:          noop.ProvideNoopLogger(),
+		logger:          logging.NewNonOperationalLogger(),
 		itemCounter:     &mock.UnitCounter{},
 		itemDataManager: &mock1.ItemDataManager{},
 		itemIDFetcher:   func(req *http.Request) uint64 { return 0 },
@@ -145,7 +143,6 @@ func buildTestService() *Service {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
@@ -154,7 +151,7 @@ import (
 
 func buildTestService() *Service {
 	return &Service{
-		logger:                     noop.ProvideNoopLogger(),
+		logger:                     logging.NewNonOperationalLogger(),
 		yetAnotherThingCounter:     &mock.UnitCounter{},
 		thingDataManager:           &mock1.ThingDataManager{},
 		anotherThingDataManager:    &mock1.AnotherThingDataManager{},
@@ -187,7 +184,6 @@ package example
 import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
@@ -206,7 +202,7 @@ func TestProvideItemsService(T *testing.T) {
 		}
 
 		s, err := ProvideItemsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.ItemDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -226,7 +222,7 @@ func TestProvideItemsService(T *testing.T) {
 		}
 
 		s, err := ProvideItemsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.ItemDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -258,7 +254,6 @@ package example
 import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
@@ -276,7 +271,7 @@ func TestProvideYetAnotherThingsService(T *testing.T) {
 		}
 
 		s, err := ProvideYetAnotherThingsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.ThingDataManager{},
 			&mock1.AnotherThingDataManager{},
 			&mock1.YetAnotherThingDataManager{},
@@ -298,7 +293,7 @@ func TestProvideYetAnotherThingsService(T *testing.T) {
 		}
 
 		s, err := ProvideYetAnotherThingsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.ThingDataManager{},
 			&mock1.AnotherThingDataManager{},
 			&mock1.YetAnotherThingDataManager{},

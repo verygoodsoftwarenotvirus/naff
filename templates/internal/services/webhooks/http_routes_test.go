@@ -21,7 +21,7 @@ package example
 import (
 	"database/sql"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
@@ -369,7 +369,7 @@ func Test_buildWebhookHTTPRoutesCreateHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
@@ -448,7 +448,7 @@ package example
 
 import (
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -504,7 +504,7 @@ package example
 
 import (
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -561,7 +561,7 @@ package example
 
 import (
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
@@ -645,7 +645,7 @@ package example
 
 import (
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"

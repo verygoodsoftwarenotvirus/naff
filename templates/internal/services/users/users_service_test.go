@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
@@ -60,7 +60,7 @@ type (
 	Service struct {
 		cookieSecret        []byte
 		userDataManager     v1.UserDataManager
-		authenticator       auth.Authenticator
+		authenticator       authentication.Authenticator
 		logger              v11.Logger
 		encoderDecoder      encoding.EncoderDecoder
 		userIDFetcher       UserIDFetcher
@@ -76,7 +76,7 @@ func ProvideUsersService(
 	authSettings config.AuthSettings,
 	logger v11.Logger,
 	userDataManager v1.UserDataManager,
-	authenticator auth.Authenticator,
+	authenticator authentication.Authenticator,
 	userIDFetcher UserIDFetcher,
 	encoder encoding.EncoderDecoder,
 	counterProvider metrics.UnitCounterProvider,
@@ -176,7 +176,7 @@ package example
 
 import (
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -202,7 +202,7 @@ type (
 	Service struct {
 		cookieSecret        []byte
 		userDataManager     v1.UserDataManager
-		authenticator       auth.Authenticator
+		authenticator       authentication.Authenticator
 		logger              v11.Logger
 		encoderDecoder      encoding.EncoderDecoder
 		userIDFetcher       UserIDFetcher
@@ -233,7 +233,7 @@ import (
 	"errors"
 	"fmt"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
@@ -246,7 +246,7 @@ func ProvideUsersService(
 	authSettings config.AuthSettings,
 	logger v1.Logger,
 	userDataManager v11.UserDataManager,
-	authenticator auth.Authenticator,
+	authenticator authentication.Authenticator,
 	userIDFetcher UserIDFetcher,
 	encoder encoding.EncoderDecoder,
 	counterProvider metrics.UnitCounterProvider,

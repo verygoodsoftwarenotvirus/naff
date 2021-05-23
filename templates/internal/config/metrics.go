@@ -16,7 +16,7 @@ func metricsDotGo(proj *models.Project) *jen.File {
 	code.Add(buildMetricsTypeDeclarations()...)
 	code.Add(buildMetricsVarDeclarations()...)
 	code.Add(buildProvideInstrumentationHandler(proj)...)
-	code.Add(buildProvideTracing()...)
+	code.Add(buildProvideTracing(proj)...)
 
 	return code
 }
@@ -78,7 +78,7 @@ func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideInstrumentationHandler provides an instrumentation handler."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideInstrumentationHandler").Params(
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 		).Params(
 			jen.Qual(proj.InternalMetricsPackage(), "InstrumentationHandler"),
 		).Body(
@@ -125,13 +125,11 @@ func buildProvideInstrumentationHandler(proj *models.Project) []jen.Code {
 	return lines
 }
 
-func buildProvideTracing() []jen.Code {
+func buildProvideTracing(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideTracing provides an instrumentation handler."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(
-			constants.LoggerParam(),
-		).Params(jen.Error()).Body(
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideTracing").Params(proj.LoggerParam()).Params(jen.Error()).Body(
 			jen.Qual("go.opencensus.io/trace", "ApplyConfig").Call(jen.Qual("go.opencensus.io/trace", "Config").Values(jen.ID("DefaultSampler").MapAssign().Qual("go.opencensus.io/trace", "ProbabilitySampler").Call(jen.One()))),
 			jen.Line(),
 			jen.ID("log").Assign().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("tracing_provider"), jen.ID("cfg").Dot("Metrics").Dot("TracingProvider")),

@@ -40,7 +40,7 @@ func buildClientDeclaration(proj *models.Project) []jen.Code {
 		jen.Comment("the actual database querying is performed."),
 		jen.Line(),
 		jen.Type().ID("Client").Struct(jen.ID("db").PointerTo().Qual("database/sql", "DB"), jen.ID("querier").Qual(proj.DatabasePackage(), "DataManager"),
-			jen.ID("debug").Bool(), constants.LoggerParam()),
+			jen.ID("debug").Bool(), proj.LoggerParam()),
 		jen.Line(),
 	}
 
@@ -90,7 +90,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 			jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 			jen.ID("querier").Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("debug").Bool(),
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 		).Params(jen.Qual(proj.DatabasePackage(), "DataManager"), jen.Error()).Body(
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
 				jen.ID("db").MapAssign().ID("db"),

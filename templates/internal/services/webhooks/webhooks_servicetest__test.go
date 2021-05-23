@@ -21,7 +21,6 @@ package example
 import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
@@ -33,7 +32,7 @@ import (
 
 func buildTestService() *Service {
 	return &Service{
-		logger:             noop.ProvideNoopLogger(),
+		logger:             logging.NewNonOperationalLogger(),
 		webhookCounter:     &mock.UnitCounter{},
 		webhookDataManager: &mock1.WebhookDataManager{},
 		userIDFetcher:      func(req *http.Request) uint64 { return 0 },
@@ -52,7 +51,7 @@ func TestProvideWebhooksService(T *testing.T) {
 		}
 
 		actual, err := ProvideWebhooksService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.WebhookDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -71,7 +70,7 @@ func TestProvideWebhooksService(T *testing.T) {
 		}
 
 		actual, err := ProvideWebhooksService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.WebhookDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -102,7 +101,6 @@ func Test_buildBuildTestService(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
@@ -112,7 +110,7 @@ import (
 
 func buildTestService() *Service {
 	return &Service{
-		logger:             noop.ProvideNoopLogger(),
+		logger:             logging.NewNonOperationalLogger(),
 		webhookCounter:     &mock.UnitCounter{},
 		webhookDataManager: &mock1.WebhookDataManager{},
 		userIDFetcher:      func(req *http.Request) uint64 { return 0 },
@@ -141,7 +139,6 @@ package example
 import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
@@ -160,7 +157,7 @@ func TestProvideWebhooksService(T *testing.T) {
 		}
 
 		actual, err := ProvideWebhooksService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.WebhookDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },
@@ -179,7 +176,7 @@ func TestProvideWebhooksService(T *testing.T) {
 		}
 
 		actual, err := ProvideWebhooksService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.WebhookDataManager{},
 			func(req *http.Request) uint64 { return 0 },
 			func(req *http.Request) uint64 { return 0 },

@@ -21,7 +21,7 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
@@ -271,7 +271,7 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"

@@ -26,9 +26,8 @@ import (
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
@@ -161,7 +160,7 @@ func TestItems(test *testing.T) {
 				ca.ClientID,
 				ca.ClientSecret,
 				todoClient.URL,
-				noop.ProvideNoopLogger(),
+				logging.NewNonOperationalLogger(),
 				buildHTTPClient(),
 				ca.Scopes,
 				true,
@@ -197,7 +196,7 @@ func TestItems(test *testing.T) {
 				cb.ClientID,
 				cb.ClientSecret,
 				todoClient.URL,
-				noop.ProvideNoopLogger(),
+				logging.NewNonOperationalLogger(),
 				buildHTTPClient(),
 				cb.Scopes,
 				true,
@@ -542,9 +541,8 @@ import (
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
@@ -668,7 +666,7 @@ func TestItems(test *testing.T) {
 				ca.ClientID,
 				ca.ClientSecret,
 				todoClient.URL,
-				noop.ProvideNoopLogger(),
+				logging.NewNonOperationalLogger(),
 				buildHTTPClient(),
 				ca.Scopes,
 				true,
@@ -704,7 +702,7 @@ func TestItems(test *testing.T) {
 				cb.ClientID,
 				cb.ClientSecret,
 				todoClient.URL,
-				noop.ProvideNoopLogger(),
+				logging.NewNonOperationalLogger(),
 				buildHTTPClient(),
 				cb.Scopes,
 				true,
@@ -896,7 +894,7 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
@@ -1494,7 +1492,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
@@ -1559,7 +1557,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
@@ -1612,7 +1610,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
@@ -1669,7 +1667,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
@@ -1749,7 +1747,7 @@ import (
 	"context"
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
@@ -1815,7 +1813,7 @@ import (
 	"context"
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
@@ -1899,9 +1897,8 @@ import (
 	"fmt"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
@@ -1923,7 +1920,7 @@ func main() {
 		ca.ClientID,
 		ca.ClientSecret,
 		todoClient.URL,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		buildHTTPClient(),
 		ca.Scopes,
 		true,
@@ -1959,7 +1956,7 @@ func main() {
 		cb.ClientID,
 		cb.ClientSecret,
 		todoClient.URL,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		buildHTTPClient(),
 		cb.Scopes,
 		true,
@@ -2026,7 +2023,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 func main() {
@@ -2059,7 +2056,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
@@ -2102,7 +2099,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 func main() {
@@ -2134,7 +2131,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
@@ -2363,7 +2360,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
@@ -2470,7 +2467,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
@@ -2536,7 +2533,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
@@ -2587,7 +2584,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
@@ -2715,7 +2712,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
@@ -2815,7 +2812,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"testing"
 )
@@ -2865,7 +2862,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 )
 
@@ -2903,7 +2900,7 @@ package main
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 func main() {

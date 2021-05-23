@@ -18,16 +18,16 @@ func wireParamFetchersTestDotGo(proj *models.Project) *jen.File {
 		}
 
 		for _, ot := range proj.FindOwnerTypeChain(typ) {
-			code.Add(buildTestProvideSomethingServiceOwnerTypeIDFetcher(typ, ot)...)
+			code.Add(buildTestProvideSomethingServiceOwnerTypeIDFetcher(proj, typ, ot)...)
 		}
 
-		code.Add(buildTestProvideSomethingServiceSomethingIDFetcher(typ)...)
+		code.Add(buildTestProvideSomethingServiceSomethingIDFetcher(proj, typ)...)
 	}
 
-	code.Add(buildTestProvideUsersServiceUserIDFetcher()...)
+	code.Add(buildTestProvideUsersServiceUserIDFetcher(proj)...)
 	code.Add(buildTestProvideWebhooksServiceUserIDFetcher()...)
-	code.Add(buildTestProvideWebhooksServiceWebhookIDFetcher()...)
-	code.Add(buildTestProvideOAuth2ClientsServiceClientIDFetcher()...)
+	code.Add(buildTestProvideWebhooksServiceWebhookIDFetcher(proj)...)
+	code.Add(buildTestProvideOAuth2ClientsServiceClientIDFetcher(proj)...)
 	code.Add(buildTest_userIDFetcherFromRequestContext(proj)...)
 	code.Add(buildTest_buildRouteParamUserIDFetcher(proj)...)
 
@@ -59,7 +59,7 @@ func buildTestProvideSomethingServiceUserIDFetcher(typ models.DataType) []jen.Co
 	return lines
 }
 
-func buildTestProvideSomethingServiceSomethingIDFetcher(typ models.DataType) []jen.Code {
+func buildTestProvideSomethingServiceSomethingIDFetcher(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 
 	lines := []jen.Code{
@@ -68,7 +68,7 @@ func buildTestProvideSomethingServiceSomethingIDFetcher(typ models.DataType) []j
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), n.Singular()).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), n.Singular()).Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -77,7 +77,7 @@ func buildTestProvideSomethingServiceSomethingIDFetcher(typ models.DataType) []j
 	return lines
 }
 
-func buildTestProvideSomethingServiceOwnerTypeIDFetcher(typ models.DataType, ot models.DataType) []jen.Code {
+func buildTestProvideSomethingServiceOwnerTypeIDFetcher(proj *models.Project, typ models.DataType, ot models.DataType) []jen.Code {
 	n := typ.Name
 
 	lines := []jen.Code{
@@ -86,7 +86,7 @@ func buildTestProvideSomethingServiceOwnerTypeIDFetcher(typ models.DataType, ot 
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().IDf("Provide%sService%sIDFetcher", n.Plural(), ot.Name.Singular()).Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -95,14 +95,14 @@ func buildTestProvideSomethingServiceOwnerTypeIDFetcher(typ models.DataType, ot 
 	return lines
 }
 
-func buildTestProvideUsersServiceUserIDFetcher() []jen.Code {
+func buildTestProvideUsersServiceUserIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("TestProvideUsersServiceUserIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().ID("ProvideUsersServiceUserIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideUsersServiceUserIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -127,14 +127,14 @@ func buildTestProvideWebhooksServiceUserIDFetcher() []jen.Code {
 	return lines
 }
 
-func buildTestProvideWebhooksServiceWebhookIDFetcher() []jen.Code {
+func buildTestProvideWebhooksServiceWebhookIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("TestProvideWebhooksServiceWebhookIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().ID("ProvideWebhooksServiceWebhookIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideWebhooksServiceWebhookIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -143,14 +143,14 @@ func buildTestProvideWebhooksServiceWebhookIDFetcher() []jen.Code {
 	return lines
 }
 
-func buildTestProvideOAuth2ClientsServiceClientIDFetcher() []jen.Code {
+func buildTestProvideOAuth2ClientsServiceClientIDFetcher(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("TestProvideOAuth2ClientsServiceClientIDFetcher").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.Underscore().Equals().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.Underscore().Equals().ID("ProvideOAuth2ClientsServiceClientIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -203,7 +203,7 @@ func buildTest_buildRouteParamUserIDFetcher(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -227,7 +227,7 @@ func buildTest_buildRouteParamUserIDFetcher(proj *models.Project) []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamUserIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -264,7 +264,7 @@ func buildTest_buildRouteParamSomethingIDFetcher(proj *models.Project, typ model
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", sn).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", sn).Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -274,7 +274,7 @@ func buildTest_buildRouteParamSomethingIDFetcher(proj *models.Project, typ model
 						jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServicePackage(n.PackageName()), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(utils.FormatString("%d", jen.ID("expected"))),
 							),
 						),
@@ -288,7 +288,7 @@ func buildTest_buildRouteParamSomethingIDFetcher(proj *models.Project, typ model
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", sn).Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().IDf("buildRouteParam%sIDFetcher", sn).Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -297,7 +297,7 @@ func buildTest_buildRouteParamSomethingIDFetcher(proj *models.Project, typ model
 						jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Qual("github.com/go-chi/chi", "RouteCtxKey"),
 						jen.AddressOf().Qual("github.com/go-chi/chi", "Context").Valuesln(
 							jen.ID("URLParams").MapAssign().Qual("github.com/go-chi/chi", "RouteParams").Valuesln(
-								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServiceV1Package(n.PackageName()), "URIParamKey")),
+								jen.ID("Keys").MapAssign().Index().String().Values(jen.Qual(proj.ServicePackage(n.PackageName()), "URIParamKey")),
 								jen.ID("Values").MapAssign().Index().String().Values(jen.Lit("expected")),
 							),
 						),
@@ -321,7 +321,7 @@ func buildTest_buildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code 
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -345,7 +345,7 @@ func buildTest_buildRouteParamWebhookIDFetcher(proj *models.Project) []jen.Code 
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamWebhookIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -379,7 +379,7 @@ func buildTest_buildRouteParamOAuth2ClientIDFetcher(proj *models.Project) []jen.
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Lit(123)),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),
@@ -402,7 +402,7 @@ func buildTest_buildRouteParamOAuth2ClientIDFetcher(proj *models.Project) []jen.
 			utils.BuildSubTestWithoutContext(
 				"with invalid value somehow",
 				jen.Comment("NOTE: This will probably never happen in dev or production"),
-				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("fn").Assign().ID("buildRouteParamOAuth2ClientIDFetcher").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("expected").Assign().Uint64().Call(jen.Zero()),
 				jen.Line(),
 				jen.ID(constants.RequestVarName).Assign().ID("buildRequest").Call(jen.ID("t")),

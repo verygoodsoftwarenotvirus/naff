@@ -116,7 +116,7 @@ func buildRandomAction(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("RandomAction takes a client and returns a closure which is an action."),
 		jen.Line(),
-		jen.Func().ID("RandomAction").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().ID("Action")).Body(
+		jen.Func().ID("RandomAction").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientPackage(), "V1Client")).Params(jen.PointerTo().ID("Action")).Body(
 			randomActionLines...,
 		),
 		jen.Line(),

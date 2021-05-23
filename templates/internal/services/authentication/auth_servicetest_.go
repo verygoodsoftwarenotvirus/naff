@@ -25,7 +25,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 		jen.Func().ID("buildTestService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID(constants.LoggerVarName).Assign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 			jen.ID("cfg").Assign().Qual(proj.InternalConfigPackage(), "AuthSettings").Valuesln(
 				jen.ID("CookieSecret").MapAssign().Lit("BLAHBLAHBLAHPRETENDTHISISSECRET!"),
 			),
@@ -74,7 +74,7 @@ func buildTestProvideAuthService(proj *models.Project) []jen.Code {
 				jen.ID("sm").Assign().Qual(constants.SessionManagerLibrary, "New").Call(),
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideAuthService").Callln(
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.ID("cfg"),
 					jen.ID("auth"),
 					jen.ID("userDB"),

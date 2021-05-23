@@ -24,8 +24,8 @@ import (
 	"errors"
 	"fmt"
 	securecookie "github.com/gorilla/securecookie"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 	"time"
@@ -333,7 +333,7 @@ func (s *Service) validateLogin(ctx context.Context, loginInfo loginData) (bool,
 	)
 
 	// if the login is otherwise valid, but the password is too weak, try to rehash it.
-	if err == auth.ErrCostTooLow && loginValid {
+	if err == authentication.ErrCostTooLow && loginValid {
 		logger.Debug("hashed password was deemed to weak, updating its hash")
 
 		// re-hash the password
@@ -349,7 +349,7 @@ func (s *Service) validateLogin(ctx context.Context, loginInfo loginData) (bool,
 		}
 
 		return loginValid, nil
-	} else if err != nil && err != auth.ErrCostTooLow {
+	} else if err != nil && err != authentication.ErrCostTooLow {
 		logger.Error(err, "issue validating login")
 		return false, fmt.Errorf("validating login: %w", err)
 	}
@@ -426,7 +426,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -484,7 +484,7 @@ func Test_buildWebsocketAuthFunction(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -533,7 +533,7 @@ package example
 import (
 	"context"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -574,7 +574,7 @@ func Test_buildLoginHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -663,7 +663,7 @@ func Test_buildLogoutHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 	"time"
 )
@@ -721,7 +721,7 @@ func Test_buildStatusHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -771,7 +771,7 @@ package example
 
 import (
 	securecookie "github.com/gorilla/securecookie"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -809,7 +809,7 @@ package example
 
 import (
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -873,8 +873,8 @@ package example
 import (
 	"context"
 	"fmt"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 // validateLogin takes login information and returns whether or not the login is valid.
@@ -898,7 +898,7 @@ func (s *Service) validateLogin(ctx context.Context, loginInfo loginData) (bool,
 	)
 
 	// if the login is otherwise valid, but the password is too weak, try to rehash it.
-	if err == auth.ErrCostTooLow && loginValid {
+	if err == authentication.ErrCostTooLow && loginValid {
 		logger.Debug("hashed password was deemed to weak, updating its hash")
 
 		// re-hash the password
@@ -914,7 +914,7 @@ func (s *Service) validateLogin(ctx context.Context, loginInfo loginData) (bool,
 		}
 
 		return loginValid, nil
-	} else if err != nil && err != auth.ErrCostTooLow {
+	} else if err != nil && err != authentication.ErrCostTooLow {
 		logger.Error(err, "issue validating login")
 		return false, fmt.Errorf("validating login: %w", err)
 	}

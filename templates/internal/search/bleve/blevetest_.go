@@ -54,7 +54,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				jen.Line(),
@@ -69,7 +69,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertError(jen.Err(), nil),
 			),
@@ -82,7 +82,7 @@ func buildTestNewBleveIndexManager(proj *models.Project) []jen.Code {
 				jen.List(jen.Underscore(), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.Lit("invalid"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertError(jen.Err(), nil),
 			),
@@ -108,7 +108,7 @@ func buildTestBleveIndexManager_Index(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("im"), nil),
@@ -151,7 +151,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("im"), nil),
@@ -189,7 +189,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("im"), nil),
@@ -214,7 +214,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("im"), nil),
@@ -258,7 +258,7 @@ func buildTestBleveIndexManager_Search(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("im"), nil),
@@ -308,7 +308,7 @@ func buildTestBleveIndexManager_Delete(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("im"), jen.Err()).Assign().ID("NewBleveIndexManager").Call(
 					jen.ID("exampleIndexPath"),
 					jen.ID("testingSearchIndexName"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNoError(jen.Err(), nil),
 				utils.RequireNotNil(jen.ID("im"), nil),

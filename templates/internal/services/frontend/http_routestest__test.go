@@ -21,7 +21,6 @@ package example
 import (
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	"net/http"
 	"os"
@@ -46,7 +45,7 @@ func TestService_StaticDir(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
+		s := &Service{logger: logging.NewNonOperationalLogger()}
 
 		cwd, err := os.Getwd()
 		require.NoError(t, err)
@@ -63,7 +62,7 @@ func TestService_StaticDir(T *testing.T) {
 	})
 
 	T.Run("with frontend routing path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
+		s := &Service{logger: logging.NewNonOperationalLogger()}
 		exampleDir := "."
 
 		hf, err := s.StaticDir(exampleDir)
@@ -78,7 +77,7 @@ func TestService_StaticDir(T *testing.T) {
 	})
 
 	T.Run("with frontend items routing path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
+		s := &Service{logger: logging.NewNonOperationalLogger()}
 		exampleDir := "."
 
 		hf, err := s.StaticDir(exampleDir)
@@ -166,7 +165,6 @@ package example
 import (
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"os"
 	"testing"
@@ -176,7 +174,7 @@ func TestService_StaticDir(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
+		s := &Service{logger: logging.NewNonOperationalLogger()}
 
 		cwd, err := os.Getwd()
 		require.NoError(t, err)
@@ -193,7 +191,7 @@ func TestService_StaticDir(T *testing.T) {
 	})
 
 	T.Run("with frontend routing path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
+		s := &Service{logger: logging.NewNonOperationalLogger()}
 		exampleDir := "."
 
 		hf, err := s.StaticDir(exampleDir)
@@ -208,7 +206,7 @@ func TestService_StaticDir(T *testing.T) {
 	})
 
 	T.Run("with frontend items routing path", func(t *testing.T) {
-		s := &Service{logger: noop.ProvideNoopLogger()}
+		s := &Service{logger: logging.NewNonOperationalLogger()}
 		exampleDir := "."
 
 		hf, err := s.StaticDir(exampleDir)

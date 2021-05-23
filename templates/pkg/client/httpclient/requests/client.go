@@ -19,13 +19,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildClientConstDecls()...)
 	code.Add(buildClientVarDecls()...)
-	code.Add(buildClientTypeDecls()...)
+	code.Add(buildClientTypeDecls(proj)...)
 	code.Add(buildAuthenticatedClient()...)
 	code.Add(buildPlainClient()...)
 	code.Add(buildTokenSource()...)
 	code.Add(buildTokenEndpoint()...)
-	code.Add(buildNewClient()...)
-	code.Add(buildNewSimpleClient()...)
+	code.Add(buildNewClient(proj)...)
+	code.Add(buildNewSimpleClient(proj)...)
 	code.Add(buildBuildOAuthClient()...)
 	code.Add(buildCloseResponseBody()...)
 	code.Add(buildExportedBuildURL()...)
@@ -71,14 +71,14 @@ func buildClientVarDecls() []jen.Code {
 	}
 }
 
-func buildClientTypeDecls() []jen.Code {
+func buildClientTypeDecls(proj *models.Project) []jen.Code {
 	return []jen.Code{
 		jen.Commentf("%s is a client for interacting with v1 of our HTTP API.", v1),
 		jen.Line(),
 		jen.Type().ID(v1).Struct(
 			jen.ID("plainClient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("authedClient").PointerTo().Qual("net/http", "Client"),
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("Debug").Bool(),
 			jen.ID("URL").PointerTo().Qual("net/url", "URL"),
 			jen.ID("Scopes").Index().String(),
@@ -127,7 +127,7 @@ func buildTokenSource() []jen.Code {
 	return lines
 }
 
-func buildNewClient() []jen.Code {
+func buildNewClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("NewClient builds a new API client for us."),
 		jen.Line(),
@@ -138,7 +138,7 @@ func buildNewClient() []jen.Code {
 				jen.ID("clientSecret"),
 			).String(),
 			jen.ID("address").PointerTo().Qual("net/url", "URL"),
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("hclient").PointerTo().Qual("net/http", "Client"),
 			jen.ID("scopes").Index().String(),
 			jen.ID("debug").Bool(),
@@ -158,7 +158,7 @@ func buildNewClient() []jen.Code {
 			jen.Line(),
 			jen.If(jen.ID("debug")).Body(
 				jen.ID(constants.LoggerVarName).Dot("SetLevel").Call(
-					jen.Qual(constants.LoggingPkg, "DebugLevel"),
+					jen.Qual(proj.InternalLoggingPackage(), "DebugLevel"),
 				),
 				jen.ID(constants.LoggerVarName).Dot("Debug").Call(
 					jen.Lit("log level set to debug!"),
@@ -286,7 +286,7 @@ func buildTokenEndpoint() []jen.Code {
 	return lines
 }
 
-func buildNewSimpleClient() []jen.Code {
+func buildNewSimpleClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("NewSimpleClient is a client that is capable of much less than the normal client"),
 		jen.Line(),
@@ -309,7 +309,7 @@ func buildNewSimpleClient() []jen.Code {
 				jen.EmptyString(),
 				jen.EmptyString(),
 				jen.ID("address"),
-				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				jen.AddressOf().Qual("net/http", "Client").Values(
 					jen.ID("Timeout").MapAssign().Lit(5).Times().Qual("time", "Second"),
 				),

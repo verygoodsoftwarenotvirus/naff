@@ -49,7 +49,7 @@ type (
 		DebugMode bool
 
 		// Services.
-		authService          *auth.Service
+		authService          *authentication.Service
 		frontendService      *frontend.Service
 		usersService         v1.UserDataServer
 		oauth2ClientsService v1.OAuth2ClientDataServer
@@ -71,7 +71,7 @@ type (
 func ProvideServer(
 	ctx context.Context,
 	cfg *config.ServerConfig,
-	authService *auth.Service,
+	authService *authentication.Service,
 	frontendService *frontend.Service,
 	itemsService v1.ItemDataServer,
 	usersService v1.UserDataServer,
@@ -253,7 +253,7 @@ type (
 		DebugMode bool
 
 		// Services.
-		authService          *auth.Service
+		authService          *authentication.Service
 		frontendService      *frontend.Service
 		usersService         v1.UserDataServer
 		oauth2ClientsService v1.OAuth2ClientDataServer
@@ -306,7 +306,7 @@ import (
 func ProvideServer(
 	ctx context.Context,
 	cfg *config.ServerConfig,
-	authService *auth.Service,
+	authService *authentication.Service,
 	frontendService *frontend.Service,
 	itemsService v1.ItemDataServer,
 	usersService v1.UserDataServer,

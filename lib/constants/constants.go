@@ -58,11 +58,6 @@ func CtxParam() jen.Code {
 	return CtxVar().Qual("context", "Context")
 }
 
-// LoggerParam is a shorthand for a context param
-func LoggerParam() jen.Code {
-	return jen.ID(LoggerVarName).Qual(LoggingPkg, "Logger")
-}
-
 // UserIDVar is a shorthand for a context param
 func UserIDVar() *jen.Statement {
 	return jen.ID(UserIDVarName)

@@ -34,7 +34,7 @@ func buildFrontendTypeDefs(proj *models.Project) []jen.Code {
 		jen.Type().Defs(
 			jen.Comment("Service is responsible for serving HTML (and other static resources)"),
 			jen.ID("Service").Struct(
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 				jen.ID("config").Qual(proj.InternalConfigPackage(), "FrontendSettings"),
 			),
 		),
@@ -48,7 +48,7 @@ func buildProvideFrontendService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ProvideFrontendService provides the frontend service to dependency injection."),
 		jen.Line(),
-		jen.Func().ID("ProvideFrontendService").Params(constants.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigPackage(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Body(
+		jen.Func().ID("ProvideFrontendService").Params(proj.LoggerParam(), jen.ID("cfg").Qual(proj.InternalConfigPackage(), "FrontendSettings")).Params(jen.PointerTo().ID("Service")).Body(
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(
 				jen.ID("config").MapAssign().ID("cfg"),
 				jen.ID(constants.LoggerVarName).MapAssign().ID(constants.LoggerVarName).Dot("WithName").Call(jen.ID("serviceName")),

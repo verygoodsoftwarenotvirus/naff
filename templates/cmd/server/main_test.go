@@ -22,9 +22,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"os"
 )
 
@@ -98,9 +98,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"os"
 )
 

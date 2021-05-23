@@ -23,7 +23,7 @@ import (
 	"errors"
 	totp "github.com/pquerna/otp/totp"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	bcrypt "golang.org/x/crypto/bcrypt"
 	"math"
 )
@@ -267,7 +267,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	bcrypt "golang.org/x/crypto/bcrypt"
 )
 
@@ -299,7 +299,7 @@ package example
 import (
 	"context"
 	totp "github.com/pquerna/otp/totp"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 // ValidateLogin validates a login attempt by:
@@ -358,7 +358,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	bcrypt "golang.org/x/crypto/bcrypt"
 )
 
@@ -388,7 +388,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	bcrypt "golang.org/x/crypto/bcrypt"
 )
 

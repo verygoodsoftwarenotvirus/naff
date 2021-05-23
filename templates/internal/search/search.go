@@ -12,12 +12,12 @@ func searchDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTypeDefs()...)
+	code.Add(buildTypeDefs(proj)...)
 
 	return code
 }
 
-func buildTypeDefs() []jen.Code {
+func buildTypeDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.Comment("IndexPath is a type alias for dependency injection's sake"),
@@ -48,7 +48,7 @@ func buildTypeDefs() []jen.Code {
 			jen.ID("IndexManagerProvider").Func().Params(
 				jen.ID("path").ID("IndexPath"),
 				jen.ID("name").ID("IndexName"),
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 			).Params(jen.ID("IndexManager"), jen.Error()),
 		),
 		jen.Line(),

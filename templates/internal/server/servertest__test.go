@@ -23,7 +23,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock2 "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
@@ -47,14 +46,14 @@ func buildTestServer() *Server {
 		config:     &config.ServerConfig{},
 		encoder:    &mock.EncoderDecoder{},
 		httpServer: provideHTTPServer(),
-		logger:     noop.ProvideNoopLogger(),
+		logger:     logging.NewNonOperationalLogger(),
 		frontendService: frontend.ProvideFrontendService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			config.FrontendSettings{},
 		),
 		webhooksService:      &mock1.WebhookDataServer{},
 		usersService:         &mock1.UserDataServer{},
-		authService:          &auth.Service{},
+		authService:          &authentication.Service{},
 		itemsService:         &mock1.ItemDataServer{},
 		oauth2ClientsService: &mock1.OAuth2ClientDataServer{},
 	}
@@ -80,14 +79,14 @@ func TestProvideServer(T *testing.T) {
 					CookieSecret: "THISISAVERYLONGSTRINGFORTESTPURPOSES",
 				},
 			},
-			&auth.Service{},
+			&authentication.Service{},
 			&frontend.Service{},
 			&items.Service{},
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},
 			mockDB,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock.EncoderDecoder{},
 			newsman.NewNewsman(nil, nil),
 		)
@@ -113,14 +112,14 @@ func TestProvideServer(T *testing.T) {
 					CookieSecret: "THISSTRINGISNTLONGENOUGH:(",
 				},
 			},
-			&auth.Service{},
+			&authentication.Service{},
 			&frontend.Service{},
 			&items.Service{},
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},
 			mockDB,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock.EncoderDecoder{},
 			newsman.NewNewsman(nil, nil),
 		)
@@ -144,14 +143,14 @@ func TestProvideServer(T *testing.T) {
 					CookieSecret: "THISISAVERYLONGSTRINGFORTESTPURPOSES",
 				},
 			},
-			&auth.Service{},
+			&authentication.Service{},
 			&frontend.Service{},
 			&items.Service{},
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},
 			mockDB,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock.EncoderDecoder{},
 			newsman.NewNewsman(nil, nil),
 		)
@@ -181,7 +180,6 @@ func Test_buildProvideServerArgs(T *testing.T) {
 package main
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/auth"
@@ -201,14 +199,14 @@ func main() {
 				CookieSecret: "COOKIE_SECRET",
 			},
 		},
-		&auth.Service{},
+		&authentication.Service{},
 		&frontend.Service{},
 		&items.Service{},
 		&users.Service{},
 		&oauth2clients.Service{},
 		&webhooks.Service{},
 		mockDB,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		&mock.EncoderDecoder{},
 		newsman.NewNewsman(nil, nil),
 	)
@@ -231,7 +229,6 @@ func Test_buildBuildTestServer(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
@@ -247,14 +244,14 @@ func buildTestServer() *Server {
 		config:     &config.ServerConfig{},
 		encoder:    &mock.EncoderDecoder{},
 		httpServer: provideHTTPServer(),
-		logger:     noop.ProvideNoopLogger(),
+		logger:     logging.NewNonOperationalLogger(),
 		frontendService: frontend.ProvideFrontendService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			config.FrontendSettings{},
 		),
 		webhooksService:      &mock1.WebhookDataServer{},
 		usersService:         &mock1.UserDataServer{},
-		authService:          &auth.Service{},
+		authService:          &authentication.Service{},
 		itemsService:         &mock1.ItemDataServer{},
 		oauth2ClientsService: &mock1.OAuth2ClientDataServer{},
 	}
@@ -283,7 +280,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
@@ -317,14 +313,14 @@ func TestProvideServer(T *testing.T) {
 					CookieSecret: "THISISAVERYLONGSTRINGFORTESTPURPOSES",
 				},
 			},
-			&auth.Service{},
+			&authentication.Service{},
 			&frontend.Service{},
 			&items.Service{},
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},
 			mockDB,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.EncoderDecoder{},
 			newsman.NewNewsman(nil, nil),
 		)
@@ -350,14 +346,14 @@ func TestProvideServer(T *testing.T) {
 					CookieSecret: "THISSTRINGISNTLONGENOUGH:(",
 				},
 			},
-			&auth.Service{},
+			&authentication.Service{},
 			&frontend.Service{},
 			&items.Service{},
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},
 			mockDB,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.EncoderDecoder{},
 			newsman.NewNewsman(nil, nil),
 		)
@@ -381,14 +377,14 @@ func TestProvideServer(T *testing.T) {
 					CookieSecret: "THISISAVERYLONGSTRINGFORTESTPURPOSES",
 				},
 			},
-			&auth.Service{},
+			&authentication.Service{},
 			&frontend.Service{},
 			&items.Service{},
 			&users.Service{},
 			&oauth2clients.Service{},
 			&webhooks.Service{},
 			mockDB,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&mock1.EncoderDecoder{},
 			newsman.NewNewsman(nil, nil),
 		)

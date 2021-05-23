@@ -13,6 +13,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/deploy"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/audit"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/authentication"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/config"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/database"
@@ -66,6 +67,7 @@ func RenderProject(proj *naffmodels.Project) {
 		"metrics":             metrics.RenderPackage,
 		"tracing":             tracing.RenderPackage,
 		"search":              search.RenderPackage,
+		"audit":               audit.RenderPackage,
 		"searchmock":          mocksearch.RenderPackage,
 		"bleve":               bleve.RenderPackage,
 		"metricsmock":         mockmetrics.RenderPackage,

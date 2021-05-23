@@ -26,7 +26,7 @@ import (
 	"fmt"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v12 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -80,7 +80,7 @@ type (
 	Service struct {
 		logger               v11.Logger
 		database             v12.DataManager
-		authenticator        auth.Authenticator
+		authenticator        authentication.Authenticator
 		encoderDecoder       encoding.EncoderDecoder
 		urlClientIDExtractor func(req *http.Request) uint64
 		oauth2Handler        oauth2Handler
@@ -116,7 +116,7 @@ func (s *clientStore) GetByID(id string) (oauth2v3.ClientInfo, error) {
 func ProvideOAuth2ClientsService(
 	logger v11.Logger,
 	db v12.DataManager,
-	authenticator auth.Authenticator,
+	authenticator authentication.Authenticator,
 	clientIDFetcher ClientIDFetcher,
 	encoderDecoder encoding.EncoderDecoder,
 	counterProvider metrics.UnitCounterProvider,
@@ -283,7 +283,7 @@ package example
 import (
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	oauth2v3 "gopkg.in/oauth2.v3"
@@ -313,7 +313,7 @@ type (
 	Service struct {
 		logger               v1.Logger
 		database             v11.DataManager
-		authenticator        auth.Authenticator
+		authenticator        authentication.Authenticator
 		encoderDecoder       encoding.EncoderDecoder
 		urlClientIDExtractor func(req *http.Request) uint64
 		oauth2Handler        oauth2Handler
@@ -408,7 +408,7 @@ import (
 	"fmt"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	manage "gopkg.in/oauth2.v3/manage"
@@ -420,7 +420,7 @@ import (
 func ProvideOAuth2ClientsService(
 	logger v1.Logger,
 	db v11.DataManager,
-	authenticator auth.Authenticator,
+	authenticator authentication.Authenticator,
 	clientIDFetcher ClientIDFetcher,
 	encoderDecoder encoding.EncoderDecoder,
 	counterProvider metrics.UnitCounterProvider,

@@ -843,7 +843,7 @@ func (typ DataType) buildCreateSomethingParams(p *Project, isModelsPackage bool)
 	if isModelsPackage {
 		params = append(params, jen.ID(creationObjectVarName).Op("*").IDf("%sCreationInput", sn))
 	} else {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(filepath.Join(p.OutputPath, "models", "v1"), fmt.Sprintf("%sCreationInput", sn)))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)))
 	}
 
 	return params
@@ -872,7 +872,7 @@ func (typ DataType) BuildDBQuerierCreationQueryBuildingMethodParams(p *Project, 
 	if isModelsPackage {
 		params = append(params, jen.ID(creationObjectVarName).Op("*").ID(sn))
 	} else {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(filepath.Join(p.OutputPath, "models", "v1"), sn))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), sn))
 	}
 
 	return params
@@ -968,7 +968,7 @@ func (typ DataType) buildUpdateSomethingParams(p *Project, updatedVarName string
 	if isModelsPackage {
 		params = append(params, jen.ID(updatedVarName).Op("*").ID(sn))
 	} else {
-		params = append(params, jen.ID(updatedVarName).Op("*").Qual(filepath.Join(p.OutputPath, "models", "v1"), sn))
+		params = append(params, jen.ID(updatedVarName).Op("*").Qual(p.TypesPackage(), sn))
 	}
 
 	return params

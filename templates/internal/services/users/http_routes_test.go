@@ -28,7 +28,7 @@ import (
 	qr "github.com/boombuler/barcode/qr"
 	totp "github.com/pquerna/otp/totp"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"image/png"
@@ -535,7 +535,7 @@ package example
 import (
 	"context"
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -600,7 +600,7 @@ func Test_buildUsersHTTPRoutesListHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -647,7 +647,7 @@ package example
 
 import (
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"
@@ -779,7 +779,7 @@ import (
 	"fmt"
 	barcode "github.com/boombuler/barcode"
 	qr "github.com/boombuler/barcode/qr"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"image/png"
 )
 
@@ -842,7 +842,7 @@ package example
 
 import (
 	"database/sql"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -896,7 +896,7 @@ package example
 
 import (
 	totp "github.com/pquerna/otp/totp"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -961,7 +961,7 @@ func Test_buildUsersHTTPRoutesNewTOTPSecretHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -1050,7 +1050,7 @@ func Test_buildUsersHTTPRoutesUpdatePasswordHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/http"
 )
@@ -1135,7 +1135,7 @@ func Test_buildUsersHTTPRoutesArchiveHandler(T *testing.T) {
 package example
 
 import (
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	newsman "gitlab.com/verygoodsoftwarenotvirus/newsman"
 	"net/http"

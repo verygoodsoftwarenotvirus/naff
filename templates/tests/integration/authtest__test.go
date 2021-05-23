@@ -26,9 +26,8 @@ import (
 	totp "github.com/pquerna/otp/totp"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
@@ -572,7 +571,7 @@ func TestAuth(test *testing.T) {
 			ca.ClientID,
 			ca.ClientSecret,
 			todoClient.URL,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			buildHTTPClient(),
 			ca.Scopes,
 			true,
@@ -596,7 +595,7 @@ func TestAuth(test *testing.T) {
 			cb.ClientID,
 			cb.ClientSecret,
 			todoClient.URL,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			buildHTTPClient(),
 			cb.Scopes,
 			true,
@@ -635,7 +634,7 @@ func TestAuth(test *testing.T) {
 			premade.ClientID,
 			premade.ClientSecret,
 			todoClient.URL,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			buildHTTPClient(),
 			premade.Scopes,
 			true,
@@ -732,9 +731,8 @@ import (
 	totp "github.com/pquerna/otp/totp"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
@@ -1243,7 +1241,7 @@ func TestAuth(test *testing.T) {
 			ca.ClientID,
 			ca.ClientSecret,
 			todoClient.URL,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			buildHTTPClient(),
 			ca.Scopes,
 			true,
@@ -1267,7 +1265,7 @@ func TestAuth(test *testing.T) {
 			cb.ClientID,
 			cb.ClientSecret,
 			todoClient.URL,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			buildHTTPClient(),
 			cb.Scopes,
 			true,
@@ -1306,7 +1304,7 @@ func TestAuth(test *testing.T) {
 			premade.ClientID,
 			premade.ClientSecret,
 			todoClient.URL,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			buildHTTPClient(),
 			premade.Scopes,
 			true,

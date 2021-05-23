@@ -26,8 +26,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	require "github.com/stretchr/testify/require"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
@@ -758,7 +758,7 @@ func TestService_validateLogin(T *testing.T) {
 			exampleUser.TwoFactorSecret,
 			exampleLoginData.TOTPToken,
 			exampleUser.Salt,
-		).Return(true, auth.ErrCostTooLow)
+		).Return(true, authentication.ErrCostTooLow)
 		s.authenticator = authr
 
 		authr.On(
@@ -805,7 +805,7 @@ func TestService_validateLogin(T *testing.T) {
 			exampleUser.TwoFactorSecret,
 			exampleLoginData.TOTPToken,
 			exampleUser.Salt,
-		).Return(true, auth.ErrCostTooLow)
+		).Return(true, authentication.ErrCostTooLow)
 
 		authr.On(
 			"HashPassword",
@@ -843,7 +843,7 @@ func TestService_validateLogin(T *testing.T) {
 			exampleUser.TwoFactorSecret,
 			exampleLoginData.TOTPToken,
 			exampleUser.Salt,
-		).Return(true, auth.ErrCostTooLow)
+		).Return(true, authentication.ErrCostTooLow)
 
 		authr.On(
 			"HashPassword",
@@ -1419,7 +1419,7 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock1 "github.com/stretchr/testify/mock"
 	require "github.com/stretchr/testify/require"
-	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
@@ -1945,8 +1945,8 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock1 "github.com/stretchr/testify/mock"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
 	"testing"
@@ -2007,7 +2007,7 @@ func TestService_validateLogin(T *testing.T) {
 			exampleUser.TwoFactorSecret,
 			exampleLoginData.TOTPToken,
 			exampleUser.Salt,
-		).Return(true, auth.ErrCostTooLow)
+		).Return(true, authentication.ErrCostTooLow)
 		s.authenticator = authr
 
 		authr.On(
@@ -2054,7 +2054,7 @@ func TestService_validateLogin(T *testing.T) {
 			exampleUser.TwoFactorSecret,
 			exampleLoginData.TOTPToken,
 			exampleUser.Salt,
-		).Return(true, auth.ErrCostTooLow)
+		).Return(true, authentication.ErrCostTooLow)
 
 		authr.On(
 			"HashPassword",
@@ -2092,7 +2092,7 @@ func TestService_validateLogin(T *testing.T) {
 			exampleUser.TwoFactorSecret,
 			exampleLoginData.TOTPToken,
 			exampleUser.Salt,
-		).Return(true, auth.ErrCostTooLow)
+		).Return(true, authentication.ErrCostTooLow)
 
 		authr.On(
 			"HashPassword",

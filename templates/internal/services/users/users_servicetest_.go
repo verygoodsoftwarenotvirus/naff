@@ -41,7 +41,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 				jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
-				jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 				jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -77,7 +77,7 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 					jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -100,7 +100,7 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 					jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
-					jen.ID("noop").Dot("ProvideNoopLogger").Call(),
+					jen.ID("noop").Dot("NewNonOperationalLogger").Call(),
 					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Nil(),
@@ -127,7 +127,7 @@ func buildTestProvideUsersService(proj *models.Project) []jen.Code {
 				jen.Line(),
 				jen.List(jen.ID("service"), jen.Err()).Assign().ID("ProvideUsersService").Callln(
 					jen.Qual(proj.InternalConfigPackage(), "AuthSettings").Values(),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.AddressOf().Qual(proj.InternalAuthPackage("mock"), "Authenticator").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),

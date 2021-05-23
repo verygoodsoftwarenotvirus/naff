@@ -102,7 +102,7 @@ func buildIterableAPIRoutes(proj *models.Project) []jen.Code {
 			),
 			jen.IDf("%sRouteParam", uvn).Assign().Qual("fmt", "Sprintf").Call(
 				jen.ID("numericIDPattern"),
-				jen.Qual(proj.ServiceV1Package(typ.Name.PackageName()), "URIParamKey"),
+				jen.Qual(proj.ServicePackage(typ.Name.PackageName()), "URIParamKey"),
 			),
 			jen.IDf("%sRouter", "v1").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),

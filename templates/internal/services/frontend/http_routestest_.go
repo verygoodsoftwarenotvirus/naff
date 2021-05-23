@@ -47,7 +47,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"happy path",
-			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			jen.Line(),
 			jen.List(jen.ID("cwd"), jen.Err()).Assign().Qual("os", "Getwd").Call(),
 			utils.RequireNoError(jen.Err(), nil),
@@ -65,7 +65,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 		jen.Line(),
 		utils.BuildSubTestWithoutContext(
 			"with frontend routing path",
-			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+			jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 			jen.Line(),
 			jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),
@@ -88,7 +88,7 @@ func buildTestService_StaticDir(proj *models.Project) []jen.Code {
 			jen.Line(), jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("with frontend %s routing path", tpcn),
-				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("s").Assign().AddressOf().ID("Service").Values(jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID(utils.BuildFakeVarName("Dir")).Assign().Lit("."),
 				jen.Line(),
 				jen.List(jen.ID("hf"), jen.Err()).Assign().ID("s").Dot("StaticDir").Call(jen.ID(utils.BuildFakeVarName("Dir"))),

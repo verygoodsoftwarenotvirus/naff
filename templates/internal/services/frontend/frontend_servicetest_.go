@@ -2,7 +2,6 @@ package frontend
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -24,7 +23,7 @@ func buildTestProvideFrontendService(proj *models.Project) []jen.Code {
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
-				jen.ID("ProvideFrontendService").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(), jen.Qual(proj.InternalConfigPackage(), "FrontendSettings").Values()),
+				jen.ID("ProvideFrontendService").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(), jen.Qual(proj.InternalConfigPackage(), "FrontendSettings").Values()),
 			),
 		),
 		jen.Line(),

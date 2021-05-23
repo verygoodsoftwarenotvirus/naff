@@ -79,13 +79,13 @@ func buildInitBuildHTTPClient() []jen.Code {
 
 func buildInitInitializeClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Body(
+		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientPackage(), "V1Client")).Body(
 			jen.List(jen.ID("uri"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 				constants.InlineCtx(),
 				jen.ID("oa2Client").Dot("ClientID"),
 				jen.ID("oa2Client").Dot("ClientSecret"),

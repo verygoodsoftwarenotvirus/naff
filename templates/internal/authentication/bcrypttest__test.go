@@ -22,8 +22,8 @@ import (
 	"context"
 	totp "github.com/pquerna/otp/totp"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	logging "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging"
 	"testing"
 	"time"
 )
@@ -38,7 +38,7 @@ const (
 func TestBcrypt_HashPassword(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("happy path", func(t *testing.T) {
 		t.Parallel()
@@ -53,7 +53,7 @@ func TestBcrypt_HashPassword(T *testing.T) {
 func TestBcrypt_PasswordMatches(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("normal usage", func(t *testing.T) {
 		t.Parallel()
@@ -75,7 +75,7 @@ func TestBcrypt_PasswordMatches(T *testing.T) {
 func TestBcrypt_PasswordIsAcceptable(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("happy path", func(t *testing.T) {
 		t.Parallel()
@@ -88,7 +88,7 @@ func TestBcrypt_PasswordIsAcceptable(T *testing.T) {
 func TestBcrypt_ValidateLogin(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("happy path", func(t *testing.T) {
 		t.Parallel()
@@ -168,7 +168,7 @@ func TestProvideBcrypt(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+		authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -215,15 +215,15 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	logging "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging"
 	"testing"
 )
 
 func TestBcrypt_HashPassword(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("happy path", func(t *testing.T) {
 		t.Parallel()
@@ -254,15 +254,15 @@ package example
 import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	logging "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging"
 	"testing"
 )
 
 func TestBcrypt_PasswordMatches(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("normal usage", func(t *testing.T) {
 		t.Parallel()
@@ -299,15 +299,15 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	logging "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging"
 	"testing"
 )
 
 func TestBcrypt_PasswordIsAcceptable(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("happy path", func(t *testing.T) {
 		t.Parallel()
@@ -337,8 +337,8 @@ import (
 	"context"
 	totp "github.com/pquerna/otp/totp"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	logging "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging"
 	"testing"
 	"time"
 )
@@ -346,7 +346,7 @@ import (
 func TestBcrypt_ValidateLogin(T *testing.T) {
 	T.Parallel()
 
-	x := auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+	x := authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 
 	T.Run("happy path", func(t *testing.T) {
 		t.Parallel()
@@ -439,8 +439,8 @@ func Test_buildTestProvideBcrypt(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	logging "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging"
 	"testing"
 )
 
@@ -448,7 +448,7 @@ func TestProvideBcrypt(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		auth.ProvideBcryptAuthenticator(auth.DefaultBcryptHashCost, noop.ProvideNoopLogger())
+		authentication.ProvideBcryptAuthenticator(authentication.DefaultBcryptHashCost, logging.NewNonOperationalLogger())
 	})
 }
 `

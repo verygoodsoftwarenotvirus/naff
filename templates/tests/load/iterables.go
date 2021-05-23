@@ -52,7 +52,7 @@ func buildFetchRandomSomething(proj *models.Project, typ models.DataType) []jen.
 	paramArgs := append(
 		[]jen.Code{
 			constants.CtxParam(),
-			jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.ID("c").PointerTo().Qual(proj.HTTPClientPackage(), "V1Client"),
 		},
 		x...,
 	)
@@ -220,7 +220,7 @@ func buildRandomActionMap(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Body(blockLines...),
+		jen.Func().IDf("build%sActions", sn).Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientPackage(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Body(blockLines...),
 		jen.Line(),
 	}
 }

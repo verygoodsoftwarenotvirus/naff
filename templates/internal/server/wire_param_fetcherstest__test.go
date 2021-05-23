@@ -61,7 +61,6 @@ import (
 	"fmt"
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	items "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
@@ -83,7 +82,7 @@ func TestProvideItemsServiceItemIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideItemsServiceItemIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideItemsServiceItemIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -91,7 +90,7 @@ func TestProvideUsersServiceUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideUsersServiceUserIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideUsersServiceUserIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -107,7 +106,7 @@ func TestProvideWebhooksServiceWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideWebhooksServiceWebhookIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideWebhooksServiceWebhookIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -115,7 +114,7 @@ func TestProvideOAuth2ClientsServiceClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideOAuth2ClientsServiceClientIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideOAuth2ClientsServiceClientIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -147,7 +146,7 @@ func Test_buildRouteParamUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamUserIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -170,7 +169,7 @@ func Test_buildRouteParamUserIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamUserIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -196,7 +195,7 @@ func Test_buildRouteParamItemIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamItemIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamItemIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -219,7 +218,7 @@ func Test_buildRouteParamItemIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamItemIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamItemIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -245,7 +244,7 @@ func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamWebhookIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -268,7 +267,7 @@ func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamWebhookIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -294,7 +293,7 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamOAuth2ClientIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -317,7 +316,7 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamOAuth2ClientIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -357,7 +356,6 @@ import (
 	"fmt"
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	anotherthings "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/anotherthings"
@@ -373,7 +371,7 @@ func TestProvideThingsServiceThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideThingsServiceThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideThingsServiceThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -381,7 +379,7 @@ func TestProvideAnotherThingsServiceThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideAnotherThingsServiceThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideAnotherThingsServiceThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -389,7 +387,7 @@ func TestProvideAnotherThingsServiceAnotherThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideAnotherThingsServiceAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideAnotherThingsServiceAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -397,7 +395,7 @@ func TestProvideYetAnotherThingsServiceThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideYetAnotherThingsServiceThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideYetAnotherThingsServiceThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -405,7 +403,7 @@ func TestProvideYetAnotherThingsServiceAnotherThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideYetAnotherThingsServiceAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideYetAnotherThingsServiceAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -413,7 +411,7 @@ func TestProvideYetAnotherThingsServiceYetAnotherThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideYetAnotherThingsServiceYetAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -421,7 +419,7 @@ func TestProvideUsersServiceUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideUsersServiceUserIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideUsersServiceUserIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -437,7 +435,7 @@ func TestProvideWebhooksServiceWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideWebhooksServiceWebhookIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideWebhooksServiceWebhookIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -445,7 +443,7 @@ func TestProvideOAuth2ClientsServiceClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideOAuth2ClientsServiceClientIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideOAuth2ClientsServiceClientIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -477,7 +475,7 @@ func Test_buildRouteParamUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamUserIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -500,7 +498,7 @@ func Test_buildRouteParamUserIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamUserIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -526,7 +524,7 @@ func Test_buildRouteParamThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamThingIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamThingIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -549,7 +547,7 @@ func Test_buildRouteParamThingIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamThingIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamThingIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -575,7 +573,7 @@ func Test_buildRouteParamAnotherThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -598,7 +596,7 @@ func Test_buildRouteParamAnotherThingIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -624,7 +622,7 @@ func Test_buildRouteParamYetAnotherThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamYetAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamYetAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -647,7 +645,7 @@ func Test_buildRouteParamYetAnotherThingIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamYetAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamYetAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -673,7 +671,7 @@ func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamWebhookIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -696,7 +694,7 @@ func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamWebhookIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -722,7 +720,7 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamOAuth2ClientIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -745,7 +743,7 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamOAuth2ClientIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -814,7 +812,6 @@ func Test_buildTestProvideSomethingServiceSomethingIDFetcher(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -822,7 +819,7 @@ func TestProvideItemsServiceItemIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideItemsServiceItemIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideItemsServiceItemIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -844,7 +841,6 @@ func Test_buildTestProvideSomethingServiceOwnerTypeIDFetcher(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -852,7 +848,7 @@ func TestProvideYetAnotherThingsServiceAnotherThingIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideYetAnotherThingsServiceAnotherThingIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideYetAnotherThingsServiceAnotherThingIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -872,7 +868,6 @@ func Test_buildTestProvideUsersServiceUserIDFetcher(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -880,7 +875,7 @@ func TestProvideUsersServiceUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideUsersServiceUserIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideUsersServiceUserIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -927,7 +922,6 @@ func Test_buildTestProvideWebhooksServiceWebhookIDFetcher(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -935,7 +929,7 @@ func TestProvideWebhooksServiceWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideWebhooksServiceWebhookIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideWebhooksServiceWebhookIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -955,7 +949,6 @@ func Test_buildTestProvideOAuth2ClientsServiceClientIDFetcher(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -963,7 +956,7 @@ func TestProvideOAuth2ClientsServiceClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_ = ProvideOAuth2ClientsServiceClientIDFetcher(noop.ProvideNoopLogger())
+		_ = ProvideOAuth2ClientsServiceClientIDFetcher(logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -1036,7 +1029,6 @@ import (
 	"fmt"
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	users "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/users"
 	"testing"
 )
@@ -1045,7 +1037,7 @@ func Test_buildRouteParamUserIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamUserIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -1068,7 +1060,7 @@ func Test_buildRouteParamUserIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamUserIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamUserIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -1112,7 +1104,6 @@ import (
 	"fmt"
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	items "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/items"
 	"testing"
 )
@@ -1121,7 +1112,7 @@ func Test_buildRouteParamItemIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamItemIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamItemIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -1144,7 +1135,7 @@ func Test_buildRouteParamItemIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamItemIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamItemIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -1187,7 +1178,6 @@ import (
 	"fmt"
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/webhooks"
 	"testing"
 )
@@ -1196,7 +1186,7 @@ func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamWebhookIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -1219,7 +1209,7 @@ func Test_buildRouteParamWebhookIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamWebhookIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamWebhookIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)
@@ -1262,7 +1252,6 @@ import (
 	"fmt"
 	chi "github.com/go-chi/chi"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/services/v1/oauth2clients"
 	"testing"
 )
@@ -1271,7 +1260,7 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 	T.Parallel()
 
 	T.Run("happy path", func(t *testing.T) {
-		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamOAuth2ClientIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(123)
 
 		req := buildRequest(t)
@@ -1294,7 +1283,7 @@ func Test_buildRouteParamOAuth2ClientIDFetcher(T *testing.T) {
 
 	T.Run("with invalid value somehow", func(t *testing.T) {
 		// NOTE: This will probably never happen in dev or production
-		fn := buildRouteParamOAuth2ClientIDFetcher(noop.ProvideNoopLogger())
+		fn := buildRouteParamOAuth2ClientIDFetcher(logging.NewNonOperationalLogger())
 		expected := uint64(0)
 
 		req := buildRequest(t)

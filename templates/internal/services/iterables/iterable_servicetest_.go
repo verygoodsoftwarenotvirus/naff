@@ -25,7 +25,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	uvn := typ.Name.UnexportedVarName()
 
 	serviceValues := []jen.Code{
-		jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 	}
 
@@ -75,7 +75,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	pn := typ.Name.Plural()
 
 	provideServiceLines := []jen.Code{
-		jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {

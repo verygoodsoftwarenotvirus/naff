@@ -19,7 +19,7 @@ func Test_authenticatorTestDotGo(T *testing.T) {
 package example
 
 import (
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	"testing"
 )
 
@@ -27,7 +27,7 @@ func TestProvideBcryptHashCost(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		auth.ProvideBcryptHashCost()
+		authentication.ProvideBcryptHashCost()
 	})
 }
 `
@@ -48,7 +48,7 @@ func TestBuildProvideBcryptHashCost(T *testing.T) {
 package example
 
 import (
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	"testing"
 )
 
@@ -56,7 +56,7 @@ func TestProvideBcryptHashCost(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		auth.ProvideBcryptHashCost()
+		authentication.ProvideBcryptHashCost()
 	})
 }
 `

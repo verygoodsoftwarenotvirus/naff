@@ -26,7 +26,6 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -64,7 +63,7 @@ func mustParseURL(uri string) *url.URL {
 func buildTestClient(t *testing.T, ts *httptest.Server) *V1Client {
 	t.Helper()
 
-	l := noop.ProvideNoopLogger()
+	l := logging.NewNonOperationalLogger()
 	u := mustParseURL(ts.URL)
 	c := ts.Client()
 
@@ -80,7 +79,7 @@ func buildTestClient(t *testing.T, ts *httptest.Server) *V1Client {
 func buildTestClientWithInvalidURL(t *testing.T) *V1Client {
 	t.Helper()
 
-	l := noop.ProvideNoopLogger()
+	l := logging.NewNonOperationalLogger()
 	u := mustParseURL("https://verygoodsoftwarenotvirus.ru")
 	u.Scheme = fmt.Sprintf(` + "`" + `%s://` + "`" + `, asciiControlChar)
 
@@ -134,7 +133,7 @@ func TestV1Client_TokenSource(T *testing.T) {
 			"",
 			"",
 			mustParseURL(exampleURI),
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			ts.Client(),
 			[]string{"*"},
 			false,
@@ -160,7 +159,7 @@ func TestNewClient(T *testing.T) {
 			"",
 			"",
 			mustParseURL(exampleURI),
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			ts.Client(),
 			[]string{"*"},
 			false,
@@ -178,7 +177,7 @@ func TestNewClient(T *testing.T) {
 			"",
 			"",
 			mustParseURL(exampleURI),
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&http.Client{
 				Timeout: 0,
 			},
@@ -249,7 +248,7 @@ func TestBuildURL(T *testing.T) {
 			"",
 			"",
 			u,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			nil,
 			[]string{"*"},
 			false,
@@ -305,7 +304,7 @@ func TestBuildVersionlessURL(T *testing.T) {
 			"",
 			"",
 			u,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			nil,
 			[]string{"*"},
 			false,
@@ -361,7 +360,7 @@ func TestV1Client_BuildWebsocketURL(T *testing.T) {
 			"",
 			"",
 			u,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			nil,
 			[]string{"*"},
 			false,
@@ -1065,7 +1064,6 @@ func Test_buildBuildTestClient(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http/httptest"
 	"testing"
 )
@@ -1073,7 +1071,7 @@ import (
 func buildTestClient(t *testing.T, ts *httptest.Server) *V1Client {
 	t.Helper()
 
-	l := noop.ProvideNoopLogger()
+	l := logging.NewNonOperationalLogger()
 	u := mustParseURL(ts.URL)
 	c := ts.Client()
 
@@ -1103,7 +1101,6 @@ package example
 
 import (
 	"fmt"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"testing"
 )
@@ -1111,7 +1108,7 @@ import (
 func buildTestClientWithInvalidURL(t *testing.T) *V1Client {
 	t.Helper()
 
-	l := noop.ProvideNoopLogger()
+	l := logging.NewNonOperationalLogger()
 	u := mustParseURL("https://verygoodsoftwarenotvirus.ru")
 	u.Scheme = fmt.Sprintf(` + "`" + `%s://` + "`" + `, asciiControlChar)
 
@@ -1211,7 +1208,6 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http/httptest"
 	"testing"
 )
@@ -1229,7 +1225,7 @@ func TestV1Client_TokenSource(T *testing.T) {
 			"",
 			"",
 			mustParseURL(exampleURI),
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			ts.Client(),
 			[]string{"*"},
 			false,
@@ -1261,7 +1257,6 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -1280,7 +1275,7 @@ func TestNewClient(T *testing.T) {
 			"",
 			"",
 			mustParseURL(exampleURI),
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			ts.Client(),
 			[]string{"*"},
 			false,
@@ -1298,7 +1293,7 @@ func TestNewClient(T *testing.T) {
 			"",
 			"",
 			mustParseURL(exampleURI),
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			&http.Client{
 				Timeout: 0,
 			},
@@ -1420,7 +1415,6 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/url"
 	"testing"
 )
@@ -1438,7 +1432,7 @@ func TestBuildURL(T *testing.T) {
 			"",
 			"",
 			u,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			nil,
 			[]string{"*"},
 			false,
@@ -1500,7 +1494,6 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/url"
 	"testing"
 )
@@ -1518,7 +1511,7 @@ func TestBuildVersionlessURL(T *testing.T) {
 			"",
 			"",
 			u,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			nil,
 			[]string{"*"},
 			false,
@@ -1580,7 +1573,6 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/url"
 	"testing"
 )
@@ -1598,7 +1590,7 @@ func TestV1Client_BuildWebsocketURL(T *testing.T) {
 			"",
 			"",
 			u,
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			nil,
 			[]string{"*"},
 			false,

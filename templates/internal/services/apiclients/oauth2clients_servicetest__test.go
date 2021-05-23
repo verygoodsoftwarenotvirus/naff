@@ -24,9 +24,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock3 "github.com/stretchr/testify/mock"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
@@ -50,7 +49,7 @@ func buildTestService(t *testing.T) *Service {
 
 	service := &Service{
 		database:             v1.BuildMockDatabase(),
-		logger:               noop.ProvideNoopLogger(),
+		logger:               logging.NewNonOperationalLogger(),
 		encoderDecoder:       &mock.EncoderDecoder{},
 		authenticator:        &mock1.Authenticator{},
 		urlClientIDExtractor: func(req *http.Request) uint64 { return 0 },
@@ -73,7 +72,7 @@ func TestProvideOAuth2ClientsService(T *testing.T) {
 		}
 
 		service, err := ProvideOAuth2ClientsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			mockDB,
 			&mock1.Authenticator{},
 			func(req *http.Request) uint64 { return 0 },
@@ -95,7 +94,7 @@ func TestProvideOAuth2ClientsService(T *testing.T) {
 		}
 
 		service, err := ProvideOAuth2ClientsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			mockDB,
 			&mock1.Authenticator{},
 			func(req *http.Request) uint64 { return 0 },
@@ -228,9 +227,8 @@ package example
 
 import (
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	manage "gopkg.in/oauth2.v3/manage"
@@ -251,7 +249,7 @@ func buildTestService(t *testing.T) *Service {
 
 	service := &Service{
 		database:             v1.BuildMockDatabase(),
-		logger:               noop.ProvideNoopLogger(),
+		logger:               logging.NewNonOperationalLogger(),
 		encoderDecoder:       &mock.EncoderDecoder{},
 		authenticator:        &mock1.Authenticator{},
 		urlClientIDExtractor: func(req *http.Request) uint64 { return 0 },
@@ -282,9 +280,8 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -304,7 +301,7 @@ func TestProvideOAuth2ClientsService(T *testing.T) {
 		}
 
 		service, err := ProvideOAuth2ClientsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			mockDB,
 			&mock1.Authenticator{},
 			func(req *http.Request) uint64 { return 0 },
@@ -326,7 +323,7 @@ func TestProvideOAuth2ClientsService(T *testing.T) {
 		}
 
 		service, err := ProvideOAuth2ClientsService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			mockDB,
 			&mock1.Authenticator{},
 			func(req *http.Request) uint64 { return 0 },

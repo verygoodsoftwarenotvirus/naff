@@ -23,7 +23,7 @@ import (
 	v2 "github.com/alexedwards/scs/v2"
 	securecookie "github.com/gorilla/securecookie"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -51,7 +51,7 @@ type (
 	Service struct {
 		config               config.AuthSettings
 		logger               v11.Logger
-		authenticator        auth.Authenticator
+		authenticator        authentication.Authenticator
 		userDB               v1.UserDataManager
 		oauth2ClientsService OAuth2ClientValidator
 		encoderDecoder       encoding.EncoderDecoder
@@ -64,7 +64,7 @@ type (
 func ProvideAuthService(
 	logger v11.Logger,
 	cfg config.AuthSettings,
-	authenticator auth.Authenticator,
+	authenticator authentication.Authenticator,
 	database v1.UserDataManager,
 	oauth2ClientsService OAuth2ClientValidator,
 	sessionManager *v2.SessionManager,
@@ -129,7 +129,7 @@ import (
 	"context"
 	v2 "github.com/alexedwards/scs/v2"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -153,7 +153,7 @@ type (
 	Service struct {
 		config               config.AuthSettings
 		logger               v11.Logger
-		authenticator        auth.Authenticator
+		authenticator        authentication.Authenticator
 		userDB               v1.UserDataManager
 		oauth2ClientsService OAuth2ClientValidator
 		encoderDecoder       encoding.EncoderDecoder
@@ -182,7 +182,7 @@ import (
 	v2 "github.com/alexedwards/scs/v2"
 	securecookie "github.com/gorilla/securecookie"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -192,7 +192,7 @@ import (
 func ProvideAuthService(
 	logger v1.Logger,
 	cfg config.AuthSettings,
-	authenticator auth.Authenticator,
+	authenticator authentication.Authenticator,
 	database v11.UserDataManager,
 	oauth2ClientsService OAuth2ClientValidator,
 	sessionManager *v2.SessionManager,

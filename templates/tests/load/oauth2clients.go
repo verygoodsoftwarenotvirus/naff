@@ -23,7 +23,7 @@ func buildFetchRandomOAuth2Client(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("fetchRandomOAuth2Client retrieves a random client from the list of available clients."),
 		jen.Line(),
-		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.PointerTo().Qual(proj.TypesPackage(),
+		jen.Func().ID("fetchRandomOAuth2Client").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientPackage(), "V1Client")).Params(jen.PointerTo().Qual(proj.TypesPackage(),
 			"OAuth2Client",
 		)).Body(
 			jen.List(jen.ID("clientsRes"), jen.Err()).Assign().ID("c").Dot("GetOAuth2Clients").Call(constants.InlineCtx(), jen.Nil()),
@@ -63,7 +63,7 @@ func buildMustBuildCode() []jen.Code {
 
 func buildBuildOAuth2ClientActions(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Body(
+		jen.Func().ID("buildOAuth2ClientActions").Params(jen.ID("c").PointerTo().Qual(proj.HTTPClientPackage(), "V1Client")).Params(jen.Map(jen.String()).PointerTo().ID("Action")).Body(
 			jen.Return().Map(jen.String()).PointerTo().ID("Action").Valuesln(
 				jen.Lit("CreateOAuth2Client").MapAssign().Valuesln(
 					jen.ID("Name").MapAssign().Lit("CreateOAuth2Client"), jen.ID("Action").MapAssign().Func().Params().Params(jen.PointerTo().Qual("net/http", "Request"), jen.Error()).Body(

@@ -19,7 +19,6 @@ func Test_frontendServiceTestDotGo(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	"testing"
 )
@@ -28,7 +27,7 @@ func TestProvideFrontendService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		ProvideFrontendService(noop.ProvideNoopLogger(), config.FrontendSettings{})
+		ProvideFrontendService(logging.NewNonOperationalLogger(), config.FrontendSettings{})
 	})
 }
 `
@@ -49,7 +48,6 @@ func Test_buildTestProvideFrontendService(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	"testing"
 )
@@ -58,7 +56,7 @@ func TestProvideFrontendService(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		ProvideFrontendService(noop.ProvideNoopLogger(), config.FrontendSettings{})
+		ProvideFrontendService(logging.NewNonOperationalLogger(), config.FrontendSettings{})
 	})
 }
 `

@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -634,4 +636,9 @@ func CompleteSurvey(
 	}
 
 	return proj, nil
+}
+
+// LoggerParam is a shorthand for a context param
+func (p *Project) LoggerParam() jen.Code {
+	return jen.ID(constants.LoggerVarName).Qual(p.InternalLoggingPackage(), "Logger")
 }

@@ -70,7 +70,7 @@ func buildProvideDatabaseConnection(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideDatabaseConnection provides a database implementation dependent on the configuration."),
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideDatabaseConnection").Params(
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 		).Params(
 			jen.PointerTo().Qual("database/sql", "DB"),
 			jen.Error(),
@@ -128,7 +128,7 @@ func buildProvideDatabaseClient(proj *models.Project) []jen.Code {
 		jen.Line(),
 		jen.Func().Params(jen.ID("cfg").PointerTo().ID("ServerConfig")).ID("ProvideDatabaseClient").Params(
 			constants.CtxParam(),
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("rawDB").PointerTo().Qual("database/sql", "DB"),
 		).Params(jen.Qual(proj.DatabasePackage(), "DataManager"), jen.Error()).Body(
 			jen.If(jen.ID("rawDB").IsEqualTo().Nil()).Body(

@@ -23,8 +23,7 @@ import (
 	memstore "github.com/alexedwards/scs/v2/memstore"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
@@ -34,7 +33,7 @@ import (
 func buildTestService(t *testing.T) *Service {
 	t.Helper()
 
-	logger := noop.ProvideNoopLogger()
+	logger := logging.NewNonOperationalLogger()
 	cfg := config.AuthSettings{
 		CookieSecret: "BLAHBLAHBLAHPRETENDTHISISSECRET!",
 	}
@@ -75,7 +74,7 @@ func TestProvideAuthService(T *testing.T) {
 		sm := v2.New()
 
 		service, err := ProvideAuthService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			cfg,
 			auth,
 			userDB,
@@ -108,8 +107,7 @@ import (
 	v2 "github.com/alexedwards/scs/v2"
 	memstore "github.com/alexedwards/scs/v2/memstore"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
@@ -119,7 +117,7 @@ import (
 func buildTestService(t *testing.T) *Service {
 	t.Helper()
 
-	logger := noop.ProvideNoopLogger()
+	logger := logging.NewNonOperationalLogger()
 	cfg := config.AuthSettings{
 		CookieSecret: "BLAHBLAHBLAHPRETENDTHISISSECRET!",
 	}
@@ -165,8 +163,7 @@ package example
 import (
 	v2 "github.com/alexedwards/scs/v2"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/mock"
@@ -187,7 +184,7 @@ func TestProvideAuthService(T *testing.T) {
 		sm := v2.New()
 
 		service, err := ProvideAuthService(
-			noop.ProvideNoopLogger(),
+			logging.NewNonOperationalLogger(),
 			cfg,
 			auth,
 			userDB,

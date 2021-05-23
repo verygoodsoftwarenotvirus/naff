@@ -703,12 +703,12 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+		jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 			constants.CtxVar(),
 			jen.ID("ca").Dot("ClientID"),
 			jen.ID("ca").Dot("ClientSecret"),
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-			jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 			jen.ID("buildHTTPClient").Call(),
 			jen.ID("ca").Dot("Scopes"),
 			jen.True(),
@@ -762,12 +762,12 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 		),
 		utils.RequireNoError(jen.Err(), nil),
 		jen.Line(),
-		jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+		jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 			constants.CtxVar(),
 			jen.ID("cb").Dot("ClientID"),
 			jen.ID("cb").Dot("ClientSecret"),
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dot("URL"),
-			jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 			jen.ID("buildHTTPClient").Call(),
 			jen.ID("cb").Dot("Scopes"),
 			jen.True(),

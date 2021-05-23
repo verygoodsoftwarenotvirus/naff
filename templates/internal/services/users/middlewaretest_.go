@@ -44,7 +44,7 @@ func buildMiddlewareTestingTestService_UserInputMiddleware(proj *models.Project)
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -76,7 +76,7 @@ func buildMiddlewareTestingTestService_UserInputMiddleware(proj *models.Project)
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -113,7 +113,7 @@ func buildMiddlewareTestingTestService_PasswordUpdateInputMiddleware(proj *model
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -145,7 +145,7 @@ func buildMiddlewareTestingTestService_PasswordUpdateInputMiddleware(proj *model
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
@@ -190,7 +190,7 @@ func buildMiddlewareTestingTestService_TOTPSecretVerificationInputMiddleware(pro
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -222,7 +222,7 @@ func buildMiddlewareTestingTestService_TOTPSecretVerificationInputMiddleware(pro
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -259,7 +259,7 @@ func buildMiddlewareTestingTestService_TOTPSecretRefreshInputMiddleware(proj *mo
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
@@ -291,7 +291,7 @@ func buildMiddlewareTestingTestService_TOTPSecretRefreshInputMiddleware(proj *mo
 			utils.BuildSubTestWithoutContext(
 				"with error decoding request",
 				jen.ID("s").Assign().AddressOf().ID("Service").Valuesln(
-					jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				jen.Line(),
 				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),

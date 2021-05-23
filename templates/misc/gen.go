@@ -91,8 +91,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-frontend/v1/public/bundle.*
-
 *.coverprofile
 *.profile
 
@@ -156,15 +154,6 @@ linting:
   script:
     - go mod vendor
     - golangci-lint run --config=.golangci.yml --deadline=15m
-
-build-frontend:
-  stage: quality
-  image: node:10
-  before_script:
-    - cd frontend/v1
-    - npm install
-  script:
-    - npm run build
 
 integration-tests-postgres:
   stage: integration-testing

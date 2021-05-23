@@ -21,7 +21,6 @@ package example
 import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"testing"
 )
@@ -69,7 +68,7 @@ func TestWebhook_ToListener(T *testing.T) {
 
 	T.Run("obligatory", func(t *testing.T) {
 		w := &Webhook{}
-		w.ToListener(noop.ProvideNoopLogger())
+		w.ToListener(logging.NewNonOperationalLogger())
 	})
 }
 
@@ -78,7 +77,7 @@ func Test_buildErrorLogFunc(T *testing.T) {
 
 	T.Run("obligatory", func(t *testing.T) {
 		w := &Webhook{}
-		actual := buildErrorLogFunc(w, noop.ProvideNoopLogger())
+		actual := buildErrorLogFunc(w, logging.NewNonOperationalLogger())
 		actual(errors.New("blah"))
 	})
 }
@@ -158,7 +157,6 @@ func Test_buildTestWebhook_ToListener(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -167,7 +165,7 @@ func TestWebhook_ToListener(T *testing.T) {
 
 	T.Run("obligatory", func(t *testing.T) {
 		w := &Webhook{}
-		w.ToListener(noop.ProvideNoopLogger())
+		w.ToListener(logging.NewNonOperationalLogger())
 	})
 }
 `
@@ -188,7 +186,6 @@ package example
 
 import (
 	"errors"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -197,7 +194,7 @@ func Test_buildErrorLogFunc(T *testing.T) {
 
 	T.Run("obligatory", func(t *testing.T) {
 		w := &Webhook{}
-		actual := buildErrorLogFunc(w, noop.ProvideNoopLogger())
+		actual := buildErrorLogFunc(w, logging.NewNonOperationalLogger())
 		actual(errors.New("blah"))
 	})
 }

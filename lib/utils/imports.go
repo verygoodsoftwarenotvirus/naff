@@ -17,7 +17,7 @@ import (
 func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bool) {
 	pkgRoot := proj.OutputPath
 
-	file.ImportAlias(proj.HTTPClientV1Package(), "client")
+	file.ImportAlias(proj.HTTPClientPackage(), "client")
 
 	file.ImportAlias(proj.DatabasePackage(), "database")
 
@@ -70,9 +70,8 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 
 	file.ImportName(constants.CoreOAuth2Pkg, "oauth2")
-	file.ImportName(constants.LoggingPkg, "logging")
-	file.ImportName(constants.NoopLoggingPkg, "noop")
-	file.ImportName(filepath.Join(constants.LoggingPkg, "zerolog"), "zerolog")
+	file.ImportName(proj.InternalLoggingPackage(), "logging")
+	file.ImportName(filepath.Join(proj.InternalLoggingPackage(), "zerolog"), "zerolog")
 	file.ImportName(constants.AssertPkg, "assert")
 	file.ImportName(constants.MustAssertPkg, "require")
 	file.ImportName(constants.MockPkg, "mock")

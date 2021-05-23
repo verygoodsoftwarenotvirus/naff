@@ -60,7 +60,7 @@ func buildServerTypeDefinitions(proj *models.Project) []jen.Code {
 		jen.ID("config").PointerTo().Qual(proj.InternalConfigPackage(), "ServerConfig"),
 		jen.ID("router").PointerTo().Qual("github.com/go-chi/chi", "Mux"),
 		jen.ID("httpServer").PointerTo().Qual("net/http", "Server"),
-		constants.LoggerParam(),
+		proj.LoggerParam(),
 		jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 	)
 
@@ -100,7 +100,7 @@ func buildServerProvideServer(proj *models.Project) []jen.Code {
 		jen.ID("oauth2Service").Qual(proj.TypesPackage(), "OAuth2ClientDataServer"),
 		jen.ID("webhooksService").Qual(proj.TypesPackage(), "WebhookDataServer"),
 		jen.ID("db").Qual(proj.DatabasePackage(), "DataManager"),
-		constants.LoggerParam(),
+		proj.LoggerParam(),
 		jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
 	)
 

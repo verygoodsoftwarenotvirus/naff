@@ -23,7 +23,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	"testing"
 )
@@ -35,7 +34,7 @@ const (
 func buildTestClient() (*Client, *v1.MockDatabase) {
 	db := v1.BuildMockDatabase()
 	c := &Client{
-		logger:  noop.ProvideNoopLogger(),
+		logger:  logging.NewNonOperationalLogger(),
 		querier: db,
 	}
 	return c, db
@@ -96,7 +95,7 @@ func TestProvideDatabaseClient(T *testing.T) {
 		mockDB := v1.BuildMockDatabase()
 		mockDB.On("Migrate", mock.Anything).Return(nil)
 
-		actual, err := ProvideDatabaseClient(ctx, nil, mockDB, true, noop.ProvideNoopLogger())
+		actual, err := ProvideDatabaseClient(ctx, nil, mockDB, true, logging.NewNonOperationalLogger())
 		assert.NotNil(t, actual)
 		assert.NoError(t, err)
 
@@ -110,7 +109,7 @@ func TestProvideDatabaseClient(T *testing.T) {
 		mockDB := v1.BuildMockDatabase()
 		mockDB.On("Migrate", mock.Anything).Return(expected)
 
-		x, actual := ProvideDatabaseClient(ctx, nil, mockDB, true, noop.ProvideNoopLogger())
+		x, actual := ProvideDatabaseClient(ctx, nil, mockDB, true, logging.NewNonOperationalLogger())
 		assert.Nil(t, x)
 		assert.Error(t, actual)
 		assert.Equal(t, expected, actual)
@@ -136,14 +135,13 @@ func Test_buildBuildTestClient(T *testing.T) {
 package example
 
 import (
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 )
 
 func buildTestClient() (*Client, *v1.MockDatabase) {
 	db := v1.BuildMockDatabase()
 	c := &Client{
-		logger:  noop.ProvideNoopLogger(),
+		logger:  logging.NewNonOperationalLogger(),
 		querier: db,
 	}
 	return c, db
@@ -264,7 +262,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	"testing"
 )
@@ -278,7 +275,7 @@ func TestProvideDatabaseClient(T *testing.T) {
 		mockDB := v1.BuildMockDatabase()
 		mockDB.On("Migrate", mock.Anything).Return(nil)
 
-		actual, err := ProvideDatabaseClient(ctx, nil, mockDB, true, noop.ProvideNoopLogger())
+		actual, err := ProvideDatabaseClient(ctx, nil, mockDB, true, logging.NewNonOperationalLogger())
 		assert.NotNil(t, actual)
 		assert.NoError(t, err)
 
@@ -292,7 +289,7 @@ func TestProvideDatabaseClient(T *testing.T) {
 		mockDB := v1.BuildMockDatabase()
 		mockDB.On("Migrate", mock.Anything).Return(expected)
 
-		x, actual := ProvideDatabaseClient(ctx, nil, mockDB, true, noop.ProvideNoopLogger())
+		x, actual := ProvideDatabaseClient(ctx, nil, mockDB, true, logging.NewNonOperationalLogger())
 		assert.Nil(t, x)
 		assert.Error(t, actual)
 		assert.Equal(t, expected, actual)

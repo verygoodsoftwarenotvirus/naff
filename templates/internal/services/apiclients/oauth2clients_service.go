@@ -90,7 +90,7 @@ func buildServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("Service manages our OAuth2 clients via HTTP."),
 			jen.ID("Service").Struct(
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 				jen.ID("database").Qual(proj.DatabasePackage(), "DataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 				jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
@@ -149,7 +149,7 @@ func buildServiceProvideOAuth2ClientsService(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideOAuth2ClientsService builds a new OAuth2ClientsService."),
 		jen.Line(),
 		jen.Func().ID("ProvideOAuth2ClientsService").Paramsln(
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("db").Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 			jen.ID("clientIDFetcher").ID("ClientIDFetcher"), jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),

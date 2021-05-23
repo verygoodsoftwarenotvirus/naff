@@ -24,7 +24,7 @@ import (
 	wire "github.com/google/wire"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
@@ -55,7 +55,7 @@ func BuildServer(
 ) (*v12.Server, error) {
 	wire.Build(
 		config.Providers,
-		auth.Providers,
+		authentication.Providers,
 		// server things,
 		bleve.Providers,
 		v12.Providers,
@@ -123,7 +123,7 @@ import (
 	wire "github.com/google/wire"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
@@ -149,7 +149,7 @@ func BuildServer(
 ) (*v12.Server, error) {
 	wire.Build(
 		config.Providers,
-		auth.Providers,
+		authentication.Providers,
 		// server things,
 		bleve.Providers,
 		v12.Providers,
@@ -188,7 +188,7 @@ func Test_buildWireBuildCallArgs(T *testing.T) {
 package main
 
 import (
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 	config "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/config"
 	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding"
 	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics"
@@ -207,7 +207,7 @@ import (
 func main() {
 	exampleFunction(
 		config.Providers,
-		auth.Providers,
+		authentication.Providers,
 		// server things,
 		bleve.Providers,
 		v1.Providers,

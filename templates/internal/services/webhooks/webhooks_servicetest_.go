@@ -22,7 +22,7 @@ func buildBuildTestService(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Body(
 			jen.Return().AddressOf().ID("Service").Valuesln(
-				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				jen.ID("webhookCounter").MapAssign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("webhookDataManager").MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataManager").Values(),
 				jen.ID("userIDFetcher").MapAssign().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -52,7 +52,7 @@ func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataManager").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
@@ -74,7 +74,7 @@ func buildTestProvideWebhooksService(proj *models.Project) []jen.Code {
 				),
 				jen.Line(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("ProvideWebhooksService").Callln(
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataManager").Values(),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),
 					jen.Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).SingleLineBlock(jen.Return().Zero()),

@@ -26,7 +26,6 @@ import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"regexp"
 	"strings"
 	"testing"
@@ -39,7 +38,7 @@ const (
 func buildTestService(t *testing.T) (*Postgres, gosqlmock.Sqlmock) {
 	db, mock, err := gosqlmock.New()
 	require.NoError(t, err)
-	p := ProvidePostgres(true, db, noop.ProvideNoopLogger())
+	p := ProvidePostgres(true, db, logging.NewNonOperationalLogger())
 	return p.(*Postgres), mock
 }
 
@@ -122,7 +121,7 @@ func TestProvidePostgresDB(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_, err := ProvidePostgresDB(noop.ProvideNoopLogger(), "")
+		_, err := ProvidePostgresDB(logging.NewNonOperationalLogger(), "")
 		assert.NoError(t, err)
 	})
 }
@@ -147,7 +146,6 @@ import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"regexp"
 	"strings"
 	"testing"
@@ -160,7 +158,7 @@ const (
 func buildTestService(t *testing.T) (*Sqlite, gosqlmock.Sqlmock) {
 	db, mock, err := gosqlmock.New()
 	require.NoError(t, err)
-	s := ProvideSqlite(true, db, noop.ProvideNoopLogger())
+	s := ProvideSqlite(true, db, logging.NewNonOperationalLogger())
 	return s.(*Sqlite), mock
 }
 
@@ -246,7 +244,7 @@ func TestProvideSqliteDB(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_, err := ProvideSqliteDB(noop.ProvideNoopLogger(), "")
+		_, err := ProvideSqliteDB(logging.NewNonOperationalLogger(), "")
 		assert.NoError(t, err)
 	})
 }
@@ -271,7 +269,6 @@ import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"regexp"
 	"strings"
 	"testing"
@@ -284,7 +281,7 @@ const (
 func buildTestService(t *testing.T) (*MariaDB, gosqlmock.Sqlmock) {
 	db, mock, err := gosqlmock.New()
 	require.NoError(t, err)
-	m := ProvideMariaDB(true, db, noop.ProvideNoopLogger())
+	m := ProvideMariaDB(true, db, logging.NewNonOperationalLogger())
 	return m.(*MariaDB), mock
 }
 
@@ -370,7 +367,7 @@ func TestProvideMariaDBConnection(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_, err := ProvideMariaDBConnection(noop.ProvideNoopLogger(), "")
+		_, err := ProvideMariaDBConnection(logging.NewNonOperationalLogger(), "")
 		assert.NoError(t, err)
 	})
 }
@@ -416,14 +413,13 @@ package example
 import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
 func buildTestService(t *testing.T) (*Postgres, gosqlmock.Sqlmock) {
 	db, mock, err := gosqlmock.New()
 	require.NoError(t, err)
-	p := ProvidePostgres(true, db, noop.ProvideNoopLogger())
+	p := ProvidePostgres(true, db, logging.NewNonOperationalLogger())
 	return p.(*Postgres), mock
 }
 `
@@ -443,14 +439,13 @@ package example
 import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
 func buildTestService(t *testing.T) (*Sqlite, gosqlmock.Sqlmock) {
 	db, mock, err := gosqlmock.New()
 	require.NoError(t, err)
-	s := ProvideSqlite(true, db, noop.ProvideNoopLogger())
+	s := ProvideSqlite(true, db, logging.NewNonOperationalLogger())
 	return s.(*Sqlite), mock
 }
 `
@@ -470,14 +465,13 @@ package example
 import (
 	gosqlmock "github.com/DATA-DOG/go-sqlmock"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
 func buildTestService(t *testing.T) (*MariaDB, gosqlmock.Sqlmock) {
 	db, mock, err := gosqlmock.New()
 	require.NoError(t, err)
-	m := ProvideMariaDB(true, db, noop.ProvideNoopLogger())
+	m := ProvideMariaDB(true, db, logging.NewNonOperationalLogger())
 	return m.(*MariaDB), mock
 }
 `
@@ -1096,7 +1090,6 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -1104,7 +1097,7 @@ func TestProvidePostgresDB(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_, err := ProvidePostgresDB(noop.ProvideNoopLogger(), "")
+		_, err := ProvidePostgresDB(logging.NewNonOperationalLogger(), "")
 		assert.NoError(t, err)
 	})
 }
@@ -1124,7 +1117,6 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -1132,7 +1124,7 @@ func TestProvideSqliteDB(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_, err := ProvideSqliteDB(noop.ProvideNoopLogger(), "")
+		_, err := ProvideSqliteDB(logging.NewNonOperationalLogger(), "")
 		assert.NoError(t, err)
 	})
 }
@@ -1152,7 +1144,6 @@ package example
 
 import (
 	assert "github.com/stretchr/testify/assert"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"testing"
 )
 
@@ -1160,7 +1151,7 @@ func TestProvideMariaDBConnection(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		_, err := ProvideMariaDBConnection(noop.ProvideNoopLogger(), "")
+		_, err := ProvideMariaDBConnection(logging.NewNonOperationalLogger(), "")
 		assert.NoError(t, err)
 	})
 }

@@ -13,7 +13,7 @@ import (
 func oauth2ClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.DatabasePackage("querybuilders", spn), spn)
 
 	utils.AddImports(proj, code, false)
 

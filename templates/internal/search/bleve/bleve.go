@@ -17,7 +17,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildConstantDefinitions(proj)...)
 	code.Add(buildInterfaceImplementationStatement(proj)...)
-	code.Add(buildTypeDefinitions()...)
+	code.Add(buildTypeDefinitions(proj)...)
 	code.Add(buildNewBleveIndexManager(proj)...)
 	code.Add(buildNewBleveIndexManager_Index(proj)...)
 	code.Add(buildNewBleveIndexManager_Search(proj)...)
@@ -49,12 +49,12 @@ func buildInterfaceImplementationStatement(proj *models.Project) []jen.Code {
 	return lines
 }
 
-func buildTypeDefinitions() []jen.Code {
+func buildTypeDefinitions(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Type().Defs(
 			jen.ID("bleveIndexManager").Struct(
 				jen.ID("index").Qual(searchPackage, "Index"),
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 			),
 		),
 		jen.Line(),
@@ -115,7 +115,7 @@ func buildNewBleveIndexManager(proj *models.Project) []jen.Code {
 		jen.Func().ID("NewBleveIndexManager").Params(
 			jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
 			jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"),
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 		).Params(
 			jen.Qual(proj.InternalSearchPackage(), "IndexManager"),
 			jen.Error(),

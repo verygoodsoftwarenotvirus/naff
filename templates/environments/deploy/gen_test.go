@@ -472,7 +472,7 @@ func Test_grafanaDotIni(T *testing.T) {
 # Set to true to disable (hide) the login form, useful if you use OAuth, defaults to false
 ;disable_login_form = false
 
-# Set to true to disable the signout link in the side menu. useful if you use auth.proxy, defaults to false
+# Set to true to disable the signout link in the side menu. useful if you use authentication.proxy, defaults to false
 ;disable_signout_menu = false
 
 # URL to redirect the user to after sign out
@@ -489,7 +489,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;api_key_max_seconds_to_live = -1
 
 #################################### Anonymous Auth ######################
-[auth.anonymous]
+[authentication.anonymous]
 # enable anonymous access
 ;enabled = false
 
@@ -500,7 +500,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;org_role = Viewer
 
 #################################### Github Auth ##########################
-[auth.github]
+[authentication.github]
 ;enabled = false
 ;allow_sign_up = true
 ;client_id = some_id
@@ -514,7 +514,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;allowed_organizations =
 
 #################################### GitLab Auth #########################
-[auth.gitlab]
+[authentication.gitlab]
 ;enabled = false
 ;allow_sign_up = true
 ;client_id = some_id
@@ -527,7 +527,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;allowed_groups =
 
 #################################### Google Auth ##########################
-[auth.google]
+[authentication.google]
 ;enabled = false
 ;allow_sign_up = true
 ;client_id = some_client_id
@@ -540,7 +540,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;hosted_domain =
 
 #################################### Grafana.com Auth ####################
-[auth.grafana_com]
+[authentication.grafana_com]
 ;enabled = false
 ;allow_sign_up = true
 ;client_id = some_id
@@ -549,7 +549,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;allowed_organizations =
 
 #################################### Azure AD OAuth #######################
-[auth.azuread]
+[authentication.azuread]
 ;name = Azure AD
 ;enabled = false
 ;allow_sign_up = true
@@ -562,7 +562,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;allowed_groups =
 
 #################################### Okta OAuth #######################
-[auth.okta]
+[authentication.okta]
 ;name = Okta
 ;enabled = false
 ;allow_sign_up = true
@@ -577,7 +577,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;role_attribute_path =
 
 #################################### Generic OAuth ##########################
-[auth.generic_oauth]
+[authentication.generic_oauth]
 ;enabled = false
 ;name = OAuth
 ;allow_sign_up = true
@@ -599,11 +599,11 @@ func Test_grafanaDotIni(T *testing.T) {
 ;tls_client_ca =
 
 #################################### Basic Auth ##########################
-[auth.basic]
+[authentication.basic]
 ;enabled = true
 
 #################################### Auth Proxy ##########################
-[auth.proxy]
+[authentication.proxy]
 ;enabled = false
 ;header_name = X-WEBAUTH-USER
 ;header_property = username
@@ -615,7 +615,7 @@ func Test_grafanaDotIni(T *testing.T) {
 ;enable_login_token = false
 
 #################################### Auth LDAP ##########################
-[auth.ldap]
+[authentication.ldap]
 ;enabled = false
 ;config_file = /etc/grafana/ldap.toml
 ;allow_sign_up = true

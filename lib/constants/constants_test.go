@@ -1,6 +1,7 @@
 package constants
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -113,7 +114,7 @@ func TestLoggerParam(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		t.Parallel()
 
-		result := LoggerParam()
+		result := models.LoggerParam()
 
 		expected := `
 package main

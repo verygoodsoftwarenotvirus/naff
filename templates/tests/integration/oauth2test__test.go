@@ -23,9 +23,8 @@ import (
 	totp "github.com/pquerna/otp/totp"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 	"time"
@@ -92,7 +91,7 @@ func TestOAuth2Clients(test *testing.T) {
 		premade.ClientID,
 		premade.ClientSecret,
 		todoClient.URL,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		todoClient.PlainClient(),
 		premade.Scopes,
 		debug,
@@ -184,7 +183,7 @@ func TestOAuth2Clients(test *testing.T) {
 				premade.ClientID,
 				premade.ClientSecret,
 				todoClient.URL,
-				noop.ProvideNoopLogger(),
+				logging.NewNonOperationalLogger(),
 				buildHTTPClient(),
 				premade.Scopes,
 				true,
@@ -391,9 +390,8 @@ import (
 	"context"
 	assert "github.com/stretchr/testify/assert"
 	require "github.com/stretchr/testify/require"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"testing"
 )
@@ -414,7 +412,7 @@ func TestOAuth2Clients(test *testing.T) {
 		premade.ClientID,
 		premade.ClientSecret,
 		todoClient.URL,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		todoClient.PlainClient(),
 		premade.Scopes,
 		debug,
@@ -506,7 +504,7 @@ func TestOAuth2Clients(test *testing.T) {
 				premade.ClientID,
 				premade.ClientSecret,
 				todoClient.URL,
-				noop.ProvideNoopLogger(),
+				logging.NewNonOperationalLogger(),
 				buildHTTPClient(),
 				premade.Scopes,
 				true,

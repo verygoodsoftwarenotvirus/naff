@@ -24,7 +24,7 @@ import (
 	bleve "github.com/blevesearch/bleve"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	search "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/search"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"strconv"
 )
@@ -297,7 +297,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"strconv"
 )
 
@@ -329,7 +329,7 @@ package example
 import (
 	"context"
 	bleve "github.com/blevesearch/bleve"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"strconv"
 )
 
@@ -383,7 +383,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"strconv"
 )
 

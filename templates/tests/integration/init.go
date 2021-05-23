@@ -37,7 +37,7 @@ func buildInitVarDefs(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Var().Defs(
 			jen.ID("urlToUse").String(),
-			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client"),
+			jen.IDf("%sClient", proj.Name.UnexportedVarName()).PointerTo().Qual(proj.HTTPClientPackage(), "V1Client"),
 		),
 		jen.Line(),
 	}
@@ -49,7 +49,7 @@ func buildInitInit(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("init").Params().Body(
 			jen.ID("urlToUse").Equals().Qual(proj.TestUtilPackage(), "DetermineServiceURL").Call(),
-			jen.ID(constants.LoggerVarName).Assign().Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
+			jen.ID(constants.LoggerVarName).Assign().Qual(proj.InternalLoggingPackage("zerolog"), "NewZeroLogger").Call(),
 			jen.Line(),
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("url"), jen.ID("urlToUse")).Dot("Info").Call(jen.Lit("checking server")),
 			jen.Qual(proj.TestUtilPackage(), "EnsureServerIsUp").Call(jen.ID("urlToUse")),
@@ -95,17 +95,17 @@ func buildInitBuildHTTPClient() []jen.Code {
 
 func buildInitInitializeClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientV1Package(), "V1Client")).Body(
+		jen.Func().ID("initializeClient").Params(jen.ID("oa2Client").PointerTo().Qual(proj.TypesPackage(), "OAuth2Client")).Params(jen.PointerTo().Qual(proj.HTTPClientPackage(), "V1Client")).Body(
 			jen.List(jen.ID("uri"), jen.Err()).Assign().Qual("net/url", "Parse").Call(jen.ID("urlToUse")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientV1Package(), "NewClient").Callln(
+			jen.List(jen.ID("c"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 				constants.InlineCtx(),
 				jen.ID("oa2Client").Dot("ClientID"),
 				jen.ID("oa2Client").Dot("ClientSecret"),
-				jen.ID("uri"), jen.Qual("gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog", "NewZeroLogger").Call(),
+				jen.ID("uri"), jen.Qual(proj.InternalLoggingPackage("zerolog"), "NewZeroLogger").Call(),
 				jen.ID("buildHTTPClient").Call(),
 				jen.ID("oa2Client").Dot("Scopes"),
 				jen.ID("debug"),

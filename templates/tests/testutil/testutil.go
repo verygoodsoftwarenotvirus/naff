@@ -133,7 +133,7 @@ func buildCreateObligatoryUser(proj *models.Project) []jen.Code {
 				jen.Return().List(jen.Nil(), jen.ID("parseErr")),
 			),
 			jen.Line(),
-			jen.List(jen.ID("c"), jen.ID("clientInitErr")).Assign().Qual(proj.HTTPClientV1Package(), "NewSimpleClient").Call(constants.CtxVar(), jen.ID("tu"), jen.ID("debug")),
+			jen.List(jen.ID("c"), jen.ID("clientInitErr")).Assign().Qual(proj.HTTPClientPackage(), "NewSimpleClient").Call(constants.CtxVar(), jen.ID("tu"), jen.ID("debug")),
 			jen.If(jen.ID("clientInitErr").DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.ID("clientInitErr")),
 			),

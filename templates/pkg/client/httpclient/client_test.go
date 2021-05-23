@@ -44,8 +44,7 @@ import (
 	"fmt"
 	http2curl "github.com/moul/http2curl"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	ochttp "go.opencensus.io/plugin/ochttp"
 	oauth2 "golang.org/x/oauth2"
 	clientcredentials "golang.org/x/oauth2/clientcredentials"
@@ -162,7 +161,7 @@ func NewSimpleClient(ctx context.Context, address *url.URL, debug bool) (*V1Clie
 		"",
 		"",
 		address,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		&http.Client{Timeout: 5 * time.Second},
 		[]string{"*"},
 		debug,
@@ -499,7 +498,9 @@ func Test_buildClientTypeDecls(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildClientTypeDecls()
+		proj := testprojects.BuildTodoApp()
+
+		x := buildClientTypeDecls(proj)
 
 		expected := `
 package example
@@ -602,7 +603,9 @@ func Test_buildNewClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildNewClient()
+		proj := testprojects.BuildTodoApp()
+
+		x := buildNewClient(proj)
 
 		expected := `
 package example
@@ -754,14 +757,15 @@ func Test_buildNewSimpleClient(T *testing.T) {
 	T.Parallel()
 
 	T.Run("obligatory", func(t *testing.T) {
-		x := buildNewSimpleClient()
+		proj := testprojects.BuildTodoApp()
+
+		x := buildNewSimpleClient(proj)
 
 		expected := `
 package example
 
 import (
 	"context"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	"net/http"
 	"net/url"
 	"time"
@@ -777,7 +781,7 @@ func NewSimpleClient(ctx context.Context, address *url.URL, debug bool) (*V1Clie
 		"",
 		"",
 		address,
-		noop.ProvideNoopLogger(),
+		logging.NewNonOperationalLogger(),
 		&http.Client{Timeout: 5 * time.Second},
 		[]string{"*"},
 		debug,
@@ -832,7 +836,7 @@ import (
 	"context"
 	"fmt"
 	http2curl "github.com/moul/http2curl"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 	"net/http/httputil"
 )
@@ -1085,7 +1089,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -1126,7 +1130,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -1163,7 +1167,7 @@ package example
 import (
 	"context"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -1208,7 +1212,7 @@ package example
 import (
 	"context"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 
@@ -1258,7 +1262,7 @@ package example
 import (
 	"context"
 	"fmt"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 	"net/http"
 )
 

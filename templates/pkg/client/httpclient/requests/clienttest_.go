@@ -23,8 +23,8 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(buildMustParseURL()...)
-	code.Add(buildBuildTestClient()...)
-	code.Add(buildBuildTestClientWithInvalidURL()...)
+	code.Add(buildBuildTestClient(proj)...)
+	code.Add(buildBuildTestClientWithInvalidURL(proj)...)
 
 	code.Add(
 		jen.Line(),
@@ -35,13 +35,13 @@ func mainTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildTestV1Client_AuthenticatedClient()...)
 	code.Add(buildTestV1Client_PlainClient()...)
-	code.Add(buildTestV1Client_TokenSource()...)
-	code.Add(buildTestNewClient()...)
+	code.Add(buildTestV1Client_TokenSource(proj)...)
+	code.Add(buildTestNewClient(proj)...)
 	code.Add(buildTestNewSimpleClient()...)
 	code.Add(buildTestV1Client_CloseRequestBody()...)
-	code.Add(buildTestBuildURL()...)
-	code.Add(buildTestBuildVersionlessURL()...)
-	code.Add(buildTestV1Client_BuildWebsocketURL()...)
+	code.Add(buildTestBuildURL(proj)...)
+	code.Add(buildTestBuildVersionlessURL(proj)...)
+	code.Add(buildTestV1Client_BuildWebsocketURL(proj)...)
 	code.Add(buildTestV1Client_BuildHealthCheckRequest()...)
 	code.Add(buildTestV1Client_IsUp()...)
 	code.Add(buildTestV1Client_buildDataRequest()...)
@@ -123,7 +123,7 @@ func buildMustParseURL() []jen.Code {
 	return lines
 }
 
-func buildBuildTestClient() []jen.Code {
+func buildBuildTestClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildTestClient").Params(
 			jen.ID("t").PointerTo().Qual("testing", "T"),
@@ -133,7 +133,7 @@ func buildBuildTestClient() []jen.Code {
 		).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("l").Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("l").Assign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 			jen.ID("u").Assign().ID("mustParseURL").Call(
 				jen.ID("ts").Dot("URL"),
 			),
@@ -153,12 +153,12 @@ func buildBuildTestClient() []jen.Code {
 	return lines
 }
 
-func buildBuildTestClientWithInvalidURL() []jen.Code {
+func buildBuildTestClientWithInvalidURL(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("buildTestClientWithInvalidURL").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Params(jen.PointerTo().ID(v1)).Body(
 			jen.ID("t").Dot("Helper").Call(),
 			jen.Line(),
-			jen.ID("l").Assign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.ID("l").Assign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 			jen.ID("u").Assign().ID("mustParseURL").Call(jen.Lit("https://verygoodsoftwarenotvirus.ru")),
 			jen.ID("u").Dot("Scheme").Equals().Qual("fmt", "Sprintf").Call(
 				jen.RawString(`%s://`),
@@ -235,7 +235,7 @@ func buildTestV1Client_PlainClient() []jen.Code {
 	return lines
 }
 
-func buildTestV1Client_TokenSource() []jen.Code {
+func buildTestV1Client_TokenSource(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_TokenSource").Body(
 			utils.ParallelTest(nil),
@@ -251,7 +251,7 @@ func buildTestV1Client_TokenSource() []jen.Code {
 					jen.ID("mustParseURL").Call(
 						jen.ID(utils.BuildFakeVarName("URI")),
 					),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -269,7 +269,7 @@ func buildTestV1Client_TokenSource() []jen.Code {
 	return lines
 }
 
-func buildTestNewClient() []jen.Code {
+func buildTestNewClient(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		utils.OuterTestFunc("NewClient").Body(
 			utils.ParallelTest(nil),
@@ -285,7 +285,7 @@ func buildTestNewClient() []jen.Code {
 					jen.ID("mustParseURL").Call(
 						jen.ID(utils.BuildFakeVarName("URI")),
 					),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.ID("ts").Dot("Client").Call(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -308,7 +308,7 @@ func buildTestNewClient() []jen.Code {
 					jen.ID("mustParseURL").Call(
 						jen.ID(utils.BuildFakeVarName("URI")),
 					),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.AddressOf().Qual("net/http", "Client").Valuesln(
 						jen.ID("Timeout").MapAssign().Zero(),
 					),
@@ -395,7 +395,7 @@ func buildTestV1Client_CloseRequestBody() []jen.Code {
 	return lines
 }
 
-func buildTestBuildURL() []jen.Code {
+func buildTestBuildURL(proj *models.Project) []jen.Code {
 	testVar := func() *jen.Statement {
 		return jen.ID("t")
 	}
@@ -419,7 +419,7 @@ func buildTestBuildURL() []jen.Code {
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.Nil(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -493,7 +493,7 @@ func buildTestBuildURL() []jen.Code {
 	return lines
 }
 
-func buildTestBuildVersionlessURL() []jen.Code {
+func buildTestBuildVersionlessURL(proj *models.Project) []jen.Code {
 	testVar := func() *jen.Statement {
 		return jen.ID("t")
 	}
@@ -517,7 +517,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.Nil(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),
@@ -591,7 +591,7 @@ func buildTestBuildVersionlessURL() []jen.Code {
 	return lines
 }
 
-func buildTestV1Client_BuildWebsocketURL() []jen.Code {
+func buildTestV1Client_BuildWebsocketURL(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		utils.OuterTestFunc("V1Client_BuildWebsocketURL").Body(
 			utils.ParallelTest(nil),
@@ -613,7 +613,7 @@ func buildTestV1Client_BuildWebsocketURL() []jen.Code {
 					jen.EmptyString(),
 					jen.EmptyString(),
 					jen.ID("u"),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 					jen.Nil(),
 					jen.Index().String().Values(jen.Lit("*")),
 					jen.False(),

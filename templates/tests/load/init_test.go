@@ -21,7 +21,7 @@ package example
 import (
 	"context"
 	"fmt"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	http1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
@@ -133,7 +133,7 @@ package example
 
 import (
 	"fmt"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/tests/v1/testutil"
 	"strings"
 )
@@ -206,7 +206,7 @@ package example
 
 import (
 	"context"
-	zerolog "gitlab.com/verygoodsoftwarenotvirus/logging/v1/zerolog"
+	zerolog "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/logging/zerolog"
 	http "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/client/v1/http"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	"net/url"

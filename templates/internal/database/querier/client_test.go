@@ -23,7 +23,7 @@ import (
 	"database/sql"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 var _ v1.DataManager = (*Client)(nil)
@@ -137,7 +137,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 // Migrate is a simple wrapper around the core querier Migrate call.
@@ -166,7 +166,7 @@ package example
 
 import (
 	"context"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/tracing"
+	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/observability/tracing"
 )
 
 // IsReady is a simple wrapper around the core querier IsReady call.

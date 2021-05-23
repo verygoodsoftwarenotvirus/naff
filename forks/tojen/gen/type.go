@@ -22,9 +22,17 @@ func arrayType(s *ast.ArrayType) jen.Code {
 }
 
 func structType(s *ast.StructType) jen.Code {
-	return jen.Dot("Struct").Callln(fieldList(s.Fields)...)
+	args := fieldList(s.Fields)
+	if len(args) <= 1 {
+		return jen.Dot("Struct").Call(args...)
+	}
+	return jen.Dot("Struct").Callln(args...)
 }
 
 func interfaceType(s *ast.InterfaceType) jen.Code {
-	return jen.Dot("Interface").Callln(fieldList(s.Methods)...)
+	args := fieldList(s.Methods)
+	if len(args) <= 1 {
+		return jen.Dot("Interface").Call(args...)
+	}
+	return jen.Dot("Interface").Callln(args...)
 }

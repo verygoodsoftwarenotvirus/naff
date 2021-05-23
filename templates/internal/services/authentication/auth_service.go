@@ -48,7 +48,7 @@ func buildAuthServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Comment("Service handles authentication service-wide"),
 			jen.ID("Service").Struct(
 				jen.ID("config").Qual(proj.InternalConfigPackage(), "AuthSettings"),
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 				jen.ID("userDB").Qual(proj.TypesPackage(), "UserDataManager"),
 				jen.ID("oauth2ClientsService").ID("OAuth2ClientValidator"),
@@ -68,7 +68,7 @@ func buildProvideAuthService(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideAuthService builds a new AuthService."),
 		jen.Line(),
 		jen.Func().ID("ProvideAuthService").Paramsln(
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("cfg").Qual(proj.InternalConfigPackage(), "AuthSettings"),
 			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 			jen.ID("database").Qual(proj.TypesPackage(), "UserDataManager"),

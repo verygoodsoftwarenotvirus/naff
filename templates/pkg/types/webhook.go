@@ -14,10 +14,10 @@ func webhookDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildWebhookTypeDefinitions()...)
 	code.Add(buildWebhookUpdate()...)
-	code.Add(buildWebhookbuildErrorLogFunc()...)
+	code.Add(buildWebhookbuildErrorLogFunc(proj)...)
 
 	// if proj.EnableNewsman {
-	code.Add(buildWebhookToListener()...)
+	code.Add(buildWebhookToListener(proj)...)
 	// }
 
 	return code
@@ -150,9 +150,9 @@ func buildWebhookUpdate() []jen.Code {
 	return lines
 }
 
-func buildWebhookbuildErrorLogFunc() []jen.Code {
+func buildWebhookbuildErrorLogFunc(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
-		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), constants.LoggerParam()).Params(jen.Func().Params(jen.Error())).Body(
+		jen.Func().ID("buildErrorLogFunc").Params(jen.ID("w").PointerTo().ID("Webhook"), proj.LoggerParam()).Params(jen.Func().Params(jen.Error())).Body(
 			jen.Return().Func().Params(jen.Err().Error()).Body(
 				jen.ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 					jen.Lit("url").MapAssign().ID("w").Dot("URL"),
@@ -167,11 +167,11 @@ func buildWebhookbuildErrorLogFunc() []jen.Code {
 	return lines
 }
 
-func buildWebhookToListener() []jen.Code {
+func buildWebhookToListener(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ToListener creates a newsman Listener from a Webhook."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(constants.LoggerParam()).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Body(
+		jen.Func().Params(jen.ID("w").PointerTo().ID("Webhook")).ID("ToListener").Params(proj.LoggerParam()).Params(jen.Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Listener")).Body(
 			jen.Return().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "NewWebhookListener").Callln(
 				jen.ID("buildErrorLogFunc").Call(jen.ID("w"), jen.ID(constants.LoggerVarName)),
 				jen.AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "WebhookConfig").Valuesln(

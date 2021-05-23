@@ -14,7 +14,7 @@ import (
 func databaseDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
 	spn := dbvendor.SingularPackageName()
 
-	code := jen.NewFilePathName(proj.DatabasePackage("queriers", "v1", spn), spn)
+	code := jen.NewFilePathName(proj.QuerybuildersPackage(spn), spn)
 
 	utils.AddImports(proj, code, false)
 
@@ -124,7 +124,7 @@ func buildDBDotGoVarDecls(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 		jen.Type().Defs(
 			jen.Commentf("%s is our main %s interaction db.", sn, sn),
 			jen.ID(sn).Struct(
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 				jen.ID("db").PointerTo().Qual("database/sql", "DB"),
 				func() jen.Code {
 					if isMariaDB(dbvendor) || isSqlite(dbvendor) {
@@ -167,7 +167,7 @@ func buildProvideDatabaseConn(proj *models.Project, dbvendor wordsmith.SuperPala
 	lines := []jen.Code{
 		jen.Commentf("Provide%s%s provides an instrumented %s db.", sn, dbTrail, cn),
 		jen.Line(),
-		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(constants.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabasePackage(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Body(
+		jen.Func().IDf("Provide%s%s", sn, dbTrail).Params(proj.LoggerParam(), jen.ID("connectionDetails").Qual(proj.DatabasePackage(), "ConnectionDetails")).Params(jen.PointerTo().Qual("database/sql", "DB"), jen.Error()).Body(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("connection_details"), jen.ID("connectionDetails")).Dot("Debug").Call(jen.Litf("Establishing connection to %s", cn)),
 			jen.Return().Qual("database/sql", "Open").Call(jen.IDf("%sDriverName", uvn), jen.String().Call(jen.ID("connectionDetails"))),
 		),
@@ -195,7 +195,7 @@ func buildProvideDatabaseClient(proj *models.Project, dbvendor wordsmith.SuperPa
 	lines := []jen.Code{
 		jen.Commentf("Provide%s provides a %s%s controller.", sn, cn, dbTrail),
 		jen.Line(),
-		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), constants.LoggerParam()).Params(jen.Qual(proj.DatabasePackage(), "DataManager")).Body(
+		jen.Func().IDf("Provide%s", sn).Params(jen.ID("debug").Bool(), jen.ID("db").PointerTo().Qual("database/sql", "DB"), proj.LoggerParam()).Params(jen.Qual(proj.DatabasePackage(), "DataManager")).Body(
 			jen.Return().AddressOf().IDf(sn).Valuesln(
 				jen.ID("db").MapAssign().ID("db"),
 				jen.ID("debug").MapAssign().ID("debug"),

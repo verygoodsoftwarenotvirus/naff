@@ -208,7 +208,7 @@ func buildMain(proj *models.Project) []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("main").Params().Body(
 			jen.Qual(constants.FlagParsingLibrary, "Parse").Call(),
-			jen.ID(constants.LoggerVarName).Assign().Qual(filepath.Join(constants.LoggingPkg, "zerolog"), "NewZeroLogger").Call().Dot("WithName").Call(jen.Lit("search_index_initializer")),
+			jen.ID(constants.LoggerVarName).Assign().Qual(filepath.Join(proj.InternalLoggingPackage(), "zerolog"), "NewZeroLogger").Call().Dot("WithName").Call(jen.Lit("search_index_initializer")),
 			constants.CreateCtx(),
 			jen.Line(),
 			jen.If(jen.ID("indexOutputPath").IsEqualTo().EmptyString()).Body(

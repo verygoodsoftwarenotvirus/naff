@@ -31,7 +31,7 @@ func buildBuildTestClient(proj *models.Project) []jen.Code {
 		jen.Func().ID("buildTestClient").Params().Params(jen.PointerTo().ID("Client"), jen.PointerTo().Qual(proj.DatabasePackage(), "MockDatabase")).Body(
 			jen.ID("db").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 			jen.ID("c").Assign().AddressOf().ID("Client").Valuesln(
-				jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+				jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				jen.ID("querier").MapAssign().ID("db"),
 			),
 			jen.Return(jen.List(jen.ID("c"), jen.ID("db"))),
@@ -114,7 +114,7 @@ func buildTestProvideDatabaseClient(proj *models.Project) []jen.Code {
 					jen.Nil(),
 					jen.ID("mockDB"),
 					jen.True(),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNotNil(jen.ID("actual"), nil),
 				utils.AssertNoError(jen.Err(), nil),
@@ -133,7 +133,7 @@ func buildTestProvideDatabaseClient(proj *models.Project) []jen.Code {
 					jen.Nil(),
 					jen.ID("mockDB"),
 					jen.True(),
-					jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+					jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 				),
 				utils.AssertNil(jen.ID("x"), nil),
 				utils.AssertError(jen.ID("actual"), nil),

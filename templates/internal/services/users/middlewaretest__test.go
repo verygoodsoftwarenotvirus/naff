@@ -22,7 +22,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	"net/http"
@@ -44,7 +43,7 @@ func TestService_UserInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -67,7 +66,7 @@ func TestService_UserInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -92,7 +91,7 @@ func TestService_PasswordUpdateInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -115,7 +114,7 @@ func TestService_PasswordUpdateInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		mockDB := v1.BuildMockDatabase()
@@ -144,7 +143,7 @@ func TestService_TOTPSecretVerificationInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -167,7 +166,7 @@ func TestService_TOTPSecretVerificationInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -192,7 +191,7 @@ func TestService_TOTPSecretRefreshInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -215,7 +214,7 @@ func TestService_TOTPSecretRefreshInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock1.EncoderDecoder{}
@@ -285,7 +284,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock1 "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	"net/http"
 	"testing"
@@ -296,7 +294,7 @@ func TestService_UserInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}
@@ -319,7 +317,7 @@ func TestService_UserInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}
@@ -359,7 +357,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock1 "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	"net/http"
@@ -371,7 +368,7 @@ func TestService_PasswordUpdateInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}
@@ -394,7 +391,7 @@ func TestService_PasswordUpdateInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		mockDB := v1.BuildMockDatabase()
@@ -438,7 +435,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock1 "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	"net/http"
 	"testing"
@@ -449,7 +445,7 @@ func TestService_TOTPSecretVerificationInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}
@@ -472,7 +468,7 @@ func TestService_TOTPSecretVerificationInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}
@@ -512,7 +508,6 @@ import (
 	"errors"
 	assert "github.com/stretchr/testify/assert"
 	mock1 "github.com/stretchr/testify/mock"
-	noop "gitlab.com/verygoodsoftwarenotvirus/logging/v1/noop"
 	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	"net/http"
 	"testing"
@@ -523,7 +518,7 @@ func TestService_TOTPSecretRefreshInputMiddleware(T *testing.T) {
 
 	T.Run("happy path", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}
@@ -546,7 +541,7 @@ func TestService_TOTPSecretRefreshInputMiddleware(T *testing.T) {
 
 	T.Run("with error decoding request", func(t *testing.T) {
 		s := &Service{
-			logger: noop.ProvideNoopLogger(),
+			logger: logging.NewNonOperationalLogger(),
 		}
 
 		ed := &mock.EncoderDecoder{}

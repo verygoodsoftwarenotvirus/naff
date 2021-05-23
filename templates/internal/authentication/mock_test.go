@@ -21,10 +21,10 @@ package example
 import (
 	"context"
 	mock "github.com/stretchr/testify/mock"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 )
 
-var _ auth.Authenticator = (*Authenticator)(nil)
+var _ authentication.Authenticator = (*Authenticator)(nil)
 
 // Authenticator is a mock Authenticator.
 type Authenticator struct {
@@ -95,10 +95,10 @@ func Test_buildInterfaceImplementationDeclaration(T *testing.T) {
 package example
 
 import (
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
 )
 
-var _ auth.Authenticator = (*Authenticator)(nil)
+var _ authentication.Authenticator = (*Authenticator)(nil)
 `
 		actual := testutils.RenderOuterStatementToString(t, x...)
 

@@ -27,8 +27,8 @@ import (
 	require "github.com/stretchr/testify/require"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock3 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
@@ -70,7 +70,7 @@ func TestService_validateCredentialChangeRequest(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -160,7 +160,7 @@ func TestService_validateCredentialChangeRequest(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -198,7 +198,7 @@ func TestService_validateCredentialChangeRequest(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -294,7 +294,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -357,7 +357,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, errors.New("blah"))
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, errors.New("blah"))
 		s.authenticator = auth
 
 		res, req := httptest.NewRecorder(), buildRequest(t)
@@ -384,7 +384,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -419,7 +419,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -455,7 +455,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -486,7 +486,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -517,7 +517,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock1.Authenticator{}
-		auth.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -673,7 +673,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -747,7 +747,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -789,7 +789,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -835,7 +835,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -877,7 +877,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1091,7 +1091,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1100,7 +1100,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 			exampleInput.TOTPToken,
 			exampleUser.Salt,
 		).Return(true, nil)
-		auth.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
 		s.authenticator = auth
 
 		s.UpdatePasswordHandler(res, req)
@@ -1162,7 +1162,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1204,7 +1204,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1213,7 +1213,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 			exampleInput.TOTPToken,
 			exampleUser.Salt,
 		).Return(true, nil)
-		auth.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", errors.New("blah"))
+		authentication.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", errors.New("blah"))
 		s.authenticator = auth
 
 		s.UpdatePasswordHandler(res, req)
@@ -1247,7 +1247,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1256,7 +1256,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 			exampleInput.TOTPToken,
 			exampleUser.Salt,
 		).Return(true, nil)
-		auth.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
 		s.authenticator = auth
 
 		s.UpdatePasswordHandler(res, req)
@@ -1394,8 +1394,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
@@ -1419,7 +1419,7 @@ func TestService_validateCredentialChangeRequest(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1509,7 +1509,7 @@ func TestService_validateCredentialChangeRequest(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1547,7 +1547,7 @@ func TestService_validateCredentialChangeRequest(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -1684,8 +1684,8 @@ import (
 	mock1 "github.com/stretchr/testify/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
 	client "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1/client"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock4 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/metrics/mock"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
@@ -1704,7 +1704,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -1767,7 +1767,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, errors.New("blah"))
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, errors.New("blah"))
 		s.authenticator = auth
 
 		res, req := httptest.NewRecorder(), buildRequest(t)
@@ -1794,7 +1794,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -1829,7 +1829,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -1865,7 +1865,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -1896,7 +1896,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -1927,7 +1927,7 @@ func TestService_CreateHandler(T *testing.T) {
 		exampleInput := fake.BuildFakeUserCreationInputFromUser(exampleUser)
 
 		auth := &mock.Authenticator{}
-		auth.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
+		authentication.On("HashPassword", mock1.Anything, exampleInput.Password).Return(exampleUser.HashedPassword, nil)
 		s.authenticator = auth
 
 		db := v1.BuildMockDatabase()
@@ -2106,8 +2106,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	mock2 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/encoding/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
@@ -2142,7 +2142,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2216,7 +2216,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2258,7 +2258,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2304,7 +2304,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2346,7 +2346,7 @@ func TestService_NewTOTPSecretHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2583,8 +2583,8 @@ import (
 	assert "github.com/stretchr/testify/assert"
 	mock "github.com/stretchr/testify/mock"
 	v11 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/database/v1"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth"
-	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/v1/auth/mock"
+	authentication "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication"
+	mock1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/internal/authentication/mock"
 	v1 "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types"
 	fake "gitlab.com/verygoodsoftwarenotvirus/naff/example_output/pkg/types/fake"
 	"net/http"
@@ -2618,7 +2618,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2627,7 +2627,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 			exampleInput.TOTPToken,
 			exampleUser.Salt,
 		).Return(true, nil)
-		auth.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
 		s.authenticator = auth
 
 		s.UpdatePasswordHandler(res, req)
@@ -2689,7 +2689,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2731,7 +2731,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2740,7 +2740,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 			exampleInput.TOTPToken,
 			exampleUser.Salt,
 		).Return(true, nil)
-		auth.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", errors.New("blah"))
+		authentication.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", errors.New("blah"))
 		s.authenticator = auth
 
 		s.UpdatePasswordHandler(res, req)
@@ -2774,7 +2774,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 		s.userDataManager = mockDB
 
 		auth := &mock1.Authenticator{}
-		auth.On(
+		authentication.On(
 			"ValidateLogin",
 			mock.Anything,
 			exampleUser.HashedPassword,
@@ -2783,7 +2783,7 @@ func TestService_UpdatePasswordHandler(T *testing.T) {
 			exampleInput.TOTPToken,
 			exampleUser.Salt,
 		).Return(true, nil)
-		auth.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
+		authentication.On("HashPassword", mock.Anything, exampleInput.NewPassword).Return("blah", nil)
 		s.authenticator = auth
 
 		s.UpdatePasswordHandler(res, req)

@@ -71,7 +71,7 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 	uvn := typ.Name.UnexportedVarName()
 
 	structFields := []jen.Code{
-		constants.LoggerParam(),
+		proj.LoggerParam(),
 	}
 
 	// data managers
@@ -159,7 +159,7 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	uvn := typ.Name.UnexportedVarName()
 
 	params := []jen.Code{
-		constants.LoggerParam(),
+		proj.LoggerParam(),
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
@@ -240,7 +240,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 		jen.Func().IDf("Provide%sServiceSearchIndex", pn).Paramsln(
 			jen.ID("searchSettings").Qual(proj.InternalConfigPackage(), "SearchSettings"),
 			jen.ID("indexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider"),
-			jen.ID(constants.LoggerVarName).Qual(constants.LoggingPkg, "Logger"),
+			proj.LoggerParam(),
 		).Params(jen.ID("SearchIndex"), jen.Error()).Body(
 			jen.ID(constants.LoggerVarName).Dot("WithValue").Call(
 				jen.Lit("index_path"),

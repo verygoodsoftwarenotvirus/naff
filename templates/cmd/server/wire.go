@@ -66,7 +66,7 @@ func buildWireBuildCallArgs(proj *models.Project) []jen.Code {
 	internalConfigImp := fmt.Sprintf("%s/internal/v1/config", proj.OutputPath)
 	internalMetricsImp := fmt.Sprintf("%s/internal/v1/metrics", proj.OutputPath)
 	internalEncodingImp := fmt.Sprintf("%s/internal/v1/encoding", proj.OutputPath)
-	internalAuthImp := fmt.Sprintf("%s/internal/v1/auth", proj.OutputPath)
+	internalAuthImp := fmt.Sprintf("%s/internal/authentication", proj.OutputPath)
 	authServiceImp := fmt.Sprintf("%s/services/v1/auth", proj.OutputPath)
 	usersServiceImp := fmt.Sprintf("%s/services/v1/users", proj.OutputPath)
 	frontendServiceImp := fmt.Sprintf("%s/services/v1/frontend", proj.OutputPath)

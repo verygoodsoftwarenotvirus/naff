@@ -61,7 +61,7 @@ func buildWebhooksServiceTypeDefs(proj *models.Project) []jen.Code {
 			jen.Line(),
 			jen.Comment("Service handles TODO ListHandler webhooks."),
 			jen.ID("Service").Struct(
-				constants.LoggerParam(),
+				proj.LoggerParam(),
 				jen.ID("webhookCounter").Qual(proj.InternalMetricsPackage(), "UnitCounter"),
 				jen.ID("webhookDataManager").Qual(proj.TypesPackage(), "WebhookDataManager"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
@@ -88,7 +88,7 @@ func buildProvideWebhooksService(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideWebhooksService builds a new WebhooksService."),
 		jen.Line(),
 		jen.Func().ID("ProvideWebhooksService").Paramsln(
-			constants.LoggerParam(),
+			proj.LoggerParam(),
 			jen.ID("webhookDataManager").Qual(proj.TypesPackage(), "WebhookDataManager"),
 			jen.ID("userIDFetcher").ID("UserIDFetcher"),
 			jen.ID("webhookIDFetcher").ID("WebhookIDFetcher"),

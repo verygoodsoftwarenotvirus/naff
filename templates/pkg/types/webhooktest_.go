@@ -13,8 +13,8 @@ func webhookTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestWebhook_Update()...)
-	code.Add(buildTestWebhook_ToListener()...)
-	code.Add(buildTest_buildErrorLogFunc()...)
+	code.Add(buildTestWebhook_ToListener(proj)...)
+	code.Add(buildTest_buildErrorLogFunc(proj)...)
 
 	return code
 }
@@ -64,7 +64,7 @@ func buildTestWebhook_Update() []jen.Code {
 
 	return lines
 }
-func buildTestWebhook_ToListener() []jen.Code {
+func buildTestWebhook_ToListener(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("TestWebhook_ToListener").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -72,7 +72,7 @@ func buildTestWebhook_ToListener() []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
-				jen.ID("w").Dot("ToListener").Call(jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("w").Dot("ToListener").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 			),
 		),
 		jen.Line(),
@@ -80,7 +80,7 @@ func buildTestWebhook_ToListener() []jen.Code {
 
 	return lines
 }
-func buildTest_buildErrorLogFunc() []jen.Code {
+func buildTest_buildErrorLogFunc(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().ID("Test_buildErrorLogFunc").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -88,7 +88,7 @@ func buildTest_buildErrorLogFunc() []jen.Code {
 			utils.BuildSubTestWithoutContext(
 				"obligatory",
 				jen.ID("w").Assign().AddressOf().ID("Webhook").Values(),
-				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call()),
+				jen.ID("actual").Assign().ID("buildErrorLogFunc").Call(jen.ID("w"), jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call()),
 				jen.ID("actual").Call(constants.ObligatoryError()),
 			),
 		),

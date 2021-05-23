@@ -33,14 +33,14 @@ func buildProvideServerArgs(proj *models.Project, cookieSecret string) []jen.Cod
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
-		provideServerArgs = append(provideServerArgs, jen.AddressOf().Qual(proj.ServiceV1Package(pn), "Service").Values())
+		provideServerArgs = append(provideServerArgs, jen.AddressOf().Qual(proj.ServicePackage(pn), "Service").Values())
 	}
 
 	provideServerArgs = append(provideServerArgs,
 		jen.AddressOf().Qual(proj.ServiceUsersPackage(), "Service").Values(),
 		jen.AddressOf().Qual(proj.ServiceOAuth2ClientsPackage(), "Service").Values(),
 		jen.AddressOf().Qual(proj.ServiceWebhooksPackage(), "Service").Values(),
-		jen.ID("mockDB"), jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.ID("mockDB"), jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 		jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 	)
 
@@ -60,9 +60,9 @@ func buildBuildTestServer(proj *models.Project) []jen.Code {
 		jen.ID("config").MapAssign().AddressOf().Qual(proj.InternalConfigPackage(), "ServerConfig").Values(),
 		jen.ID("encoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("httpServer").MapAssign().ID("provideHTTPServer").Call(),
-		jen.ID(constants.LoggerVarName).MapAssign().Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+		jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 		jen.ID("frontendService").MapAssign().Qual(proj.ServiceFrontendPackage(), "ProvideFrontendService").Callln(
-			jen.Qual(constants.NoopLoggingPkg, "ProvideNoopLogger").Call(),
+			jen.Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
 			jen.Qual(proj.InternalConfigPackage(), "FrontendSettings").Values(),
 		),
 		jen.ID("webhooksService").MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), "WebhookDataServer").Values(),
