@@ -26,7 +26,7 @@ func accountEventsDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildAccountCreationEventEntry builds an entry creation input for when an account is created."),
+		jen.Comment("BuildAccountCreationEventEntry builds an entry creation input for when an account is created."),
 		jen.Line(),
 		jen.Func().ID("BuildAccountCreationEventEntry").Params(
 			jen.ID("account").Op("*").Qual(proj.TypesPackage(), "Account"),
@@ -69,7 +69,7 @@ func accountEventsDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildAccountArchiveEventEntry builds an entry creation input for when an account is archived."),
+		jen.Comment("BuildAccountArchiveEventEntry builds an entry creation input for when an account is archived."),
 		jen.Line(),
 		jen.Func().ID("BuildAccountArchiveEventEntry").Params(
 			jen.List(jen.ID("userID"),

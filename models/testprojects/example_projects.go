@@ -7,8 +7,9 @@ import (
 
 func BuildTodoApp() *models.Project {
 	p := &models.Project{
-		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
-		Name:       wordsmith.FromSingularPascalCase("Todo"),
+		EnableCapitalism: true, // regrettable, but for testing's sake
+		OutputPath:       "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
+		Name:             wordsmith.FromSingularPascalCase("Todo"),
 		DataTypes: []models.DataType{
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),

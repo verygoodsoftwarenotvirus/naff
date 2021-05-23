@@ -20,16 +20,14 @@ import (
 	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/database/querier"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/database/querybuilding"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/encoding"
-	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/encoding/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/metrics"
 	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/metrics/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/search"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/search/bleve"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/search/mock"
+	mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/search/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/server"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/services/apiclients"
 	authnservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/services/authentication"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/services/frontend"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/services/iterables"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/services/users"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/internal/services/webhooks"
@@ -39,11 +37,40 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/fake"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
+	mocktypes "gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
 	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/frontend"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/integration"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/load"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/testutil"
+
+	// experimental
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/authorization"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/capitalism"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/capitalism/stripe"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/config/viper"
+	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/database/config"
+	dbmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/database/querybuilding/mock"
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/encoding/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/observability"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/observability/keys"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/observability/logging"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/observability/logging/zerolog"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/panicking"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/random"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/routing"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/routing/chi"
+	mockrouting "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/routing/mock"
+	accountsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/services/accounts"
+	adminservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/services/admin"
+	auditservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/services/audit"
+	frontendservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/services/frontend"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/storage"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/uploads"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/uploads/images"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/_internal_/uploads/mock"
+	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/cmd/tools/data_scaffolder"
+	encodedqrcodegeneratorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/cmd/tools/encoded_qr_code_generator"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/pkg/types/converters"
 
 	"github.com/gosuri/uiprogress"
 )
@@ -63,7 +90,6 @@ func RenderProject(proj *naffmodels.Project) {
 		"internalauth":        authentication.RenderPackage,
 		"config":              config.RenderPackage,
 		"encoding":            encoding.RenderPackage,
-		"encodingmock":        mockencoding.RenderPackage,
 		"metrics":             metrics.RenderPackage,
 		"tracing":             tracing.RenderPackage,
 		"search":              search.RenderPackage,
@@ -76,11 +102,10 @@ func RenderProject(proj *naffmodels.Project) {
 		"frontendtests":       frontendtests.RenderPackage,
 		"webhooks":            webhooks.RenderPackage,
 		"oauth2clients":       apiclients.RenderPackage,
-		"frontend":            frontend.RenderPackage,
 		"auth":                authnservice.RenderPackage,
 		"users":               users.RenderPackage,
 		"httpserver":          server.RenderPackage,
-		"modelsmock":          mock.RenderPackage,
+		"mocktypes":           mocktypes.RenderPackage,
 		"models":              types.RenderPackage,
 		"fakemodels":          fake.RenderPackage,
 		"iterables":           iterables.RenderPackage,
@@ -92,6 +117,35 @@ func RenderProject(proj *naffmodels.Project) {
 		"deployfiles":         deploy.RenderPackage,
 		"dockerfiles":         dockerfiles.RenderPackage,
 		"miscellaneous":       misc.RenderPackage,
+		//
+		// experimental
+		"authorization":             authorization.RenderPackage,
+		"capitalism":                capitalism.RenderPackage,
+		"stripe":                    stripe.RenderPackage,
+		"viper":                     viper.RenderPackage,
+		"dbconfig":                  dbconfig.RenderPackage,
+		"dbmock":                    dbmock.RenderPackage,
+		"mockencoding":              mockencoding.RenderPackage,
+		"observability":             observability.RenderPackage,
+		"keys":                      keys.RenderPackage,
+		"logging":                   logging.RenderPackage,
+		"zerolog":                   zerolog.RenderPackage,
+		"panicking":                 panicking.RenderPackage,
+		"random":                    random.RenderPackage,
+		"routing":                   routing.RenderPackage,
+		"chi":                       chi.RenderPackage,
+		"mockrouting":               mockrouting.RenderPackage,
+		"accountsservice":           accountsservice.RenderPackage,
+		"adminservice":              adminservice.RenderPackage,
+		"auditservice":              auditservice.RenderPackage,
+		"frontendservice":           frontendservice.RenderPackage,
+		"storage":                   storage.RenderPackage,
+		"uploads":                   uploads.RenderPackage,
+		"images":                    images.RenderPackage,
+		"mock":                      mock.RenderPackage,
+		"datascaffoldercmd":         datascaffoldercmd.RenderPackage,
+		"encodedqrcodegeneratorcmd": encodedqrcodegeneratorcmd.RenderPackage,
+		"converters":                converters.RenderPackage,
 	}
 
 	var wg sync.WaitGroup
@@ -119,9 +173,11 @@ func RenderProject(proj *naffmodels.Project) {
 func renderTask(proj *naffmodels.Project, wg *sync.WaitGroup, name string, renderer func(*naffmodels.Project) error, progressBar *uiprogress.Bar) {
 	wg.Add(1)
 	start := time.Now()
+
 	if err := renderer(proj); err != nil {
 		log.Panicf("error rendering %q after %s: %v\n", name, time.Since(start), err)
 	}
+
 	progressBar.Incr()
 	wg.Done()
 }

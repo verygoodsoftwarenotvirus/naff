@@ -39,7 +39,7 @@ func (s *Statement) Directive(str string) *Statement {
 // Comment adds a comment. If the provided string contains a newline, the
 // comment is formatted in multiline style. If the comment string starts
 // with "//" or "/*", the automatic formatting is disabled and the string is
-// rendered directly.
+// rendered directly. TODO: add a .Line() and see what breaks
 func Comment(str string) *Statement {
 	return newStatement().Comment(str)
 }

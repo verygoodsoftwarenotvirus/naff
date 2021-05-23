@@ -12,10 +12,12 @@ func oauth2ClientsDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(jen.Null())
-	code.Add(jen.Const().Defs(
-		jen.ID("oauth2ClientsBasePath").Equals().Lit("oauth2/clients"),
-	))
+	code.Add(
+		jen.Null())
+	code.Add(
+		jen.Const().Defs(
+			jen.ID("oauth2ClientsBasePath").Equals().Lit("oauth2/clients"),
+		))
 
 	code.Add(buildBuildGetOAuth2ClientRequest(proj)...)
 	code.Add(buildGetOAuth2Client(proj)...)

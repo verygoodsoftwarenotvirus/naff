@@ -19,7 +19,6 @@ func RenderPackage(proj *models.Project) error {
 		"coverage_test.go": coverageTestDotGo(proj),
 		"doc.go":           docDotGo(),
 		"main.go":          mainDotGo(proj),
-		"wire.go":          wireDotGo(proj),
 	}
 
 	for path, file := range files {

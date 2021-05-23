@@ -11,9 +11,10 @@ func webhooksDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code, false)
-	code.Add(jen.Const().Defs(
-		jen.ID("webhooksBasePath").Equals().Lit("webhooks"),
-	))
+	code.Add(
+		jen.Const().Defs(
+			jen.ID("webhooksBasePath").Equals().Lit("webhooks"),
+		))
 
 	code.Add(buildBuildGetWebhookRequest(proj)...)
 	code.Add(buildGetWebhook(proj)...)

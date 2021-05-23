@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/codemodus/kace"
@@ -60,7 +61,33 @@ func runTojenForFile(filename, pkg string) (string, error) {
 
 func main() {
 	allPackages := []string{
+		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/data_scaffolder",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/encoded_qr_code_generator",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/htmx_converter",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/authorization",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/capitalism",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/capitalism/stripe",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config/viper",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/config",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/keys",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/logging",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/logging/zerolog",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/panicking/",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/random/",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/routing/",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/routing/chi",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/routing/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/accounts",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/admin",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/audit",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/frontend",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/storage",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/uploads",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/uploads/images",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/uploads/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/types/converters",
 	}
 
 	for _, pkg := range allPackages {
@@ -89,6 +116,7 @@ func doTheThingForPackage(pkg, pkgPath string) error {
 				strings.Replace(filepath.Join(outputPath, file.Name()), filepath.Join(os.Getenv("GOPATH"), "src", "gitlab.com/verygoodsoftwarenotvirus/naff/"), "", 1),
 				"/",
 			)
+			op = strings.Replace(op, "_test.go", "_test_.go", 1)
 
 			fileMap[strings.ReplaceAll(op, "templates/experimental/", "")] = kace.Camel(strings.ReplaceAll(filepath.Base(fp), ".go", "DotGo"))
 
@@ -103,7 +131,7 @@ func doTheThingForPackage(pkg, pkgPath string) error {
 
 	genDotGo := buildGenDotGo(pkg, fileMap)
 	ggfp := fmt.Sprintf("%s/gen.go", outputPath)
-	if err := ioutil.WriteFile(ggfp, []byte(genDotGo), 0644); err != nil {
+	if err = ioutil.WriteFile(ggfp, []byte(genDotGo), 0644); err != nil {
 		return err
 	}
 
@@ -143,10 +171,63 @@ func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, er
 			return "", err
 		}
 
-		os.MkdirAll(filepath.Dir(outputPath), 0777)
+		outputBytes := b.Bytes()
+
+		replacers := []struct {
+			replacer    string
+			replacement string
+		}{
+			{
+				replacer:    `\)\n\tcode\.Add\(`,
+				replacement: ")\n\n\tcode.Add(",
+			},
+			{
+				replacer:    `\,\n\n\t\tjen\.Line\(\)\,`,
+				replacement: ",\n\t\tjen.Line(),",
+			},
+			{
+				replacer:    `\.Comment\(\"\/\/\s`,
+				replacement: `.Comment("`,
+			},
+			{
+				replacer:    `jen\.Func\(\)\.Comment\(\"([a-zA-Z\-\,\.\s]+)\"\)`,
+				replacement: "jen.Comment(\"$1\"),\n\t\tjen.Line(),\n\t\tjen.Func()",
+			},
+			{
+				replacer:    `code\.Add\(jen`,
+				replacement: "code.Add(\n\t\tjen",
+			},
+			{
+				replacer:    `code\.Add\(\n\t\tjen\.Null\(\)\,\n\t\tjen\.Line\(\)\,\n\t\)`,
+				replacement: "",
+			},
+			{
+				replacer:    `\)\.Body\(jen`,
+				replacement: ").Body(\n\t\tjen",
+			},
+			{
+				replacer:    `\.Dot\(\n\s+\"(\w+)\"\,\n\s+\)`,
+				replacement: `.Dot("$1")`,
+			},
+			{
+				replacer:    `\)\n\treturn code\n\}`,
+				replacement: ")\n\n\treturn code\n}",
+			},
+			{
+				replacer:    `jen\.Null\(\)\.Var\(\)`,
+				replacement: "jen.Var()",
+			},
+		}
+
+		for _, r := range replacers {
+			outputBytes = regexp.MustCompile(r.replacer).ReplaceAll(outputBytes, []byte(r.replacement))
+		}
+
+		// i don't care
+		_ = os.MkdirAll(filepath.Dir(outputPath), 0777)
 
 		if writeFile {
-			if err = ioutil.WriteFile(outputPath, b.Bytes(), 0644); err != nil {
+			if err = ioutil.WriteFile(outputPath, outputBytes, 0644); err != nil {
 				return "", err
 			}
 
@@ -222,6 +303,7 @@ func buildGenDotGo(pkgName string, fileToFunctionMap map[string]string) string {
 	start := fmt.Sprintf(`package %s
 
 import (
+	"path/filepath"
 	"fmt"
 	"strings"
 
@@ -243,19 +325,19 @@ func RenderPackage(proj *models.Project) error {
 
 	var fileDecs string
 	for file, fun := range fileToFunctionMap {
-		fileDecs = fmt.Sprintf("%s\t%q:\t%s(),\n", fileDecs, file, fun)
+		fileDecs = fmt.Sprintf("%s\t%q:\t%s(proj),\n", fileDecs, filepath.Base(file), fun)
 	}
 
 	end := `
 }
 
 	//for _, typ := range types {
-	//	files[fmt.Sprintf("client/v1/http/%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("client/v1/http/%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
+	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
+	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
 	//}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(proj, path, file); err != nil {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}

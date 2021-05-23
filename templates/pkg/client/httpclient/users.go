@@ -12,7 +12,8 @@ func usersDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(jen.Const().ID("usersBasePath").Equals().Lit("users"))
+	code.Add(
+		jen.Const().ID("usersBasePath").Equals().Lit("users"))
 
 	code.Add(buildBuildGetUserRequest(proj)...)
 	code.Add(buildGetUser(proj)...)

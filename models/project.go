@@ -73,7 +73,7 @@ type Project struct {
 	OutputPathSubstitution    string
 
 	iterableServicesImports []string
-	EnableNewsman           bool
+	EnableCapitalism        bool
 
 	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
@@ -618,6 +618,7 @@ func CompleteSurvey(
 
 	targetDestination := filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository)
 	if strings.HasSuffix(targetDestination, "verygoodsoftwarenotvirus") {
+		// future me will thank present me for this because present me hates past me for not doing this.
 		log.Fatal("I don't think you actually want to do that.")
 	} else {
 		if err := os.RemoveAll(targetDestination); err != nil {
@@ -626,7 +627,6 @@ func CompleteSurvey(
 	}
 
 	proj := &Project{
-		EnableNewsman: true,
 		Name:          wordsmith.FromSingularPascalCase(p.Name),
 		OutputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,

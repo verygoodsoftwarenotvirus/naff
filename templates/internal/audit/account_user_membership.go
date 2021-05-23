@@ -23,7 +23,7 @@ func accountUserMembershipDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildUserAddedToAccountEventEntry builds an entry creation input for when a membership is created."),
+		jen.Comment("BuildUserAddedToAccountEventEntry builds an entry creation input for when a membership is created."),
 		jen.Line(),
 		jen.Func().ID("BuildUserAddedToAccountEventEntry").Params(
 			jen.ID("addedBy").ID("uint64"),
@@ -45,7 +45,7 @@ func accountUserMembershipDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildUserRemovedFromAccountEventEntry builds an entry creation input for when a membership is archived."),
+		jen.Comment("BuildUserRemovedFromAccountEventEntry builds an entry creation input for when a membership is archived."),
 		jen.Line(),
 		jen.Func().ID("BuildUserRemovedFromAccountEventEntry").Params(
 			jen.List(jen.ID("removedBy"), jen.ID("removed"), jen.ID("accountID")).ID("uint64"),
@@ -67,7 +67,7 @@ func accountUserMembershipDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildUserMarkedAccountAsDefaultEventEntry builds an entry creation input for when a membership is created."),
+		jen.Comment("BuildUserMarkedAccountAsDefaultEventEntry builds an entry creation input for when a membership is created."),
 		jen.Line(),
 		jen.Func().ID("BuildUserMarkedAccountAsDefaultEventEntry").Params(
 			jen.List(jen.ID("performedBy"), jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(
@@ -86,7 +86,7 @@ func accountUserMembershipDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildModifyUserPermissionsEventEntry builds an entry creation input for when a membership is created."),
+		jen.Comment("BuildModifyUserPermissionsEventEntry builds an entry creation input for when a membership is created."),
 		jen.Line(),
 		jen.Func().ID("BuildModifyUserPermissionsEventEntry").Params(
 			jen.List(jen.ID("userID"),
@@ -113,7 +113,7 @@ func accountUserMembershipDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("// BuildTransferAccountOwnershipEventEntry builds an entry creation input for when a membership is created."),
+		jen.Comment("BuildTransferAccountOwnershipEventEntry builds an entry creation input for when a membership is created."),
 		jen.Line(),
 		jen.Func().ID("BuildTransferAccountOwnershipEventEntry").Params(
 			jen.List(jen.ID("accountID"),
