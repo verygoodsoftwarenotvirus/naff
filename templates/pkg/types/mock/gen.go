@@ -18,19 +18,19 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"doc.go":                             docDotGo(),
-		"mock_user_data_server.go":           mockUserDataServerDotGo(proj),
-		"mock_oauth2_client_data_manager.go": mockOauth2ClientDataManagerDotGo(proj),
-		"mock_oauth2_client_data_server.go":  mockOauth2ClientDataServerDotGo(proj),
-		"mock_user_data_manager.go":          mockUserDataManagerDotGo(proj),
-		"mock_webhook_data_manager.go":       mockWebhookDataManagerDotGo(proj),
-		"mock_webhook_data_server.go":        mockWebhookDataServerDotGo(proj),
+		"doc.go":                        docDotGo(),
+		"user_data_server.go":           mockUserDataServerDotGo(proj),
+		"oauth2_client_data_manager.go": mockOauth2ClientDataManagerDotGo(proj),
+		"oauth2_client_data_server.go":  mockOauth2ClientDataServerDotGo(proj),
+		"user_data_manager.go":          mockUserDataManagerDotGo(proj),
+		"webhook_data_manager.go":       mockWebhookDataManagerDotGo(proj),
+		"webhook_data_server.go":        mockWebhookDataServerDotGo(proj),
 	}
 
 	for _, typ := range proj.DataTypes {
 		rn := typ.Name.RouteName()
-		files[fmt.Sprintf("mock_%s_data_manager.go", rn)] = mockIterableDataManagerDotGo(proj, typ)
-		files[fmt.Sprintf("mock_%s_data_server.go", rn)] = mockIterableDataServerDotGo(proj, typ)
+		files[fmt.Sprintf("%s_data_manager.go", rn)] = mockIterableDataManagerDotGo(proj, typ)
+		files[fmt.Sprintf("%s_data_server.go", rn)] = mockIterableDataServerDotGo(proj, typ)
 	}
 
 	for path, file := range files {
