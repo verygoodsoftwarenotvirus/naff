@@ -52,7 +52,8 @@ func runTojenForFile(filename, pkg string) (string, error) {
 		return fuckedFile, fmt.Errorf("%s: %w", e, errCanStillComplete)
 	}
 
-	if f, err := format.Source(b); err == nil {
+	var f []byte
+	if f, err = format.Source(b); err == nil {
 		b = f
 	}
 
@@ -61,33 +62,24 @@ func runTojenForFile(filename, pkg string) (string, error) {
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/data_scaffolder",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/encoded_qr_code_generator",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/htmx_converter",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/authorization",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/capitalism",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/capitalism/stripe",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config/viper",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/config",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mock",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/keys",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/logging",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/logging/zerolog",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/panicking/",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/random/",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/routing/",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/routing/chi",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/routing/mock",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/accounts",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/admin",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/audit",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/frontend",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/storage",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/uploads",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/uploads/images",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/uploads/mock",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/types/converters",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/authentication",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/build/server",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querier",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mariadb",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/postgres",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/sqlite",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/encoding",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/metrics",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/tracing",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/search",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/server",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/apiclients",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/users",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/webhooks",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/client/httpclient",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/client/httpclient/requests",
 	}
 
 	for _, pkg := range allPackages {
