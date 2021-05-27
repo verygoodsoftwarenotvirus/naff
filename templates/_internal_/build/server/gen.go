@@ -16,7 +16,8 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"wire.go": wireDotGo(proj),
+		"build.go": buildDotGo(proj),
+		"doc.go":   docDotGo(proj),
 	}
 
 	for path, file := range files {

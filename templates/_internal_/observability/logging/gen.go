@@ -17,9 +17,12 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"noop.go":         noopDotGo(proj),
-		"logging.go":      loggingDotGo(proj),
-		"logging_test.go": loggingTestDotGo(proj),
+		"config.go":              configDotGo(proj),
+		"logging.go":             loggingDotGo(proj),
+		"logging_test.go":        loggingTestDotGo(proj),
+		"noop_logger.go":         noopLoggerDotGo(proj),
+		"zerolog_logger.go":      zerologLoggerDotGo(proj),
+		"zerolog_logger_test.go": zerologLoggerTestDotGo(proj),
 	}
 
 	//for _, typ := range types {

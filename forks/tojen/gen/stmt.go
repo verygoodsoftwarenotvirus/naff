@@ -84,7 +84,7 @@ func labeledStmt(t *ast.LabeledStmt) jen.Code {
 
 func sendStmt(t *ast.SendStmt) jen.Code {
 	ret := jen.ID("jen")
-	return ret.Add(genExpr(t.Chan)).Dot("Op").Call(jen.ReceiveFromChannel()).Add(genExpr(t.Value))
+	return ret.Add(genExpr(t.Chan)).Dot("ReceiveFromChannel").Call().Add(genExpr(t.Value))
 }
 
 func incDecStmt(t *ast.IncDecStmt) jen.Code {

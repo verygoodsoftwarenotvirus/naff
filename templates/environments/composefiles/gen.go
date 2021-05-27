@@ -14,9 +14,9 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]string{
-		"environments/local/docker-compose.yaml":                                         developmentDotYaml(project.Name),
-		"environments/testing/compose_files/frontend-tests.yaml":                         frontendTestsDotYAML(project.Name),
-		"environments/testing/compose_files/integration_tests/integration-coverage.yaml": integrationCoverageDotYAML(project.Name),
+		"environments/local/docker-compose.yaml":                                           developmentDotYaml(project.Name),
+		"environments/testing/compose_files/integration_tests/integration-tests-base.yaml": integrationTestsBaseDotYAML(project.Name),
+		"environments/testing/compose_files/load_tests/load-tests-base.yaml":               loadTestsBaseDotYAML(project.Name),
 	}
 
 	for _, db := range project.EnabledDatabases() {
@@ -252,6 +252,28 @@ services:
 	panic("invalid db")
 }
 
+func loadTestsBaseDotYAML(projectName wordsmith.SuperPalabra) string {
+	return fmt.Sprintf(`version: '3.3'
+services:
+    load-tests:
+        environment:
+            TARGET_ADDRESS: 'http://%s-server:8888'
+        links:
+            - %s-server
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
+    %s-server:
+        environment:
+            CONFIGURATION_FILEPATH: '/etc/config.toml'
+        ports:
+            - 80:8888
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
+`, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
+}
+
 func loadTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
 	switch dbName.RouteName() {
 	case "postgres":
@@ -346,78 +368,7 @@ services:
 	panic("invalid db")
 }
 
-func frontendTestsDotYAML(projectName wordsmith.SuperPalabra) string {
-	return fmt.Sprintf(`version: "3.3"
-services:
-    chrome:
-        image: selenium/node-chrome:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: '%s'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
-    firefox:
-        image: selenium/node-firefox:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    selenium-hub:
-        image: selenium/hub:3.141.59-oxygen
-        logging:
-            driver: none
-        ports:
-            - 4444:4444
-    test:
-        environment:
-            DOCKER: 'true'
-            TARGET_ADDRESS: 'http://%s-server:8888'
-        links:
-            - selenium-hub
-            - %s-server
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests.Dockerfile'
-        depends_on:
-            - firefox
-            - chrome
-    %s-server:
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests-server.Dockerfile'
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        links:
-            - database
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-}
-
-func integrationCoverageDotYAML(projectName wordsmith.SuperPalabra) string {
+func integrationTestsBaseDotYAML(projectName wordsmith.SuperPalabra) string {
 	return fmt.Sprintf(`version: '3.3'
 services:
     coverage-server:

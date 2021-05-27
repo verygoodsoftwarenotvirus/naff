@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"os"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -55,6 +56,18 @@ func RenderPackage(proj *models.Project) error {
 		"settings.go":           settingsDotGo(proj),
 	}
 
+	staticFiles := map[string]string{
+		"templates/partials/auth/login.gotpl":                loginAuthPartial(),
+		"templates/partials/auth/register.gotpl":             registrationAuthPartial(),
+		"templates/partials/auth/registration_success.gotpl": registrationSuccessAuthPartial(),
+		"templates/partials/settings/account_settings.gotpl": accountSettingsPartial(),
+		"templates/partials/settings/admin_settings.gotpl":   adminSettingsPartial(),
+		"templates/partials/settings/user_settings.gotpl":    userSettingsPartial(),
+		"templates/base_template.gotpl":                      baseTemplate(),
+		"assets/favicon.svg":                                 favicon(),
+		"translations/en.toml":                               englishTranslationsToml(),
+	}
+
 	//for _, typ := range types {
 	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
 	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
@@ -62,6 +75,17 @@ func RenderPackage(proj *models.Project) error {
 
 	for path, file := range files {
 		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
+	for path, file := range staticFiles {
+		fp := utils.BuildTemplatePath(proj.OutputPath, filepath.Join(basePackagePath, path))
+		dirToMake := filepath.Dir(fp)
+
+		e := os.MkdirAll(dirToMake, 0777)
+		_ = e
+		if err := os.WriteFile(fp, []byte(file), 0644); err != nil {
 			return err
 		}
 	}

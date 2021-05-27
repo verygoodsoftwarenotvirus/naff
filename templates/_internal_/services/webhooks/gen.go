@@ -17,14 +17,15 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"doc.go":                   docDotGo(),
-		"wire.go":                  wireDotGo(proj),
-		"http_routes.go":           httpRoutesDotGo(proj),
-		"http_routes_test.go":      httpRoutesTestDotGo(proj),
-		"middleware.go":            middlewareDotGo(proj),
-		"middleware_test.go":       middlewareTestDotGo(proj),
-		"webhooks_service.go":      webhooksServiceDotGo(proj),
-		"webhooks_service_test.go": webhooksServiceTestDotGo(proj),
+		"config.go":            configDotGo(proj),
+		"config_test.go":       configTestDotGo(proj),
+		"doc.go":               docDotGo(),
+		"wire.go":              wireDotGo(proj),
+		"http_helpers_test.go": httpHelpersTestDotGo(proj),
+		"http_routes.go":       httpRoutesDotGo(proj),
+		"http_routes_test.go":  httpRoutesTestDotGo(proj),
+		"service.go":           webhooksServiceDotGo(proj),
+		"service_test.go":      webhooksServiceTestDotGo(proj),
 	}
 
 	for path, file := range files {

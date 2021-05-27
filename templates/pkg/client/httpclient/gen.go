@@ -1,7 +1,6 @@
-package client
+package httpclient
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -10,38 +9,57 @@ import (
 )
 
 const (
-	v1 = "V1Client"
+	packageName = "httpclient"
 
-	packageName       = "client"
-	packagePathPrefix = "pkg/client/httpclient"
+	basePackagePath = "pkg/client/httpclient"
 )
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"doc.go":                   docDotGo(proj),
-		"client.go":                mainDotGo(proj),
-		"client_test.go":           mainTestDotGo(proj),
-		"helpers.go":               helpersDotGo(proj),
-		"helpers_test.go":          helpersTestDotGo(proj),
-		"users.go":                 usersDotGo(proj),
-		"users_test.go":            usersTestDotGo(proj),
-		"roundtripper.go":          roundtripperDotGo(proj),
-		"roundtripper_test.go":     roundtripperTestDotGo(proj),
-		"mock_read_closer_test.go": mockReadCloserTestDotGo(proj),
-		"webhooks.go":              webhooksDotGo(proj),
-		"webhooks_test.go":         webhooksTestDotGo(proj),
-		"oauth2_clients.go":        oauth2ClientsDotGo(proj),
-		"oauth2_clients_test.go":   oauth2ClientsTestDotGo(proj),
+		"mock_read_closer_test.go":    mockReadCloserTestDotGo(proj),
+		"roundtripper_paseto.go":      roundtripperPasetoDotGo(proj),
+		"webhooks_test.go":            webhooksTestDotGo(proj),
+		"admin_test.go":               adminTestDotGo(proj),
+		"audit_log_test.go":           auditLogTestDotGo(proj),
+		"helpers_test.go":             helpersTestDotGo(proj),
+		"auth.go":                     authDotGo(proj),
+		"items_test.go":               itemsTestDotGo(proj),
+		"roundtripper_cookie.go":      roundtripperCookieDotGo(proj),
+		"users.go":                    usersDotGo(proj),
+		"users_test.go":               usersTestDotGo(proj),
+		"options.go":                  optionsDotGo(proj),
+		"options_test.go":             optionsTestDotGo(proj),
+		"paseto_test.go":              pasetoTestDotGo(proj),
+		"api_clients.go":              apiClientsDotGo(proj),
+		"client.go":                   clientDotGo(proj),
+		"roundtripper_paseto_test.go": roundtripperPasetoTestDotGo(proj),
+		"test_helpers_test.go":        testHelpersTestDotGo(proj),
+		"accounts_test.go":            accountsTestDotGo(proj),
+		"api_clients_test.go":         apiClientsTestDotGo(proj),
+		"roundtripper_base.go":        roundtripperBaseDotGo(proj),
+		"doc.go":                      docDotGo(proj),
+		"roundtripper_cookie_test.go": roundtripperCookieTestDotGo(proj),
+		"accounts.go":                 accountsDotGo(proj),
+		"admin.go":                    adminDotGo(proj),
+		"auth_test.go":                authTestDotGo(proj),
+		"paseto.go":                   pasetoDotGo(proj),
+		"roundtripper_base_test.go":   roundtripperBaseTestDotGo(proj),
+		"errors.go":                   errorsDotGo(proj),
+		"helpers.go":                  helpersDotGo(proj),
+		"items.go":                    itemsDotGo(proj),
+		"audit_log.go":                auditLogDotGo(proj),
+		"client_test.go":              clientTestDotGo(proj),
+		"webhooks.go":                 webhooksDotGo(proj),
 	}
 
-	for _, typ := range proj.DataTypes {
-		files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ)
-		files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
-	}
+	//for _, typ := range types {
+	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
+	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
+	//}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(proj, filepath.Join(packagePathPrefix, path), file); err != nil {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}

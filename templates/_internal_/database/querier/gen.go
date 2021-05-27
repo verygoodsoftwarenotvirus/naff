@@ -18,16 +18,26 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"client.go":              clientDotGo(proj),
-		"doc.go":                 docDotGo(),
-		"oauth2_clients_test.go": oauth2ClientsTestDotGo(proj),
-		"users.go":               usersDotGo(proj),
-		"users_test.go":          usersTestDotGo(proj),
-		"webhooks_test.go":       webhooksTestDotGo(proj),
-		"client_test.go":         clientTestDotGo(proj),
-		"oauth2_clients.go":      oauth2ClientsDotGo(proj),
-		"webhooks.go":            webhooksDotGo(proj),
-		"wire.go":                wireDotGo(proj),
+		"webhooks.go":                      webhooksDotGo(proj),
+		"webhooks_test.go":                 webhooksTestDotGo(proj),
+		"accounts.go":                      accountsDotGo(proj),
+		"api_clients_test.go":              apiClientsTestDotGo(proj),
+		"audit_log_entries.go":             auditLogEntriesDotGo(proj),
+		"migrate_test.go":                  migrateTestDotGo(proj),
+		"users_test.go":                    usersTestDotGo(proj),
+		"admin_test.go":                    adminTestDotGo(proj),
+		"audit_log_entries_test.go":        auditLogEntriesTestDotGo(proj),
+		"migrate.go":                       migrateDotGo(proj),
+		"account_user_memberships.go":      accountUserMembershipsDotGo(proj),
+		"account_user_memberships_test.go": accountUserMembershipsTestDotGo(proj),
+		"admin.go":                         adminDotGo(proj),
+		"doc.go":                           docDotGo(proj),
+		"querier.go":                       querierDotGo(proj),
+		"users.go":                         usersDotGo(proj),
+		"accounts_test.go":                 accountsTestDotGo(proj),
+		"api_clients.go":                   apiClientsDotGo(proj),
+		"errors.go":                        errorsDotGo(proj),
+		"querier_test.go":                  querierTestDotGo(proj),
 	}
 
 	for _, typ := range proj.DataTypes {

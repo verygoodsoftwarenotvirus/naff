@@ -17,18 +17,20 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"wire.go":                       wireDotGo(proj),
-		"http_routes.go":                httpRoutesDotGo(proj),
-		"implementation_test.go":        implementationTestDotGo(proj),
-		"middleware.go":                 middlewareDotGo(proj),
-		"oauth2_handler_mock_test.go":   oauth2HandlerMockTestDotGo(proj),
-		"oauth2clients_service.go":      oauth2ClientsServiceDotGo(proj),
-		"oauth2clients_service_test.go": oauth2ClientsServiceTestDotGo(proj),
-		"doc.go":                        docDotGo(),
-		"http_routes_test.go":           httpRoutesTestDotGo(proj),
-		"implementation.go":             implementationDotGo(proj),
-		"middleware_test.go":            middlewareTestDotGo(proj),
+		"wire.go":              wireDotGo(proj),
+		"wire_test.go":         wireTestDotGo(proj),
+		"doc.go":               docDotGo(proj),
+		"http_helpers_test.go": httpHelpersTestDotGo(proj),
+		"http_routes.go":       httpRoutesDotGo(proj),
+		"http_routes_test.go":  httpRoutesTestDotGo(proj),
+		"service.go":           serviceDotGo(proj),
+		"service_test.go":      serviceTestDotGo(proj),
 	}
+
+	//for _, typ := range types {
+	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
+	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
+	//}
 
 	for path, file := range files {
 		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {

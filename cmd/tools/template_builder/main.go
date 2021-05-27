@@ -62,24 +62,10 @@ func runTojenForFile(filename, pkg string) (string, error) {
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/authentication",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/build/server",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querier",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mariadb",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/postgres",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/sqlite",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/encoding",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/metrics",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/tracing",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/search",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/server",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/apiclients",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/users",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/webhooks",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/client/httpclient",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/client/httpclient/requests",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/frontend",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/integration",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/load",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/tests/utils",
 	}
 
 	for _, pkg := range allPackages {
@@ -182,7 +168,7 @@ func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, er
 				replacement: `.Comment("`,
 			},
 			{
-				replacer:    `jen\.Func\(\)\.Comment\(\"([a-zA-Z\-\,\.\s]+)\"\)`,
+				replacer:    `jen\.Func\(\)\.Comment\(\"([0-9a-zA-Z\d\-\,\:\.\*\s\t\(\)\/\\\'` + "`" + `]+)\"\)`,
 				replacement: "jen.Comment(\"$1\"),\n\t\tjen.Line(),\n\t\tjen.Func()",
 			},
 			{
@@ -209,11 +195,17 @@ func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, er
 				replacer:    `jen\.Null\(\)\.Var\(\)`,
 				replacement: "jen.Var()",
 			},
+			{
+				replacer:    `\n\tcode\.Add\(func\(\) jen\.Code \{\n\t\treturn nil\n\t\}\,\n\t\tjen\.Line\(\)\,\n\t\)`,
+				replacement: "",
+			},
 		}
 
 		for _, r := range replacers {
 			outputBytes = regexp.MustCompile(r.replacer).ReplaceAll(outputBytes, []byte(r.replacement))
 		}
+
+		outputPath = strings.Replace(outputPath, "_test.go", "_test_.go", 1)
 
 		// i don't care
 		_ = os.MkdirAll(filepath.Dir(outputPath), 0777)
@@ -317,7 +309,7 @@ func RenderPackage(proj *models.Project) error {
 
 	var fileDecs string
 	for file, fun := range fileToFunctionMap {
-		fileDecs = fmt.Sprintf("%s\t%q:\t%s(proj),\n", fileDecs, filepath.Base(file), fun)
+		fileDecs = fmt.Sprintf("%s\t%q:\t%s(proj),\n", fileDecs, strings.ReplaceAll(filepath.Base(file), "_test_.go", "_test.go"), fun)
 	}
 
 	end := `

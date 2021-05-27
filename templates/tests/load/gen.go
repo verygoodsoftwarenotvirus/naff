@@ -18,11 +18,10 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"actions.go":    actionsDotGo(proj),
-		"init.go":       initDotGo(proj),
-		"main.go":       mainDotGo(proj),
-		"apiclients.go": apiClientsDotGo(proj),
-		"webhooks.go":   webhooksDotGo(proj),
+		"actions.go":  actionsDotGo(proj),
+		"init.go":     initDotGo(proj),
+		"main.go":     mainDotGo(proj),
+		"webhooks.go": webhooksDotGo(proj),
 	}
 
 	for _, typ := range proj.DataTypes {

@@ -1,9 +1,9 @@
 package logging
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func loggingTestDotGo(proj *models.Project) *jen.File {
@@ -20,7 +20,7 @@ func loggingTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
-						jen.ID("EnsureLogger").Call(jen.ID("NewNonOperationalLogger").Call()),
+						jen.ID("EnsureLogger").Call(jen.ID("NewNoopLogger").Call()),
 					),
 				),
 			),
@@ -45,7 +45,7 @@ func loggingTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.ID("middleware").Op(":=").ID("BuildLoggingMiddleware").Call(jen.ID("NewNonOperationalLogger").Call()),
+					jen.ID("middleware").Op(":=").ID("BuildLoggingMiddleware").Call(jen.ID("NewNoopLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("middleware"),
@@ -66,7 +66,7 @@ func loggingTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("with non-logged route"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.ID("middleware").Op(":=").ID("BuildLoggingMiddleware").Call(jen.ID("NewNonOperationalLogger").Call()),
+					jen.ID("middleware").Op(":=").ID("BuildLoggingMiddleware").Call(jen.ID("NewNoopLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("middleware"),
@@ -74,7 +74,9 @@ func loggingTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("hf").Op(":=").Qual("net/http", "HandlerFunc").Call(jen.Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body()),
 					jen.If(jen.ID("len").Call(jen.ID("doNotLog")).Op("==").Lit(0)).Body(
 						jen.ID("t").Dot("SkipNow").Call()),
-					jen.Var().ID("route").ID("string"),
+					jen.Var().Defs(
+						jen.ID("route").ID("string"),
+					),
 					jen.For(jen.ID("k").Op(":=").Range().ID("doNotLog")).Body(
 						jen.ID("route").Op("=").ID("k"),
 						jen.Break(),

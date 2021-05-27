@@ -17,13 +17,13 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
+		"mock_item_sql_query_builder.go":                    mockItemSQLQueryBuilderDotGo(proj),
+		"mock_user_sql_query_builder.go":                    mockUserSQLQueryBuilderDotGo(proj),
+		"mock_webhook_sql_query_builder.go":                 mockWebhookSQLQueryBuilderDotGo(proj),
 		"mock_account_sql_query_builder.go":                 mockAccountSQLQueryBuilderDotGo(proj),
 		"mock_account_user_membership_sql_query_builder.go": mockAccountUserMembershipSQLQueryBuilderDotGo(proj),
 		"mock_audit_log_entry_sql_query_builder.go":         mockAuditLogEntrySQLQueryBuilderDotGo(proj),
 		"mock_delegated_client_sql_query_builder.go":        mockDelegatedClientSQLQueryBuilderDotGo(proj),
-		"mock_item_sql_query_builder.go":                    mockItemSQLQueryBuilderDotGo(proj),
-		"mock_user_sql_query_builder.go":                    mockUserSQLQueryBuilderDotGo(proj),
-		"mock_webhook_sql_query_builder.go":                 mockWebhookSQLQueryBuilderDotGo(proj),
 	}
 
 	//for _, typ := range types {

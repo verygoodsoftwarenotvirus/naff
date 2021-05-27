@@ -17,8 +17,13 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"doc.go":      docDotGo(),
-		"testutil.go": testutilDotGo(proj),
+		"doc.go":                       docDotGo(proj),
+		"testutil.go":                  testutilDotGo(proj),
+		"mock_matchers.go":             mockMatchersDotGo(proj),
+		"mock_reader.go":               mockReaderDotGo(proj),
+		"utils.go":                     utilsDotGo(proj),
+		"mock_handler.go":              mockHandlerDotGo(proj),
+		"mock_http_response_writer.go": mockHTTPResponseWriterDotGo(proj),
 	}
 
 	for path, file := range files {

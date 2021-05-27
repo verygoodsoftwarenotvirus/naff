@@ -1,14 +1,15 @@
 package apiclients
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func docDotGo() *jen.File {
+func docDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	code.PackageCommentf(`Package %s provides a series of HTTP handlers for managing
-OAuth2 clients in a compatible database.`, packageName)
+	utils.AddImports(proj, code, false)
 
 	return code
 }

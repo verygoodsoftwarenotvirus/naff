@@ -1,14 +1,15 @@
 package frontend
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func docDotGo() *jen.File {
+func docDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	code.PackageCommentf(`Package %s is a series of selenium tests which validate certain aspects of our
-frontend, to guard against failed contributions to the frontend code.`, packageName)
+	utils.AddImports(proj, code, false)
 
 	return code
 }

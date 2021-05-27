@@ -1,9 +1,8 @@
 package apiclients
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -12,275 +11,533 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildOAuth2ClientHTTPRoutesConstantDefs(proj)...)
-	code.Add(buildOAuth2ClientHTTPRoutesRandString()...)
-	code.Add(buildOAuth2ClientHTTPRoutesFetchUserID(proj)...)
-	code.Add(buildOAuth2ClientHTTPRoutesListHandler(proj)...)
-	code.Add(buildOAuth2ClientHTTPRoutesCreateHandler(proj)...)
-	code.Add(buildOAuth2ClientHTTPRoutesReadHandler(proj)...)
-	code.Add(buildOAuth2ClientHTTPRoutesArchiveHandler(proj)...)
-
-	return code
-}
-
-func buildOAuth2ClientHTTPRoutesConstantDefs(proj *models.Project) []jen.Code {
-	lines := []jen.Code{
-		jen.Const().Defs(
-			jen.Comment("URIParamKey is used for referring to OAuth2 client IDs in router params."),
-			jen.ID("URIParamKey").Equals().Lit("oauth2ClientID"),
-			jen.Line(),
-			jen.ID("oauth2ClientIDURIParamKey").Equals().Lit("client_id"),
-			jen.ID("clientIDKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit("client_id"),
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("_").ID("types").Dot("APIClientDataService").Op("=").Parens(jen.Op("*").ID("service")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
-}
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("APIClientIDURIParamKey").Op("=").Lit("apiClientID"),
+			jen.ID("clientIDSize").Op("=").Lit(32),
+			jen.ID("clientSecretSize").Op("=").Lit(128),
+		),
+		jen.Line(),
+	)
 
-func buildOAuth2ClientHTTPRoutesRandString() []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("randString produces a random string."),
+	code.Add(
+		jen.Comment("ListHandler is a handler that returns a list of API clients."),
 		jen.Line(),
-		jen.Comment("https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/"),
-		jen.Line(),
-		jen.Func().ID("randString").Params().Params(jen.String()).Body(
-			jen.ID("b").Assign().ID("make").Call(jen.Index().Byte(), jen.Lit(32)),
-			jen.If(jen.List(jen.Underscore(), jen.Err()).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("panic").Call(jen.Err()),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ListHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.ID("filter").Op(":=").ID("types").Dot("ExtractQueryFilter").Call(jen.ID("req")),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).Dot("WithValue").Call(
+				jen.ID("keys").Dot("FilterLimitKey"),
+				jen.ID("filter").Dot("Limit"),
+			).Dot("WithValue").Call(
+				jen.ID("keys").Dot("FilterPageKey"),
+				jen.ID("filter").Dot("Page"),
+			).Dot("WithValue").Call(
+				jen.ID("keys").Dot("FilterSortByKey"),
+				jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
 			),
-			jen.Line(),
-			jen.Comment("this is so that we don't end up with `=` in IDs"),
-			jen.Return().Qual("encoding/base32", "StdEncoding").Dot("WithPadding").Call(jen.Qual("encoding/base32", "NoPadding")).Dot("EncodeToString").Call(jen.ID("b")),
-		),
-		jen.Line(),
-	}
-
-	return lines
-}
-
-func buildOAuth2ClientHTTPRoutesFetchUserID(proj *models.Project) []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("fetchUserID grabs a userID out of the request context."),
-		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("fetchUserID").Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
-			jen.If(
-				jen.List(jen.ID("si"), jen.ID("ok")).Assign().ID(constants.RequestVarName).Dot("Context").Call().Dot("Value").Call(jen.Qual(proj.TypesPackage(), "SessionInfoKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "SessionInfo")),
-				jen.ID("ok").And().ID("si").DoesNotEqual().Nil(),
-			).Body(
-				jen.Return().ID("si").Dot("UserID"),
+			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
 			),
-			jen.Return().Zero(),
-		),
-		jen.Line(),
-	}
-
-	return lines
-}
-
-func buildOAuth2ClientHTTPRoutesListHandler(proj *models.Project) []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("ListHandler is a handler that returns a list of OAuth2 clients."),
-		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ListHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ListHandler")),
-			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-			jen.Line(),
-			jen.Comment("extract filter."),
-			jen.ID(constants.FilterVarName).Assign().Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID(constants.RequestVarName)),
-			jen.Line(),
-			jen.Comment("determine user."),
-			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
-			jen.Line(),
-			jen.Comment("fetch oauth2 clients."),
-			jen.List(jen.ID("oauth2Clients"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2ClientsForUser").Call(constants.CtxVar(), jen.ID(constants.UserIDVarName), jen.ID(constants.FilterVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
-				jen.Comment("just return an empty list if there are no results."),
-				jen.ID("oauth2Clients").Equals().AddressOf().Qual(proj.TypesPackage(), "OAuth2ClientList").Valuesln(
-					jen.ID("Clients").MapAssign().Index().Qual(proj.TypesPackage(), "OAuth2Client").Values(),
+			jen.ID("tracing").Dot("AttachFilterToSpan").Call(
+				jen.ID("span"),
+				jen.ID("filter").Dot("Page"),
+				jen.ID("filter").Dot("Limit"),
+				jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+			),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("retrieving session context data"),
 				),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encountered error getting list of oauth2 clients from database")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+					jen.Lit("unauthenticated"),
+					jen.Qual("net/http", "StatusUnauthorized"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("encode response and peace."),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("oauth2Clients")), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+			jen.ID("requester").Op(":=").ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			jen.ID("tracing").Dot("AttachSessionContextDataToSpan").Call(
+				jen.ID("span"),
+				jen.ID("sessionCtxData"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("UserIDKey"),
+				jen.ID("requester"),
+			),
+			jen.List(jen.ID("apiClients"), jen.ID("err")).Op(":=").ID("s").Dot("apiClientDataManager").Dot("GetAPIClients").Call(
+				jen.ID("ctx"),
+				jen.ID("requester"),
+				jen.ID("filter"),
+			),
+			jen.If(jen.Qual("errors", "Is").Call(
+				jen.ID("err"),
+				jen.Qual("database/sql", "ErrNoRows"),
+			)).Body(
+				jen.ID("apiClients").Op("=").Op("&").ID("types").Dot("APIClientList").Valuesln(jen.ID("Clients").Op(":").Index().Op("*").ID("types").Dot("APIClient").Values())).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("fetching API clients from database"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
+				jen.ID("apiClients"),
 			),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
-}
-
-func buildOAuth2ClientHTTPRoutesCreateHandler(proj *models.Project) []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("CreateHandler is our OAuth2 client creation route."),
+	code.Add(
+		jen.Comment("CreateHandler is our API client creation route."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("CreateHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("CreateHandler")),
-			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-			jen.Line(),
-			jen.Comment("fetch creation input from request context."),
-			jen.List(jen.ID("input"), jen.ID("ok")).Assign().ID(constants.ContextVarName).Dot("Value").Call(jen.ID("creationMiddlewareCtxKey")).Assert(jen.PointerTo().Qual(proj.TypesPackage(), "OAuth2ClientCreationInput")),
-			jen.If(jen.Not().ID("ok")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Info").Call(jen.Lit("valid input not attached to request")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusBadRequest"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("CreateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
+			),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("retrieving session context data"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("set some data."),
-			jen.List(jen.ID("input").Dot("ClientID"), jen.ID("input").Dot("ClientSecret")).Equals().List(jen.ID("randString").Call(), jen.ID("randString").Call()),
-			jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-			jen.Line(),
-			jen.Comment("keep relevant data in mind."),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-				jen.Lit("username").MapAssign().ID("input").Dot("Username"),
-				jen.Lit("scopes").MapAssign().Qual("strings", "Join").Call(jen.ID("input").Dot("Scopes"), jen.ID("scopesSeparator")),
-				jen.Lit("redirect_uri").MapAssign().ID("input").Dot("RedirectURI"))),
-			jen.Line(),
-			jen.Comment("retrieve user."),
-			jen.List(jen.ID("user"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetUserByUsername").Call(constants.CtxVar(), jen.ID("input").Dot("Username")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("fetching user by username")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+			jen.ID("input").Op(":=").ID("new").Call(jen.ID("types").Dot("APIClientCreationInput")),
+			jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(
+				jen.ID("ctx"),
+				jen.ID("req"),
+				jen.ID("input"),
+			), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("s").Dot("logger").Dot("Error").Call(
+					jen.ID("err"),
+					jen.Lit("error encountered decoding request body"),
+				),
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("decoding request body"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+					jen.Lit("invalid request content"),
+					jen.Qual("net/http", "StatusBadRequest"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("tag span since we have the info."),
-			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("user").Dot("ID")),
-			jen.Line(),
-			jen.Comment("check credentials."),
-			jen.List(jen.ID("valid"), jen.Err()).Assign().ID("s").Dot("authenticator").Dot("ValidateLogin").Callln(
-				constants.CtxVar(), jen.ID("user").Dot("HashedPassword"),
+			jen.If(jen.ID("err").Op("=").ID("input").Dot("ValidateWithContext").Call(
+				jen.ID("ctx"),
+				jen.ID("s").Dot("cfg").Dot("minimumUsernameLength"),
+				jen.ID("s").Dot("cfg").Dot("minimumPasswordLength"),
+			), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("logger").Dot("WithValue").Call(
+					jen.ID("keys").Dot("ValidationErrorKey"),
+					jen.ID("err"),
+				).Dot("Debug").Call(jen.Lit("invalid input attached to request")),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+					jen.ID("err").Dot("Error").Call(),
+					jen.Qual("net/http", "StatusBadRequest"),
+				),
+				jen.Return(),
+			),
+			jen.ID("tracing").Dot("AttachSessionContextDataToSpan").Call(
+				jen.ID("span"),
+				jen.ID("sessionCtxData"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.Lit("username"),
+				jen.ID("input").Dot("Username"),
+			),
+			jen.List(jen.ID("user"), jen.ID("err")).Op(":=").ID("s").Dot("userDataManager").Dot("GetUser").Call(
+				jen.ID("ctx"),
+				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("fetching user"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("user").Dot("ID"),
+			),
+			jen.List(jen.ID("valid"), jen.ID("err")).Op(":=").ID("s").Dot("authenticator").Dot("ValidateLogin").Call(
+				jen.ID("ctx"),
+				jen.ID("user").Dot("HashedPassword"),
 				jen.ID("input").Dot("Password"),
 				jen.ID("user").Dot("TwoFactorSecret"),
 				jen.ID("input").Dot("TOTPToken"),
-				jen.ID("user").Dot("Salt"),
 			),
-			jen.Line(),
-			jen.If(jen.Not().ID("valid")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("invalid credentials provided")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusUnauthorized"),
+			jen.If(jen.Op("!").ID("valid")).Body(
+				jen.ID("logger").Dot("Debug").Call(jen.Lit("invalid credentials provided to API client creation route")),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnauthorizedResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
 				jen.Return(),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("validating user credentials")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+			).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("validating user credentials"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("create the client."),
-			jen.List(jen.ID("client"), jen.Err()).Assign().ID("s").Dot("database").Dot("CreateOAuth2Client").Call(constants.CtxVar(), jen.ID("input")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("creating oauth2Client in the database")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+			jen.If(jen.List(jen.ID("input").Dot("ClientID"), jen.ID("err")).Op("=").ID("s").Dot("secretGenerator").Dot("GenerateBase64EncodedString").Call(
+				jen.ID("ctx"),
+				jen.ID("clientIDSize"),
+			), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("generating client id"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("notify interested parties."),
-			jen.Qual(proj.InternalTracingPackage(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("client").Dot("ID")),
-			jen.ID("s").Dot("oauth2ClientCounter").Dot("Increment").Call(constants.CtxVar()),
-			jen.Line(),
-			utils.WriteXHeader(constants.ResponseVarName, "StatusCreated"),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("client")), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+			jen.If(jen.List(jen.ID("input").Dot("ClientSecret"), jen.ID("err")).Op("=").ID("s").Dot("secretGenerator").Dot("GenerateRawBytes").Call(
+				jen.ID("ctx"),
+				jen.ID("clientSecretSize"),
+			), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("generating client secret"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("input").Dot("BelongsToUser").Op("=").ID("user").Dot("ID"),
+			jen.List(jen.ID("client"), jen.ID("err")).Op(":=").ID("s").Dot("apiClientDataManager").Dot("CreateAPIClient").Call(
+				jen.ID("ctx"),
+				jen.ID("input"),
+				jen.ID("user").Dot("ID"),
+			),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("creating API client"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("client").Dot("ID"),
+			),
+			jen.ID("s").Dot("apiClientCounter").Dot("Increment").Call(jen.ID("ctx")),
+			jen.ID("resObj").Op(":=").Op("&").ID("types").Dot("APIClientCreationResponse").Valuesln(jen.ID("ID").Op(":").ID("client").Dot("ID"), jen.ID("ClientID").Op(":").ID("client").Dot("ClientID"), jen.ID("ClientSecret").Op(":").Qual("encoding/base64", "RawURLEncoding").Dot("EncodeToString").Call(jen.ID("input").Dot("ClientSecret"))),
+			jen.ID("s").Dot("encoderDecoder").Dot("EncodeResponseWithStatus").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
+				jen.ID("resObj"),
+				jen.Qual("net/http", "StatusCreated"),
 			),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
-}
-
-func buildOAuth2ClientHTTPRoutesReadHandler(proj *models.Project) []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("ReadHandler is a route handler for retrieving an OAuth2 client."),
+	code.Add(
+		jen.Comment("ReadHandler returns a GET handler that returns an item."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ReadHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ReadHandler")),
-			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-			jen.Line(),
-			jen.Comment("determine subject of request."),
-			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
-			jen.Line(),
-			jen.Comment("determine relevant oauth2 client ID."),
-			jen.ID("oauth2ClientID").Assign().ID("s").Dot("urlClientIDExtractor").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingPackage(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("oauth2ClientID")),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("oauth2_client_id"), jen.ID("oauth2ClientID")),
-			jen.Line(),
-			jen.Comment("fetch oauth2 client."),
-			jen.List(jen.ID("x"), jen.Err()).Assign().ID("s").Dot("database").Dot("GetOAuth2Client").Call(constants.CtxVar(), jen.ID("oauth2ClientID"), jen.ID(constants.UserIDVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Debug").Call(jen.Lit("ReadHandler called on nonexistent client")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
-				jen.Return(),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("error fetching oauth2Client from database")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ReadHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
+			),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("retrieving session context data"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+					jen.Lit("unauthenticated"),
+					jen.Qual("net/http", "StatusUnauthorized"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("encode response and peace."),
-			jen.If(jen.Err().Equals().ID("s").Dot("encoderDecoder").Dot("EncodeResponse").Call(jen.ID(constants.ResponseVarName), jen.ID("x")), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encoding response")),
+			jen.ID("requester").Op(":=").ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			jen.ID("tracing").Dot("AttachSessionContextDataToSpan").Call(
+				jen.ID("span"),
+				jen.ID("sessionCtxData"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("RequesterIDKey"),
+				jen.ID("requester"),
+			),
+			jen.ID("apiClientID").Op(":=").ID("s").Dot("urlClientIDExtractor").Call(jen.ID("req")),
+			jen.ID("tracing").Dot("AttachItemIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("apiClientID"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("APIClientDatabaseIDKey"),
+				jen.ID("apiClientID"),
+			),
+			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("apiClientDataManager").Dot("GetAPIClientByDatabaseID").Call(
+				jen.ID("ctx"),
+				jen.ID("apiClientID"),
+				jen.ID("requester"),
+			),
+			jen.If(jen.Qual("errors", "Is").Call(
+				jen.ID("err"),
+				jen.Qual("database/sql", "ErrNoRows"),
+			)).Body(
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("fetching API client from database"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
+				jen.ID("x"),
 			),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
-}
-
-func buildOAuth2ClientHTTPRoutesArchiveHandler(proj *models.Project) []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("ArchiveHandler is a route handler for archiving an OAuth2 client."),
+	code.Add(
+		jen.Comment("ArchiveHandler returns a handler that archives an API client."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("s").PointerTo().ID("Service")).ID("ArchiveHandler").Params(jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"), jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Body(
-			jen.List(constants.CtxVar(), jen.ID(constants.SpanVarName)).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.Lit("ArchiveHandler")),
-			jen.Defer().ID(constants.SpanVarName).Dot("End").Call(),
-			jen.Line(),
-			jen.ID(constants.LoggerVarName).Assign().ID("s").Dot(constants.LoggerVarName).Dot("WithRequest").Call(jen.ID(constants.RequestVarName)),
-			jen.Line(),
-			jen.Comment("determine subject of request."),
-			jen.ID(constants.UserIDVarName).Assign().ID("s").Dot("fetchUserID").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
-			jen.Line(),
-			jen.Comment("determine relevant oauth2 client ID."),
-			jen.ID("oauth2ClientID").Assign().ID("s").Dot("urlClientIDExtractor").Call(jen.ID(constants.RequestVarName)),
-			jen.Qual(proj.InternalTracingPackage(), "AttachOAuth2ClientDatabaseIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("oauth2ClientID")),
-			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("oauth2_client_id"), jen.ID("oauth2ClientID")),
-			jen.Line(),
-			jen.Comment("mark client as archived."),
-			jen.Err().Assign().ID("s").Dot("database").Dot("ArchiveOAuth2Client").Call(constants.CtxVar(), jen.ID("oauth2ClientID"), jen.ID(constants.UserIDVarName)),
-			jen.If(jen.Err().IsEqualTo().Qual("database/sql", "ErrNoRows")).Body(
-				utils.WriteXHeader(constants.ResponseVarName, "StatusNotFound"),
-				jen.Return(),
-			).Else().If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Lit("encountered error deleting oauth2 client")),
-				utils.WriteXHeader(constants.ResponseVarName, "StatusInternalServerError"),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ArchiveHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
+			),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("retrieving session context data"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+					jen.Lit("unauthenticated"),
+					jen.Qual("net/http", "StatusUnauthorized"),
+				),
 				jen.Return(),
 			),
-			jen.Line(),
-			jen.Comment("notify relevant parties."),
-			jen.ID("s").Dot("oauth2ClientCounter").Dot("Decrement").Call(constants.CtxVar()),
-			utils.WriteXHeader(constants.ResponseVarName, "StatusNoContent"),
+			jen.ID("requester").Op(":=").ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			jen.ID("tracing").Dot("AttachSessionContextDataToSpan").Call(
+				jen.ID("span"),
+				jen.ID("sessionCtxData"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("RequesterIDKey"),
+				jen.ID("requester"),
+			),
+			jen.ID("apiClientID").Op(":=").ID("s").Dot("urlClientIDExtractor").Call(jen.ID("req")),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("APIClientDatabaseIDKey"),
+				jen.ID("apiClientID"),
+			),
+			jen.ID("tracing").Dot("AttachItemIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("apiClientID"),
+			),
+			jen.ID("err").Op("=").ID("s").Dot("apiClientDataManager").Dot("ArchiveAPIClient").Call(
+				jen.ID("ctx"),
+				jen.ID("apiClientID"),
+				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
+				jen.ID("requester"),
+			),
+			jen.If(jen.Qual("errors", "Is").Call(
+				jen.ID("err"),
+				jen.Qual("database/sql", "ErrNoRows"),
+			)).Body(
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("archiving API client"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("s").Dot("apiClientCounter").Dot("Decrement").Call(jen.ID("ctx")),
+			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
+	code.Add(
+		jen.Comment("AuditEntryHandler returns a GET handler that returns all audit log entries related to an API client."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("AuditEntryHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
+			),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("retrieving session context data"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+					jen.Lit("unauthenticated"),
+					jen.Qual("net/http", "StatusUnauthorized"),
+				),
+				jen.Return(),
+			),
+			jen.ID("requester").Op(":=").ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			jen.ID("tracing").Dot("AttachSessionContextDataToSpan").Call(
+				jen.ID("span"),
+				jen.ID("sessionCtxData"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("UserIDKey"),
+				jen.ID("requester"),
+			),
+			jen.ID("apiClientID").Op(":=").ID("s").Dot("urlClientIDExtractor").Call(jen.ID("req")),
+			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("apiClientID"),
+			),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("keys").Dot("APIClientClientIDKey"),
+				jen.ID("apiClientID"),
+			),
+			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("apiClientDataManager").Dot("GetAuditLogEntriesForAPIClient").Call(
+				jen.ID("ctx"),
+				jen.ID("apiClientID"),
+			),
+			jen.If(jen.Qual("errors", "Is").Call(
+				jen.ID("err"),
+				jen.Qual("database/sql", "ErrNoRows"),
+			)).Body(
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Lit("fetching audit log entries for API client"),
+				),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+					jen.ID("ctx"),
+					jen.ID("res"),
+				),
+				jen.Return(),
+			),
+			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
+				jen.ID("x"),
+			),
+		),
+		jen.Line(),
+	)
+
+	return code
 }

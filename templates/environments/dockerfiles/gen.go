@@ -13,17 +13,12 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(projRoot, binaryName string) string{
-		"environments/local/Dockerfile":                                           developmentDotDockerfile,
-		"environments/testing/dockerfiles/formatting.Dockerfile":                  formattingDotDockerfile,
-		"environments/testing/dockerfiles/frontend-tests.Dockerfile":              frontendTestDotDockerfile,
-		"environments/testing/dockerfiles/integration-coverage-server.Dockerfile": integrationCoverageServerDotDockerfile,
-		"environments/testing/dockerfiles/frontend-tests-server.Dockerfile":       frontendTestsServerDotDockerfile,
-		"environments/testing/dockerfiles/integration-tests.Dockerfile":           integrationTestsDotDockerfile,
-		"environments/testing/dockerfiles/load-tests.Dockerfile":                  loadTestsDotDockerfile,
-	}
-
-	for _, db := range project.EnabledDatabases() {
-		files[fmt.Sprintf("environments/testing/dockerfiles/integration-server-%s.Dockerfile", db)] = buildIntegrationServerDotDockerfile(db)
+		"environments/local/Dockerfile":                                     developmentDotDockerfile,
+		"environments/testing/dockerfiles/formatting.Dockerfile":            formattingDotDockerfile,
+		"environments/testing/dockerfiles/frontend-tests-server.Dockerfile": frontendTestsServerDotDockerfile,
+		"environments/testing/dockerfiles/integration-tests.Dockerfile":     integrationTestsDotDockerfile,
+		"environments/testing/dockerfiles/load-tests.Dockerfile":            loadTestsDotDockerfile,
+		"environments/testing/dockerfiles/integration-server.Dockerfile":    buildIntegrationServerDotDockerfile,
 	}
 
 	for filename, file := range files {
@@ -150,9 +145,8 @@ ENTRYPOINT ["/integration-server", "-test.coverprofile=/home/integration-coverag
 `, projRoot, projRoot, projRoot, projRoot, projRoot, projRoot)
 }
 
-func buildIntegrationServerDotDockerfile(dbName string) func(projRoot, binaryName string) string {
-	return func(projRoot, binaryName string) string {
-		return fmt.Sprintf(`# build stage
+func buildIntegrationServerDotDockerfile(projRoot, binaryName string) string {
+	return fmt.Sprintf(`# build stage
 FROM golang:stretch AS build-stage
 
 WORKDIR /go/src/%s
@@ -182,13 +176,11 @@ RUN chown appuser /home/appuser
 WORKDIR /home/appuser
 USER appuser
 
-COPY environments/testing/config_files/integration-tests-%s.toml /etc/config.toml
 COPY --from=build-stage /%s /%s
 COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/%s"]
-`, projRoot, binaryName, projRoot, dbName, binaryName, binaryName, binaryName)
-	}
+`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName)
 }
 
 func frontendTestsServerDotDockerfile(projRoot, binaryName string) string {

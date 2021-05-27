@@ -1,13 +1,15 @@
 package encoding
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func docDotGo() *jen.File {
+func docDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
-	code.PackageComment("Package encoding provides HTTP response encoding abstractions\n")
+	utils.AddImports(proj, code, false)
 
 	return code
 }

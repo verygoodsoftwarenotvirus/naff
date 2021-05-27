@@ -1,9 +1,8 @@
 package types
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -12,186 +11,280 @@ func userDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildUserTypeDefinitions()...)
-	code.Add(buildUserUpdate()...)
-	code.Add(buildUserToSessionInfo()...)
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("GoodStandingAccountStatus").ID("accountStatus").Op("=").Lit("good"),
+			jen.ID("UnverifiedAccountStatus").ID("accountStatus").Op("=").Lit("unverified"),
+			jen.ID("BannedUserAccountStatus").ID("accountStatus").Op("=").Lit("banned"),
+			jen.ID("TerminatedUserReputation").ID("accountStatus").Op("=").Lit("terminated"),
+			jen.ID("validTOTPTokenLength").Op("=").Lit(6),
+		),
+		jen.Line(),
+	)
 
-	return code
-}
-
-func buildUserTypeDefinitions() []jen.Code {
-	lines := []jen.Code{
-		jen.Type().Defs(
-			jen.Comment("User represents a user."),
-			jen.ID("User").Struct(
-				jen.ID("Salt").Index().Byte().Tag(jsonTag("-")),
-				jen.ID("Username").String().Tag(jsonTag("username")),
-				jen.ID("HashedPassword").String().Tag(jsonTag("-")),
-				jen.ID("TwoFactorSecret").String().Tag(jsonTag("-")),
-				jen.ID("ID").Uint64().Tag(jsonTag("id")),
-				jen.ID("PasswordLastChangedOn").PointerTo().Uint64().Tag(jsonTag("passwordLastChangedOn")),
-				jen.ID("TwoFactorSecretVerifiedOn").PointerTo().Uint64().Tag(jsonTag("-")),
-				jen.ID("CreatedOn").Uint64().Tag(jsonTag("createdOn")),
-				jen.ID("LastUpdatedOn").PointerTo().Uint64().Tag(jsonTag("lastUpdatedOn")),
-				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archivedOn")),
-				jen.ID("IsAdmin").Bool().Tag(jsonTag("isAdmin")),
-				jen.ID("RequiresPasswordChange").Bool().Tag(jsonTag("requiresPasswordChange")),
-			),
-			jen.Line(),
-			jen.Comment("UserList represents a list of users."),
-			jen.ID("UserList").Struct(
-				jen.ID("Pagination"),
-				jen.ID("Users").Index().ID("User").Tag(jsonTag("users")),
-			),
-			jen.Line(),
-			jen.Comment("UserLoginInput represents the payload used to log in a user."),
-			jen.ID("UserLoginInput").Struct(
-				jen.ID("Username").String().Tag(jsonTag("username")),
-				jen.ID("Password").String().Tag(jsonTag("password")),
-				jen.ID("TOTPToken").String().Tag(jsonTag("totpToken")),
-			),
-			jen.Line(),
-			jen.Comment("UserCreationInput represents the input required from users to register an account."),
-			jen.ID("UserCreationInput").Struct(
-				jen.ID("Username").String().Tag(jsonTag("username")),
-				jen.ID("Password").String().Tag(jsonTag("password")),
-			),
-			jen.Line(),
-			jen.Comment("UserDatabaseCreationInput is used by the user creation route to communicate with the database."),
-			jen.ID("UserDatabaseCreationInput").Struct(
-				jen.ID("Salt").Index().Byte().Tag(jsonTag("-")),
-				jen.ID("Username").String().Tag(jsonTag("-")),
-				jen.ID("HashedPassword").String().Tag(jsonTag("-")),
-				jen.ID("TwoFactorSecret").String().Tag(jsonTag("-")),
-			),
-			jen.Line(),
-			jen.Comment("UserCreationResponse is a response structure for Users that doesn't contain password fields, but does contain the two factor secret."),
-			jen.ID("UserCreationResponse").Struct(
-				jen.ID("ID").Uint64().Tag(jsonTag("id")),
-				jen.ID("Username").String().Tag(jsonTag("username")),
-				jen.ID("TwoFactorSecret").String().Tag(jsonTag("twoFactorSecret")),
-				jen.ID("PasswordLastChangedOn").PointerTo().Uint64().Tag(jsonTag("passwordLastChangedOn")),
-				jen.ID("IsAdmin").Bool().Tag(jsonTag("isAdmin")),
-				jen.ID("CreatedOn").Uint64().Tag(jsonTag("createdOn")),
-				jen.ID("LastUpdatedOn").PointerTo().Uint64().Tag(jsonTag("lastUpdatedOn")),
-				jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archivedOn")),
-				jen.ID("TwoFactorQRCode").String().Tag(jsonTag("qrCode")),
-			),
-			jen.Line(),
-			jen.Comment("PasswordUpdateInput represents input a user would provide when updating their password."),
-			jen.ID("PasswordUpdateInput").Struct(
-				jen.ID("NewPassword").String().Tag(jsonTag("newPassword")),
-				jen.ID("CurrentPassword").String().Tag(jsonTag("currentPassword")),
-				jen.ID("TOTPToken").String().Tag(jsonTag("totpToken")),
-			),
-			jen.Line(),
-			jen.Comment("TOTPSecretRefreshInput represents input a user would provide when updating their 2FA secret."),
-			jen.ID("TOTPSecretRefreshInput").Struct(
-				jen.ID("CurrentPassword").String().Tag(jsonTag("currentPassword")),
-				jen.ID("TOTPToken").String().Tag(jsonTag("totpToken")),
-			),
-			jen.Line(),
-			jen.Comment("TOTPSecretVerificationInput represents input a user would provide when validating their 2FA secret."),
-			jen.ID("TOTPSecretVerificationInput").Struct(
-				jen.ID("UserID").Uint64().Tag(jsonTag("userID")),
-				jen.ID("TOTPToken").String().Tag(jsonTag("totpToken")),
-			),
-			jen.Line(),
-			jen.Comment("TOTPSecretRefreshResponse represents the response we provide to a user when updating their 2FA secret."),
-			jen.ID("TOTPSecretRefreshResponse").Struct(
-				jen.ID("TwoFactorSecret").String().Tag(jsonTag("twoFactorSecret")),
-			),
-			jen.Line(),
-			jen.Comment("UserDataManager describes a structure which can manage users in permanent storage."),
-			jen.ID("UserDataManager").Interface(
-				jen.ID("GetUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("GetUserWithUnverifiedTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("VerifyUserTwoFactorSecret").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()),
-				jen.ID("GetUserByUsername").Params(constants.CtxParam(), jen.ID("username").String()).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("GetAllUsersCount").Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
-				jen.ID("GetUsers").Params(constants.CtxParam(), utils.QueryFilterParam(nil)).Params(jen.PointerTo().ID("UserList"), jen.Error()),
-				jen.ID("CreateUser").Params(constants.CtxParam(), jen.ID("input").ID("UserDatabaseCreationInput")).Params(jen.PointerTo().ID("User"), jen.Error()),
-				jen.ID("UpdateUser").Params(constants.CtxParam(), jen.ID("updated").PointerTo().ID("User")).Params(jen.Error()),
-				jen.ID("UpdateUserPassword").Params(constants.CtxParam(), constants.UserIDParam(), jen.ID("newHash").String()).Params(jen.Error()),
-				jen.ID("ArchiveUser").Params(constants.CtxParam(), constants.UserIDParam()).Params(jen.Error()),
-			),
-			jen.Line(),
-			jen.Comment("UserDataServer describes a structure capable of serving traffic related to users."),
-			jen.ID("UserDataServer").Interface(
-				jen.ID("UserInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.ID("PasswordUpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.ID("TOTPSecretRefreshInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.ID("TOTPSecretVerificationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.Line(),
-				jen.ID("ListHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("CreateHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("ReadHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("NewTOTPSecretHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("TOTPSecretVerificationHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("UpdatePasswordHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
-				jen.ID("ArchiveHandler").Params(
-					jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-					jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-				),
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("totpTokenLengthRule").Op("=").Qual("github.com/go-ozzo/ozzo-validation/v4", "Length").Call(
+				jen.ID("validTOTPTokenLength"),
+				jen.ID("validTOTPTokenLength"),
 			),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
-}
-func buildUserUpdate() []jen.Code {
-	lines := []jen.Code{
+	code.Add(
+		jen.Type().Defs(
+			jen.ID("accountStatus").ID("string"),
+			jen.ID("User").Struct(
+				jen.ID("PasswordLastChangedOn").Op("*").ID("uint64"),
+				jen.ID("ArchivedOn").Op("*").ID("uint64"),
+				jen.ID("LastUpdatedOn").Op("*").ID("uint64"),
+				jen.ID("TwoFactorSecretVerifiedOn").Op("*").ID("uint64"),
+				jen.ID("AvatarSrc").Op("*").ID("string"),
+				jen.ID("ExternalID").ID("string"),
+				jen.ID("Username").ID("string"),
+				jen.ID("ReputationExplanation").ID("string"),
+				jen.ID("ServiceAccountStatus").ID("accountStatus"),
+				jen.ID("TwoFactorSecret").ID("string"),
+				jen.ID("HashedPassword").ID("string"),
+				jen.ID("ServiceRoles").Index().ID("string"),
+				jen.ID("ID").ID("uint64"),
+				jen.ID("CreatedOn").ID("uint64"),
+				jen.ID("RequiresPasswordChange").ID("bool"),
+			),
+			jen.ID("TestUserCreationConfig").Struct(
+				jen.ID("Username").ID("string"),
+				jen.ID("Password").ID("string"),
+				jen.ID("HashedPassword").ID("string"),
+				jen.ID("IsServiceAdmin").ID("bool"),
+			),
+			jen.ID("UserList").Struct(
+				jen.ID("Users").Index().Op("*").ID("User"),
+				jen.ID("Pagination"),
+			),
+			jen.ID("UserRegistrationInput").Struct(
+				jen.ID("Username").ID("string"),
+				jen.ID("Password").ID("string"),
+			),
+			jen.ID("UserDataStoreCreationInput").Struct(
+				jen.ID("Username").ID("string"),
+				jen.ID("HashedPassword").ID("string"),
+				jen.ID("TwoFactorSecret").ID("string"),
+			),
+			jen.ID("UserCreationResponse").Struct(
+				jen.ID("Username").ID("string"),
+				jen.ID("AccountStatus").ID("accountStatus"),
+				jen.ID("TwoFactorSecret").ID("string"),
+				jen.ID("TwoFactorQRCode").ID("string"),
+				jen.ID("CreatedUserID").ID("uint64"),
+				jen.ID("CreatedOn").ID("uint64"),
+				jen.ID("IsAdmin").ID("bool"),
+			),
+			jen.ID("UserLoginInput").Struct(
+				jen.ID("Username").ID("string"),
+				jen.ID("Password").ID("string"),
+				jen.ID("TOTPToken").ID("string"),
+			),
+			jen.ID("PasswordUpdateInput").Struct(
+				jen.ID("NewPassword").ID("string"),
+				jen.ID("CurrentPassword").ID("string"),
+				jen.ID("TOTPToken").ID("string"),
+			),
+			jen.ID("TOTPSecretRefreshInput").Struct(
+				jen.ID("CurrentPassword").ID("string"),
+				jen.ID("TOTPToken").ID("string"),
+			),
+			jen.ID("TOTPSecretVerificationInput").Struct(
+				jen.ID("TOTPToken").ID("string"),
+				jen.ID("UserID").ID("uint64"),
+			),
+			jen.ID("TOTPSecretRefreshResponse").Struct(
+				jen.ID("TwoFactorQRCode").ID("string"),
+				jen.ID("TwoFactorSecret").ID("string"),
+			),
+			jen.ID("AdminUserDataManager").Interface(jen.ID("UpdateUserReputation").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.ID("input").Op("*").ID("UserReputationUpdateInput")).Params(jen.ID("error"))),
+			jen.ID("UserDataManager").Interface(
+				jen.ID("UserHasStatus").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.ID("statuses").Op("...").ID("string")).Params(jen.ID("bool"), jen.ID("error")),
+				jen.ID("GetUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("User"), jen.ID("error")),
+				jen.ID("GetUserWithUnverifiedTwoFactorSecret").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Op("*").ID("User"), jen.ID("error")),
+				jen.ID("MarkUserTwoFactorSecretAsVerified").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("error")),
+				jen.ID("GetUserByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.Op("*").ID("User"), jen.ID("error")),
+				jen.ID("SearchForUsersByUsername").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("usernameQuery").ID("string")).Params(jen.Index().Op("*").ID("User"), jen.ID("error")),
+				jen.ID("GetAllUsersCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")),
+				jen.ID("GetUsers").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("QueryFilter")).Params(jen.Op("*").ID("UserList"), jen.ID("error")),
+				jen.ID("CreateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("UserDataStoreCreationInput")).Params(jen.Op("*").ID("User"), jen.ID("error")),
+				jen.ID("UpdateUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID("User"), jen.ID("changes").Index().Op("*").ID("FieldChangeSummary")).Params(jen.ID("error")),
+				jen.ID("UpdateUserPassword").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.ID("newHash").ID("string")).Params(jen.ID("error")),
+				jen.ID("ArchiveUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("error")),
+				jen.ID("GetAuditLogEntriesForUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.Index().Op("*").ID("AuditLogEntry"), jen.ID("error")),
+			),
+			jen.ID("UserDataService").Interface(
+				jen.ID("ListHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("AuditEntryHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("CreateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("ReadHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("SelfHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("UsernameSearchHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("NewTOTPSecretHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("TOTPSecretVerificationHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("UpdatePasswordHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("AvatarUploadHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("ArchiveHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")),
+				jen.ID("RegisterUser").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("registrationInput").Op("*").ID("UserRegistrationInput")).Params(jen.Op("*").ID("UserCreationResponse"), jen.ID("error")),
+				jen.ID("VerifyUserTwoFactorSecret").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("TOTPSecretVerificationInput")).Params(jen.ID("error")),
+			),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
 		jen.Comment("Update accepts a User as input and merges those values if they're set."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("Update").Params(jen.ID("input").PointerTo().ID("User")).Body(
-			jen.If(jen.ID("input").Dot("Username").DoesNotEqual().EmptyString().And().ID("input").Dot("Username").DoesNotEqual().ID("u").Dot("Username")).Body(
-				jen.ID("u").Dot("Username").Equals().ID("input").Dot("Username"),
-			),
-			jen.Line(),
-			jen.If(jen.ID("input").Dot("HashedPassword").DoesNotEqual().EmptyString().And().ID("input").Dot("HashedPassword").DoesNotEqual().ID("u").Dot("HashedPassword")).Body(
-				jen.ID("u").Dot("HashedPassword").Equals().ID("input").Dot("HashedPassword"),
-			),
-			jen.Line(),
-			jen.If(jen.ID("input").Dot("TwoFactorSecret").DoesNotEqual().EmptyString().And().ID("input").Dot("TwoFactorSecret").DoesNotEqual().ID("u").Dot("TwoFactorSecret")).Body(
-				jen.ID("u").Dot("TwoFactorSecret").Equals().ID("input").Dot("TwoFactorSecret"),
-			),
+		jen.Func().Params(jen.ID("u").Op("*").ID("User")).ID("Update").Params(jen.ID("input").Op("*").ID("User")).Body(
+			jen.If(jen.ID("input").Dot("Username").Op("!=").Lit("").Op("&&").ID("input").Dot("Username").Op("!=").ID("u").Dot("Username")).Body(
+				jen.ID("u").Dot("Username").Op("=").ID("input").Dot("Username")),
+			jen.If(jen.ID("input").Dot("HashedPassword").Op("!=").Lit("").Op("&&").ID("input").Dot("HashedPassword").Op("!=").ID("u").Dot("HashedPassword")).Body(
+				jen.ID("u").Dot("HashedPassword").Op("=").ID("input").Dot("HashedPassword")),
+			jen.If(jen.ID("input").Dot("TwoFactorSecret").Op("!=").Lit("").Op("&&").ID("input").Dot("TwoFactorSecret").Op("!=").ID("u").Dot("TwoFactorSecret")).Body(
+				jen.ID("u").Dot("TwoFactorSecret").Op("=").ID("input").Dot("TwoFactorSecret")),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
-}
-func buildUserToSessionInfo() []jen.Code {
-	lines := []jen.Code{
-		jen.Comment("ToSessionInfo accepts a User as input and merges those values if they're set."),
+	code.Add(
+		jen.Comment("IsValidAccountStatus returns whether the provided string is a valid accountStatus."),
 		jen.Line(),
-		jen.Func().Params(jen.ID("u").PointerTo().ID("User")).ID("ToSessionInfo").Params().PointerTo().ID("SessionInfo").Body(
-			jen.Return(jen.AddressOf().ID("SessionInfo").Valuesln(
-				jen.ID(constants.UserIDFieldName).MapAssign().ID("u").Dot("ID"),
-				jen.ID("UserIsAdmin").MapAssign().ID("u").Dot("IsAdmin"),
+		jen.Func().ID("IsValidAccountStatus").Params(jen.ID("s").ID("string")).Params(jen.ID("bool")).Body(
+			jen.Switch(jen.ID("s")).Body(
+				jen.Case(jen.ID("string").Call(jen.ID("GoodStandingAccountStatus")), jen.ID("string").Call(jen.ID("UnverifiedAccountStatus")), jen.ID("string").Call(jen.ID("BannedUserAccountStatus")), jen.ID("string").Call(jen.ID("TerminatedUserReputation"))).Body(
+					jen.Return().ID("true")),
+				jen.Default().Body(
+					jen.Return().ID("false")),
 			)),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("IsBanned is a handy helper function."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("u").Op("*").ID("User")).ID("IsBanned").Params().Params(jen.ID("bool")).Body(
+			jen.Return().ID("u").Dot("ServiceAccountStatus").Op("==").ID("BannedUserAccountStatus")),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("ValidateWithContext ensures our provided TOTPSecretVerificationInput meets expectations."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("i").Op("*").ID("TOTPSecretVerificationInput")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.Return().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidateStructWithContext").Call(
+				jen.ID("ctx"),
+				jen.ID("i"),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("UserID"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+				),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("TOTPToken"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+					jen.ID("totpTokenLengthRule"),
+				),
+			)),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("ValidateWithContext ensures our provided TOTPSecretVerificationInput meets expectations."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("i").Op("*").ID("TOTPSecretVerificationInput")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.Return().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidateStructWithContext").Call(
+				jen.ID("ctx"),
+				jen.ID("i"),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("UserID"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+				),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("TOTPToken"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+					jen.ID("totpTokenLengthRule"),
+				),
+			)),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("ValidateWithContext ensures our provided TOTPSecretVerificationInput meets expectations."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("i").Op("*").ID("TOTPSecretVerificationInput")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.Return().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidateStructWithContext").Call(
+				jen.ID("ctx"),
+				jen.ID("i"),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("UserID"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+				),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("TOTPToken"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+					jen.ID("totpTokenLengthRule"),
+				),
+			)),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Op("=").Parens(jen.Op("*").ID("TOTPSecretRefreshInput")).Call(jen.ID("nil")),
 		),
 		jen.Line(),
-	}
+	)
 
-	return lines
+	code.Add(
+		jen.Comment("ValidateWithContext ensures our provided TOTPSecretVerificationInput meets expectations."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("i").Op("*").ID("TOTPSecretVerificationInput")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.Return().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidateStructWithContext").Call(
+				jen.ID("ctx"),
+				jen.ID("i"),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("UserID"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+				),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("TOTPToken"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+					jen.ID("totpTokenLengthRule"),
+				),
+			)),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Op("=").Parens(jen.Op("*").ID("TOTPSecretVerificationInput")).Call(jen.ID("nil")),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("ValidateWithContext ensures our provided TOTPSecretVerificationInput meets expectations."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("i").Op("*").ID("TOTPSecretVerificationInput")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.Return().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidateStructWithContext").Call(
+				jen.ID("ctx"),
+				jen.ID("i"),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("UserID"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+				),
+				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
+					jen.Op("&").ID("i").Dot("TOTPToken"),
+					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
+					jen.ID("totpTokenLengthRule"),
+				),
+			)),
+		jen.Line(),
+	)
+
+	return code
 }

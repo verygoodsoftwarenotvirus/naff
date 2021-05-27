@@ -381,86 +381,6 @@ services:
 	})
 }
 
-func Test_frontendTestsDotYAML(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-
-		expected := `version: "3.3"
-services:
-    chrome:
-        image: selenium/node-chrome:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: 'whatever'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
-    firefox:
-        image: selenium/node-firefox:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    selenium-hub:
-        image: selenium/hub:3.141.59-oxygen
-        logging:
-            driver: none
-        ports:
-            - 4444:4444
-    test:
-        environment:
-            DOCKER: 'true'
-            TARGET_ADDRESS: 'http://whatever-server:8888'
-        links:
-            - selenium-hub
-            - whatever-server
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests.Dockerfile'
-        depends_on:
-            - firefox
-            - chrome
-    whatever-server:
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests-server.Dockerfile'
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        links:
-            - database
-`
-		actual := frontendTestsDotYAML(exampleProjectName)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
 func Test_integrationCoverageDotYAML(T *testing.T) {
 	T.Parallel()
 
@@ -511,7 +431,7 @@ services:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
 `
-		actual := integrationCoverageDotYAML(exampleProjectName)
+		actual := integrationTestsBaseDotYAML(exampleProjectName)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

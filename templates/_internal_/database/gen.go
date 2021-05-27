@@ -20,6 +20,7 @@ func RenderPackage(proj *models.Project) error {
 		"database.go":      databaseDotGo(proj),
 		"database_mock.go": databaseMockDotGo(proj),
 		"doc.go":           docDotGo(),
+		"wire.go":          wireDotGo(),
 	}
 
 	for path, file := range files {

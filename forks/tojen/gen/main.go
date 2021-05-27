@@ -171,25 +171,33 @@ func parseFile(code []byte) *ast.File {
 }
 
 func genDecl(g *ast.GenDecl) jen.Code {
-	ret := jen.Qual(jenImp, "Null").Call()
+	var wrapperRet *jen.Statement
+	var decls []jen.Code
 
 	for _, spec := range g.Specs {
 		switch s := spec.(type) {
 		case *ast.ValueSpec:
-			ret.Add(valueSpec(s))
+			wrapperRet = jen.Qual(jenImp, "Var").Call()
+			decls = append(decls, valueSpec(s))
 		case *ast.TypeSpec:
-			ret.Add(typeSpec(s))
+			wrapperRet = jen.Qual(jenImp, "Type").Call()
+			decls = append(decls, typeSpec(s))
 		}
 	}
-	return ret
+
+	if wrapperRet == nil {
+		return jen.Nil()
+	}
+
+	return wrapperRet.Dot("Defs").Callln(decls...)
 }
 
 func typeSpec(s *ast.TypeSpec) jen.Code {
-	return jen.Dot("Type").Call().Add(ident(s.Name)).Add(genExpr(s.Type))
+	return jen.ID("jen").Add(ident(s.Name)).Add(genExpr(s.Type))
 }
 
 func valueSpec(s *ast.ValueSpec) jen.Code {
-	ret := jen.Dot("Var").Call()
+	ret := jen.ID("jen")
 	ret.Add(identsList(s.Names))
 	ret.Add(genExpr(s.Type))
 	if len(s.Values) > 0 {

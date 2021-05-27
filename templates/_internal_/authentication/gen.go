@@ -19,10 +19,13 @@ func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
 		"authenticator.go":      authenticatorDotGo(proj),
 		"authenticator_test.go": authenticatorTestDotGo(proj),
-		"bcrypt.go":             bcryptDotGo(proj),
-		"bcrypt_test.go":        bcryptTestDotGo(proj),
 		"doc.go":                docDotGo(),
+		"wire.go":               wireDotGo(),
 		"mock_authenticator.go": mockAuthenticatorDotGo(proj),
+		"config.go":             configDotGo(proj),
+		"config_test.go":        configTestDotGo(proj),
+		"argon2.go":             argon2DotGo(proj),
+		"argon2_test.go":        argon2TestDotGo(proj),
 	}
 
 	for path, file := range files {

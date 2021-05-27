@@ -1,9 +1,9 @@
 package mock
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func mockAuditLogEntrySQLQueryBuilderDotGo(proj *models.Project) *jen.File {
@@ -12,12 +12,16 @@ func mockAuditLogEntrySQLQueryBuilderDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Var().ID("_").ID("querybuilding").Dot("AuditLogEntrySQLQueryBuilder").Op("=").Parens(jen.Op("*").ID("AuditLogEntrySQLQueryBuilder")).Call(jen.ID("nil")),
+		jen.Var().Defs(
+			jen.ID("_").ID("querybuilding").Dot("AuditLogEntrySQLQueryBuilder").Op("=").Parens(jen.Op("*").ID("AuditLogEntrySQLQueryBuilder")).Call(jen.ID("nil")),
+		),
 		jen.Line(),
 	)
 
 	code.Add(
-		jen.Type().ID("AuditLogEntrySQLQueryBuilder").Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().Defs(
+			jen.ID("AuditLogEntrySQLQueryBuilder").Struct(jen.ID("mock").Dot("Mock")),
+		),
 		jen.Line(),
 	)
 
