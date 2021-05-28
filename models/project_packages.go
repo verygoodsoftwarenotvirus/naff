@@ -62,6 +62,14 @@ func (p *Project) InternalSearchPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"search"}, parts...)...)
 }
 
+func (p *Project) InternalSecretsPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"secrets"}, parts...)...)
+}
+
+func (p *Project) InternalEventzPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"events"}, parts...)...)
+}
+
 func (p *Project) ServicePackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"services"}, parts...)...)
 }
