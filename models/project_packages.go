@@ -15,7 +15,7 @@ func (p *Project) TypesPackage(parts ...string) string {
 }
 
 func (p *Project) FakeModelsPackage(parts ...string) string {
-	return p.TypesPackage(append([]string{"fake"}, parts...)...)
+	return p.TypesPackage(append([]string{"fakes"}, parts...)...)
 }
 
 func (p *Project) DatabasePackage(parts ...string) string {
@@ -96,4 +96,12 @@ func (p *Project) ServiceWebhooksPackage(parts ...string) string {
 
 func (p *Project) TestUtilPackage(parts ...string) string {
 	return p.RelativePath(append([]string{"tests", "utils"}, parts...)...)
+}
+
+func (p *Project) ObservabilityPackage(parts ...string) string {
+	return p.RelativePath(append([]string{"internal", "observability"}, parts...)...)
+}
+
+func (p *Project) ConstantKeysPackage() string {
+	return p.ObservabilityPackage("keys")
 }

@@ -117,6 +117,10 @@ format:
 docker_image:
 	docker build --tag naff:latest --file Dockerfile .
 
+.PHONY: line_count
+line_count:
+	scc --include-ext go --exclude-dir vendor
+
 # example commands
 
 example_generate_tests:

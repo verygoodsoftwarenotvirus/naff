@@ -46,7 +46,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 
 	file.ImportName(proj.TypesPackage(), "types")
 	file.ImportAlias(proj.TypesPackage("mock"), "mockmodels")
-	file.ImportAlias(proj.TypesPackage("fake"), "fakemodels")
+	file.ImportName(proj.TypesPackage("fakes"), "fakes")
 
 	file.ImportName(filepath.Join(pkgRoot, "server"), "server")
 	file.ImportAlias(filepath.Join(pkgRoot, "server", "http"), "httpserver")

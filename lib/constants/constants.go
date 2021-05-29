@@ -45,7 +45,7 @@ const (
 
 // CreateCtx calls context.Background() and assigns it to a variable called ctx
 func CreateCtx() jen.Code {
-	return CtxVar().Op(":=").Qual("context", "Background").Call()
+	return CtxVar().Assign().Qual("context", "Background").Call()
 }
 
 // InlineCtx calls context.Background() and assigns it to a variable called ctx
@@ -68,9 +68,14 @@ func UserIDParam() jen.Code {
 	return UserIDVar().Uint64()
 }
 
-// CtxParam is a shorthand for a context param
+// CtxVar is a shorthand for a context var
 func CtxVar() *jen.Statement {
 	return jen.ID(ContextVarName)
+}
+
+// LoggerVar is a shorthand for a context var
+func LoggerVar() *jen.Statement {
+	return jen.ID(LoggerVarName)
 }
 
 func err(str string) jen.Code {

@@ -299,7 +299,7 @@ func RunGoFormatForFile(filename string) error {
 	}
 }
 
-// RenderGoFile does
+// RenderGoFile renders a jen file object.
 func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 	fp := BuildTemplatePath(proj.OutputPath, path)
 
@@ -315,6 +315,38 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 		}
 
 		if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, err)
+		}
+
+		if gie := RunGoimportsForFile(fp); gie != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, gie)
+		}
+
+		if ferr := FindAndFixImportBlock(proj.OutputPath, fp); ferr != nil {
+			return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
+		}
+
+		if gfe := RunGoFormatForFile(fp); gfe != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, gfe)
+		}
+	} else {
+		return err
+	}
+
+	return nil
+}
+
+// RenderStringFile renders a jen file object.
+func RenderStringFile(proj *models.Project, path, file string) error {
+	fp := BuildTemplatePath(proj.OutputPath, path)
+
+	if _, err := os.Stat(fp); os.IsNotExist(err) {
+		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
+			log.Printf("error making directory: %v\n", mkdirErr)
+			return err
+		}
+
+		if err := ioutil.WriteFile(fp, []byte(file), 0644); err != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 

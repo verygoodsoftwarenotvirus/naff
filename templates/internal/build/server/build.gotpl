@@ -1,0 +1,71 @@
+// +build wireinject
+
+package server
+
+import (
+	"context"
+
+	"{{ projectImport "internal/authentication" }}"
+	"{{ projectImport "internal/capitalism" }}"
+	"{{ projectImport "internal/capitalism/stripe" }}"
+	"{{ projectImport "internal/config" }}"
+	"{{ projectImport "internal/database" }}"
+	dbconfig "{{ projectImport "internal/database/config" }}"
+	"{{ projectImport "internal/encoding" }}"
+	"{{ projectImport "internal/observability" }}"
+	"{{ projectImport "internal/observability/logging" }}"
+	"{{ projectImport "internal/observability/metrics" }}"
+	"{{ projectImport "internal/routing/chi" }}"
+	"{{ projectImport "internal/search/bleve" }}"
+	"{{ projectImport "internal/server" }}"
+	"{{ projectImport "internal/services/accounts" }}"
+	"{{ projectImport "internal/services/admin" }}"
+	"{{ projectImport "internal/services/apiclients" }}"
+	"{{ projectImport "internal/services/audit" }}"
+	authservice "{{ projectImport "internal/services/authentication" }}"
+	"{{ projectImport "internal/services/frontend" }}"
+	"{{ projectImport "internal/services/items" }}"
+	"{{ projectImport "internal/services/users" }}"
+	"{{ projectImport "internal/services/webhooks" }}"
+	"{{ projectImport "internal/storage" }}"
+	"{{ projectImport "internal/uploads" }}"
+	"{{ projectImport "internal/uploads/images" }}"
+
+	"github.com/google/wire"
+)
+
+// Build builds a server.
+func Build(
+	ctx context.Context,
+	cfg *config.InstanceConfig,
+	logger logging.Logger,
+) (*server.HTTPServer, error) {
+	wire.Build(
+		bleve.Providers,
+		config.Providers,
+		database.Providers,
+		dbconfig.Providers,
+		encoding.Providers,
+		server.Providers,
+		metrics.Providers,
+		images.Providers,
+		uploads.Providers,
+		observability.Providers,
+		storage.Providers,
+		capitalism.Providers,
+		stripe.Providers,
+		chi.Providers,
+		authentication.Providers,
+		authservice.Providers,
+		users.Providers,
+		accounts.Providers,
+		apiclients.Providers,
+		webhooks.Providers,
+		audit.Providers,
+		admin.Providers,
+		frontend.Providers,
+		items.Providers,
+	)
+
+	return nil, nil
+}

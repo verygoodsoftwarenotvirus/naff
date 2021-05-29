@@ -1,9 +1,9 @@
 package data_scaffolder
 
 import (
+	_ "embed"
 	"path/filepath"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -16,22 +16,38 @@ const (
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	files := map[string]*jen.File{
-		"exiter.go":      exiterDotGo(proj),
-		"exiter_test.go": exiterTestDotGo(proj),
-		"main.go":        mainDotGo(proj),
+	stringFiles := map[string]string{
+		"main.go":        mainDotGoString(proj),
+		"exiter.go":      exiterDotGoString(proj),
+		"exiter_test.go": exiterTestDotGoString(proj),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
-	//}
-
-	for path, file := range files {
-		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+	for path, file := range stringFiles {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+//go:embed main.gotpl
+var mainTemplate string
+
+func mainDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, mainTemplate)
+}
+
+//go:embed exiter.gotpl
+var exiterTemplate string
+
+func exiterDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, exiterTemplate)
+}
+
+//go:embed exiter_test.gotpl
+var exiterTestTemplate string
+
+func exiterTestDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, exiterTestTemplate)
 }
