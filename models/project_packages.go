@@ -38,16 +38,16 @@ func (p *Project) InternalAuditPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"audit"}, parts...)...)
 }
 
-func (p *Project) InternalConfigPackage(parts ...string) string {
+func (p *Project) ConfigPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"config"}, parts...)...)
 }
 
-func (p *Project) InternalEncodingPackage(parts ...string) string {
+func (p *Project) EncodingPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"encoding"}, parts...)...)
 }
 
-func (p *Project) InternalMetricsPackage(parts ...string) string {
-	return p.InternalPackage(append([]string{"metrics"}, parts...)...)
+func (p *Project) MetricsPackage(parts ...string) string {
+	return p.ObservabilityPackage(append([]string{"metrics"}, parts...)...)
 }
 
 func (p *Project) InternalTracingPackage(parts ...string) string {
@@ -66,32 +66,36 @@ func (p *Project) InternalSecretsPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"secrets"}, parts...)...)
 }
 
-func (p *Project) InternalEventzPackage(parts ...string) string {
+func (p *Project) InternalPubSubPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"events"}, parts...)...)
 }
 
-func (p *Project) ServicePackage(parts ...string) string {
-	return p.InternalPackage(append([]string{"services"}, parts...)...)
+func (p *Project) InternalImagesPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"images"}, parts...)...)
 }
 
-func (p *Project) ServiceAuthPackage(parts ...string) string {
-	return p.ServicePackage(append([]string{"auth"}, parts...)...)
+func (p *Project) ServicePackage(service string) string {
+	return p.InternalPackage(append([]string{"services"}, service)...)
 }
 
-func (p *Project) ServiceFrontendPackage(parts ...string) string {
-	return p.ServicePackage(append([]string{"frontend"}, parts...)...)
+func (p *Project) ServiceAuthPackage() string {
+	return p.ServicePackage("auth")
 }
 
-func (p *Project) ServiceOAuth2ClientsPackage(parts ...string) string {
-	return p.ServicePackage(append([]string{"oauth2clients"}, parts...)...)
+func (p *Project) ServiceFrontendPackage() string {
+	return p.ServicePackage("frontend")
 }
 
-func (p *Project) ServiceUsersPackage(parts ...string) string {
-	return p.ServicePackage(append([]string{"users"}, parts...)...)
+func (p *Project) ServiceOAuth2ClientsPackage() string {
+	return p.ServicePackage("oauth2clients")
 }
 
-func (p *Project) ServiceWebhooksPackage(parts ...string) string {
-	return p.ServicePackage(append([]string{"webhooks"}, parts...)...)
+func (p *Project) ServiceUsersPackage() string {
+	return p.ServicePackage("users")
+}
+
+func (p *Project) ServiceWebhooksPackage() string {
+	return p.ServicePackage("webhooks")
 }
 
 func (p *Project) TestUtilPackage(parts ...string) string {

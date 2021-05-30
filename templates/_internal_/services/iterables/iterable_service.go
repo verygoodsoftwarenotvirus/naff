@@ -40,7 +40,7 @@ func buildSomethingServiceConstantDefs(proj *models.Project, typ models.DataType
 			jen.Commentf("updateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts.", cn),
 			jen.ID("updateMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
 			jen.Line(),
-			jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName").Equals().Lit(puvn),
+			jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName").Equals().Lit(puvn),
 			jen.ID("counterDescription").String().Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
 			jen.ID("topicName").String().Equals().Lit(prn),
 			jen.ID("serviceName").String().Equals().Lit(fmt.Sprintf("%s_service", prn)),
@@ -97,11 +97,11 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 	}
 
 	structFields = append(structFields,
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.InternalMetricsPackage(), "UnitCounter"),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).Qual(proj.MetricsPackage(), "UnitCounter"),
 	)
 
 	structFields = append(structFields,
-		jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
+		jen.ID("encoderDecoder").Qual(proj.EncodingPackage(), "EncoderDecoder"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 
@@ -194,8 +194,8 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 	)
 
 	params = append(params,
-		jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
-		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(proj.InternalMetricsPackage(), "UnitCounterProvider"),
+		jen.ID("encoder").Qual(proj.EncodingPackage(), "EncoderDecoder"),
+		jen.ID(fmt.Sprintf("%sCounterProvider", uvn)).Qual(proj.MetricsPackage(), "UnitCounterProvider"),
 		jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 	)
 	serviceValues = append(serviceValues,
@@ -238,7 +238,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 		jen.Commentf("Provide%sServiceSearchIndex provides a search index for the service", pn),
 		jen.Line(),
 		jen.Func().IDf("Provide%sServiceSearchIndex", pn).Paramsln(
-			jen.ID("searchSettings").Qual(proj.InternalConfigPackage(), "SearchSettings"),
+			jen.ID("searchSettings").Qual(proj.ConfigPackage(), "SearchSettings"),
 			jen.ID("indexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider"),
 			proj.LoggerParam(),
 		).Params(jen.ID("SearchIndex"), jen.Error()).Body(

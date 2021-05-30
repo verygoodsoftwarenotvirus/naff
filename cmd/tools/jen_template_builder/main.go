@@ -287,6 +287,7 @@ func buildGenDotGo(pkgName string, fileToFunctionMap map[string]string) string {
 	start := fmt.Sprintf(`package %s
 
 import (
+	_ "embed"
 	"path/filepath"
 	"fmt"
 	"strings"

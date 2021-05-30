@@ -12,12 +12,6 @@ import (
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/server",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/config_gen",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/data_scaffolder",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/encoded_qr_code_generator",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/index_initializer",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/tools/template_gen",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/audit",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/authentication",
 		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/authorization",
@@ -103,6 +97,7 @@ func doTheThingForPackage(pkgPath string) error {
 				"/",
 			)
 			op = strings.Replace(op, ".go", ".gotpl", 1)
+			op = strings.Replace(op, "/internal/", "/_internal_/", 1)
 
 			// i don't care
 			_ = os.MkdirAll(filepath.Dir(op), 0777)

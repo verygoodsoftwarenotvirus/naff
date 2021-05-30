@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	exampleURI       = "https://{{ projectName }}.verygoodsoftwarenotvirus.ru"
+	exampleURI       = "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru"
 	asciiControlChar = string(byte(127))
 )
 

@@ -91,9 +91,9 @@ func buildVarDeclarations(proj *models.Project) []jen.Code {
 			),
 			jen.Line(),
 			jen.ID("validDatabaseTypes").Equals().Map(jen.String()).Struct().Valuesln(
-				jen.Qual(proj.InternalConfigPackage(), "PostgresProviderKey").MapAssign().Values(),
-				jen.Qual(proj.InternalConfigPackage(), "MariaDBProviderKey").MapAssign().Values(),
-				jen.Qual(proj.InternalConfigPackage(), "SqliteProviderKey").MapAssign().Values(),
+				jen.Qual(proj.ConfigPackage(), "PostgresProviderKey").MapAssign().Values(),
+				jen.Qual(proj.ConfigPackage(), "MariaDBProviderKey").MapAssign().Values(),
+				jen.Qual(proj.ConfigPackage(), "SqliteProviderKey").MapAssign().Values(),
 			),
 		),
 		jen.Line(),
@@ -254,12 +254,12 @@ func buildMain(proj *models.Project) []jen.Code {
 				jen.Qual("log", "Fatal").Call(jen.Err()),
 			),
 			jen.Line(),
-			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "ServerConfig").Valuesln(
-				jen.ID("Database").MapAssign().Qual(proj.InternalConfigPackage(), "DatabaseSettings").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "ServerConfig").Valuesln(
+				jen.ID("Database").MapAssign().Qual(proj.ConfigPackage(), "DatabaseSettings").Valuesln(
 					jen.ID("Provider").MapAssign().ID("databaseType"),
 					jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.ID("dbConnectionDetails")),
 				),
-				jen.ID("Metrics").MapAssign().Qual(proj.InternalConfigPackage(), "MetricsSettings").Valuesln(
+				jen.ID("Metrics").MapAssign().Qual(proj.ConfigPackage(), "MetricsSettings").Valuesln(
 					jen.ID("DBMetricsCollectionInterval").MapAssign().Qual("time", "Second"),
 				),
 			),

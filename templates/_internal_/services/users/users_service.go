@@ -26,7 +26,7 @@ func buildUsersServiceConstDefs(proj *models.Project) []jen.Code {
 			jen.ID("serviceName").Equals().Lit("users_service"),
 			jen.ID("topicName").Equals().Lit("users"),
 			jen.ID("counterDescription").Equals().Lit("number of users managed by the users service"),
-			jen.ID("counterName").Equals().Qual(proj.InternalMetricsPackage(), "CounterName").Call(jen.ID("serviceName")),
+			jen.ID("counterName").Equals().Qual(proj.MetricsPackage(), "CounterName").Call(jen.ID("serviceName")),
 		),
 		jen.Line(),
 	}
@@ -67,9 +67,9 @@ func buildUsersServiceTypeDefs(proj *models.Project) []jen.Code {
 				jen.ID("userDataManager").Qual(proj.TypesPackage(), "UserDataManager"),
 				jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
 				proj.LoggerParam(),
-				jen.ID("encoderDecoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
+				jen.ID("encoderDecoder").Qual(proj.EncodingPackage(), "EncoderDecoder"),
 				jen.ID("userIDFetcher").ID("UserIDFetcher"),
-				jen.ID("userCounter").Qual(proj.InternalMetricsPackage(), "UnitCounter"),
+				jen.ID("userCounter").Qual(proj.MetricsPackage(), "UnitCounter"),
 				jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 				jen.ID("secretGenerator").ID("secretGenerator"),
 				jen.ID("userCreationEnabled").Bool(),
@@ -87,12 +87,12 @@ func buildProvideUsersService(proj *models.Project) []jen.Code {
 		jen.Comment("ProvideUsersService builds a new UsersService."),
 		jen.Line(),
 		jen.Func().ID("ProvideUsersService").Paramsln(
-			jen.ID("authSettings").Qual(proj.InternalConfigPackage(), "AuthSettings"),
+			jen.ID("authSettings").Qual(proj.ConfigPackage(), "AuthSettings"),
 			proj.LoggerParam(),
 			jen.ID("userDataManager").Qual(proj.TypesPackage(), "UserDataManager"),
 			jen.ID("authenticator").Qual(proj.InternalAuthPackage(), "Authenticator"),
-			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.InternalEncodingPackage(), "EncoderDecoder"),
-			jen.ID("counterProvider").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider"),
+			jen.ID("userIDFetcher").ID("UserIDFetcher"), jen.ID("encoder").Qual(proj.EncodingPackage(), "EncoderDecoder"),
+			jen.ID("counterProvider").Qual(proj.MetricsPackage(), "UnitCounterProvider"),
 			jen.ID("reporter").Qual("gitlab.com/verygoodsoftwarenotvirus/newsman", "Reporter"),
 		).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.If(jen.ID("userIDFetcher").IsEqualTo().ID("nil")).Body(

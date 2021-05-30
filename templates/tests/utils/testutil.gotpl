@@ -95,7 +95,7 @@ func BuildTestRequest(t *testing.T) *http.Request {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodOptions,
-		"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
+		"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
 		nil,
 	)
 

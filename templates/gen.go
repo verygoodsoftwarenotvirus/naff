@@ -6,18 +6,26 @@ import (
 	"time"
 
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/audit"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication"
+	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
+	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism/stripe"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/tracing"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server"
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
 	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
 	encodedqrcodegeneratorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/encoded_qr_code_generator"
 	indexinitializercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/index_initializer"
 	templategencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/template_gen"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/audit"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication"
-	//internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
-	//buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism/stripe"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config/viper"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
@@ -26,15 +34,10 @@ import (
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/builders"
 	//mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
-	//mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
-	//mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/tracing"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
+	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing"
@@ -60,9 +63,6 @@ import (
 	//mockuploads "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/mock"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/encoded_qr_code_generator"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/deploy"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
@@ -89,19 +89,31 @@ func RenderProject(proj *naffmodels.Project) {
 		"datascaffoldercmd":         datascaffoldercmd.RenderPackage,
 		"encodedqrcodegeneratorcmd": encodedqrcodegeneratorcmd.RenderPackage,
 		"indexinitializercmd":       indexinitializercmd.RenderPackage,
+		"composefiles":              composefiles.RenderPackage,
+		"deployfiles":               providerconfigs.RenderPackage,
+		"dockerfiles":               dockerfiles.RenderPackage,
+		"audit":                     audit.RenderPackage,
+		"authentication":            authentication.RenderPackage,
+		"authorization":             internalauth.RenderPackage,
+		"buildserver":               buildserver.RenderPackage,
+		"capitalism":                capitalism.RenderPackage,
+		"stripe":                    stripe.RenderPackage,
+		"encoding":                  encoding.RenderPackage,
+		"mockencoding":              mockencoding.RenderPackage,
+		"events":                    events.RenderPackage,
+		"observability":             observability.RenderPackage,
+		"keys":                      keys.RenderPackage,
+		"logging":                   logging.RenderPackage,
+		"metrics":                   metrics.RenderPackage,
+		"mockmetrics":               mockmetrics.RenderPackage,
+		"tracing":                   tracing.RenderPackage,
 		//"httpclient":                httpclient.RenderPackage,
 		//"requests":                  requests.RenderPackage,
 		//"database":                  database.RenderPackage,
-		//"internalauth":              authentication.RenderPackage,
 		//"config":                    config.RenderPackage,
-		//"encoding":                  encoding.RenderPackage,
-		//"metrics":                   metrics.RenderPackage,
-		//"tracing":                   tracing.RenderPackage,
 		//"search":                    search.RenderPackage,
-		//"audit":                     audit.RenderPackage,
 		//"searchmock":                mocksearch.RenderPackage,
 		//"bleve":                     bleve.RenderPackage,
-		//"metricsmock":               mockmetrics.RenderPackage,
 		//"server":                    server.RenderPackage,
 		//"testutil":                  testutil.RenderPackage,
 		//"frontendtests":             frontendtests.RenderPackage,
@@ -119,21 +131,10 @@ func RenderProject(proj *naffmodels.Project) {
 		//"querier":                   querier.RenderPackage,
 		//"querybuilding":             querybuilding.RenderPackage,
 		//"querybuilders":             builders.RenderPackage,
-		//"composefiles":              composefiles.RenderPackage,
-		//"deployfiles":               deploy.RenderPackage,
-		//"dockerfiles":               dockerfiles.RenderPackage,
 		//"miscellaneous":             misc.RenderPackage,
-		//"buildserver":               buildserver.RenderPackage,
-		//"authorization":             internalauth.RenderPackage,
-		//"capitalism":                capitalism.RenderPackage,
-		//"stripe":                    stripe.RenderPackage,
 		//"viper":                     viper.RenderPackage,
 		//"dbconfig":                  dbconfig.RenderPackage,
 		//"dbmock":                    mockquerybuilding.RenderPackage,
-		//"mockencoding":              mockencoding.RenderPackage,
-		//"observability":             observability.RenderPackage,
-		//"keys":                      keys.RenderPackage,
-		//"logging":                   logging.RenderPackage,
 		//"panicking":                 panicking.RenderPackage,
 		//"random":                    random.RenderPackage,
 		//"routing":                   routing.RenderPackage,
@@ -141,7 +142,6 @@ func RenderProject(proj *naffmodels.Project) {
 		//"mockrouting":               mock.RenderPackage,
 		//"accountsservice":           accounts.RenderPackage,
 		//"secrets":                   secrets.RenderPackage,
-		//"events":                    events.RenderPackage,
 		//"adminservice":              admin.RenderPackage,
 		//"auditservice":              auditservice.RenderPackage,
 		//"frontendservice":           frontend.RenderPackage,

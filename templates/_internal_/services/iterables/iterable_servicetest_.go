@@ -26,7 +26,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 
 	serviceValues := []jen.Code{
 		jen.ID(constants.LoggerVarName).MapAssign().Qual(proj.InternalLoggingPackage(), "NewNonOperationalLogger").Call(),
-		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+		jen.ID(fmt.Sprintf("%sCounter", uvn)).MapAssign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 	}
 
 	for _, ot := range proj.FindOwnerTypeChain(typ) {
@@ -50,7 +50,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 	}
 
 	serviceValues = append(serviceValues,
-		jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("encoderDecoder").MapAssign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("reporter").MapAssign().ID("nil"),
 	)
 
@@ -92,7 +92,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	}
 
 	provideServiceLines = append(provideServiceLines,
-		jen.AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ucp"),
 		jen.Nil(),
 	)
@@ -109,12 +109,12 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"),
+				).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter"),
 					jen.Error()).Body(
-					jen.Return().List(jen.AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
+					jen.Return().List(jen.AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
 				jen.Line(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
@@ -127,10 +127,10 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 			jen.Line(),
 			utils.BuildSubTestWithoutContext(
 				"with error providing unit counter",
-				jen.Var().ID("ucp").Qual(proj.InternalMetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
-					jen.ID("counterName").Qual(proj.InternalMetricsPackage(), "CounterName"),
+				jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
+					jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName"),
 					jen.ID("description").String(),
-				).Params(jen.Qual(proj.InternalMetricsPackage(), "UnitCounter"), jen.Error()).Body(
+				).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter"), jen.Error()).Body(
 					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
 				),
 				jen.Line(),

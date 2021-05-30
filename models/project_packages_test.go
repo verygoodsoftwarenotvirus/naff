@@ -208,7 +208,7 @@ func TestProject_InternalConfigV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/config"
-		actual := p.InternalConfigPackage()
+		actual := p.ConfigPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -219,7 +219,7 @@ func TestProject_InternalConfigV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/config/fart"
-		actual := p.InternalConfigPackage(examplePathTestInput)
+		actual := p.ConfigPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -234,7 +234,7 @@ func TestProject_InternalEncodingV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/encoding"
-		actual := p.InternalEncodingPackage()
+		actual := p.EncodingPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -245,7 +245,7 @@ func TestProject_InternalEncodingV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/encoding/fart"
-		actual := p.InternalEncodingPackage(examplePathTestInput)
+		actual := p.EncodingPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -260,7 +260,7 @@ func TestProject_InternalMetricsV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/metrics"
-		actual := p.InternalMetricsPackage()
+		actual := p.MetricsPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -271,7 +271,7 @@ func TestProject_InternalMetricsV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/metrics/fart"
-		actual := p.InternalMetricsPackage(examplePathTestInput)
+		actual := p.MetricsPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})

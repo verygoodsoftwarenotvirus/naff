@@ -1,22 +1,20 @@
 package authorization
 
 import (
+	_ "embed"
 	"path/filepath"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
-	packageName = "authorization"
-
 	basePackagePath = "internal/authorization"
 )
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	files := map[string]*jen.File{
+	files := map[string]string{
 		"service_role_test.go":  serviceRoleTestDotGo(proj),
 		"account_role.go":       accountRoleDotGo(proj),
 		"account_role_test.go":  accountRoleTestDotGo(proj),
@@ -27,16 +25,67 @@ func RenderPackage(proj *models.Project) error {
 		"service_role.go":       serviceRoleDotGo(proj),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
-	//}
-
 	for path, file := range files {
-		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+//go:embed service_role_test.gotpl
+var serviceRoleTestTemplate string
+
+func serviceRoleTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, serviceRoleTestTemplate)
+}
+
+//go:embed account_role.gotpl
+var accountRoleTemplate string
+
+func accountRoleDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, accountRoleTemplate)
+}
+
+//go:embed account_role_test.gotpl
+var accountRoleTestTemplate string
+
+func accountRoleTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, accountRoleTestTemplate)
+}
+
+//go:embed authorization.gotpl
+var authorizationTemplate string
+
+func authorizationDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, authorizationTemplate)
+}
+
+//go:embed authorization_test.gotpl
+var authorizationTestTemplate string
+
+func authorizationTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, authorizationTestTemplate)
+}
+
+//go:embed permissions.gotpl
+var permissionsTemplate string
+
+func permissionsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, permissionsTemplate)
+}
+
+//go:embed rbac.gotpl
+var rbacTemplate string
+
+func rbacDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, rbacTemplate)
+}
+
+//go:embed service_role.gotpl
+var serviceRoleTemplate string
+
+func serviceRoleDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, serviceRoleTemplate)
 }

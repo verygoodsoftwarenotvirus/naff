@@ -51,47 +51,26 @@ WORKDIR /go/src/%s
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
-ADD ../../../dockerfiles .
+COPY . .
 
 CMD if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then exit 1; fi
 `, projRoot)
 }
 
 func developmentDotDockerfile(projRoot, binaryName string) string {
-	return fmt.Sprintf(`# frontend-build-stage
-FROM node:latest AS frontend-build-stage
-
-WORKDIR /app
-
-ADD frontend/v1 .
-
-RUN npm install && npm run build
-
-# build stage
-FROM golang:stretch AS build-stage
+	return fmt.Sprintf(`# build stage
+FROM golang:stretch
 
 WORKDIR /go/src/%s
 
-COPY . .
-COPY --from=frontend-build-stage /app/public /frontend
+RUN	apt-get update && apt-get install -y \
+	--no-install-recommends \
+	entr \
+	&& rm -rf /var/lib/apt/lists/*
+ENV ENTR_INOTIFY_WORKAROUND=true
 
-RUN go build -trimpath -o /%s %s/cmd/server/v1
-
-# final stage
-FROM debian:stretch
-
-COPY --from=build-stage /%s /%s
-
-RUN mkdir /home/appuser
-RUN groupadd --gid 999 appuser && \
-    useradd --system --uid 999 --gid appuser appuser
-RUN chown appuser /home/appuser
-WORKDIR /home/appuser
-USER appuser
-
-ENV DOCKER=true
-
-ENTRYPOINT ["/%s"]`, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName)
+ENTRYPOINT echo "please wait for server to start" && find . -type f \( -iname "*.go*" ! -iname "*_test.go" \) | entr -r go run %s/cmd/server
+`, projRoot, projRoot)
 }
 
 func frontendTestDotDockerfile(projRoot, _ string) string {
@@ -153,31 +132,15 @@ WORKDIR /go/src/%s
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
-ADD . .
+COPY . .
 
-RUN go build -trimpath -o /%s -v %s/cmd/server/v1
-
-# frontend-build-stage
-FROM node:latest AS frontend-build-stage
-
-WORKDIR /app
-
-ADD frontend/v1 .
-
-RUN npm install && npm run build
+# we need the `+"`"+`-tags json1`+"`"+` so sqlite can support JSON columns.
+RUN go build -tags json1 -trimpath -o /%s -v %s/cmd/server
 
 # final stage
 FROM debian:stretch
 
-RUN mkdir /home/appuser
-RUN groupadd --gid 999 appuser && \
-    useradd --system --uid 999 --gid appuser appuser
-RUN chown appuser /home/appuser
-WORKDIR /home/appuser
-USER appuser
-
 COPY --from=build-stage /%s /%s
-COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/%s"]
 `, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName)
@@ -189,23 +152,14 @@ FROM golang:stretch AS build-stage
 
 WORKDIR /go/src/%s
 
-RUN apt-get update -y && apt-get install -y make git gcc musl-dev
+COPY . .
 
-ADD . .
-
-RUN go build -trimpath -o /%s -v %s/cmd/server/v1
-
-# frontend-build-stage
-FROM node:latest AS frontend-build-stage
-
-WORKDIR /app
-
-ADD frontend/v1 .
-
-RUN npm install && npm run build
+RUN go build -trimpath -o /%s -v %s/cmd/server
 
 # final stage
 FROM debian:stretch
+
+COPY --from=build-stage /%s /%s
 
 RUN mkdir /home/appuser
 RUN groupadd --gid 999 appuser && \
@@ -215,8 +169,6 @@ WORKDIR /home/appuser
 USER appuser
 
 COPY environments/testing/config_files/frontend-tests.toml /etc/config.toml
-COPY --from=build-stage /%s /%s
-COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/%s"]
 `, projRoot, binaryName, projRoot, binaryName, binaryName, binaryName)
@@ -229,12 +181,12 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 WORKDIR /go/src/%s
 
-ADD . .
+COPY . .
 
-ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/v1/integration" ]
+ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/integration" ]
 
-# for a more specific test:
-# ENTRYPOINT [ "go", "test", "-v", "%s/tests/v1/integration", "-run", "InsertTestNameHere" ]
+# to debug a specific test:
+# ENTRYPOINT [ "go", "test", "-parallel", "1", "-v", "-failfast", "%s/tests/integration", "-run", "InsertTestNameHere" ]
 `, projRoot, projRoot, projRoot)
 }
 
@@ -246,12 +198,12 @@ WORKDIR /go/src/%s
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
-ADD . .
+COPY . .
 
-RUN go build -o /loadtester %s/tests/v1/load
+RUN go build -o /loadtester %s/tests/load
 
 # final stage
-FROM debian:stable
+FROM debian:stretch
 
 COPY --from=build-stage /loadtester /loadtester
 

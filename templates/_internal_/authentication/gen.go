@@ -1,38 +1,99 @@
 package authentication
 
 import (
+	_ "embed"
 	"path/filepath"
 
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
-	packageName     = "authentication"
-	testPackageName = "authentication_test"
 	basePackagePath = "internal/authentication"
 )
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	files := map[string]*jen.File{
-		"authenticator.go":      authenticatorDotGo(proj),
-		"authenticator_test.go": authenticatorTestDotGo(proj),
-		"doc.go":                docDotGo(),
-		"wire.go":               wireDotGo(),
-		"mock_authenticator.go": mockAuthenticatorDotGo(proj),
-		"config.go":             configDotGo(proj),
-		"config_test.go":        configTestDotGo(proj),
-		"argon2.go":             argon2DotGo(proj),
-		"argon2_test.go":        argon2TestDotGo(proj),
+	stringFiles := map[string]string{
+		"authenticator.go":      authenticatorDotGoString(proj),
+		"authenticator_test.go": authenticatorTestDotGoString(proj),
+		"doc.go":                docDotGoString(proj),
+		"wire.go":               wireDotGoString(proj),
+		"mock_authenticator.go": mockAuthenticatorDotGoString(proj),
+		"config.go":             configDotGoString(proj),
+		"config_test.go":        configTestDotGoString(proj),
+		"argon2.go":             argon2DotGoString(proj),
+		"argon2_test.go":        argon2TestDotGoString(proj),
 	}
 
-	for path, file := range files {
-		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+	for path, file := range stringFiles {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+//go:embed authenticator.gotpl
+var authenticatorTemplate string
+
+func authenticatorDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, authenticatorTemplate)
+}
+
+//go:embed authenticator_test.gotpl
+var authenticatorTestTemplate string
+
+func authenticatorTestDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, authenticatorTestTemplate)
+}
+
+//go:embed doc.gotpl
+var docTemplate string
+
+func docDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, docTemplate)
+}
+
+//go:embed wire.gotpl
+var wireTemplate string
+
+func wireDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, wireTemplate)
+}
+
+//go:embed mock_authenticator.gotpl
+var mockAuthenticatorTemplate string
+
+func mockAuthenticatorDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, mockAuthenticatorTemplate)
+}
+
+//go:embed config.gotpl
+var configTemplate string
+
+func configDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, configTemplate)
+}
+
+//go:embed config_test.gotpl
+var configTestTemplate string
+
+func configTestDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, configTestTemplate)
+}
+
+//go:embed argon2.gotpl
+var argon2Template string
+
+func argon2DotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, argon2Template)
+}
+
+//go:embed argon2_test.gotpl
+var argon2TestTemplate string
+
+func argon2TestDotGoString(proj *models.Project) string {
+	return models.RenderCodeFile(proj, argon2TestTemplate)
 }

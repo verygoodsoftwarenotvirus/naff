@@ -174,7 +174,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -205,7 +205,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -259,7 +259,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -362,7 +362,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -504,7 +504,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -664,7 +664,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -793,7 +793,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 		jen.Line(),
-		jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+		jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 		jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 			jen.Qual(constants.MockPkg, "Anything"),
 		),
@@ -830,7 +830,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -967,7 +967,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 		jen.Line(),
-		jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+		jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 		jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 			jen.Qual(constants.MockPkg, "Anything"),
 		),
@@ -1004,7 +1004,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -1317,7 +1317,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectationArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -1466,7 +1466,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectationArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -1596,7 +1596,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -1873,7 +1873,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.Line(),
-		jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
 			jen.Qual(constants.MockPkg, "Anything"),
@@ -2082,7 +2082,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					return jen.Null()
 				}(),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
 				jen.Line(),

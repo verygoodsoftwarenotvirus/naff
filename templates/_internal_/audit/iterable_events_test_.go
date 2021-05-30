@@ -14,7 +14,9 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 	n := typ.Name
 
 	code.Add(
-		jen.Var().IDf("example%sID", n.Singular()).ID("uint64").Op("=").Lit(123),
+		jen.Const().Defs(
+			jen.IDf("example%sID", n.Singular()).ID("uint64").Op("=").Lit(123),
+		),
 		jen.Line(),
 	)
 
@@ -22,6 +24,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 		jen.Func().IDf("TestBuild%sCreationEventEntry", n.Singular()).Params(
 			jen.ID("t").Op("*").Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
+			jen.Line(),
 			jen.ID("assert").Dot("NotNil").Call(jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sCreationEventEntry", n.Singular())).Call(jen.Op("&").Qual(proj.TypesPackage(), n.Singular()).Values(),
 					jen.ID("exampleAccountID"),
@@ -35,6 +38,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 		jen.Func().IDf("TestBuild%sUpdateEventEntry", n.Singular()).Params(
 			jen.ID("t").Op("*").Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
+			jen.Line(),
 			jen.ID("assert").Dot("NotNil").Call(jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sUpdateEventEntry", n.Singular())).Call(jen.ID("exampleUserID"),
 					jen.IDf("example%sID", n.Singular()),
@@ -50,6 +54,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 		jen.Func().IDf("TestBuild%sArchiveEventEntry", n.Singular()).Params(
 			jen.ID("t").Op("*").Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
+			jen.Line(),
 			jen.ID("assert").Dot("NotNil").Call(jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sArchiveEventEntry", n.Singular())).Call(jen.ID("exampleUserID"),
 					jen.IDf("example%sID", n.Singular()),

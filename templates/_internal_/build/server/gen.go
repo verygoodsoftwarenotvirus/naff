@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	packageName = "build"
+	packageName = "server"
 
 	basePackagePrefix = "internal/build/server"
 )

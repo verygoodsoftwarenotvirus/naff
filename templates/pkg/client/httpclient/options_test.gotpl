@@ -82,7 +82,7 @@ func TestUsingLogger(T *testing.T) {
 	T.Run("standard", func(t *testing.T) {
 		t.Parallel()
 
-		expectedURL, err := url.Parse("https://{{ projectName }}.verygoodsoftwarenotvirus.ru")
+		expectedURL, err := url.Parse("https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru")
 		require.NoError(t, err)
 
 		c, err := NewClient(expectedURL, UsingLogger(logging.NewNoopLogger()))

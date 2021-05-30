@@ -29,6 +29,9 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 		"projectName": func(subsequentDirectories ...string) string {
 			return cf.proj.Name.Singular()
 		},
+		"outputPath": func() string {
+			return cf.proj.OutputPath
+		},
 	}
 }
 

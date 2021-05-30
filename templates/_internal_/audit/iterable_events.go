@@ -15,9 +15,13 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
+			jen.Commentf("%sAssignmentKey is the key we use to indicate that an audit log entry is associated with an item.", n.Singular()),
 			jen.IDf("%sAssignmentKey", n.Singular()).Op("=").Litf("%s_id", n.RouteName()),
+			jen.Commentf("%sCreationEvent is the event type used to indicate an item was created.", n.Singular()),
 			jen.IDf("%sCreationEvent", n.Singular()).Op("=").Litf("%s_created", n.RouteName()),
+			jen.Commentf("%sUpdateEvent is the event type used to indicate an item was updated.", n.Singular()),
 			jen.IDf("%sUpdateEvent", n.Singular()).Op("=").Litf("%s_updated", n.RouteName()),
+			jen.Commentf("%sArchiveEvent is the event type used to indicate an item was archived.", n.Singular()),
 			jen.IDf("%sArchiveEvent", n.Singular()).Op("=").Litf("%s_archived", n.RouteName()),
 		),
 		jen.Line(),

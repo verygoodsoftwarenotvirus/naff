@@ -1,6 +1,7 @@
 package requests
 
 import (
+	_ "embed"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"

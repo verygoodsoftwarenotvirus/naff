@@ -241,7 +241,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -291,7 +291,7 @@ func buildTestService_ListHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("UserList")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -341,7 +341,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -352,7 +352,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -598,7 +598,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("db"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -609,7 +609,7 @@ func buildTestService_CreateHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -658,7 +658,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -741,7 +741,7 @@ func buildTestService_ReadHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("User")), jen.Nil()),
 				jen.ID("s").Dot("userDataManager").Equals().ID("mockDB"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -813,7 +813,7 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1061,7 +1061,7 @@ func buildTestService_NewTOTPSecretHandler(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dot("authenticator").Equals().ID("auth"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -1585,7 +1585,7 @@ func buildTestService_Archive(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("userCounter").Equals().ID("mc"),
 				jen.Line(),

@@ -311,7 +311,7 @@ func buildCoverageConfig(proj *models.Project) []jen.Code {
 
 func buildBuildIntegrationTestForDBImplementation(proj *models.Project) []jen.Code {
 	block := []jen.Code{
-		jen.ID("cfg").Assign().Qual(proj.InternalConfigPackage(), "BuildConfig").Call(),
+		jen.ID("cfg").Assign().Qual(proj.ConfigPackage(), "BuildConfig").Call(),
 		jen.Line(),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaRunMode"), jen.ID("testingEnv")),
 		jen.ID("cfg").Dot("Set").Call(jen.ID("metaDebug"), jen.False()),

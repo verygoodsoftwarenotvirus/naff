@@ -48,7 +48,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("WebhookList")), jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -88,7 +88,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), "WebhookList")).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -161,7 +161,7 @@ func buildTestWebhooksService_List(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("WebhookList")), jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -247,7 +247,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -263,7 +263,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")), jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -382,7 +382,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), "BuildFakeWebhookCreationInputFromWebhook").Call(jen.ID(utils.BuildFakeVarName("Webhook"))),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Increment"), jen.Qual(constants.MockPkg, "Anything")),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
@@ -398,7 +398,7 @@ func buildTestWebhooksService_Create(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")), jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -458,7 +458,7 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 					jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")), jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -570,7 +570,7 @@ func buildTestWebhooksService_Read(proj *models.Project) []jen.Code {
 					jen.Lit("GetWebhook"), jen.Qual(constants.MockPkg, "Anything"), jen.ID(utils.BuildFakeVarName("Webhook")).Dot("ID"), jen.ID(utils.BuildFakeVarName("User")).Dot("ID")).Dot("Return").Call(jen.ID(utils.BuildFakeVarName("Webhook")), jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -637,7 +637,7 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -841,7 +841,7 @@ func buildTestWebhooksService_Update(proj *models.Project) []jen.Code {
 				).Dot("Return").Call(jen.Nil()),
 				jen.ID("s").Dot("webhookDataManager").Equals().ID("wd"),
 				jen.Line(),
-				jen.ID("ed").Assign().AddressOf().Qual(proj.InternalEncodingPackage("mock"), "EncoderDecoder").Values(),
+				jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 				jen.ID("ed").Dot("On").Call(
 					jen.Lit("EncodeResponse"),
 					jen.Qual(constants.MockPkg, "Anything"),
@@ -886,7 +886,7 @@ func buildTestWebhooksService_Archive(proj *models.Project) []jen.Code {
 				utils.BuildFakeVar(proj, "Webhook"),
 				jen.ID(utils.BuildFakeVarName("Webhook")).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 				jen.Line(),
-				jen.ID("mc").Assign().AddressOf().Qual(proj.InternalMetricsPackage("mock"), "UnitCounter").Values(),
+				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot("webhookCounter").Equals().ID("mc"),
 				jen.Line(),
