@@ -5,13 +5,12 @@ import (
 	"database/sql"
 	"errors"
 
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 )
 
 var (

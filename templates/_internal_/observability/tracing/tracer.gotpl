@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

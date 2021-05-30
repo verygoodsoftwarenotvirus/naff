@@ -9,14 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "pkg/client/httpclient" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/client/httpclient" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/assert"

@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "pkg/types" }}
 
 	"github.com/stretchr/testify/mock"
 )

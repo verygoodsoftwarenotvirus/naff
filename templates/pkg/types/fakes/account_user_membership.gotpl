@@ -1,9 +1,9 @@
 package fakes
 
 import (
-	"{{ projectImport "internal/authorization" }}"
+	{{ projectImport "internal/authorization" }}
 
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "pkg/types" }}
 
 	fake "github.com/brianvoe/gofakeit/v5"
 )

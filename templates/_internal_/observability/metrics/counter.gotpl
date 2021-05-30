@@ -3,7 +3,7 @@ package metrics
 import (
 	"context"
 
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/tracing" }}
 
 	"go.opentelemetry.io/otel/metric"
 )

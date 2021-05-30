@@ -3,9 +3,9 @@ package authentication
 import (
 	"context"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"github.com/alexedwards/argon2id"
 	"github.com/pquerna/otp/totp"

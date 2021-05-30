@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"net/http"
 
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/tracing" }}
 )
 
 //go:embed assets/favicon.svg

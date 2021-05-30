@@ -1,8 +1,8 @@
 package fakes
 
 import (
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "pkg/types" }}
 
 	fake "github.com/brianvoe/gofakeit/v5"
 )

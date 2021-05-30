@@ -108,7 +108,7 @@ func doTheThingForPackage(pkgPath string) error {
 				return fmt.Errorf("error reading input file: %w", err)
 			}
 
-			fileContents := regexp.MustCompile(`\t(\w+\s)?"gitlab\.com\/verygoodsoftwarenotvirus\/todo\/([\w\/]+)`).ReplaceAllString(string(fileBytes), `	$1"{{ projectImport "$2" }}`)
+			fileContents := regexp.MustCompile(`\t(\w+\s)?"gitlab\.com\/verygoodsoftwarenotvirus\/todo\/([\w\/]+)"`).ReplaceAllString(string(fileBytes), `	$1{{ projectImport "$2" }}`)
 			fileContents = regexp.MustCompile(`(?i)todo`).ReplaceAllString(fileContents, `{{ projectName }}`)
 
 			if err = ioutil.WriteFile(op, []byte(fileContents), 0644); err != nil {

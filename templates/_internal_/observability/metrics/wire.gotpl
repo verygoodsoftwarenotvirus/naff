@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	"github.com/google/wire"
 )

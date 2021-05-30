@@ -36,40 +36,40 @@ func RenderPackage(proj *models.Project) error {
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed config_test.gotpl
 var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed mock.gotpl
 var mockTemplate string
 
 func mockDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mockTemplate)
+	return models.RenderCodeFile(proj, mockTemplate, nil)
 }
 
 //go:embed noop_payment_manager.gotpl
 var noopPaymentManagerTemplate string
 
 func noopPaymentManagerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, noopPaymentManagerTemplate)
+	return models.RenderCodeFile(proj, noopPaymentManagerTemplate, nil)
 }
 
 //go:embed payment_manager.gotpl
 var paymentManagerTemplate string
 
 func paymentManagerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, paymentManagerTemplate)
+	return models.RenderCodeFile(proj, paymentManagerTemplate, nil)
 }
 
 //go:embed wire.gotpl
 var wireTemplate string
 
 func wireDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }

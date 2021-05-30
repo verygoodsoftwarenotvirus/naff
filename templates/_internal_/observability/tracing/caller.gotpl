@@ -10,7 +10,7 @@ const (
 	runtimeFrameBuffer = 3
 	counterBuffer      = 2
 
-	this = "{{ outputPath }}/"
+	this = "gitlab.com/verygoodsoftwarenotvirus/{{ projectName }}/"
 )
 
 // GetCallerName is largely (and respectfully) inspired by/copied from https://stackoverflow.com/a/35213181

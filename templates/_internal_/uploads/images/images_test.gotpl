@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	testutil "{{ projectImport "tests/utils" }}"
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

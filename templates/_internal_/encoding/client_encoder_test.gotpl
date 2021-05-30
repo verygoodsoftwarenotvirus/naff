@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	"github.com/stretchr/testify/assert"
 )

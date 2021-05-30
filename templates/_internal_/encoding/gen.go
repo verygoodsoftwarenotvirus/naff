@@ -40,68 +40,68 @@ func RenderPackage(proj *models.Project) error {
 var clientEncoderTemplate string
 
 func clientEncoderDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, clientEncoderTemplate)
+	return models.RenderCodeFile(proj, clientEncoderTemplate, nil)
 }
 
 //go:embed client_encoder_test.gotpl
 var clientEncoderTestTemplate string
 
 func clientEncoderTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, clientEncoderTestTemplate)
+	return models.RenderCodeFile(proj, clientEncoderTestTemplate, nil)
 }
 
 //go:embed config.gotpl
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed config_test.gotpl
 var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed content_type.gotpl
 var contentTypeTemplate string
 
 func contentTypeDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, contentTypeTemplate)
+	return models.RenderCodeFile(proj, contentTypeTemplate, nil)
 }
 
 //go:embed content_type_test.gotpl
 var contentTypeTestTemplate string
 
 func contentTypeTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, contentTypeTestTemplate)
+	return models.RenderCodeFile(proj, contentTypeTestTemplate, nil)
 }
 
 //go:embed doc.gotpl
 var docTemplate string
 
 func docDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, docTemplate)
+	return models.RenderCodeFile(proj, docTemplate, nil)
 }
 
 //go:embed server_encoder_decoder.gotpl
 var serverEncoderDecoderTemplate string
 
 func serverEncoderDecoderDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, serverEncoderDecoderTemplate)
+	return models.RenderCodeFile(proj, serverEncoderDecoderTemplate, nil)
 }
 
 //go:embed server_encoder_decoder_test.gotpl
 var serverEncoderDecoderTestTemplate string
 
 func serverEncoderDecoderTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, serverEncoderDecoderTestTemplate)
+	return models.RenderCodeFile(proj, serverEncoderDecoderTestTemplate, nil)
 }
 
 //go:embed wire.gotpl
 var wireTemplate string
 
 func wireDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }

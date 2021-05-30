@@ -4,17 +4,16 @@ import (
 	"database/sql"
 	"sync"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"github.com/Masterminds/squirrel"
 	"github.com/go-sql-driver/mysql"
 	"github.com/luna-duclos/instrumentedsql"
-
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "internal/database/querybuilding" }}"
 )
 
 const (

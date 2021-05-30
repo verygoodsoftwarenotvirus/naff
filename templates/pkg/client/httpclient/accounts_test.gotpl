@@ -6,10 +6,9 @@ import (
 	"net/url"
 	"testing"
 
-	"{{ projectImport "internal/observability/keys" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

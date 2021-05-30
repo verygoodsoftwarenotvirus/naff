@@ -4,16 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "internal/services/accounts" }}"
-	"{{ projectImport "internal/services/apiclients" }}"
-	"{{ projectImport "internal/services/audit" }}"
-	"{{ projectImport "internal/services/items" }}"
-	"{{ projectImport "internal/services/users" }}"
-	"{{ projectImport "internal/services/webhooks" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/routing" }}
+	{{ projectImport "internal/services/accounts" }}
+	{{ projectImport "internal/services/apiclients" }}
+	{{ projectImport "internal/services/audit" }}
+	{{ projectImport "internal/services/items" }}
+	{{ projectImport "internal/services/users" }}
+	{{ projectImport "internal/services/webhooks" }}
 
 	"github.com/heptiolabs/healthcheck"
 )

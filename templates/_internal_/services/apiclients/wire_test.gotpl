@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	authservice "{{ projectImport "internal/services/authentication" }}"
+	authservice {{ projectImport "internal/services/authentication" }}
 )
 
 func TestProvideConfig(T *testing.T) {

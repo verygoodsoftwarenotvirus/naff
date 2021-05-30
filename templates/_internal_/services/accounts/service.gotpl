@@ -3,16 +3,14 @@ package accounts
 import (
 	"net/http"
 
-	authservice "{{ projectImport "internal/services/authentication" }}"
-
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/search" }}"
-
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/routing" }}
+	{{ projectImport "internal/search" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

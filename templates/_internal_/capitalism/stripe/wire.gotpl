@@ -1,9 +1,9 @@
 package stripe
 
 import (
-	"github.com/google/wire"
+	{{ projectImport "internal/capitalism" }}
 
-	"{{ projectImport "internal/capitalism" }}"
+	"github.com/google/wire"
 )
 
 var (

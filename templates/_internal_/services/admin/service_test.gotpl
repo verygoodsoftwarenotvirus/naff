@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"testing"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	mockrouting "{{ projectImport "internal/routing/mock" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	mockrouting {{ projectImport "internal/routing/mock" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/stretchr/testify/assert"

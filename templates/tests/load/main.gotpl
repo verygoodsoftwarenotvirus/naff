@@ -9,14 +9,14 @@ import (
 	"os"
 	"time"
 
-	httpclient2 "{{ projectImport "pkg/client/httpclient" }}"
+	{{ projectImport "pkg/client/httpclient" }}
 
 	"github.com/emicklei/hazana"
 )
 
 // ServiceAttacker implements hazana's Attacker interface.
 type ServiceAttacker struct {
-	{{ projectName }}Client *httpclient2.Client
+	{{ projectName }}Client *httpclient.Client
 }
 
 // Setup implements hazana's Attacker interface.

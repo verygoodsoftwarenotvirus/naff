@@ -35,19 +35,19 @@ func RenderPackage(proj *models.Project) error {
 var mainTemplate string
 
 func mainDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mainTemplate)
+	return models.RenderCodeFile(proj, mainTemplate, nil)
 }
 
 //go:embed exiter.gotpl
 var exiterTemplate string
 
 func exiterDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, exiterTemplate)
+	return models.RenderCodeFile(proj, exiterTemplate, nil)
 }
 
 //go:embed exiter_test.gotpl
 var exiterTestTemplate string
 
 func exiterTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, exiterTestTemplate)
+	return models.RenderCodeFile(proj, exiterTestTemplate, nil)
 }

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "pkg/types" }}
 )
 
 var _ querybuilding.WebhookSQLQueryBuilder = (*WebhookSQLQueryBuilder)(nil)

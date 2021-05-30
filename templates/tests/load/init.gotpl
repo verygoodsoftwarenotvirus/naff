@@ -6,11 +6,9 @@ import (
 	"net/url"
 	"strings"
 
-	"{{ projectImport "internal/observability/logging" }}"
-
-	httpclient2 "{{ projectImport "pkg/client/httpclient" }}"
-
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/client/httpclient" }}
+	testutil {{ projectImport "tests/utils" }}
 )
 
 var (
@@ -29,13 +27,13 @@ func init() {
 	fmt.Printf("%s\tRunning tests%s", fiftySpaces, fiftySpaces)
 }
 
-func initializeClient() *httpclient2.Client {
+func initializeClient() *httpclient.Client {
 	uri, err := url.Parse(urlToUse)
 	if err != nil {
 		panic(err)
 	}
 
-	c, err := httpclient2.NewClient(uri)
+	c, err := httpclient.NewClient(uri)
 	if err != nil {
 		panic(err)
 	}

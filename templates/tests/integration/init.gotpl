@@ -7,13 +7,11 @@ import (
 	"net/url"
 	"strings"
 
-	"{{ projectImport "internal/observability/logging" }}"
-
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
+	testutil {{ projectImport "tests/utils" }}
 )
 
 const (

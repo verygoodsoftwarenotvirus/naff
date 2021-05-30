@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"

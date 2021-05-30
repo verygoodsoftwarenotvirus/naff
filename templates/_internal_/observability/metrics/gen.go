@@ -38,54 +38,54 @@ func RenderPackage(proj *models.Project) error {
 var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed counter.gotpl
 var counterTemplate string
 
 func counterDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, counterTemplate)
+	return models.RenderCodeFile(proj, counterTemplate, nil)
 }
 
 //go:embed counter_test.gotpl
 var counterTestTemplate string
 
 func counterTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, counterTestTemplate)
+	return models.RenderCodeFile(proj, counterTestTemplate, nil)
 }
 
 //go:embed doc.gotpl
 var docTemplate string
 
 func docDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, docTemplate)
+	return models.RenderCodeFile(proj, docTemplate, nil)
 }
 
 //go:embed types.gotpl
 var typesTemplate string
 
 func typesDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, typesTemplate)
+	return models.RenderCodeFile(proj, typesTemplate, nil)
 }
 
 //go:embed types_test.gotpl
 var typesTestTemplate string
 
 func typesTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, typesTestTemplate)
+	return models.RenderCodeFile(proj, typesTestTemplate, nil)
 }
 
 //go:embed wire.gotpl
 var wireTemplate string
 
 func wireDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }
 
 //go:embed config.gotpl
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }

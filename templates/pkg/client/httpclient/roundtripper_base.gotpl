@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"github.com/hashicorp/go-retryablehttp"
 

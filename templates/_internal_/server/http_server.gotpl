@@ -9,14 +9,14 @@ import (
 	"os"
 	"time"
 
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/panicking" }}"
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "internal/services/frontend" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/panicking" }}
+	{{ projectImport "internal/routing" }}
+	{{ projectImport "internal/services/frontend" }}
+	{{ projectImport "pkg/types" }}
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/net/http2"

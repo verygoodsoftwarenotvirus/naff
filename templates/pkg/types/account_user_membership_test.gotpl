@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"{{ projectImport "internal/authorization" }}"
+	{{ projectImport "internal/authorization" }}
 )
 
 func TestAddUserToAccountInput_ValidateWithContext(T *testing.T) {

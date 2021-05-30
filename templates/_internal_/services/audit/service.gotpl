@@ -3,14 +3,12 @@ package audit
 import (
 	"net/http"
 
-	authservice "{{ projectImport "internal/services/authentication" }}"
-
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/routing" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

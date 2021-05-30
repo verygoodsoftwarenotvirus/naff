@@ -4,18 +4,17 @@ import (
 	"net/http"
 	"testing"
 
-	authservice "{{ projectImport "internal/services/authentication" }}"
-
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/database" }}"
-	mockencoding "{{ projectImport "internal/encoding/mock" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	mockmetrics "{{ projectImport "internal/observability/metrics/mock" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/random" }}"
-	mockrouting "{{ projectImport "internal/routing/mock" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/database" }}
+	mockencoding {{ projectImport "internal/encoding/mock" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	mockmetrics {{ projectImport "internal/observability/metrics/mock" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/random" }}
+	mockrouting {{ projectImport "internal/routing/mock" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

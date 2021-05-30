@@ -6,11 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/authentication" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "pkg/types" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/gorilla/securecookie"
 	"github.com/stretchr/testify/assert"

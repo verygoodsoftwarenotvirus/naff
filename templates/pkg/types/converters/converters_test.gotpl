@@ -3,7 +3,7 @@ package converters
 import (
 	"testing"
 
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 )

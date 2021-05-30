@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/Masterminds/squirrel"
-
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
 )
 
 var _ querybuilding.AccountUserMembershipSQLQueryBuilder = (*MariaDB)(nil)

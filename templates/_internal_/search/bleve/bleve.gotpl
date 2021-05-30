@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/search" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/search" }}
+	{{ projectImport "pkg/types" }}
 
 	bleve "github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/search/searcher"

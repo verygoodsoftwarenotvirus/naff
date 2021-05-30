@@ -14,11 +14,10 @@ import (
 	"testing"
 	"time"
 
-	testutil "{{ projectImport "tests/utils" }}"
-
-	"{{ projectImport "internal/capitalism" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/types/fakes" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

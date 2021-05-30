@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"{{ projectImport "internal/storage" }}"
+	{{ projectImport "internal/storage" }}
 
 	"github.com/stretchr/testify/assert"
 )

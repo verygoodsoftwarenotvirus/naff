@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"testing"
 
+	{{ projectImport "internal/observability/logging" }}
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"{{ projectImport "internal/observability/logging" }}"
 )
 
 func buildTestPublisher(t *testing.T) Publisher {

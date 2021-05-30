@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"{{ projectImport "internal/encoding" }}"
+	{{ projectImport "internal/encoding" }}
 )
 
 // SaveFile saves a file to the blob.

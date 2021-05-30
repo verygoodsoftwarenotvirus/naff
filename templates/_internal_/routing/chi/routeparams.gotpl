@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/routing" }}
 
 	"github.com/go-chi/chi"
-
-	"{{ projectImport "internal/routing" }}"
 )
 
 type chiRouteParamManager struct{}

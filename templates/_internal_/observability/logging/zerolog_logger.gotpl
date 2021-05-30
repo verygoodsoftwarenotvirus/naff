@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/rs/zerolog"
+	{{ projectImport "internal/observability/keys" }}
 
-	"{{ projectImport "internal/observability/keys" }}"
+	"github.com/rs/zerolog"
 )
 
 func init() {

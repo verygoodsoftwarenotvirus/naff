@@ -3,9 +3,8 @@ package audit_test
 import (
 	"testing"
 
-	audit "{{ projectImport "internal/audit" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/stretchr/testify/assert"
 )

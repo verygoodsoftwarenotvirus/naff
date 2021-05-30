@@ -9,12 +9,11 @@ import (
 	"net/http"
 	"time"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/o1egl/paseto"
 )

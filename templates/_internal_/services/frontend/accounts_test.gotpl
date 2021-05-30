@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/database" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

@@ -7,7 +7,7 @@ import (
 	"io"
 	"time"
 
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "pkg/types" }}
 )
 
 var (

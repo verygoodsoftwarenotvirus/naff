@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "pkg/types" }}
 )
 
 // UserStatus fetches a user's status.

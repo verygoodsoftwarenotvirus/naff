@@ -32,12 +32,12 @@ func RenderPackage(proj *models.Project) error {
 var counterTemplate string
 
 func counterDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, counterTemplate)
+	return models.RenderCodeFile(proj, counterTemplate, nil)
 }
 
 //go:embed doc.gotpl
 var docTemplate string
 
 func docDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, docTemplate)
+	return models.RenderCodeFile(proj, docTemplate, nil)
 }

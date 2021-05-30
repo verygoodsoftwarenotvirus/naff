@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"go.opentelemetry.io/otel/trace"
 )

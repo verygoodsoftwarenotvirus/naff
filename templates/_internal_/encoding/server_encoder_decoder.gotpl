@@ -7,13 +7,12 @@ import (
 	"encoding/xml"
 	"net/http"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/panicking" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/panicking" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

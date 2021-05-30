@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "pkg/types" }}
 )
 
 var _ PaymentManager = (*NoopPaymentManager)(nil)

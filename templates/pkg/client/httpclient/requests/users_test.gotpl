@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"testing"
 
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

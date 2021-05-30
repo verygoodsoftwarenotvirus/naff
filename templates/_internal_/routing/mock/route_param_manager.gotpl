@@ -3,8 +3,8 @@ package mock
 import (
 	"net/http"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/stretchr/testify/mock"
 )

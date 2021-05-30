@@ -2,17 +2,13 @@ package frontend
 
 import (
 	"context"
-
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/observability" }}"
-
-	// import embed for the side effect.
-	_ "embed"
+	_ "embed" // import embed for the side effect.
 	"net/http"
 
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 )
 
 func (s *service) fetchUsers(ctx context.Context, req *http.Request) (users *types.UserList, err error) {

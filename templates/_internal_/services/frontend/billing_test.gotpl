@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"{{ projectImport "internal/capitalism" }}"
-	"{{ projectImport "internal/panicking" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/panicking" }}
+	testutil {{ projectImport "tests/utils" }}
 )
 
 func Test_renderPrice(T *testing.T) {

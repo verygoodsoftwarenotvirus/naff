@@ -1,6 +1,6 @@
 package audit
 
-import "{{ projectImport "pkg/types" }}"
+import {{ projectImport "pkg/types" }}
 
 // BuildUserBanEventEntry builds an entry creation input for when a user is banned.
 func BuildUserBanEventEntry(banGiver, banRecipient uint64, reason string) *types.AuditLogEntryCreationInput {

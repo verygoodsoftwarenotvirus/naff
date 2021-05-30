@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"testing"
 
-	mockencoding "{{ projectImport "internal/encoding/mock" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	mockmetrics "{{ projectImport "internal/observability/metrics/mock" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	mockrouting "{{ projectImport "internal/routing/mock" }}"
-	"{{ projectImport "internal/search" }}"
-	mocksearch "{{ projectImport "internal/search/mock" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	mockencoding {{ projectImport "internal/encoding/mock" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	mockmetrics {{ projectImport "internal/observability/metrics/mock" }}
+	{{ projectImport "internal/observability/tracing" }}
+	mockrouting {{ projectImport "internal/routing/mock" }}
+	{{ projectImport "internal/search" }}
+	mocksearch {{ projectImport "internal/search/mock" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

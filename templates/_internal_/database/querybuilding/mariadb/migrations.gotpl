@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"{{ projectImport "internal/database/querybuilding" }}"
+	{{ projectImport "internal/database/querybuilding" }}
 
 	"github.com/GuiaBolso/darwin"
 )

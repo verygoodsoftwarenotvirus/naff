@@ -8,27 +8,26 @@ import (
 	"os"
 	"time"
 
-	"{{ projectImport "internal/services/items" }}"
-
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/config" }}"
-	"{{ projectImport "internal/database" }}"
-	dbconfig "{{ projectImport "internal/database/config" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/search" }}"
-	"{{ projectImport "internal/secrets" }}"
-	"{{ projectImport "internal/server" }}"
-	"{{ projectImport "internal/services/audit" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-	"{{ projectImport "internal/services/frontend" }}"
-	"{{ projectImport "internal/services/webhooks" }}"
-	"{{ projectImport "internal/storage" }}"
-	"{{ projectImport "internal/uploads" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/services/items" }}
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/config" }}
+	{{ projectImport "internal/database" }}
+	dbconfig {{ projectImport "internal/database/config" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/search" }}
+	{{ projectImport "internal/secrets" }}
+	{{ projectImport "internal/server" }}
+	{{ projectImport "internal/services/audit" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/services/frontend" }}
+	{{ projectImport "internal/services/webhooks" }}
+	{{ projectImport "internal/storage" }}
+	{{ projectImport "internal/uploads" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

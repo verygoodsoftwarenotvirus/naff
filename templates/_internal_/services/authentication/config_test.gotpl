@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	random "{{ projectImport "internal/random" }}"
+	random {{ projectImport "internal/random" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -9,17 +9,16 @@ import (
 	"path"
 	"time"
 
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/panicking" }}"
-	"{{ projectImport "pkg/client/httpclient/requests" }}"
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/panicking" }}
+	{{ projectImport "pkg/client/httpclient/requests" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/moul/http2curl"
-
-	"{{ projectImport "pkg/types" }}"
 )
 
 const (

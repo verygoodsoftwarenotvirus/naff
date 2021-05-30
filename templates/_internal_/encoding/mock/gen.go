@@ -33,19 +33,19 @@ func RenderPackage(proj *models.Project) error {
 var clientEncoderTemplate string
 
 func clientEncoderDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, clientEncoderTemplate)
+	return models.RenderCodeFile(proj, clientEncoderTemplate, nil)
 }
 
 //go:embed doc.gotpl
 var docTemplate string
 
 func docDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, docTemplate)
+	return models.RenderCodeFile(proj, docTemplate, nil)
 }
 
 //go:embed encoding.gotpl
 var encodingTemplate string
 
 func encodingDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, encodingTemplate)
+	return models.RenderCodeFile(proj, encodingTemplate, nil)
 }

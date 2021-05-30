@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -332,7 +332,7 @@ func TestServerEncoderDecoder_DecodeRequest(T *testing.T) {
 		req, err := http.NewRequestWithContext(
 			ctx,
 			http.MethodGet,
-			"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
+			"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
 			bytes.NewReader(bs),
 		)
 		require.NoError(t, err)
@@ -357,7 +357,7 @@ func TestServerEncoderDecoder_DecodeRequest(T *testing.T) {
 		req, err := http.NewRequestWithContext(
 			ctx,
 			http.MethodGet,
-			"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
+			"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
 			bytes.NewReader(bs),
 		)
 		require.NoError(t, err)

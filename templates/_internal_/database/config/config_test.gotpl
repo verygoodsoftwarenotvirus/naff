@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
+	{{ projectImport "internal/observability/logging" }}
+	authservice {{ projectImport "internal/services/authentication" }}
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -70,7 +70,7 @@ func TestConfig_ProvideDatabaseConnection(T *testing.T) {
 		logger := logging.NewNoopLogger()
 		cfg := &Config{
 			Provider:          MariaDBProvider,
-			ConnectionDetails: "dbuser:hunter2@tcp(database:3306)/{{ projectName }}",
+			ConnectionDetails: "dbuser:hunter2@tcp(database:3306)/{{ route_fmt projectName }}",
 		}
 
 		db, err := ProvideDatabaseConnection(logger, cfg)

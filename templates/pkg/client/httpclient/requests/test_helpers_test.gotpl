@@ -9,19 +9,18 @@ import (
 	"strings"
 	"testing"
 
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const (
-	exampleURI       = "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru"
+	exampleURI       = "https://{{ projectName }}.verygoodsoftwarenotvirus.ru"
 	asciiControlChar = string(byte(127))
 )
 

@@ -5,12 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"{{ projectImport "internal/authorization" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 func TestPostgres_BuildGetDefaultAccountIDForUserQuery(T *testing.T) {

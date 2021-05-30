@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"gocloud.dev/pubsub"
 )

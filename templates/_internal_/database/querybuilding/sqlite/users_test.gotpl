@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"{{ projectImport "internal/authorization" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 func TestSqlite_BuildUserIsBannedQuery(T *testing.T) {

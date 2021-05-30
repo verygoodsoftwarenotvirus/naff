@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/panicking" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/panicking" }}
 )
 
 var pricePanicker = panicking.NewProductionPanicker()

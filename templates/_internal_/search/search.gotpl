@@ -3,7 +3,7 @@ package search
 import (
 	"context"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 )
 
 type (

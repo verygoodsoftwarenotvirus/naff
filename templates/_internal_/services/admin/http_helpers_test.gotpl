@@ -6,15 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/require"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 type adminServiceHTTPRoutesTestHelper struct {

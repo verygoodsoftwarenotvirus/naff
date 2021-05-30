@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"{{ projectImport "internal/encoding" }}"
+	{{ projectImport "internal/encoding" }}
 
 	"github.com/stretchr/testify/mock"
 )

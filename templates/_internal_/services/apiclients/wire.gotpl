@@ -3,7 +3,7 @@ package apiclients
 import (
 	"github.com/google/wire"
 
-	authservice "{{ projectImport "internal/services/authentication" }}"
+	authservice {{ projectImport "internal/services/authentication" }}
 )
 
 var (

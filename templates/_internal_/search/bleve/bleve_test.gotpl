@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/search" }}"
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/search" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

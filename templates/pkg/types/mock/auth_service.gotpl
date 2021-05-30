@@ -4,9 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/stretchr/testify/mock"
 )

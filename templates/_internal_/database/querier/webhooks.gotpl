@@ -6,14 +6,13 @@ import (
 	"errors"
 	"strings"
 
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 )
 
 var (

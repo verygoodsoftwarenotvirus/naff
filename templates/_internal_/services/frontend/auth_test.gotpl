@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

@@ -6,12 +6,11 @@ import (
 	"math"
 	"time"
 
-	config2 "{{ projectImport "internal/database/config" }}"
-
-	config "{{ projectImport "internal/config" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/search" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
+	{{ projectImport "internal/config" }}
+	dbconfig {{ projectImport "internal/database/config" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/search" }}
+	authservice {{ projectImport "internal/services/authentication" }}
 
 	"github.com/spf13/viper"
 )
@@ -47,7 +46,7 @@ func BuildViperConfig() *viper.Viper {
 
 	// metrics stuff.
 	cfg.SetDefault(ConfigKeyDatabaseMetricsCollectionInterval, metrics.DefaultMetricsCollectionInterval)
-	cfg.SetDefault(ConfigKeyMetricsRuntimeCollectionInterval, config2.DefaultMetricsCollectionInterval)
+	cfg.SetDefault(ConfigKeyMetricsRuntimeCollectionInterval, dbconfig.DefaultMetricsCollectionInterval)
 
 	// tracing stuff.
 	cfg.SetDefault(ConfigKeyObservabilityTracingSpanCollectionProbability, 1)

@@ -4,11 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

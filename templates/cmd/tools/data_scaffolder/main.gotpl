@@ -8,13 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "pkg/client/httpclient" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/client/httpclient" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/pquerna/otp/totp"
 	flag "github.com/spf13/pflag"

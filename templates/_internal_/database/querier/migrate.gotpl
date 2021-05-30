@@ -3,11 +3,10 @@ package querier
 import (
 	"context"
 
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "pkg/types" }}
 )
 
 // Migrate is a simple wrapper around the core querier Migrate call.

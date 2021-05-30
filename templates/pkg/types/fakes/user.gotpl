@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"{{ projectImport "internal/authorization" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "pkg/types" }}
 
 	fake "github.com/brianvoe/gofakeit/v5"
 	"github.com/pquerna/otp/totp"

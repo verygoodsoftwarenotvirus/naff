@@ -3,7 +3,7 @@ package uploads
 import (
 	"context"
 
-	"{{ projectImport "internal/storage" }}"
+	{{ projectImport "internal/storage" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

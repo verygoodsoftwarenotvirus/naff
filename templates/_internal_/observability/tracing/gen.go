@@ -59,103 +59,103 @@ func RenderPackage(proj *models.Project) error {
 var tracerTestTemplate string
 
 func tracerTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, tracerTestTemplate)
+	return models.RenderCodeFile(proj, tracerTestTemplate, nil)
 }
 
 //go:embed caller.gotpl
 var callerTemplate string
 
 func callerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, callerTemplate)
+	return models.RenderCodeFile(proj, callerTemplate, nil)
 }
 
 //go:embed config_test.gotpl
 var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed span_manager.gotpl
 var spanManagerTemplate string
 
 func spanManagerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, spanManagerTemplate)
+	return models.RenderCodeFile(proj, spanManagerTemplate, nil)
 }
 
 //go:embed spans_test.gotpl
 var spansTestTemplate string
 
 func spansTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, spansTestTemplate)
+	return models.RenderCodeFile(proj, spansTestTemplate, nil)
 }
 
 //go:embed tracer.gotpl
 var tracerTemplate string
 
 func tracerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, tracerTemplate)
+	return models.RenderCodeFile(proj, tracerTemplate, nil)
 }
 
 //go:embed caller_test.gotpl
 var callerTestTemplate string
 
 func callerTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, callerTestTemplate)
+	return models.RenderCodeFile(proj, callerTestTemplate, nil)
 }
 
 //go:embed instrumented_span_wrapper.gotpl
 var instrumentedSpanWrapperTemplate string
 
 func instrumentedSpanWrapperDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, instrumentedSpanWrapperTemplate)
+	return models.RenderCodeFile(proj, instrumentedSpanWrapperTemplate, nil)
 }
 
 //go:embed instrumented_span_wrapper_test.gotpl
 var instrumentedSpanWrapperTestTemplate string
 
 func instrumentedSpanWrapperTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, instrumentedSpanWrapperTestTemplate)
+	return models.RenderCodeFile(proj, instrumentedSpanWrapperTestTemplate, nil)
 }
 
 //go:embed instrumentedsql.gotpl
 var instrumentedsqlTemplate string
 
 func instrumentedsqlDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, instrumentedsqlTemplate)
+	return models.RenderCodeFile(proj, instrumentedsqlTemplate, nil)
 }
 
 //go:embed config.gotpl
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed doc.gotpl
 var docTemplate string
 
 func docDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, docTemplate)
+	return models.RenderCodeFile(proj, docTemplate, nil)
 }
 
 //go:embed spans.gotpl
 var spansTemplate string
 
 func spansDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, spansTemplate)
+	return models.RenderCodeFile(proj, spansTemplate, nil)
 }
 
 //go:embed instrumentedsql_test.gotpl
 var instrumentedsqlTestTemplate string
 
 func instrumentedsqlTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, instrumentedsqlTestTemplate)
+	return models.RenderCodeFile(proj, instrumentedsqlTestTemplate, nil)
 }
 
 //go:embed span_manager_test.gotpl
 var spanManagerTestTemplate string
 
 func spanManagerTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, spanManagerTestTemplate)
+	return models.RenderCodeFile(proj, spanManagerTestTemplate, nil)
 }

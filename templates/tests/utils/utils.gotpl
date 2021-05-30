@@ -13,12 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"{{ projectImport "pkg/client/httpclient" }}"
+	{{ projectImport "pkg/client/httpclient" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/brianvoe/gofakeit/v5"
 	"github.com/pquerna/otp/totp"
-
-	"{{ projectImport "pkg/types" }}"
 )
 
 var (

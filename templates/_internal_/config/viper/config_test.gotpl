@@ -4,24 +4,21 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/services/items" }}"
-
-	"{{ projectImport "internal/capitalism" }}"
-	config2 "{{ projectImport "internal/database/config" }}"
-
-	"{{ projectImport "internal/server" }}"
-
-	"{{ projectImport "internal/config" }}"
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/services/audit" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-	"{{ projectImport "internal/storage" }}"
-	"{{ projectImport "internal/uploads" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/config" }}
+	{{ projectImport "internal/database" }}
+	dbconfig {{ projectImport "internal/database/config" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/server" }}
+	{{ projectImport "internal/services/audit" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/services/items" }}
+	{{ projectImport "internal/storage" }}
+	{{ projectImport "internal/uploads" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/stretchr/testify/assert"
 )
@@ -101,7 +98,7 @@ func TestFromConfig(T *testing.T) {
 			Services: config.ServicesConfigurations{
 				Auth: authservice.Config{
 					Cookies: authservice.CookieConfig{
-						Name:     "{{ projectName }}cookie",
+						Name:     "{{ route_fmt projectName }}cookie",
 						Domain:   "https://verygoodsoftwarenotvirus.ru",
 						Lifetime: time.Second,
 					},
@@ -113,7 +110,7 @@ func TestFromConfig(T *testing.T) {
 					SearchIndexPath: "/items_index_path",
 				},
 			},
-			Database: config2.Config{
+			Database: dbconfig.Config{
 				Provider:                  "postgres",
 				MetricsCollectionInterval: 2 * time.Second,
 				Debug:                     true,

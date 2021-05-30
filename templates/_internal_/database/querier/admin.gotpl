@@ -3,12 +3,11 @@ package querier
 import (
 	"context"
 
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 )
 
 var _ types.AdminUserDataManager = (*SQLQuerier)(nil)

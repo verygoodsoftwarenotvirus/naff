@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"net/http"
 
-	"{{ projectImport "internal/authorization" }}"
+	{{ projectImport "internal/authorization" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

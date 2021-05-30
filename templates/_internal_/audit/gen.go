@@ -59,96 +59,96 @@ func RenderPackage(proj *models.Project) error {
 var accountUserMembershipTemplate string
 
 func accountUserMembershipDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountUserMembershipTemplate)
+	return models.RenderCodeFile(proj, accountUserMembershipTemplate, nil)
 }
 
 //go:embed account_user_membership_events_test.gotpl
 var accountUserMembershipTestTemplate string
 
 func accountUserMembershipTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountUserMembershipTestTemplate)
+	return models.RenderCodeFile(proj, accountUserMembershipTestTemplate, nil)
 }
 
 //go:embed user_events.gotpl
 var userEventsTemplate string
 
 func userEventsDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, userEventsTemplate)
+	return models.RenderCodeFile(proj, userEventsTemplate, nil)
 }
 
 //go:embed user_events_test.gotpl
 var userEventsTestTemplate string
 
 func userEventsTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, userEventsTestTemplate)
+	return models.RenderCodeFile(proj, userEventsTestTemplate, nil)
 }
 
 //go:embed account_events.gotpl
 var accountEventsTemplate string
 
 func accountEventsDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountEventsTemplate)
+	return models.RenderCodeFile(proj, accountEventsTemplate, nil)
 }
 
 //go:embed admin_events.gotpl
 var adminEventsTemplate string
 
 func adminEventsDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, adminEventsTemplate)
+	return models.RenderCodeFile(proj, adminEventsTemplate, nil)
 }
 
 //go:embed admin_events_test.gotpl
 var adminEventsTestTemplate string
 
 func adminEventsTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, adminEventsTestTemplate)
+	return models.RenderCodeFile(proj, adminEventsTestTemplate, nil)
 }
 
 //go:embed api_client_events.gotpl
 var apiClientEventsTemplate string
 
 func apiClientEventsDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, apiClientEventsTemplate)
+	return models.RenderCodeFile(proj, apiClientEventsTemplate, nil)
 }
 
 //go:embed api_client_events_test.gotpl
 var apiClientEventsTestTemplate string
 
 func apiClientEventsTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, apiClientEventsTestTemplate)
+	return models.RenderCodeFile(proj, apiClientEventsTestTemplate, nil)
 }
 
 //go:embed account_events_test.gotpl
 var accountEventsTestTemplate string
 
 func accountEventsTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountEventsTestTemplate)
+	return models.RenderCodeFile(proj, accountEventsTestTemplate, nil)
 }
 
 //go:embed auth_events_test.gotpl
 var authEventsTestTemplate string
 
 func authEventsTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authEventsTestTemplate)
+	return models.RenderCodeFile(proj, authEventsTestTemplate, nil)
 }
 
 //go:embed webhook_events.gotpl
 var webhookEventsTemplate string
 
 func webhookEventsDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, webhookEventsTemplate)
+	return models.RenderCodeFile(proj, webhookEventsTemplate, nil)
 }
 
 //go:embed webhook_events_test.gotpl
 var webhookEventsTestTemplate string
 
 func webhookEventsTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, webhookEventsTestTemplate)
+	return models.RenderCodeFile(proj, webhookEventsTestTemplate, nil)
 }
 
 //go:embed auth_events.gotpl
 var authEventsTemplate string
 
 func authEventsDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authEventsTemplate)
+	return models.RenderCodeFile(proj, authEventsTemplate, nil)
 }

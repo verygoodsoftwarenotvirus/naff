@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -18,7 +18,7 @@ import (
 
 const (
 	// defaultNamespace is the default namespace under which we register metrics.
-	defaultNamespace = "{{ route_fmt projectName }}_server"
+	defaultNamespace = "{{ projectName }}_server"
 
 	instrumentationVersion = "1.0.0"
 

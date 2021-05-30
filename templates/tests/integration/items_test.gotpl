@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/converters" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/converters" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 func checkItemEquality(t *testing.T, expected, actual *types.Item) {

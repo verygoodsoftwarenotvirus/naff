@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"{{ projectImport "internal/observability/metrics" }}"
+	{{ projectImport "internal/observability/metrics" }}
 
 	"github.com/stretchr/testify/mock"
 )

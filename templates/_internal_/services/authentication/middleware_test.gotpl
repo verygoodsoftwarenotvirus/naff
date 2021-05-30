@@ -9,11 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "pkg/types" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/google/uuid"
 	"github.com/o1egl/paseto"

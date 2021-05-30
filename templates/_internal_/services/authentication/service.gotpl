@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/routing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/gorilla/securecookie"

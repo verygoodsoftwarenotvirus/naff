@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	"github.com/stretchr/testify/assert"
 )

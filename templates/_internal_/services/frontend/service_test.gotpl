@@ -3,13 +3,11 @@ package frontend
 import (
 	"testing"
 
-	"{{ projectImport "internal/capitalism" }}"
-
-	"{{ projectImport "internal/observability/logging" }}"
-
-	"{{ projectImport "internal/database" }}"
-	mockrouting "{{ projectImport "internal/routing/mock" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/observability/logging" }}
+	mockrouting {{ projectImport "internal/routing/mock" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/stretchr/testify/mock"
 )

@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 
-	"{{ projectImport "internal/database/querybuilding" }}"
-	mockquerybuilding "{{ projectImport "internal/database/querybuilding/mock" }}"
-	"{{ projectImport "pkg/types" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	mockquerybuilding {{ projectImport "internal/database/querybuilding/mock" }}
+	{{ projectImport "pkg/types" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/stretchr/testify/mock"
 )

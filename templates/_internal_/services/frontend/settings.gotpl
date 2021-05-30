@@ -6,12 +6,10 @@ import (
 	"html/template"
 	"net/http"
 
-	"{{ projectImport "internal/capitalism" }}"
-	"{{ projectImport "pkg/types" }}"
-
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/observability" }}"
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 )
 
 //go:embed templates/partials/settings/user_settings.gotpl

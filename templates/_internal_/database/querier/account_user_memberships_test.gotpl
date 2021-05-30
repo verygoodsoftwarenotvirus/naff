@@ -7,13 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"

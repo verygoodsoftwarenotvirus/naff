@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/observability/tracing" }}
+
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 )
 
 func checkAPIClientEquality(t *testing.T, expected, actual *types.APIClient) {

@@ -10,5 +10,5 @@ import (
 var grafanaDashboard string
 
 func dashboardDotJSON(proj *models.Project) string {
-	return models.RenderCodeFile(proj, grafanaDashboard)
+	return models.RenderCodeFile(proj, grafanaDashboard, nil)
 }

@@ -3,16 +3,15 @@ package apiclients
 import (
 	"net/http"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/random" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/random" }}
+	{{ projectImport "internal/routing" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

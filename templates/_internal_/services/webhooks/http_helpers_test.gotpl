@@ -6,14 +6,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
+	testutil {{ projectImport "tests/utils" }}
 )
 
 type webhooksServiceHTTPRoutesTestHelper struct {

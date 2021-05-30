@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"path/filepath"
 	"strings"
@@ -9,7 +10,8 @@ import (
 )
 
 type CodeFile struct {
-	proj *Project
+	proj      *Project
+	generated map[string]string
 }
 
 func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
@@ -24,7 +26,7 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 			return wordsmith.FromSingularPascalCase(s).RouteName()
 		},
 		"projectImport": func(path string) string {
-			return filepath.Join(append([]string{cf.proj.OutputPath}, path)...)
+			return fmt.Sprintf("%q", filepath.Join(append([]string{cf.proj.OutputPath}, path)...))
 		},
 		"projectName": func(subsequentDirectories ...string) string {
 			return cf.proj.Name.Singular()
@@ -32,12 +34,16 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 		"outputPath": func() string {
 			return cf.proj.OutputPath
 		},
+		"generated": func(s string) string {
+			return cf.generated[s]
+		},
 	}
 }
 
-func RenderCodeFile(proj *Project, rawTemplate string) string {
+func RenderCodeFile(proj *Project, rawTemplate string, generated map[string]string) string {
 	cf := &CodeFile{
-		proj: proj,
+		proj:      proj,
+		generated: generated,
 	}
 
 	tmpl := template.Must(template.New("").Funcs(cf.TemplateFunctions()).Parse(rawTemplate))

@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
-	mockrouting "{{ projectImport "internal/routing/mock" }}"
+	mockrouting {{ projectImport "internal/routing/mock" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

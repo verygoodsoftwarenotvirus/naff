@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	audit "{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/authorization" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/Masterminds/squirrel"
 )

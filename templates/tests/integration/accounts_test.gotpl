@@ -5,18 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/audit" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/audit" }}
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/client/httpclient" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/converters" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"{{ projectImport "pkg/client/httpclient" }}"
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/converters" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 func checkAccountEquality(t *testing.T, expected, actual *types.Account) {

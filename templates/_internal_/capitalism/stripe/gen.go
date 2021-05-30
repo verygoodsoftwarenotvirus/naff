@@ -35,33 +35,33 @@ func RenderPackage(proj *models.Project) error {
 var mockBackendTestTemplate string
 
 func mockBackendTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mockBackendTestTemplate)
+	return models.RenderCodeFile(proj, mockBackendTestTemplate, nil)
 }
 
 //go:embed stripe.gotpl
 var stripeTemplate string
 
 func stripeDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, stripeTemplate)
+	return models.RenderCodeFile(proj, stripeTemplate, nil)
 }
 
 //go:embed stripe_test.gotpl
 var stripeTestTemplate string
 
 func stripeTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, stripeTestTemplate)
+	return models.RenderCodeFile(proj, stripeTestTemplate, nil)
 }
 
 //go:embed wire.gotpl
 var wireTemplate string
 
 func wireDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }
 
 //go:embed wire_test.gotpl
 var wireTestTemplate string
 
 func wireTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTestTemplate)
+	return models.RenderCodeFile(proj, wireTestTemplate, nil)
 }

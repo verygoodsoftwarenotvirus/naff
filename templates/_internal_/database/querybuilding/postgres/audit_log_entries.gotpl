@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/Masterminds/squirrel"
-
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
 )
 
 var _ querybuilding.AuditLogEntrySQLQueryBuilder = (*Postgres)(nil)

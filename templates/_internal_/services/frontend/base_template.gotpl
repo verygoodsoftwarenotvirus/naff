@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/tracing" }}
 )
 
 type pageData struct {

@@ -37,47 +37,47 @@ func RenderPackage(proj *models.Project) error {
 var wireTemplate string
 
 func wireDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }
 
 //go:embed config.gotpl
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed config_test.gotpl
 var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed publisher.gotpl
 var publisherTemplate string
 
 func publisherDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, publisherTemplate)
+	return models.RenderCodeFile(proj, publisherTemplate, nil)
 }
 
 //go:embed publisher_test.gotpl
 var publisherTestTemplate string
 
 func publisherTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, publisherTestTemplate)
+	return models.RenderCodeFile(proj, publisherTestTemplate, nil)
 }
 
 //go:embed subscriber.gotpl
 var subscriberTemplate string
 
 func subscriberDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, subscriberTemplate)
+	return models.RenderCodeFile(proj, subscriberTemplate, nil)
 }
 
 //go:embed subscriber_test.gotpl
 var subscriberTestTemplate string
 
 func subscriberTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, subscriberTestTemplate)
+	return models.RenderCodeFile(proj, subscriberTestTemplate, nil)
 }

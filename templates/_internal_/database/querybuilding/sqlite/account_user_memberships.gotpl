@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"{{ projectImport "internal/authorization" }}"
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/Masterminds/squirrel"
 )

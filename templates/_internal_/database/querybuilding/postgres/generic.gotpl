@@ -6,10 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"{{ projectImport "internal/observability/tracing" }}"
-
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/Masterminds/squirrel"
 )

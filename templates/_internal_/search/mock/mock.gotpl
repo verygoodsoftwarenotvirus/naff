@@ -3,7 +3,7 @@ package mocksearch
 import (
 	"context"
 
-	"{{ projectImport "internal/search" }}"
+	{{ projectImport "internal/search" }}
 
 	"github.com/stretchr/testify/mock"
 )

@@ -3,7 +3,7 @@ package frontend
 import (
 	"github.com/nleeper/goment"
 
-	"{{ projectImport "internal/panicking" }}"
+	{{ projectImport "internal/panicking" }}
 )
 
 var gomentPanicker = panicking.NewProductionPanicker()

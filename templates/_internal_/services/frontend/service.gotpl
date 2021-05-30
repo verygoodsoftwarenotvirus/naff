@@ -5,18 +5,15 @@ import (
 	"html/template"
 	"net/http"
 
-	authservice "{{ projectImport "internal/services/authentication" }}"
-
-	"{{ projectImport "internal/capitalism" }}"
-
-	"{{ projectImport "internal/authorization" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "internal/panicking" }}"
-
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/panicking" }}
+	{{ projectImport "internal/routing" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )

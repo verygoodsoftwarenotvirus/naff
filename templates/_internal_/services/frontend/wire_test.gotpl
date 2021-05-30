@@ -3,7 +3,7 @@ package frontend
 import (
 	"testing"
 
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/stretchr/testify/assert"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

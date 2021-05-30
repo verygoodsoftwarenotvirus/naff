@@ -4,19 +4,19 @@ import (
 	"net/http"
 	"testing"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/database" }}"
-	mockencoding "{{ projectImport "internal/encoding/mock" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	mockmetrics "{{ projectImport "internal/observability/metrics/mock" }}"
-	"{{ projectImport "internal/routing/chi" }}"
-	mockrouting "{{ projectImport "internal/routing/mock" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-	"{{ projectImport "internal/uploads/images" }}"
-	mockuploads "{{ projectImport "internal/uploads/mock" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/database" }}
+	mockencoding {{ projectImport "internal/encoding/mock" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	mockmetrics {{ projectImport "internal/observability/metrics/mock" }}
+	{{ projectImport "internal/routing/chi" }}
+	mockrouting {{ projectImport "internal/routing/mock" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/uploads/images" }}
+	mockuploads {{ projectImport "internal/uploads/mock" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

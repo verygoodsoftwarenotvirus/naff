@@ -3,18 +3,17 @@ package users
 import (
 	"net/http"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	random "{{ projectImport "internal/random" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "internal/uploads" }}"
-	"{{ projectImport "internal/uploads/images" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "internal/random" }}
+	{{ projectImport "internal/routing" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/uploads" }}
+	{{ projectImport "internal/uploads/images" }}
+	{{ projectImport "pkg/types" }}
 )
 
 const (

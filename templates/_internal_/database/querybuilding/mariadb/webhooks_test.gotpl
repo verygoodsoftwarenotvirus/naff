@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

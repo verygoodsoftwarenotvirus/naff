@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "pkg/client/httpclient/requests" }}"
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/client/httpclient/requests" }}
 )
 
 type option func(*Client) error

@@ -3,9 +3,8 @@ package mock
 import (
 	"context"
 
-	"{{ projectImport "internal/database/querybuilding" }}"
-
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/stretchr/testify/mock"
 )

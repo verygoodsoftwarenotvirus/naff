@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"{{ projectImport "internal/observability/logging" }}"
-
-	"{{ projectImport "internal/observability/keys" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/logging" }}
+	testutil {{ projectImport "tests/utils" }}
 )
 
 var urlToUse string

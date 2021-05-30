@@ -39,61 +39,61 @@ func RenderPackage(proj *models.Project) error {
 var authenticatorTemplate string
 
 func authenticatorDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authenticatorTemplate)
+	return models.RenderCodeFile(proj, authenticatorTemplate, nil)
 }
 
 //go:embed authenticator_test.gotpl
 var authenticatorTestTemplate string
 
 func authenticatorTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authenticatorTestTemplate)
+	return models.RenderCodeFile(proj, authenticatorTestTemplate, nil)
 }
 
 //go:embed doc.gotpl
 var docTemplate string
 
 func docDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, docTemplate)
+	return models.RenderCodeFile(proj, docTemplate, nil)
 }
 
 //go:embed wire.gotpl
 var wireTemplate string
 
 func wireDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }
 
 //go:embed mock_authenticator.gotpl
 var mockAuthenticatorTemplate string
 
 func mockAuthenticatorDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mockAuthenticatorTemplate)
+	return models.RenderCodeFile(proj, mockAuthenticatorTemplate, nil)
 }
 
 //go:embed config.gotpl
 var configTemplate string
 
 func configDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed config_test.gotpl
 var configTestTemplate string
 
 func configTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed argon2.gotpl
 var argon2Template string
 
 func argon2DotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, argon2Template)
+	return models.RenderCodeFile(proj, argon2Template, nil)
 }
 
 //go:embed argon2_test.gotpl
 var argon2TestTemplate string
 
 func argon2TestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, argon2TestTemplate)
+	return models.RenderCodeFile(proj, argon2TestTemplate, nil)
 }

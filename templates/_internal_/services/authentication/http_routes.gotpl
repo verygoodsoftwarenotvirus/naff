@@ -12,15 +12,13 @@ import (
 	"strconv"
 	"time"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/google/uuid"
-
-	"{{ projectImport "pkg/types" }}"
-
 	"github.com/gorilla/securecookie"
 	"github.com/o1egl/paseto"
 )

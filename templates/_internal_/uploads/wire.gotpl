@@ -3,7 +3,7 @@ package uploads
 import (
 	"github.com/google/wire"
 
-	"{{ projectImport "internal/storage" }}"
+	{{ projectImport "internal/storage" }}
 )
 
 var (

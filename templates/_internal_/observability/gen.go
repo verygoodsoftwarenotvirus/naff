@@ -35,33 +35,33 @@ func RenderPackage(proj *models.Project) error {
 var errorsTemplate string
 
 func errorsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, errorsTemplate)
+	return models.RenderCodeFile(proj, errorsTemplate, nil)
 }
 
 //go:embed errors_test.gotpl
 var errorsTestTemplate string
 
 func errorsTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, errorsTestTemplate)
+	return models.RenderCodeFile(proj, errorsTestTemplate, nil)
 }
 
 //go:embed wire.gotpl
 var wireTemplate string
 
 func wireDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, wireTemplate)
+	return models.RenderCodeFile(proj, wireTemplate, nil)
 }
 
 //go:embed config.gotpl
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed config_test.gotpl
 var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate)
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }

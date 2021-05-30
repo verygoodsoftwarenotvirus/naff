@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"{{ projectImport "internal/observability/logging" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/logging" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"

@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "pkg/client/httpclient" }}"
-
-	"{{ projectImport "pkg/types" }}"
-	testutil "{{ projectImport "tests/utils" }}"
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/client/httpclient" }}
+	{{ projectImport "pkg/types" }}
+	testutil {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"

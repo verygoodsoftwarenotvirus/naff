@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 )
 
 type (

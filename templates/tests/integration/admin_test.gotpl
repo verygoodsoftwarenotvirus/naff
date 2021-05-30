@@ -3,14 +3,13 @@ package integration
 import (
 	"log"
 
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "pkg/client/httpclient" }}"
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/client/httpclient" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 func (s *TestSuite) TestAdmin_Returns404WhenModifyingUserReputation() {

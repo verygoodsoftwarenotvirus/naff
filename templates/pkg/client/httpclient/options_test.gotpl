@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/observability/logging" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -82,7 +82,7 @@ func TestUsingLogger(T *testing.T) {
 	T.Run("standard", func(t *testing.T) {
 		t.Parallel()
 
-		expectedURL, err := url.Parse("https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru")
+		expectedURL, err := url.Parse("https://{{ projectName }}.verygoodsoftwarenotvirus.ru")
 		require.NoError(t, err)
 
 		c, err := NewClient(expectedURL, UsingLogger(logging.NewNoopLogger()))

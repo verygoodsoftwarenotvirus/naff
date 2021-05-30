@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"{{ projectImport "internal/search" }}"
+	{{ projectImport "internal/search" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/routing" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/routing" }}
 )
 
 const (

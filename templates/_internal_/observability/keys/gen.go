@@ -31,5 +31,5 @@ func RenderPackage(proj *models.Project) error {
 var keysTemplate string
 
 func keysDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, keysTemplate)
+	return models.RenderCodeFile(proj, keysTemplate, nil)
 }

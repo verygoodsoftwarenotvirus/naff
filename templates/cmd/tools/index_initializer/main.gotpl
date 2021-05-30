@@ -11,13 +11,13 @@ import (
 	"log"
 	"time"
 
-	config "{{ projectImport "internal/config" }}"
-	"{{ projectImport "internal/database" }}"
-	dbconfig "{{ projectImport "internal/database/config" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/search" }}"
-	"{{ projectImport "internal/search/bleve" }}"
-	"{{ projectImport "pkg/types" }}"
+	config {{ projectImport "internal/config" }}
+	{{ projectImport "internal/database" }}
+	dbconfig {{ projectImport "internal/database/config" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/search" }}
+	{{ projectImport "internal/search/bleve" }}
+	{{ projectImport "pkg/types" }}
 
 	flag "github.com/spf13/pflag"
 )
@@ -108,25 +108,7 @@ func main() {
 	}
 
 	switch typeName {
-	case "item":
-		outputChan := make(chan []*types.Item)
-		if queryErr := dbClient.GetAllItems(ctx, outputChan, 1000); queryErr != nil {
-			log.Fatalf("error fetching items from database: %v", err)
-		}
-
-		for {
-			select {
-			case items := <-outputChan:
-				for _, x := range items {
-					if searchIndexErr := im.Index(ctx, x.ID, x); searchIndexErr != nil {
-						logger.WithValue("id", x.ID).Error(searchIndexErr, "error adding to search index")
-					}
-				}
-			case <-time.After(deadline):
-				logger.Info("terminating")
-				return
-			}
-		}
+	{{ generated "switchCases" }}
 	default:
 		log.Fatal("this should never occur")
 	}

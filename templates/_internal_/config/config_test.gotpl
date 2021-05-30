@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/database" }}"
-	"{{ projectImport "internal/database/config" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/server" }}"
-	"{{ projectImport "internal/services/audit" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-	"{{ projectImport "internal/services/items" }}"
+	{{ projectImport "internal/database" }}
+	{{ projectImport "internal/database/config" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/server" }}
+	{{ projectImport "internal/services/audit" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/services/items" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,7 +55,7 @@ func TestServerConfig_EncodeToFile(T *testing.T) {
 			Services: ServicesConfigurations{
 				Auth: authservice.Config{
 					Cookies: authservice.CookieConfig{
-						Name:     "{{ projectName }}cookie",
+						Name:     "{{ route_fmt projectName }}cookie",
 						Domain:   "https://verygoodsoftwarenotvirus.ru",
 						Lifetime: time.Second,
 					},

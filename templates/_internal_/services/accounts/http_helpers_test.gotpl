@@ -6,15 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"{{ projectImport "internal/authorization" }}"
-
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
+	{{ projectImport "internal/authorization" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/require"
-
-	"{{ projectImport "pkg/types" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
 )
 
 type accountsServiceHTTPRoutesTestHelper struct {
@@ -66,7 +64,7 @@ func buildTestHelper(t *testing.T) *accountsServiceHTTPRoutesTestHelper {
 	helper.req, err = http.NewRequestWithContext(
 		helper.ctx,
 		http.MethodGet,
-		"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
+		"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
 		nil,
 	)
 	require.NotNil(t, helper.req)

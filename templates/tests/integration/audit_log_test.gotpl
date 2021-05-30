@@ -3,7 +3,7 @@ package integration
 import (
 	"github.com/stretchr/testify/assert"
 
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/tracing" }}
 )
 
 func (s *TestSuite) TestAuditLogEntryListing() {

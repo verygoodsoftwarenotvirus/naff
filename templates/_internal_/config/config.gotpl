@@ -9,27 +9,26 @@ import (
 	"strings"
 	"time"
 
-	"{{ projectImport "internal/services/items" }}"
-
-	"{{ projectImport "internal/capitalism" }}"
-	"{{ projectImport "internal/database" }}"
-	dbconfig "{{ projectImport "internal/database/config" }}"
-	"{{ projectImport "internal/database/querier" }}"
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "internal/database/querybuilding/mariadb" }}"
-	"{{ projectImport "internal/database/querybuilding/postgres" }}"
-	"{{ projectImport "internal/database/querybuilding/sqlite" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-	"{{ projectImport "internal/routing" }}"
-	"{{ projectImport "internal/search" }}"
-	"{{ projectImport "internal/server" }}"
-	"{{ projectImport "internal/services/audit" }}"
-	authservice "{{ projectImport "internal/services/authentication" }}"
-	"{{ projectImport "internal/services/frontend" }}"
-	"{{ projectImport "internal/services/webhooks" }}"
-	"{{ projectImport "internal/uploads" }}"
+	{{ projectImport "internal/capitalism" }}
+	{{ projectImport "internal/database" }}
+	dbconfig {{ projectImport "internal/database/config" }}
+	{{ projectImport "internal/database/querier" }}
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "internal/database/querybuilding/mariadb" }}
+	{{ projectImport "internal/database/querybuilding/postgres" }}
+	{{ projectImport "internal/database/querybuilding/sqlite" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/routing" }}
+	{{ projectImport "internal/search" }}
+	{{ projectImport "internal/server" }}
+	{{ projectImport "internal/services/audit" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/services/frontend" }}
+	{{ projectImport "internal/services/items" }}
+	{{ projectImport "internal/services/webhooks" }}
+	{{ projectImport "internal/uploads" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
@@ -136,19 +135,19 @@ func (cfg *InstanceConfig) ValidateWithContext(ctx context.Context) error {
 	}
 
 	if err := cfg.Services.Auth.ValidateWithContext(ctx); err != nil {
-		return fmt.Errorf("error validating Auth portion of config: %w", err)
+		return fmt.Errorf("error validating Auth service portion of config: %w", err)
 	}
 
 	if err := cfg.Services.Frontend.ValidateWithContext(ctx); err != nil {
-		return fmt.Errorf("error validating Webhooks portion of config: %w", err)
+		return fmt.Errorf("error validating Frontend service portion of config: %w", err)
 	}
 
 	if err := cfg.Services.Webhooks.ValidateWithContext(ctx); err != nil {
-		return fmt.Errorf("error validating Webhooks portion of config: %w", err)
+		return fmt.Errorf("error validating Webhooks service portion of config: %w", err)
 	}
 
 	if err := cfg.Services.Items.ValidateWithContext(ctx); err != nil {
-		return fmt.Errorf("error validating Webhooks portion of config: %w", err)
+		return fmt.Errorf("error validating Items service portion of config: %w", err)
 	}
 
 	if err := cfg.AuditLog.ValidateWithContext(ctx); err != nil {

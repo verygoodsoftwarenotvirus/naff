@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "pkg/types" }}
 
 	"github.com/Masterminds/squirrel"
 	"github.com/stretchr/testify/assert"

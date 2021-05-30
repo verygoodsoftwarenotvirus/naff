@@ -3,8 +3,8 @@ package observability
 import (
 	"context"
 
-	"{{ projectImport "internal/observability/metrics" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
+	{{ projectImport "internal/observability/metrics" }}
+	{{ projectImport "internal/observability/tracing" }}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

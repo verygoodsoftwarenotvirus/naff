@@ -36,40 +36,40 @@ func RenderPackage(proj *models.Project) error {
 var configTemplate string
 
 func configDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate)
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed logging.gotpl
 var loggingTemplate string
 
 func loggingDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, loggingTemplate)
+	return models.RenderCodeFile(proj, loggingTemplate, nil)
 }
 
 //go:embed logging_test.gotpl
 var loggingTestTemplate string
 
 func loggingTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, loggingTestTemplate)
+	return models.RenderCodeFile(proj, loggingTestTemplate, nil)
 }
 
 //go:embed noop_logger.gotpl
 var noopLoggerTemplate string
 
 func noopLoggerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, noopLoggerTemplate)
+	return models.RenderCodeFile(proj, noopLoggerTemplate, nil)
 }
 
 //go:embed zerolog_logger.gotpl
 var zerologLoggerTemplate string
 
 func zerologLoggerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, zerologLoggerTemplate)
+	return models.RenderCodeFile(proj, zerologLoggerTemplate, nil)
 }
 
 //go:embed zerolog_logger_test.gotpl
 var zerologLoggerTestTemplate string
 
 func zerologLoggerTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, zerologLoggerTestTemplate)
+	return models.RenderCodeFile(proj, zerologLoggerTestTemplate, nil)
 }

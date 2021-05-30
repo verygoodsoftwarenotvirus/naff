@@ -38,54 +38,54 @@ func RenderPackage(proj *models.Project) error {
 var serviceRoleTestTemplate string
 
 func serviceRoleTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, serviceRoleTestTemplate)
+	return models.RenderCodeFile(proj, serviceRoleTestTemplate, nil)
 }
 
 //go:embed account_role.gotpl
 var accountRoleTemplate string
 
 func accountRoleDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountRoleTemplate)
+	return models.RenderCodeFile(proj, accountRoleTemplate, nil)
 }
 
 //go:embed account_role_test.gotpl
 var accountRoleTestTemplate string
 
 func accountRoleTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountRoleTestTemplate)
+	return models.RenderCodeFile(proj, accountRoleTestTemplate, nil)
 }
 
 //go:embed authorization.gotpl
 var authorizationTemplate string
 
 func authorizationDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authorizationTemplate)
+	return models.RenderCodeFile(proj, authorizationTemplate, nil)
 }
 
 //go:embed authorization_test.gotpl
 var authorizationTestTemplate string
 
 func authorizationTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authorizationTestTemplate)
+	return models.RenderCodeFile(proj, authorizationTestTemplate, nil)
 }
 
 //go:embed permissions.gotpl
 var permissionsTemplate string
 
 func permissionsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, permissionsTemplate)
+	return models.RenderCodeFile(proj, permissionsTemplate, nil)
 }
 
 //go:embed rbac.gotpl
 var rbacTemplate string
 
 func rbacDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, rbacTemplate)
+	return models.RenderCodeFile(proj, rbacTemplate, nil)
 }
 
 //go:embed service_role.gotpl
 var serviceRoleTemplate string
 
 func serviceRoleDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, serviceRoleTemplate)
+	return models.RenderCodeFile(proj, serviceRoleTemplate, nil)
 }

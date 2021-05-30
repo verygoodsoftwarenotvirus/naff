@@ -10,11 +10,11 @@ import (
 	"image/png"
 	"net/http"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/observability" }}"
-	"{{ projectImport "internal/observability/keys" }}"
-	"{{ projectImport "internal/observability/tracing" }}"
-	"{{ projectImport "pkg/types" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
+	{{ projectImport "internal/observability/tracing" }}
+	{{ projectImport "pkg/types" }}
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"

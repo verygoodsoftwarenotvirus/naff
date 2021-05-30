@@ -12,6 +12,12 @@ import (
 	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism/stripe"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config/viper"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
+	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querier"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
 	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
@@ -26,14 +32,8 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config/viper"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
-	//dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querier"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/builders"
-	//mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
+	mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
@@ -96,6 +96,13 @@ func RenderProject(proj *naffmodels.Project) {
 		"authentication":            authentication.RenderPackage,
 		"authorization":             internalauth.RenderPackage,
 		"buildserver":               buildserver.RenderPackage,
+		"config":                    config.RenderPackage,
+		"viper":                     viper.RenderPackage,
+		"database":                  database.RenderPackage,
+		"dbconfig":                  dbconfig.RenderPackage,
+		"querier":                   querier.RenderPackage,
+		"querybuilding":             querybuilding.RenderPackage,
+		"dbmock":                    mockquerybuilding.RenderPackage,
 		"capitalism":                capitalism.RenderPackage,
 		"stripe":                    stripe.RenderPackage,
 		"encoding":                  encoding.RenderPackage,
@@ -109,8 +116,6 @@ func RenderProject(proj *naffmodels.Project) {
 		"tracing":                   tracing.RenderPackage,
 		//"httpclient":                httpclient.RenderPackage,
 		//"requests":                  requests.RenderPackage,
-		//"database":                  database.RenderPackage,
-		//"config":                    config.RenderPackage,
 		//"search":                    search.RenderPackage,
 		//"searchmock":                mocksearch.RenderPackage,
 		//"bleve":                     bleve.RenderPackage,
@@ -128,13 +133,8 @@ func RenderProject(proj *naffmodels.Project) {
 		//"iterables":                 iterables.RenderPackage,
 		//"integrationtests":          integration.RenderPackage,
 		//"loadtests":                 load.RenderPackage,
-		//"querier":                   querier.RenderPackage,
-		//"querybuilding":             querybuilding.RenderPackage,
 		//"querybuilders":             builders.RenderPackage,
 		//"miscellaneous":             misc.RenderPackage,
-		//"viper":                     viper.RenderPackage,
-		//"dbconfig":                  dbconfig.RenderPackage,
-		//"dbmock":                    mockquerybuilding.RenderPackage,
 		//"panicking":                 panicking.RenderPackage,
 		//"random":                    random.RenderPackage,
 		//"routing":                   routing.RenderPackage,

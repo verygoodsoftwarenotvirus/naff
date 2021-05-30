@@ -33,5 +33,5 @@ func RenderPackage(proj *models.Project) error {
 var mainTemplate string
 
 func mainDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mainTemplate)
+	return models.RenderCodeFile(proj, mainTemplate, nil)
 }

@@ -4,12 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"{{ projectImport "internal/authentication" }}"
-	"{{ projectImport "internal/encoding" }}"
-	"{{ projectImport "internal/observability/logging" }}"
-
-	"{{ projectImport "internal/routing/chi" }}"
-	mocktypes "{{ projectImport "pkg/types/mock" }}"
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/encoding" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/routing/chi" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/stretchr/testify/assert"

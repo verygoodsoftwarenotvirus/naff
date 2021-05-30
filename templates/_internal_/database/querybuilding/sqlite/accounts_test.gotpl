@@ -4,14 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"{{ projectImport "pkg/types" }}"
-
-	"github.com/stretchr/testify/mock"
-
-	"{{ projectImport "internal/database/querybuilding" }}"
-	"{{ projectImport "pkg/types/fakes" }}"
+	{{ projectImport "internal/database/querybuilding" }}
+	{{ projectImport "pkg/types" }}
+	{{ projectImport "pkg/types/fakes" }}
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestSqlite_BuildGetAccountQuery(T *testing.T) {
