@@ -9,7 +9,7 @@ import (
 )
 
 func buildBadFields(varName string, typ models.DataType) []jen.Code {
-	fields := []jen.Code{jen.ID(varName).Dot("ArchivedOn"), jen.ID(varName).Dot("ExternalID")}
+	fields := []jen.Code{jen.ID(varName).Dot("ID"), jen.ID(varName).Dot("ExternalID")}
 
 	for _, field := range typ.Fields {
 		fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
@@ -26,8 +26,6 @@ func buildBadFields(varName string, typ models.DataType) []jen.Code {
 	if typ.BelongsToAccount {
 		fields = append(fields, jen.ID(varName).Dot(constants.AccountOwnershipFieldName))
 	}
-
-	fields = append(fields, jen.ID(varName).Dot("ID"))
 
 	return fields
 }
