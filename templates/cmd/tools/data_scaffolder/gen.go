@@ -97,7 +97,7 @@ func buildInitializers(proj *models.Project) []jen.Code {
 					jen.ID("iterationLogger").Assign().ID("userLogger").Dot("WithValue").Call(jen.Lit("creating"), jen.Lit("items")).Dot("WithValue").Call(jen.Lit("iteration"), jen.ID("j")),
 					jen.Line(),
 					jen.Commentf("create %s", typ.Name.SingularCommonName()),
-					jen.List(jen.IDf("created%s", typ.Name.Singular()), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName())).Assign().ID("userClient").Dot("CreateItem").Call(constants.CtxVar(), jen.Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInput", typ.Name.Singular())).Call()),
+					jen.List(jen.IDf("created%s", typ.Name.Singular()), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName())).Assign().ID("userClient").Dot("CreateItem").Call(constants.CtxVar(), jen.Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", typ.Name.Singular())).Call()),
 					jen.If(jen.IDf("%sCreationErr", typ.Name.UnexportedVarName()).DoesNotEqual().Nil()).Body(
 						jen.ID("quitter").Dot("ComplainAndQuit").Call(jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("creating %s ", typ.Name.SingularCommonName())+"#%d: %w"), jen.ID("j"), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName()))),
 					),

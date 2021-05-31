@@ -18,7 +18,7 @@ func (p *Project) TypesPackage(parts ...string) string {
 	return p.RelativePath(append([]string{"pkg", "types"}, parts...)...)
 }
 
-func (p *Project) FakeModelsPackage(parts ...string) string {
+func (p *Project) FakeTypesPackage(parts ...string) string {
 	return p.TypesPackage(append([]string{"fakes"}, parts...)...)
 }
 
@@ -27,7 +27,7 @@ func (p *Project) DatabasePackage(parts ...string) string {
 }
 
 func (p *Project) QuerybuildersPackage(parts ...string) string {
-	return p.DatabasePackage(append([]string{"querybuilders"}, parts...)...)
+	return p.DatabasePackage(append([]string{"querybuilding"}, parts...)...)
 }
 
 func (p *Project) InternalPackage(parts ...string) string {
@@ -138,7 +138,7 @@ func (p *Project) WebhooksServicePackage() string {
 	return p.ServicePackage("webhooks")
 }
 
-func (p *Project) TestUtilPackage(parts ...string) string {
+func (p *Project) TestUtilsPackage(parts ...string) string {
 	return p.RelativePath(append([]string{"tests", "utils"}, parts...)...)
 }
 

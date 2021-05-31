@@ -71,7 +71,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportName(filepath.Join(pkgRoot, "tests", "frontend"), "frontend")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "integration"), "integration")
 	file.ImportName(filepath.Join(pkgRoot, "tests", "load"), "load")
-	file.ImportName(proj.TestUtilPackage(), "testutil")
+	file.ImportAlias(proj.TestUtilsPackage(), "testutils")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 

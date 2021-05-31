@@ -168,7 +168,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 
 	firstSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	firstSubtestLines = append(firstSubtestLines,
-		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
+		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 		jen.Line(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
@@ -253,7 +253,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 
 	fourthSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	fourthSubtestLines = append(fourthSubtestLines,
-		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
+		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 		jen.Line(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
@@ -313,7 +313,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
-		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
+		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
 		jen.Var().IDf("example%sIDs", sn).Index().Uint64(),
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
@@ -458,7 +458,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
-		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
+		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
 		jen.Var().IDf("example%sIDs", sn).Index().Uint64(),
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
@@ -542,7 +542,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
-		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
+		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
 		jen.Var().IDf("example%sIDs", sn).Index().Uint64(),
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
@@ -618,7 +618,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Line(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
-		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
+		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
 		jen.Var().IDf("example%sIDs", sn).Index().Uint64(),
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
@@ -765,7 +765,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 
 	happyPathSubtest := append(buildInitialLines(),
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -778,7 +778,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 	)
 
@@ -885,7 +885,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 
 	creationErrSubtest := append(buildInitialLines(),
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -898,7 +898,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 	)
 
@@ -939,7 +939,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 
 	encodeErrSubtest := append(buildInitialLines(),
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -952,7 +952,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 	)
 
@@ -1115,7 +1115,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1163,7 +1163,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 
 	secondSubtestLines = append(secondSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(), func() jen.Code {
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(), func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
 			}
@@ -1210,7 +1210,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(), func() jen.Code {
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(), func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
 			}
@@ -1296,7 +1296,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1351,7 +1351,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	)
 	secondSubtestLines = append(secondSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1398,7 +1398,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	)
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1445,7 +1445,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	)
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1537,7 +1537,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1550,7 +1550,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
@@ -1656,7 +1656,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1669,7 +1669,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
@@ -1707,7 +1707,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1720,7 +1720,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
@@ -1758,7 +1758,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 	fifthSubtestLines = append(fifthSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1771,7 +1771,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
@@ -1814,7 +1814,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 	sixthSubtestLines = append(sixthSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1827,7 +1827,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
+		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
 		jen.Line(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
@@ -2004,7 +2004,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 
 		if includeSelf {
 			lines = append(lines,
-				jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+				jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 				func() jen.Code {
 					if typ.BelongsToStruct != nil {
 						return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -2149,7 +2149,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	)
 	secondSubtestLines = append(secondSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -2197,7 +2197,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	)
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Line(),
-		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")

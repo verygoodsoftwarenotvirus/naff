@@ -344,7 +344,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Line(),
-					jen.ID("exampleUser").Op(":=").Qual(proj.FakeModelsPackage(), "BuildFakeUser").Call(),
+					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Line(),
 					jen.ID("AttachUserToSpan").Call(

@@ -340,7 +340,7 @@ func buildUpdateChildBlock(proj *models.Project, typ models.DataType) []jen.Code
 
 	ifRandomExistsBlock := []jen.Code{
 		jen.IDf("new%s", sn).Assign().
-			Qual(proj.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).
+			Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).
 			Call(),
 	}
 	for _, field := range typ.Fields {

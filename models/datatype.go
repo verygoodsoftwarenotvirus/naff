@@ -650,12 +650,12 @@ func (typ DataType) BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLine
 
 	owners := p.FindOwnerTypeChain(typ)
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
 
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 
 		if pt.BelongsToUser && typ.RestrictedToUser {
 			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
@@ -665,7 +665,7 @@ func (typ DataType) BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLine
 		}
 	}
 
-	lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(p.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call())
+	lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(p.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call())
 
 	return lines
 }
@@ -1068,9 +1068,9 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsWithOwnerStruct(p *Pro
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
 
 	return lines
 }
@@ -1081,12 +1081,12 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruc
 
 	owners := p.FindOwnerTypeChain(typ)
 	if typ.OwnedByAUserAtSomeLevel(p) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
 
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 
 		if pt.BelongsToUser {
 			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
@@ -1095,7 +1095,7 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruc
 			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
 		}
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
 
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
@@ -1119,7 +1119,7 @@ func (typ DataType) BuildDependentObjectsForDBQueriersCreationMethodTest(p *Proj
 	lines := typ.buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p)
 
 	sn := typ.Name.Singular()
-	lines = append(lines, jen.ID(buildFakeVarName("Input")).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(buildFakeVarName(sn))))
+	lines = append(lines, jen.ID(buildFakeVarName("Input")).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(buildFakeVarName(sn))))
 
 	return lines
 }
@@ -1131,13 +1131,13 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsWhereEachStructIsImpor
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 		if pt.BelongsToStruct != nil {
 			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
 		}
 
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
@@ -1152,9 +1152,9 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsWhereOnlySomeStructsAr
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
 
 	return lines
 }
@@ -1193,7 +1193,7 @@ func (typ DataType) buildDependentObjectsForHTTPClientListRetrievalTest(p *Proje
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 	}
 
 	return lines
@@ -1217,10 +1217,10 @@ func (typ DataType) buildVarDeclarationsOfDependentStructsForUpdateFunction(p *P
 			continue
 		} else {
 			pts := pt.Name.Singular()
-			lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+			lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 		}
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call())
 
 	return lines
 }
@@ -1240,12 +1240,12 @@ func (typ DataType) BuildDependentObjectsForHTTPClientCreationMethodTest(p *Proj
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		lines = append(lines,
-			jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call(),
+			jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call(),
 		)
 	}
 
 	lines = append(lines,
-		jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.ID(buildFakeVarName(sn)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 	)
 
 	if typ.BelongsToStruct != nil {
@@ -1916,12 +1916,12 @@ func (typ DataType) buildRequisiteFakeVarDecs(p *Project, createCtx bool) []jen.
 	}
 
 	if typ.OwnedByAUserAtSomeLevel(p) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
 
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
-		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
 		if pt.BelongsToUser {
 			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 		}
@@ -1930,7 +1930,7 @@ func (typ DataType) buildRequisiteFakeVarDecs(p *Project, createCtx bool) []jen.
 		}
 	}
 
-	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 	}
@@ -1948,9 +1948,9 @@ func (typ DataType) buildRequisiteFakeVarDecForModifierFuncs(p *Project, createC
 		lines = append(lines, constants.CreateCtx(), jen.Line())
 	}
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 	}
@@ -1973,9 +1973,9 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientCreateMethodTest(p *Project
 	lines := []jen.Code{constants.CreateCtx(), jen.Line()}
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 	}
@@ -1987,9 +1987,9 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p *Projec
 	var lines []jen.Code
 
 	if typ.BelongsToUser {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	if typ.BelongsToUser {
 		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 	}
@@ -2008,7 +2008,7 @@ func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p *
 	owners := p.FindOwnerTypeChain(typ)
 
 	for _, pt := range owners {
-		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
 		if pt.BelongsToStruct != nil {
 			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
 		}
@@ -2016,7 +2016,7 @@ func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p *
 			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
 		}
 	}
-	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
@@ -2032,12 +2032,12 @@ func (typ DataType) buildRequisiteFakeVarDecsForListFunction(p *Project) []jen.C
 	lines := []jen.Code{}
 
 	if !(typ.BelongsToUser && typ.RestrictedToUser) && typ.RestrictedToUserAtSomeLevel(p) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
 
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
-		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
 	}
 
 	return lines
@@ -2054,13 +2054,13 @@ func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p 
 
 	if typ.RestrictedToUserAtSomeLevel(p) {
 		lines = append(lines,
-			jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call(),
+			jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call(),
 		)
 	}
 
 	for _, pt := range owners {
 		pts := pt.Name.Singular()
-		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
+		lines = append(lines, jen.ID(buildFakeVarName(pts)).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pts)).Call())
 
 		if pt.BelongsToUser && typ.RestrictedToUser {
 			lines = append(lines, jen.ID(buildFakeVarName(pts)).Dotf("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID"))
@@ -2072,7 +2072,7 @@ func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p 
 	}
 
 	if includeFilter {
-		lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(p.FakeModelsPackage(), "BuildFleshedOutQueryFilter").Call())
+		lines = append(lines, jen.ID(constants.FilterVarName).Assign().Qual(p.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call())
 	}
 
 	return lines
@@ -2272,11 +2272,11 @@ func (typ DataType) BuildRequisiteVarsForDBClientUpdateMethodTest(p *Project) []
 		jen.Line(),
 		func() jen.Code {
 			if typ.BelongsToUser {
-				return jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeModelsPackage(), "BuildFakeUser").Call()
+				return jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call()
 			}
 			return jen.Null()
 		}(),
-		jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeModelsPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
+		jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call(),
 		func() jen.Code {
 			if typ.BelongsToUser {
 				return jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToUser").Equals().ID(buildFakeVarName("User")).Dot("ID")

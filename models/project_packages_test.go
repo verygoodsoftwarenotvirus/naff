@@ -104,7 +104,7 @@ func TestProject_FakeModelsPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/pkg/types/fake"
-		actual := p.FakeModelsPackage()
+		actual := p.FakeTypesPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -115,7 +115,7 @@ func TestProject_FakeModelsPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/pkg/types/fake/fart"
-		actual := p.FakeModelsPackage(examplePathTestInput)
+		actual := p.FakeTypesPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -494,7 +494,7 @@ func TestProject_TestUtilV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/tests/utils"
-		actual := p.TestUtilPackage()
+		actual := p.TestUtilsPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -505,7 +505,7 @@ func TestProject_TestUtilV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/tests/utils/fart"
-		actual := p.TestUtilPackage(examplePathTestInput)
+		actual := p.TestUtilsPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})

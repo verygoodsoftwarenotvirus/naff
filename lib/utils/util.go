@@ -380,5 +380,5 @@ func BuildFakeVarWithCustomName(proj *models.Project, varName, funcName string, 
 	if !strings.HasPrefix(funcName, "BuildFake") {
 		funcName = fmt.Sprintf("BuildFake%s", funcName)
 	}
-	return jen.ID(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
+	return jen.ID(varName).Assign().Qual(proj.FakeTypesPackage(), funcName).Call(args...)
 }
