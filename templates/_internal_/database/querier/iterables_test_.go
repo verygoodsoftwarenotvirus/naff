@@ -8,7 +8,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func buildBadFields(varName string, typ models.DataType) []jen.Code {
+func buildMockDBRowFields(varName string, typ models.DataType) []jen.Code {
 	fields := []jen.Code{jen.ID(varName).Dot("ID"), jen.ID(varName).Dot("ExternalID")}
 
 	for _, field := range typ.Fields {
@@ -18,6 +18,7 @@ func buildBadFields(varName string, typ models.DataType) []jen.Code {
 	fields = append(fields,
 		jen.ID(varName).Dot("CreatedOn"),
 		jen.ID(varName).Dot("LastUpdatedOn"),
+		jen.ID(varName).Dot("ArchivedOn"),
 	)
 
 	if typ.BelongsToStruct != nil {
@@ -50,7 +51,7 @@ func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType)
 			jen.Line(),
 			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().ID(puvn)).Body(
 				jen.ID("rowValues").Assign().Index().ID("driver").Dot("Value").Valuesln(
-					buildBadFields("x", typ)...,
+					buildMockDBRowFields("x", typ)...,
 				),
 				jen.Line(),
 				jen.If(jen.ID("includeCounts")).Body(
