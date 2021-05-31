@@ -58,9 +58,9 @@ func Test_wrapTemplateInContentDefinition(T *testing.T) {
 
 		exampleInput := "<div>hi</div>"
 
-		expected := `{{ define "content" }}
+		expected := `{{ "{{ define \"content\" }}" }}
 	<div>hi</div>
-{{ end }}
+{{ "{{ end }}" }}
 `
 		actual := wrapTemplateInContentDefinition(exampleInput)
 

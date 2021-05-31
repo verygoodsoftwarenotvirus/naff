@@ -206,7 +206,7 @@ func TestService_renderTemplateToResponse(T *testing.T) {
 		ctx := context.Background()
 		s := buildTestService(t)
 
-		exampleTemplate := `<div> {{ .Something }} </div>`
+		exampleTemplate := `<div> {{ "{{ .Something }}" }} </div>`
 		tmpl := s.parseTemplate(ctx, "", exampleTemplate, nil)
 
 		res := httptest.NewRecorder()

@@ -1,6 +1,8 @@
 package frontend
 
 import (
+	_ "embed"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,7 +19,7 @@ const (
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	files := map[string]*jen.File{
+	files := map[string]string{
 		"webhooks_test.go":      webhooksTestDotGo(proj),
 		"accounts_test.go":      accountsTestDotGo(proj),
 		"base_template_test.go": baseTemplateTestDotGo(proj),
@@ -40,12 +42,10 @@ func RenderPackage(proj *models.Project) error {
 		"auth_test.go":          authTestDotGo(proj),
 		"billing_test.go":       billingTestDotGo(proj),
 		"i18n.go":               i18NDotGo(proj),
-		"items.go":              itemsDotGo(proj),
 		"static_assets_test.go": staticAssetsTestDotGo(proj),
 		"service.go":            serviceDotGo(proj),
 		"http_routes_test.go":   httpRoutesTestDotGo(proj),
 		"i18n_test.go":          i18NTestDotGo(proj),
-		"items_test.go":         itemsTestDotGo(proj),
 		"languages.go":          languagesDotGo(proj),
 		"languages_test.go":     languagesTestDotGo(proj),
 		"settings_test.go":      settingsTestDotGo(proj),
@@ -68,13 +68,21 @@ func RenderPackage(proj *models.Project) error {
 		"translations/en.toml":                               englishTranslationsToml(),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
-	//}
+	jenFiles := map[string]*jen.File{}
+
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj)
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
 
 	for path, file := range files {
-		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
@@ -91,4 +99,242 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	return nil
+}
+
+//go:embed webhooks_test.gotpl
+var webhooksTestTemplate string
+
+func webhooksTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, webhooksTestTemplate, nil)
+}
+
+//go:embed accounts_test.gotpl
+var accountsTestTemplate string
+
+func accountsTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, accountsTestTemplate, nil)
+}
+
+//go:embed base_template_test.gotpl
+var baseTemplateTestTemplate string
+
+func baseTemplateTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, baseTemplateTestTemplate, nil)
+}
+
+//go:embed config_test.gotpl
+var configTestTemplate string
+
+func configTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
+}
+
+//go:embed http_routes.gotpl
+var httpRoutesTemplate string
+
+func httpRoutesDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, httpRoutesTemplate, nil)
+}
+
+//go:embed webhooks.gotpl
+var webhooksTemplate string
+
+func webhooksDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, webhooksTemplate, nil)
+}
+
+//go:embed time_test.gotpl
+var timeTestTemplate string
+
+func timeTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, timeTestTemplate, nil)
+}
+
+//go:embed wire_test.gotpl
+var wireTestTemplate string
+
+func wireTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, wireTestTemplate, nil)
+}
+
+//go:embed accounts.gotpl
+var accountsTemplate string
+
+func accountsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, accountsTemplate, nil)
+}
+
+//go:embed api_clients_test.gotpl
+var apiClientsTestTemplate string
+
+func apiClientsTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, apiClientsTestTemplate, nil)
+}
+
+//go:embed billing.gotpl
+var billingTemplate string
+
+func billingDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, billingTemplate, nil)
+}
+
+//go:embed helpers_test.gotpl
+var helpersTestTemplate string
+
+func helpersTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, helpersTestTemplate, nil)
+}
+
+//go:embed static_assets.gotpl
+var staticAssetsTemplate string
+
+func staticAssetsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, staticAssetsTemplate, nil)
+}
+
+//go:embed users_test.gotpl
+var usersTestTemplate string
+
+func usersTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, usersTestTemplate, nil)
+}
+
+//go:embed auth.gotpl
+var authTemplate string
+
+func authDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, authTemplate, nil)
+}
+
+//go:embed base_template.gotpl
+var baseTemplateTemplate string
+
+func baseTemplateDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, baseTemplateTemplate, nil)
+}
+
+//go:embed time.gotpl
+var timeTemplate string
+
+func timeDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, timeTemplate, nil)
+}
+
+//go:embed wire.gotpl
+var wireTemplate string
+
+func wireDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, wireTemplate, nil)
+}
+
+//go:embed users.gotpl
+var usersTemplate string
+
+func usersDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, usersTemplate, nil)
+}
+
+//go:embed auth_test.gotpl
+var authTestTemplate string
+
+func authTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, authTestTemplate, nil)
+}
+
+//go:embed billing_test.gotpl
+var billingTestTemplate string
+
+func billingTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, billingTestTemplate, nil)
+}
+
+//go:embed i18n.gotpl
+var i18NTemplate string
+
+func i18NDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, i18NTemplate, nil)
+}
+
+//go:embed static_assets_test.gotpl
+var staticAssetsTestTemplate string
+
+func staticAssetsTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, staticAssetsTestTemplate, nil)
+}
+
+//go:embed service.gotpl
+var serviceTemplate string
+
+func serviceDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, serviceTemplate, nil)
+}
+
+//go:embed http_routes_test.gotpl
+var httpRoutesTestTemplate string
+
+func httpRoutesTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, httpRoutesTestTemplate, nil)
+}
+
+//go:embed i18n_test.gotpl
+var i18NTestTemplate string
+
+func i18NTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, i18NTestTemplate, nil)
+}
+
+//go:embed languages.gotpl
+var languagesTemplate string
+
+func languagesDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, languagesTemplate, nil)
+}
+
+//go:embed languages_test.gotpl
+var languagesTestTemplate string
+
+func languagesTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, languagesTestTemplate, nil)
+}
+
+//go:embed settings_test.gotpl
+var settingsTestTemplate string
+
+func settingsTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, settingsTestTemplate, nil)
+}
+
+//go:embed api_clients.gotpl
+var apiClientsTemplate string
+
+func apiClientsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, apiClientsTemplate, nil)
+}
+
+//go:embed config.gotpl
+var configTemplate string
+
+func configDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, configTemplate, nil)
+}
+
+//go:embed helpers.gotpl
+var helpersTemplate string
+
+func helpersDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, helpersTemplate, nil)
+}
+
+//go:embed service_test.gotpl
+var serviceTestTemplate string
+
+func serviceTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, serviceTestTemplate, nil)
+}
+
+//go:embed settings.gotpl
+var settingsTemplate string
+
+func settingsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, settingsTemplate, nil)
 }

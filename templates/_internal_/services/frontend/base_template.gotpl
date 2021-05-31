@@ -1,12 +1,12 @@
 package frontend
 
 import (
-	// import embed for the side effect.
-	_ "embed"
 	"fmt"
 	"net/http"
 
 	{{ projectImport "internal/observability/tracing" }}
+
+	_ "embed"
 )
 
 type pageData struct {
@@ -50,8 +50,8 @@ func (s *service) homepage(res http.ResponseWriter, req *http.Request) {
 }
 
 func wrapTemplateInContentDefinition(tmpl string) string {
-	return fmt.Sprintf(`{{ define "content" }}
+	return fmt.Sprintf(`{{ "{{ define \"content\" }}" }}
 	%s
-{{ end }}
+{{ "{{ end }}" }}
 `, tmpl)
 }

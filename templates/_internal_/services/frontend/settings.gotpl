@@ -1,8 +1,6 @@
 package frontend
 
 import (
-	// import embed for the side effect.
-	_ "embed"
 	"html/template"
 	"net/http"
 
@@ -10,6 +8,8 @@ import (
 	{{ projectImport "internal/observability" }}
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "pkg/types" }}
+
+_ "embed"
 )
 
 //go:embed templates/partials/settings/user_settings.gotpl

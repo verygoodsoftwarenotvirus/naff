@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"context"
-	_ "embed" // import embed for the side effect.
 	"html/template"
 	"net/http"
 	"strconv"
@@ -10,6 +9,8 @@ import (
 	{{ projectImport "internal/observability" }}
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "pkg/types" }}
+
+_ "embed"
 )
 
 //go:embed templates/partials/auth/login.gotpl

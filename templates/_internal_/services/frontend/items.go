@@ -6,7 +6,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func itemsDotGo(proj *models.Project) *jen.File {
+func iterablesDotGo(proj *models.Project) *jen.File {
 	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code, false)

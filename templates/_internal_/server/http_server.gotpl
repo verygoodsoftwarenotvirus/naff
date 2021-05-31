@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	serverNamespace = "{{ projectName }}_service"
+	serverNamespace = "{{ route_fmt projectName }}_service"
 	loggerName      = "api_server"
 )
 

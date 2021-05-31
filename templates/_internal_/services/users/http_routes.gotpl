@@ -26,7 +26,7 @@ const (
 	// UserIDURIParamKey is used to refer to user IDs in router params.
 	UserIDURIParamKey = "userID"
 
-	totpIssuer             = "{{ projectName }}Service"
+	totpIssuer             = "{{ projectName }}"
 	base64ImagePrefix      = "data:image/jpeg;base64,"
 	minimumPasswordEntropy = 75
 	totpSecretSize         = 64
@@ -216,7 +216,7 @@ func (s *service) buildQRCode(ctx context.Context, username, twoFactorSecret str
 
 	logger := s.logger.WithValue(keys.UsernameKey, username)
 
-	// "otpauth://totp/{{ .Issuer }}:{{ .EnsureUsername }}?secret={{ .Secret }}&issuer={{ .Issuer }}",
+	// "otpauth://totp/{{ "{{ .Issuer }}:{{ .EnsureUsername }}?secret={{ .Secret }}&issuer={{ .Issuer }}" }}",
 	otpString := fmt.Sprintf(
 		"otpauth://totp/%s:%s?secret=%s&issuer=%s",
 		totpIssuer,

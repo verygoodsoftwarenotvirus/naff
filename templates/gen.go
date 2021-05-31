@@ -31,6 +31,28 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
 	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/tracing"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/chi"
+	mockrouting "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/bleve"
+	mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/secrets"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/server"
+	accountsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/accounts"
+	adminservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/admin"
+	apiclientsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/apiclients"
+	auditservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/audit"
+	authenticationservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/authentication"
+	frontendservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/frontend"
+	usersservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/users"
+	webhooksservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/webhooks"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/storage"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/images"
+	mockuploads "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/mock"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server"
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
 	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
@@ -40,42 +62,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/chi"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/mock"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/bleve"
-	//mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/mock"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/secrets"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/server"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/accounts"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/admin"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/apiclients"
-	//auditservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/audit"
-	//authnservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/authentication"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/frontend"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/iterables"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/users"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/webhooks"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/storage"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/images"
-	//mockuploads "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/mock"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/encoded_qr_code_generator"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/converters"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/fakes"
-	//mocktypes "gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
-	//frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/frontend"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/integration"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/load"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/testutil"
 
 	"github.com/gosuri/uiprogress"
 )
@@ -119,40 +105,43 @@ func RenderProject(proj *naffmodels.Project) {
 		"metrics":                   metrics.RenderPackage,
 		"mockmetrics":               mockmetrics.RenderPackage,
 		"tracing":                   tracing.RenderPackage,
+		"panicking":                 panicking.RenderPackage,
+		"random":                    random.RenderPackage,
+		"routing":                   routing.RenderPackage,
+		"chi":                       chi.RenderPackage,
+		"mockrouting":               mockrouting.RenderPackage,
+		"search":                    search.RenderPackage,
+		"searchmock":                mocksearch.RenderPackage,
+		"bleve":                     bleve.RenderPackage,
+		"secrets":                   secrets.RenderPackage,
+		"server":                    server.RenderPackage,
+		"accountsservice":           accountsservice.RenderPackage,
+		"adminservice":              adminservice.RenderPackage,
+		"apiclientsservice":         apiclientsservice.RenderPackage,
+		"auditservice":              auditservice.RenderPackage,
+		"authenticationservice":     authenticationservice.RenderPackage,
+		"frontendservice":           frontendservice.RenderPackage, // iterable service would go on next line
+		"usersservice":              usersservice.RenderPackage,
+		"webhooksservice":           webhooksservice.RenderPackage,
+		"storage":                   storage.RenderPackage,
+		"images":                    images.RenderPackage,
+		"uploads":                   uploads.RenderPackage,
+		"mockuploads":               mockuploads.RenderPackage,
+
 		//"httpclient":                httpclient.RenderPackage,
 		//"requests":                  requests.RenderPackage,
-		//"search":                    search.RenderPackage,
-		//"searchmock":                mocksearch.RenderPackage,
-		//"bleve":                     bleve.RenderPackage,
-		//"server":                    server.RenderPackage,
 		//"testutil":                  testutil.RenderPackage,
 		//"frontendtests":             frontendtests.RenderPackage,
-		//"webhooks":                  webhooks.RenderPackage,
-		//"oauth2clients":             apiclients.RenderPackage,
-		//"auth":                      authnservice.RenderPackage,
-		//"users":                     users.RenderPackage,
-		//"httpserver":                server.RenderPackage,
 		//"mocktypes":                 mocktypes.RenderPackage,
 		//"models":                    types.RenderPackage,
 		//"fakemodels":                fakes.RenderPackage,
-		//"iterables":                 iterables.RenderPackage,
 		//"integrationtests":          integration.RenderPackage,
 		//"loadtests":                 load.RenderPackage,
-		//"querybuilders":             builders.RenderPackage,
 		//"miscellaneous":             misc.RenderPackage,
-		//"panicking":                 panicking.RenderPackage,
-		//"random":                    random.RenderPackage,
-		//"routing":                   routing.RenderPackage,
-		//"chi":                       chi.RenderPackage,
-		//"mockrouting":               mock.RenderPackage,
 		//"accountsservice":           accounts.RenderPackage,
-		//"secrets":                   secrets.RenderPackage,
 		//"adminservice":              admin.RenderPackage,
 		//"auditservice":              auditservice.RenderPackage,
 		//"frontendservice":           frontend.RenderPackage,
-		//"storage":                   storage.RenderPackage,
-		//"uploads":                   uploads.RenderPackage,
-		//"images":                    images.RenderPackage,
 		//"mockuploads":               mockuploads.RenderPackage,
 		//"converters":                converters.RenderPackage,
 	}

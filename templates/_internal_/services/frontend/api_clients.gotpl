@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"context"
-	_ "embed" // import embed for the side effect.
 	"fmt"
 	"html/template"
 	"net/http"
@@ -11,6 +10,8 @@ import (
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
+
+	_ "embed"
 )
 
 const (
