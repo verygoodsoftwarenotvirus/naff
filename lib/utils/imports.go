@@ -27,8 +27,9 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		file.ImportName("embed", "embed")
 	}
 
-	file.ImportName(proj.InternalAuthPackage(), "auth")
-	file.ImportAlias(proj.InternalAuthPackage("mock"), "mockauth")
+	file.ImportName(proj.InternalAuthenticationPackage(), "authentication")
+	file.ImportName(proj.InternalAuthorizationPackage(), "authorization")
+	file.ImportAlias(proj.InternalAuthenticationPackage("mock"), "mockauth")
 	file.ImportName(proj.ConfigPackage(), "config")
 	file.ImportName(proj.EncodingPackage(), "encoding")
 	file.ImportAlias(proj.EncodingPackage("mock"), "mockencoding")
@@ -36,9 +37,12 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(proj.MetricsPackage("mock"), "mockmetrics")
 	file.ImportName(proj.InternalTracingPackage(), "tracing")
 	file.ImportName(proj.InternalSearchPackage(), "search")
+	file.ImportName(proj.InternalSecretsPackage(), "secrets")
+	file.ImportName(proj.InternalEventsPackage(), "events")
 	file.ImportName(proj.InternalSearchPackage("bleve"), "bleve")
 	file.ImportName(proj.InternalSearchPackage("mock"), "mocksearch")
 
+	file.ImportAlias(proj.DatabasePackage("config"), "dbconfig")
 	file.ImportAlias(proj.DatabasePackage("client"), "dbclient")
 	file.ImportName(proj.DatabasePackage("queriers", "mariadb"), "mariadb")
 	file.ImportName(proj.DatabasePackage("queriers", "postgres"), "postgres")
@@ -48,18 +52,17 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(proj.TypesPackage("mock"), "mockmodels")
 	file.ImportName(proj.TypesPackage("fakes"), "fakes")
 
-	file.ImportName(filepath.Join(pkgRoot, "server"), "server")
-	file.ImportAlias(filepath.Join(pkgRoot, "server", "http"), "httpserver")
+	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
 
-	file.ImportAlias(proj.ServiceAuthPackage(), "authservice")
-	file.ImportAlias(proj.ServiceFrontendPackage(), "frontendservice")
-	file.ImportAlias(proj.ServiceOAuth2ClientsPackage(), "oauth2clientsservice")
-	file.ImportAlias(proj.ServiceUsersPackage(), "usersservice")
-	file.ImportAlias(proj.ServiceWebhooksPackage(), "webhooksservice")
+	file.ImportAlias(proj.AuditServicePackage(), "auditservice")
+	file.ImportAlias(proj.AuthServicePackage(), "authservice")
+	file.ImportAlias(proj.FrontendServicePackage(), "frontendservice")
+	file.ImportAlias(proj.UsersServicePackage(), "usersservice")
+	file.ImportAlias(proj.WebhooksServicePackage(), "webhooksservice")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
-		file.ImportAlias(filepath.Join(pkgRoot, "services", pn), fmt.Sprintf("%sservice", pn))
+		file.ImportAlias(filepath.Join(pkgRoot, "internal", "services", pn), fmt.Sprintf("%sservice", pn))
 	}
 
 	file.ImportName(filepath.Join(pkgRoot, "tests", "frontend"), "frontend")
@@ -78,17 +81,6 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(constants.FakeLibrary, "fake")
 	file.ImportName(constants.TracingLibrary, "trace")
 	file.ImportName(constants.SessionManagerLibrary, "scs")
-
-	file.ImportName("go.opencensus.io/stats", "stats")
-	file.ImportName("go.opencensus.io/stats/view", "view")
-
-	file.ImportAlias("gopkg.in/oauth2.v3", "oauth2")
-	file.ImportAlias("gopkg.in/oauth2.v3/models", "oauth2models")
-	file.ImportAlias("gopkg.in/oauth2.v3/errors", "oauth2errors")
-	file.ImportAlias("gopkg.in/oauth2.v3/server", "oauth2server")
-	file.ImportAlias("gopkg.in/oauth2.v3/store", "oauth2store")
-
-	file.ImportName("golang.org/x/crypto/bcrypt", "bcrypt")
 
 	// databases
 	file.ImportAlias("github.com/lib/pq", "postgres")
@@ -111,34 +103,28 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		"io/ioutil":         "ioutil",
 		"reflect":           "reflect",
 
-		"gopkg.in/oauth2.v3/manage":                    "manage",
-		"github.com/boombuler/barcode/qr":              "qr",
-		"contrib.go.opencensus.io/exporter/jaeger":     "jaeger",
-		"contrib.go.opencensus.io/exporter/prometheus": "prometheus",
-		"contrib.go.opencensus.io/integrations/ocsql":  "ocsql",
-		"github.com/DATA-DOG/go-sqlmock":               "sqlmock",
-		"github.com/GuiaBolso/darwin":                  "darwin",
-		"github.com/Masterminds/squirrel":              "squirrel",
-		"github.com/boombuler/barcode":                 "barcode",
-		"github.com/emicklei/hazana":                   "hazana",
-		"github.com/go-chi/chi":                        "chi",
-		"github.com/go-chi/chi/middleware":             "middleware",
-		"github.com/go-chi/cors":                       "cors",
-		"github.com/google/wire":                       "wire",
-		"github.com/gorilla/securecookie":              "securecookie",
-		"github.com/heptiolabs/healthcheck":            "healthcheck",
-		"github.com/moul/http2curl":                    "http2curl",
-		"github.com/pquerna/otp":                       "otp",
-		"github.com/spf13/afero":                       "afero",
-		"github.com/spf13/viper":                       "viper",
-		"github.com/tebeka/selenium":                   "selenium",
-		"gitlab.com/verygoodsoftwarenotvirus/newsman":  "newsman",
-		"go.opencensus.io":                             "opencensus",
-		"golang.org/x/crypto":                          "crypto",
-		"go.opencensus.io/plugin/ochttp":               "ochttp",
-		"github.com/spf13/pflag":                       "flag",
-		"github.com/pquerna/otp/totp":                  "totp",
-		"golang.org/x/oauth2/clientcredentials":        "clientcredentials",
+		"github.com/boombuler/barcode/qr":             "qr",
+		"github.com/DATA-DOG/go-sqlmock":              "sqlmock",
+		"github.com/GuiaBolso/darwin":                 "darwin",
+		"github.com/Masterminds/squirrel":             "squirrel",
+		"github.com/boombuler/barcode":                "barcode",
+		"github.com/emicklei/hazana":                  "hazana",
+		"github.com/go-chi/chi":                       "chi",
+		"github.com/go-chi/chi/middleware":            "middleware",
+		"github.com/go-chi/cors":                      "cors",
+		"github.com/google/wire":                      "wire",
+		"github.com/gorilla/securecookie":             "securecookie",
+		"github.com/heptiolabs/healthcheck":           "healthcheck",
+		"github.com/moul/http2curl":                   "http2curl",
+		"github.com/pquerna/otp":                      "otp",
+		"github.com/spf13/afero":                      "afero",
+		"github.com/spf13/viper":                      "viper",
+		"github.com/tebeka/selenium":                  "selenium",
+		"gitlab.com/verygoodsoftwarenotvirus/newsman": "newsman",
+		"golang.org/x/crypto":                         "crypto",
+		"github.com/spf13/pflag":                      "flag",
+		"github.com/pquerna/otp/totp":                 "totp",
+		"golang.org/x/oauth2/clientcredentials":       "clientcredentials",
 	})
 
 	file.Line()

@@ -387,7 +387,7 @@ func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configF
 					Debug:                 false,
 					EnableUserSignup:      true,
 					MinimumUsernameLength: 4,
-					MinimumPasswordLength: 8,
+					MinimumPasswordLength: 8,https://open.spotify.com/album/3stAjHtCDSCavGtkxzvYE7
 				},
 				Frontend: buildLocalFrontendServiceConfig(),
 				Webhooks: webhooks.Config{

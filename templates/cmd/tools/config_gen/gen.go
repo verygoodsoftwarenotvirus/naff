@@ -2,6 +2,7 @@ package config_gen
 
 import (
 	_ "embed"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -17,12 +18,21 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	stringFiles := map[string]string{
-		"main.go": mainDotGoString(proj),
-		"doc.go":  docDotGoString(proj),
+		"doc.go": docDotGoString(proj),
 	}
 
 	for path, file := range stringFiles {
 		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
+	jenFiles := map[string]*jen.File{
+		"main.go": mainDotGo(proj),
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}

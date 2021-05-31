@@ -182,7 +182,7 @@ func TestProject_InternalAuthV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/auth"
-		actual := p.InternalAuthPackage()
+		actual := p.InternalAuthenticationPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -193,7 +193,7 @@ func TestProject_InternalAuthV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/auth/fart"
-		actual := p.InternalAuthPackage(examplePathTestInput)
+		actual := p.InternalAuthenticationPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -364,7 +364,7 @@ func TestProject_ServiceV1AuthPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/auth"
-		actual := p.ServiceAuthPackage()
+		actual := p.AuthServicePackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -375,7 +375,7 @@ func TestProject_ServiceV1AuthPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/auth/fart"
-		actual := p.ServiceAuthPackage(examplePathTestInput)
+		actual := p.AuthServicePackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -390,7 +390,7 @@ func TestProject_ServiceV1FrontendPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/frontend"
-		actual := p.ServiceFrontendPackage()
+		actual := p.FrontendServicePackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -401,7 +401,7 @@ func TestProject_ServiceV1FrontendPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/frontend/fart"
-		actual := p.ServiceFrontendPackage(examplePathTestInput)
+		actual := p.FrontendServicePackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -442,7 +442,7 @@ func TestProject_ServiceV1UsersPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/users"
-		actual := p.ServiceUsersPackage()
+		actual := p.UsersServicePackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -453,7 +453,7 @@ func TestProject_ServiceV1UsersPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/users/fart"
-		actual := p.ServiceUsersPackage(examplePathTestInput)
+		actual := p.UsersServicePackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})
@@ -468,7 +468,7 @@ func TestProject_ServiceV1WebhooksPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/webhooks"
-		actual := p.ServiceWebhooksPackage()
+		actual := p.WebhooksServicePackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -479,7 +479,7 @@ func TestProject_ServiceV1WebhooksPackage(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/services/webhooks/fart"
-		actual := p.ServiceWebhooksPackage(examplePathTestInput)
+		actual := p.WebhooksServicePackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})

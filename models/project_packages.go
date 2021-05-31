@@ -6,6 +6,10 @@ func (p *Project) RelativePath(parts ...string) string {
 	return filepath.Join(append([]string{p.OutputPath}, parts...)...)
 }
 
+func (p *Project) HTTPServerPackage() string {
+	return p.InternalPackage("server")
+}
+
 func (p *Project) HTTPClientPackage(parts ...string) string {
 	return p.RelativePath(append([]string{"pkg", "client", "httpclient"}, parts...)...)
 }
@@ -30,8 +34,12 @@ func (p *Project) InternalPackage(parts ...string) string {
 	return p.RelativePath(append([]string{"internal"}, parts...)...)
 }
 
-func (p *Project) InternalAuthPackage(parts ...string) string {
+func (p *Project) InternalAuthenticationPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"authentication"}, parts...)...)
+}
+
+func (p *Project) InternalAuthorizationPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"authorization"}, parts...)...)
 }
 
 func (p *Project) InternalAuditPackage(parts ...string) string {
@@ -40,6 +48,14 @@ func (p *Project) InternalAuditPackage(parts ...string) string {
 
 func (p *Project) ConfigPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"config"}, parts...)...)
+}
+
+func (p *Project) UploadsPackage() string {
+	return p.InternalPackage("uploads")
+}
+
+func (p *Project) StoragePackage() string {
+	return p.InternalPackage("storage")
 }
 
 func (p *Project) EncodingPackage(parts ...string) string {
@@ -66,6 +82,10 @@ func (p *Project) InternalSecretsPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"secrets"}, parts...)...)
 }
 
+func (p *Project) InternalEventsPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"events"}, parts...)...)
+}
+
 func (p *Project) InternalPubSubPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"events"}, parts...)...)
 }
@@ -78,23 +98,23 @@ func (p *Project) ServicePackage(service string) string {
 	return p.InternalPackage(append([]string{"services"}, service)...)
 }
 
-func (p *Project) ServiceAuthPackage() string {
-	return p.ServicePackage("auth")
+func (p *Project) AuditServicePackage() string {
+	return p.ServicePackage("audit")
 }
 
-func (p *Project) ServiceFrontendPackage() string {
+func (p *Project) AuthServicePackage() string {
+	return p.ServicePackage("authentication")
+}
+
+func (p *Project) FrontendServicePackage() string {
 	return p.ServicePackage("frontend")
 }
 
-func (p *Project) ServiceOAuth2ClientsPackage() string {
-	return p.ServicePackage("oauth2clients")
-}
-
-func (p *Project) ServiceUsersPackage() string {
+func (p *Project) UsersServicePackage() string {
 	return p.ServicePackage("users")
 }
 
-func (p *Project) ServiceWebhooksPackage() string {
+func (p *Project) WebhooksServicePackage() string {
 	return p.ServicePackage("webhooks")
 }
 
