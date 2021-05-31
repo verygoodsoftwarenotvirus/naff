@@ -25,6 +25,9 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 		"route_fmt": func(s string) string {
 			return wordsmith.FromSingularPascalCase(s).RouteName()
 		},
+		"unexportedVarName": func(s string) string {
+			return wordsmith.FromSingularPascalCase(s).UnexportedVarName()
+		},
 		"projectImport": func(path string) string {
 			return fmt.Sprintf("%q", filepath.Join(append([]string{cf.proj.OutputPath}, path)...))
 		},

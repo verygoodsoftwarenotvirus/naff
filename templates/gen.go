@@ -1,8 +1,6 @@
 package project
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/converters"
 	"log"
 	"sync"
 	"time"
@@ -64,11 +62,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/converters"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/fakes"
 	mocktypes "gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
+	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/frontend"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/integration"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/load"
+	testutils "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/utils"
 
 	"github.com/gosuri/uiprogress"
 )
@@ -141,11 +145,10 @@ func RenderProject(proj *naffmodels.Project) {
 		"fakes":                     fakes.RenderPackage,
 		"converters":                converters.RenderPackage,
 		"miscellaneous":             misc.RenderPackage,
-
-		//"testutil":                  testutil.RenderPackage,
-		//"frontendtests":             frontendtests.RenderPackage,
-		//"integrationtests":          integration.RenderPackage,
-		//"loadtests":                 load.RenderPackage,
+		"frontendtests":             frontendtests.RenderPackage,
+		"integrationtests":          integration.RenderPackage,
+		"loadtests":                 load.RenderPackage,
+		"testutils":                 testutils.RenderPackage,
 	}
 
 	var wg sync.WaitGroup
