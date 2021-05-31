@@ -113,16 +113,16 @@ func TestBuilder_BuildURL(T *testing.T) {
 			inputParts  []string
 		}{
 			{
-				expectation: "https://{{ projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things",
+				expectation: "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things",
 				inputParts:  []string{"things"},
 			},
 			{
-				expectation: "https://{{ projectName }}.verygoodsoftwarenotvirus.ru/api/v1/stuff?key=value",
+				expectation: "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/api/v1/stuff?key=value",
 				inputQuery:  map[string][]string{"key": {"value"}},
 				inputParts:  []string{"stuff"},
 			},
 			{
-				expectation: "https://{{ projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff?key=value1&key=value2&yek=eulav",
+				expectation: "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff?key=value1&key=value2&yek=eulav",
 				inputQuery: map[string][]string{
 					"key": {"value1", "value2"},
 					"yek": {"eulav"},
@@ -216,16 +216,16 @@ func TestBuilder_buildUnversionedURL(T *testing.T) {
 			inputParts  []string
 		}{
 			{
-				expectation: "https://{{ projectName }}.verygoodsoftwarenotvirus.ru/things",
+				expectation: "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/things",
 				inputParts:  []string{"things"},
 			},
 			{
-				expectation: "https://{{ projectName }}.verygoodsoftwarenotvirus.ru/stuff?key=value",
+				expectation: "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/stuff?key=value",
 				inputQuery:  map[string][]string{"key": {"value"}},
 				inputParts:  []string{"stuff"},
 			},
 			{
-				expectation: "https://{{ projectName }}.verygoodsoftwarenotvirus.ru/things/and/stuff?key=value1&key=value2&yek=eulav",
+				expectation: "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/things/and/stuff?key=value1&key=value2&yek=eulav",
 				inputQuery: map[string][]string{
 					"key": {"value1", "value2"},
 					"yek": {"eulav"},

@@ -18,10 +18,18 @@ import (
 	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querier"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mariadb"
+	mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/postgres"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/sqlite"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
 	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
+	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/tracing"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server"
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
@@ -32,12 +40,6 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/builders"
-	mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
-	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random"
 	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing"
@@ -102,6 +104,9 @@ func RenderProject(proj *naffmodels.Project) {
 		"dbconfig":                  dbconfig.RenderPackage,
 		"querier":                   querier.RenderPackage,
 		"querybuilding":             querybuilding.RenderPackage,
+		"mariadb":                   mariadb.RenderPackage,
+		"postgres":                  postgres.RenderPackage,
+		"sqlite":                    sqlite.RenderPackage,
 		"dbmock":                    mockquerybuilding.RenderPackage,
 		"capitalism":                capitalism.RenderPackage,
 		"stripe":                    stripe.RenderPackage,

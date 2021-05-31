@@ -108,7 +108,7 @@ func buildTestHelper(t *testing.T) *authServiceHTTPRoutesTestHelper {
 	helper.req, err = http.NewRequestWithContext(
 		helper.ctx,
 		http.MethodGet,
-		"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
+		"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
 		nil,
 	)
 	require.NotNil(t, helper.req)

@@ -18,7 +18,7 @@ import (
 
 const (
 	// defaultNamespace is the default namespace under which we register metrics.
-	defaultNamespace = "{{ projectName }}_server"
+	defaultNamespace = "{{ route_fmt projectName }}_server"
 
 	instrumentationVersion = "1.0.0"
 

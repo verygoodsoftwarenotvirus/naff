@@ -263,7 +263,7 @@ func TestAttachURLToSpan(T *testing.T) {
 		t.Parallel()
 
 		_, span := StartSpan(context.Background())
-		u, err := url.ParseRequestURI("https://{{ projectName }}.verygoodsoftwarenotvirus.ru")
+		u, err := url.ParseRequestURI("https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru")
 		assert.NoError(t, err)
 
 		AttachURLToSpan(span, u)

@@ -332,7 +332,7 @@ func TestServerEncoderDecoder_DecodeRequest(T *testing.T) {
 		req, err := http.NewRequestWithContext(
 			ctx,
 			http.MethodGet,
-			"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
+			"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
 			bytes.NewReader(bs),
 		)
 		require.NoError(t, err)
@@ -357,7 +357,7 @@ func TestServerEncoderDecoder_DecodeRequest(T *testing.T) {
 		req, err := http.NewRequestWithContext(
 			ctx,
 			http.MethodGet,
-			"https://{{ projectName }}.verygoodsoftwarenotvirus.ru",
+			"https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru",
 			bytes.NewReader(bs),
 		)
 		require.NoError(t, err)
