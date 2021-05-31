@@ -311,6 +311,28 @@ func (s *Statement) RightShift() *Statement {
 	return s
 }
 
+// Increment renders the provided operator ++ token.
+func Increment() *Statement {
+	return newStatement().Increment()
+}
+
+// Increment renders the provided operator ++ token.
+func (g *Group) Increment() *Statement {
+	s := Increment()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Increment renders the provided operator ++ token.
+func (s *Statement) Increment() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "++",
+	}
+	*s = append(*s, t)
+	return s
+}
+
 // Plus renders the provided operator + token.
 func Plus() *Statement {
 	return newStatement().Plus()

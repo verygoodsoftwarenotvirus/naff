@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	{{ projectImport "internal/services/items" }}
 	{{ projectImport "internal/authentication" }}
 	{{ projectImport "internal/config" }}
 	{{ projectImport "internal/database" }}
@@ -24,6 +23,7 @@ import (
 	{{ projectImport "internal/services/audit" }}
 	authservice {{ projectImport "internal/services/authentication" }}
 	{{ projectImport "internal/services/frontend" }}
+	{{ projectImport "internal/services/items" }}
 	{{ projectImport "internal/services/webhooks" }}
 	{{ projectImport "internal/storage" }}
 	{{ projectImport "internal/uploads" }}

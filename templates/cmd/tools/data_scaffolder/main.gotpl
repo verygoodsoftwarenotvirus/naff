@@ -183,21 +183,7 @@ func main() {
 				wg.Done()
 			}(wg)
 
-			wg.Add(1)
-			go func(wg *sync.WaitGroup) {
-				for j := 0; j < int(dataCount); j++ {
-					iterationLogger := userLogger.WithValue("creating", "items").WithValue("iteration", j)
-
-					// create item
-					createdItem, itemCreationErr := userClient.CreateItem(ctx, fakes.BuildFakeItemCreationInput())
-					if itemCreationErr != nil {
-						quitter.ComplainAndQuit(fmt.Errorf("creating item #%d: %w", j, itemCreationErr))
-					}
-
-					iterationLogger.WithValue(keys.WebhookIDKey, createdItem.ID).Debug("created item")
-				}
-				wg.Done()
-			}(wg)
+			{{ generated "typeInitializers" }}
 
 			wg.Done()
 		}(i, wg)
