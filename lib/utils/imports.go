@@ -55,6 +55,9 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
 
 	file.ImportAlias(proj.AuditServicePackage(), "auditservice")
+	file.ImportAlias(proj.APIClientsServicePackage(), "apiclientsservice")
+	file.ImportAlias(proj.AccountsServicePackage(), "accountsservice")
+	file.ImportAlias(proj.AdminServicePackage(), "adminservice")
 	file.ImportAlias(proj.AuthServicePackage(), "authservice")
 	file.ImportAlias(proj.FrontendServicePackage(), "frontendservice")
 	file.ImportAlias(proj.UsersServicePackage(), "usersservice")

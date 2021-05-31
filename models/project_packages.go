@@ -50,12 +50,20 @@ func (p *Project) ConfigPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"config"}, parts...)...)
 }
 
-func (p *Project) UploadsPackage() string {
-	return p.InternalPackage("uploads")
+func (p *Project) UploadsPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"uploads"}, parts...)...)
 }
 
 func (p *Project) StoragePackage() string {
 	return p.InternalPackage("storage")
+}
+
+func (p *Project) CapitalismPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"capitalism"}, parts...)...)
+}
+
+func (p *Project) RoutingPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"routing"}, parts...)...)
 }
 
 func (p *Project) EncodingPackage(parts ...string) string {
@@ -90,8 +98,8 @@ func (p *Project) InternalPubSubPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"events"}, parts...)...)
 }
 
-func (p *Project) InternalImagesPackage(parts ...string) string {
-	return p.InternalPackage(append([]string{"images"}, parts...)...)
+func (p *Project) InternalImagesPackage() string {
+	return p.UploadsPackage("images")
 }
 
 func (p *Project) ServicePackage(service string) string {
@@ -106,12 +114,24 @@ func (p *Project) AuthServicePackage() string {
 	return p.ServicePackage("authentication")
 }
 
+func (p *Project) AdminServicePackage() string {
+	return p.ServicePackage("admin")
+}
+
+func (p *Project) APIClientsServicePackage() string {
+	return p.ServicePackage("apiclients")
+}
+
 func (p *Project) FrontendServicePackage() string {
 	return p.ServicePackage("frontend")
 }
 
 func (p *Project) UsersServicePackage() string {
 	return p.ServicePackage("users")
+}
+
+func (p *Project) AccountsServicePackage() string {
+	return p.ServicePackage("accounts")
 }
 
 func (p *Project) WebhooksServicePackage() string {
@@ -123,7 +143,7 @@ func (p *Project) TestUtilPackage(parts ...string) string {
 }
 
 func (p *Project) ObservabilityPackage(parts ...string) string {
-	return p.RelativePath(append([]string{"internal", "observability"}, parts...)...)
+	return p.InternalPackage(append([]string{"observability"}, parts...)...)
 }
 
 func (p *Project) ConstantKeysPackage() string {
