@@ -237,7 +237,7 @@ func buildRequisiteLoggerAndTracingStatementsForModification(proj *models.Projec
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Lit("user_id"), jen.ID(constants.UserIDVarName)),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID(constants.UserIDVarName)),
 			func() jen.Code {
-				if assignToUser && typ.BelongsToUser {
+				if assignToUser && typ.BelongsToAccount {
 					return jen.ID("input").Dot(constants.UserOwnershipFieldName).Equals().ID(constants.UserIDVarName)
 				}
 				return jen.Null()
@@ -316,7 +316,7 @@ func buildCreateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 	}
 
-	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, false, typ.BelongsToUser, true)...)
+	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, true, false, typ.BelongsToAccount, true)...)
 
 	errNotNilBlock := []jen.Code{
 		jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.Err(), jen.Litf("error creating %s", scn)),
@@ -504,7 +504,7 @@ func buildUpdateHandlerFuncDecl(proj *models.Project, typ models.DataType) []jen
 		jen.Line(),
 	)
 
-	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, false, true, typ.BelongsToUser, true)...)
+	block = append(block, buildRequisiteLoggerAndTracingStatementsForModification(proj, typ, false, true, typ.BelongsToAccount, true)...)
 	fetchCallArgs := typ.BuildDBClientRetrievalMethodCallArgs(proj)
 
 	block = append(block,

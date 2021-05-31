@@ -8,6 +8,30 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func buildBadFields(varName string, typ models.DataType) []jen.Code {
+	fields := []jen.Code{jen.ID(varName).Dot("ArchivedOn"), jen.ID(varName).Dot("ExternalID")}
+
+	for _, field := range typ.Fields {
+		fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
+	}
+
+	fields = append(fields,
+		jen.ID(varName).Dot("CreatedOn"),
+		jen.ID(varName).Dot("LastUpdatedOn"),
+	)
+
+	if typ.BelongsToStruct != nil {
+		fields = append(fields, jen.ID(varName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToAccount {
+		fields = append(fields, jen.ID(varName).Dot(constants.AccountOwnershipFieldName))
+	}
+
+	fields = append(fields, jen.ID(varName).Dot("ID"))
+
+	return fields
+}
+
 func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -28,14 +52,7 @@ func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType)
 			jen.Line(),
 			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().ID(puvn)).Body(
 				jen.ID("rowValues").Assign().Index().ID("driver").Dot("Value").Valuesln(
-					jen.ID("x").Dot("ID"),
-					jen.ID("x").Dot("ExternalID"),
-					jen.ID("x").Dot("Name"),
-					jen.ID("x").Dot("Details"),
-					jen.ID("x").Dot("CreatedOn"),
-					jen.ID("x").Dot("LastUpdatedOn"),
-					jen.ID("x").Dot("ArchivedOn"),
-					jen.Op("&").ID("x").Dot("BelongsToAccount"),
+					buildBadFields("x", typ)...,
 				),
 				jen.Line(),
 				jen.If(jen.ID("includeCounts")).Body(

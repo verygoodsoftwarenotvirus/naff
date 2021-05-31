@@ -36,7 +36,7 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("helper").Dot("service").Op("=").ID("buildTestService").Call(),
 			jen.ID("helper").Dot("exampleUser").Op("=").ID("fakes").Dot("BuildFakeUser").Call(),
 			jen.ID("helper").Dot("exampleAccount").Op("=").ID("fakes").Dot("BuildFakeAccount").Call(),
-			jen.ID("helper").Dot("exampleAccount").Dot("BelongsToUser").Op("=").ID("helper").Dot("exampleUser").Dot("ID"),
+			jen.ID("helper").Dot("exampleAccount").Dot("BelongsToAccount").Op("=").ID("helper").Dot("exampleUser").Dot("ID"),
 			jen.ID("helper").Dot("exampleItem").Op("=").ID("fakes").Dot("BuildFakeItem").Call(),
 			jen.ID("helper").Dot("exampleItem").Dot("BelongsToAccount").Op("=").ID("helper").Dot("exampleAccount").Dot("ID"),
 			jen.ID("helper").Dot("exampleCreationInput").Op("=").ID("fakes").Dot("BuildFakeItemCreationInputFromItem").Call(jen.ID("helper").Dot("exampleItem")),

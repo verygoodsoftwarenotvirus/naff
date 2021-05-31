@@ -240,7 +240,7 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 		jen.ID("ArchivedOn").PointerTo().Uint64().Tag(jsonTag("archivedOn")),
 	)
 
-	if typ.BelongsToUser {
+	if typ.BelongsToAccount {
 		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongsToUser")))
 	}
 	if typ.BelongsToStruct != nil {
@@ -263,7 +263,7 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 		}
 	}
 
-	if typ.BelongsToUser {
+	if typ.BelongsToAccount {
 		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToStruct != nil {
@@ -289,7 +289,7 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	if typ.BelongsToStruct != nil {
 		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag("-")))
 	}
-	if typ.BelongsToUser {
+	if typ.BelongsToAccount {
 		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
 	}
 

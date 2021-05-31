@@ -272,9 +272,9 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 		ast.Inspect(file, func(n ast.Node) bool {
 			if dec, ok := n.(*ast.TypeSpec); ok {
 				dt := DataType{
-					Name:          wordsmith.FromSingularPascalCase(dec.Name.Name),
-					Fields:        []DataField{},
-					BelongsToUser: true,
+					Name:             wordsmith.FromSingularPascalCase(dec.Name.Name),
+					Fields:           []DataField{},
+					BelongsToAccount: true,
 				}
 
 				if _, ok := dec.Type.(*ast.StructType); !ok {
@@ -343,15 +343,15 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 								}
 
 								if properOwner == "__nobody__" {
-									dt.BelongsToUser = false
+									dt.BelongsToAccount = false
 									dt.IsEnumeration = true
 								} else if properOwner != "" {
 									dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
-									dt.BelongsToUser = alsoBelongsToUser
+									dt.BelongsToAccount = alsoBelongsToUser
 								}
 							} else {
 								if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
-									dt.RestrictedToUser = true
+									dt.RestrictedToAccountMembers = true
 								}
 								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) {
 									dt.SearchEnabled = true

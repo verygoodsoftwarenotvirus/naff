@@ -70,8 +70,8 @@ func buildRelevantIDFetchers(proj *models.Project, typ models.DataType) []jen.Co
 				return jen.Null()
 			}(),
 			func() jen.Code {
-				if ot.BelongsToUser {
-					return jen.ID(utils.BuildFakeVarName(ot.Name.Singular())).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+				if ot.BelongsToAccount {
+					return jen.ID(utils.BuildFakeVarName(ot.Name.Singular())).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 				}
 				return jen.Null()
 			}(),
@@ -730,7 +730,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			lines = append(lines, jen.ID("s").Dotf("%sIDFetcher", ot.Name.UnexportedVarName()).Equals().IDf("%sIDFetcher", ot.Name.UnexportedVarName()))
 		}
 
-		if typ.BelongsToUser {
+		if typ.BelongsToAccount {
 			lines = append(lines, jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"))
 		}
 
@@ -773,7 +773,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
+			if typ.BelongsToAccount {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName).Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
@@ -893,7 +893,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
+			if typ.BelongsToAccount {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName).Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
@@ -947,7 +947,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
+			if typ.BelongsToAccount {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName).Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
@@ -1123,8 +1123,8 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1170,8 +1170,8 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1217,8 +1217,8 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1304,8 +1304,8 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1359,8 +1359,8 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1406,8 +1406,8 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1453,8 +1453,8 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1545,8 +1545,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1664,8 +1664,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1715,8 +1715,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1766,8 +1766,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -1822,8 +1822,8 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -2012,8 +2012,8 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					return jen.Null()
 				}(),
 				func() jen.Code {
-					if typ.BelongsToUser {
-						return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+					if typ.BelongsToAccount {
+						return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 					}
 					return jen.Null()
 				}(),
@@ -2157,8 +2157,8 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),
@@ -2205,8 +2205,8 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			return jen.Null()
 		}(),
 		func() jen.Code {
-			if typ.BelongsToUser {
-				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToUser").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
+			if typ.BelongsToAccount {
+				return jen.ID(utils.BuildFakeVarName(sn)).Dot("BelongsToAccount").Equals().ID(utils.BuildFakeVarName("User")).Dot("ID")
 			}
 			return jen.Null()
 		}(),

@@ -80,7 +80,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("Name"),
 				jen.Lit("ExternalID"),
 				jen.Lit("ClientID"),
-				jen.Lit("BelongsToUser"),
+				jen.Lit("BelongsToAccount"),
 				jen.Lit("CreatedOn"),
 			),
 			jen.ID("RowDataFieldName").Op(":").Lit("Clients"),
@@ -102,7 +102,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("CellFields").Op(":").Index().ID("string").Valuesln(
 				jen.Lit("Name"),
 				jen.Lit("ExternalID"),
-				jen.Lit("BelongsToUser"),
+				jen.Lit("BelongsToAccount"),
 			),
 			jen.ID("RowDataFieldName").Op(":").Lit("Accounts"),
 			jen.ID("IncludeLastUpdatedOn").Op(":").ID("true"),

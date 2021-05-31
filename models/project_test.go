@@ -35,9 +35,9 @@ func buildExampleTodoListProject() *Project {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
-				SearchEnabled:    true,
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: true,
+				SearchEnabled:              true,
 			},
 		},
 	}
@@ -85,9 +85,9 @@ func buildExampleForumsListProject() *Project {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-				BelongsToUser:    true,
-				RestrictedToUser: false,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Post"),
@@ -100,9 +100,9 @@ func buildExampleForumsListProject() *Project {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-				BelongsToUser:    true,
-				RestrictedToUser: false,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("ReactionIcon"),
@@ -128,9 +128,9 @@ func buildExampleForumsListProject() *Project {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Post"),
-				BelongsToUser:    true,
-				RestrictedToUser: false,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Post"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Notification"),
@@ -143,8 +143,8 @@ func buildExampleForumsListProject() *Project {
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: true,
 			},
 		},
 	}
@@ -184,9 +184,9 @@ func TestProject_Validate(T *testing.T) {
 							ValidForUpdateInput:   true,
 						},
 					},
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    true,
+					BelongsToAccount:           true,
+					RestrictedToAccountMembers: true,
+					SearchEnabled:              true,
 				},
 			},
 		}
@@ -231,10 +231,10 @@ func TestProject_Validate(T *testing.T) {
 			enabledDatabases: validDatabaseMap,
 			DataTypes: []DataType{
 				{
-					Name:             wordsmith.FromSingularPascalCase("Item"),
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    true,
+					Name:                       wordsmith.FromSingularPascalCase("Item"),
+					BelongsToAccount:           true,
+					RestrictedToAccountMembers: true,
+					SearchEnabled:              true,
 				},
 			},
 		}
@@ -407,9 +407,9 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 		postType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -422,9 +422,9 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 
 		p := &Project{
@@ -491,9 +491,9 @@ func TestProject_FindType(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 		postType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -506,9 +506,9 @@ func TestProject_FindType(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 
 		p := &Project{
@@ -579,9 +579,9 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 		postType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -594,9 +594,9 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 
 		p := &Project{
@@ -777,7 +777,7 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -859,7 +859,7 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -913,7 +913,7 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -967,7 +967,7 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -1018,7 +1018,7 @@ type Item struct{
 						Pos:                   token.Pos(41),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
@@ -1042,8 +1042,8 @@ type Item struct{
 						Pos:                   token.Pos(93),
 					},
 				},
-				BelongsToUser:   false,
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+				BelongsToAccount: false,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
@@ -1096,7 +1096,7 @@ type Item struct{
 						Pos:                   token.Pos(41),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
@@ -1120,8 +1120,8 @@ type Item struct{
 						Pos:                   token.Pos(93),
 					},
 				},
-				BelongsToUser:   true,
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+				BelongsToAccount: true,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
@@ -1250,7 +1250,7 @@ type Item struct{
 						Pos:                   token.Pos(41),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
@@ -1274,9 +1274,9 @@ type Item struct{
 						Pos:                   token.Pos(93),
 					},
 				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: true,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
@@ -1334,8 +1334,8 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: false,
-				IsEnumeration: true,
+				BelongsToAccount: false,
+				IsEnumeration:    true,
 			},
 		}
 		expectedImports := []string{
@@ -1392,9 +1392,9 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: false,
-				SearchEnabled: true,
-				IsEnumeration: true,
+				BelongsToAccount: false,
+				SearchEnabled:    true,
+				IsEnumeration:    true,
 			},
 		}
 		expectedImports := []string{
@@ -1474,8 +1474,8 @@ type Item struct{
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
-				SearchEnabled: true,
+				BelongsToAccount: true,
+				SearchEnabled:    true,
 			},
 		}
 		expectedImports := []string{

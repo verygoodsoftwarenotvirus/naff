@@ -41,7 +41,7 @@ type (
 		CreatedOn     uint64  ` + "`" + `json:"createdOn"` + "`" + `
 		LastUpdatedOn *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
 		ArchivedOn    *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
-		BelongsToUser uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
+		BelongsToAccount uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	// ItemList represents a list of items.
@@ -54,14 +54,14 @@ type (
 	ItemCreationInput struct {
 		Name          string ` + "`" + `json:"name"` + "`" + `
 		Details       string ` + "`" + `json:"details"` + "`" + `
-		BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
+		BelongsToAccount uint64 ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// ItemUpdateInput represents what a user could set as input for updating items.
 	ItemUpdateInput struct {
 		Name          string ` + "`" + `json:"name"` + "`" + `
 		Details       string ` + "`" + `json:"details"` + "`" + `
-		BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
+		BelongsToAccount uint64 ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// ItemDataManager describes a structure capable of storing items permanently.
@@ -353,7 +353,7 @@ type (
 		CreatedOn     uint64  ` + "`" + `json:"createdOn"` + "`" + `
 		LastUpdatedOn *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
 		ArchivedOn    *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
-		BelongsToUser uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
+		BelongsToAccount uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
 	}
 
 	// ItemList represents a list of items.
@@ -366,14 +366,14 @@ type (
 	ItemCreationInput struct {
 		Name          string ` + "`" + `json:"name"` + "`" + `
 		Details       string ` + "`" + `json:"details"` + "`" + `
-		BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
+		BelongsToAccount uint64 ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// ItemUpdateInput represents what a user could set as input for updating items.
 	ItemUpdateInput struct {
 		Name          string ` + "`" + `json:"name"` + "`" + `
 		Details       string ` + "`" + `json:"details"` + "`" + `
-		BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
+		BelongsToAccount uint64 ` + "`" + `json:"-"` + "`" + `
 	}
 
 	// ItemDataManager describes a structure capable of storing items permanently.
@@ -587,7 +587,7 @@ type Example struct {
 	CreatedOn     uint64  ` + "`" + `json:"createdOn"` + "`" + `
 	LastUpdatedOn *uint64 ` + "`" + `json:"lastUpdatedOn"` + "`" + `
 	ArchivedOn    *uint64 ` + "`" + `json:"archivedOn"` + "`" + `
-	BelongsToUser uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
+	BelongsToAccount uint64  ` + "`" + `json:"belongsToUser"` + "`" + `
 }
 `
 		actual := testutils.RenderStructFieldsToString(t, x...)
@@ -612,7 +612,7 @@ import ()
 type Example struct {
 	Name          string ` + "`" + `json:"name"` + "`" + `
 	Details       string ` + "`" + `json:"details"` + "`" + `
-	BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
+	BelongsToAccount uint64 ` + "`" + `json:"-"` + "`" + `
 }
 `
 		actual := testutils.RenderStructFieldsToString(t, x...)
@@ -656,7 +656,7 @@ import ()
 type Example struct {
 	Name          string ` + "`" + `json:"name"` + "`" + `
 	Details       string ` + "`" + `json:"details"` + "`" + `
-	BelongsToUser uint64 ` + "`" + `json:"-"` + "`" + `
+	BelongsToAccount uint64 ` + "`" + `json:"-"` + "`" + `
 }
 `
 		actual := testutils.RenderStructFieldsToString(t, x...)

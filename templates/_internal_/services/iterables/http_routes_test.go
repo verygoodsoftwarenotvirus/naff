@@ -127,7 +127,7 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	userID := s.userIDFetcher(req)
 	logger = logger.WithValue("user_id", userID)
 	tracing.AttachUserIDToSpan(span, userID)
-	input.BelongsToUser = userID
+	input.BelongsToAccount = userID
 
 	// create item in database.
 	x, err := s.itemDataManager.CreateItem(ctx, input)
@@ -243,7 +243,7 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	userID := s.userIDFetcher(req)
 	logger = logger.WithValue("user_id", userID)
 	tracing.AttachUserIDToSpan(span, userID)
-	input.BelongsToUser = userID
+	input.BelongsToAccount = userID
 
 	// determine item ID.
 	itemID := s.itemIDFetcher(req)
@@ -393,8 +393,8 @@ func main() {
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range proj.DataTypes {
-			proj.DataTypes[i].BelongsToUser = true
-			proj.DataTypes[i].RestrictedToUser = true
+			proj.DataTypes[i].BelongsToAccount = true
+			proj.DataTypes[i].RestrictedToAccountMembers = true
 		}
 		typ := proj.LastDataType()
 		x := buildRequisiteLoggerAndTracingStatementsForListOfEntities(proj, typ)
@@ -467,8 +467,8 @@ func main() {
 		proj := testprojects.BuildTodoApp()
 		proj.DataTypes = models.BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range proj.DataTypes {
-			proj.DataTypes[i].BelongsToUser = true
-			proj.DataTypes[i].RestrictedToUser = true
+			proj.DataTypes[i].BelongsToAccount = true
+			proj.DataTypes[i].RestrictedToAccountMembers = true
 		}
 		typ := proj.LastDataType()
 		x := buildRequisiteLoggerAndTracingStatementsForSingleEntity(proj, typ)
@@ -658,7 +658,7 @@ func main() {
 	userID := s.userIDFetcher(req)
 	logger = logger.WithValue("user_id", userID)
 	tracing.AttachUserIDToSpan(span, userID)
-	input.BelongsToUser = userID
+	input.BelongsToAccount = userID
 
 	// determine item ID.
 	itemID := s.itemIDFetcher(req)
@@ -776,7 +776,7 @@ func (s *Service) CreateHandler(res http.ResponseWriter, req *http.Request) {
 	userID := s.userIDFetcher(req)
 	logger = logger.WithValue("user_id", userID)
 	tracing.AttachUserIDToSpan(span, userID)
-	input.BelongsToUser = userID
+	input.BelongsToAccount = userID
 
 	// create item in database.
 	x, err := s.itemDataManager.CreateItem(ctx, input)
@@ -1063,7 +1063,7 @@ func (s *Service) UpdateHandler(res http.ResponseWriter, req *http.Request) {
 	userID := s.userIDFetcher(req)
 	logger = logger.WithValue("user_id", userID)
 	tracing.AttachUserIDToSpan(span, userID)
-	input.BelongsToUser = userID
+	input.BelongsToAccount = userID
 
 	// determine item ID.
 	itemID := s.itemIDFetcher(req)

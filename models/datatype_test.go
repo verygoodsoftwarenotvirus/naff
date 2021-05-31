@@ -97,7 +97,7 @@ func TestDataType_OwnedByAUserAtSomeLevel(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToUser: true,
+			BelongsToAccount: true,
 		}
 		p := &Project{
 			DataTypes: []DataType{
@@ -114,7 +114,7 @@ func TestDataType_OwnedByAUserAtSomeLevel(T *testing.T) {
 		p := &Project{
 			DataTypes: BuildOwnershipChain("A", "B", "C"),
 		}
-		p.DataTypes[0].BelongsToUser = true
+		p.DataTypes[0].BelongsToAccount = true
 
 		assert.True(t, p.LastDataType().OwnedByAUserAtSomeLevel(p))
 	})
@@ -127,8 +127,8 @@ func TestDataType_RestrictedToUserAtSomeLevel(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToUser:    true,
-			RestrictedToUser: true,
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: true,
 		}
 		p := &Project{
 			DataTypes: []DataType{
@@ -143,9 +143,9 @@ func TestDataType_RestrictedToUserAtSomeLevel(T *testing.T) {
 		t.Parallel()
 
 		dtA := DataType{
-			Name:             wordsmith.FromSingularPascalCase("A"),
-			BelongsToUser:    true,
-			RestrictedToUser: true,
+			Name:                       wordsmith.FromSingularPascalCase("A"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: true,
 		}
 		dtB := DataType{
 			Name:            wordsmith.FromSingularPascalCase("B"),
@@ -174,18 +174,18 @@ func TestDataType_MultipleOwnersBelongingToUser(T *testing.T) {
 		t.Parallel()
 
 		dtA := DataType{
-			Name:          wordsmith.FromSingularPascalCase("A"),
-			BelongsToUser: true,
+			Name:             wordsmith.FromSingularPascalCase("A"),
+			BelongsToAccount: true,
 		}
 		dtB := DataType{
-			Name:            wordsmith.FromSingularPascalCase("B"),
-			BelongsToUser:   true,
-			BelongsToStruct: wordsmith.FromSingularPascalCase("A"),
+			Name:             wordsmith.FromSingularPascalCase("B"),
+			BelongsToAccount: true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("A"),
 		}
 		dtC := DataType{
-			Name:            wordsmith.FromSingularPascalCase("C"),
-			BelongsToUser:   true,
-			BelongsToStruct: wordsmith.FromSingularPascalCase("B"),
+			Name:             wordsmith.FromSingularPascalCase("C"),
+			BelongsToAccount: true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("B"),
 		}
 		p := &Project{
 			DataTypes: []DataType{
@@ -207,8 +207,8 @@ func TestDataType_buildGetSomethingParams(T *testing.T) {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		p.DataTypes[0].BelongsToUser = true
-		p.DataTypes[0].RestrictedToUser = true
+		p.DataTypes[0].BelongsToAccount = true
+		p.DataTypes[0].RestrictedToAccountMembers = true
 
 		expected := `
 package main
@@ -232,10 +232,10 @@ func TestDataType_buildArchiveSomethingParams(T *testing.T) {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
-			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
-			BelongsToUser:    true,
-			RestrictedToUser: true,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thing"),
+			Name:                       wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: true,
 		}
 
 		expected := `
@@ -650,8 +650,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		result := p.LastDataType().buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
@@ -741,8 +741,8 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(T 
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		results := p.LastDataType().buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
@@ -827,8 +827,8 @@ func TestDataType_BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		results := p.LastDataType().BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p)
@@ -877,8 +877,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -942,8 +942,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1029,8 +1029,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1076,9 +1076,9 @@ func main() {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
-			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
+			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToAccount: true,
 		}
 
 		expected := `
@@ -1380,8 +1380,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1456,8 +1456,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1466,7 +1466,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToUser)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToAccount)
 }
 `
 		actual := renderCallArgsToString(t, p.LastDataType().buildSingleInstanceQueryTestCallArgs(p))
@@ -1506,8 +1506,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1608,8 +1608,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1658,8 +1658,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1838,8 +1838,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -1852,9 +1852,9 @@ import (
 func main() {
 	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
-	exampleThing.BelongsToUser = exampleUser.ID
+	exampleThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
-	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
 	filter := fake.BuildFleshedOutQueryFilter()
 }
@@ -2038,8 +2038,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -2094,8 +2094,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -2171,8 +2171,8 @@ func example(ctx context.Context, filter *types.QueryFilter) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -2634,8 +2634,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -2706,9 +2706,9 @@ func main() {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
-			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
+			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToAccount: true,
 		}
 
 		expected := `
@@ -3054,8 +3054,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -3204,8 +3204,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -3334,8 +3334,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -3390,8 +3390,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -3404,13 +3404,13 @@ import (
 func main() {
 	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
-	exampleThing.BelongsToUser = exampleUser.ID
+	exampleThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
-	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildVarDeclarationsOfDependentStructsWithoutUsingOwnerStruct(p))
@@ -3537,8 +3537,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -3595,8 +3595,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4148,8 +4148,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4198,8 +4198,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4248,8 +4248,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4298,8 +4298,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4348,8 +4348,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4398,8 +4398,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4448,8 +4448,8 @@ func example(ctx context.Context, thingID uint64) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4498,8 +4498,8 @@ func example(ctx context.Context, thingID uint64) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4548,8 +4548,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4598,8 +4598,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4648,8 +4648,8 @@ func example(ctx context.Context, thingID uint64) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4718,8 +4718,8 @@ func example(ctx context.Context, thingID uint64) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4740,8 +4740,8 @@ func example(ctx, thingID, anotherThingID, yetAnotherThingID) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4791,8 +4791,8 @@ func example(ctx context.Context, input *types.ThingCreationInput) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4843,8 +4843,8 @@ func example(ctx context.Context, input *types.ThingCreationInput) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4895,8 +4895,8 @@ func example(ctx context.Context, thing *types.Thing) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4946,8 +4946,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -4997,8 +4997,8 @@ func example(ctx context.Context, thing *types.Thing) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5048,8 +5048,8 @@ func example(ctx context.Context, thingID uint64) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5098,8 +5098,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5148,8 +5148,8 @@ func example(ctx context.Context, thingID uint64) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5196,8 +5196,8 @@ func example(ctx, exampleThing.ID) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5426,8 +5426,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5476,8 +5476,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5526,8 +5526,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5577,8 +5577,8 @@ func example(ctx context.Context, filter *types.QueryFilter) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5629,8 +5629,8 @@ func example(ctx context.Context, filter *types.QueryFilter) {}
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5680,8 +5680,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5730,8 +5730,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5780,8 +5780,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5830,8 +5830,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5909,8 +5909,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -5926,12 +5926,12 @@ func main() {
 
 	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
-	exampleThing.BelongsToUser = exampleUser.ID
+	exampleThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
-	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
@@ -6001,8 +6001,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6018,7 +6018,7 @@ func main() {
 
 	exampleUser := fake.BuildFakeUser()
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
 }
 `
@@ -6123,8 +6123,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6140,7 +6140,7 @@ func main() {
 
 	exampleUser := fake.BuildFakeUser()
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBClientCreateMethodTest(p))
@@ -6187,8 +6187,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6206,7 +6206,7 @@ func main() {
 
 	exampleUser := fake.BuildFakeUser()
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p))
@@ -6248,8 +6248,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6261,13 +6261,13 @@ import (
 
 func main() {
 	exampleThing := fake.BuildFakeThing()
-	exampleThing.BelongsToUser = exampleUser.ID
+	exampleThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
-	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
 	exampleYetAnotherThing.BelongsToAnotherThing = exampleAnotherThing.ID
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.LastDataType().BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p))
@@ -6306,8 +6306,8 @@ func main() {}
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
 			if i != len(p.DataTypes)-1 {
-				p.DataTypes[i].BelongsToUser = true
-				p.DataTypes[i].RestrictedToUser = true
+				p.DataTypes[i].BelongsToAccount = true
+				p.DataTypes[i].RestrictedToAccountMembers = true
 			}
 		}
 
@@ -6415,8 +6415,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6429,9 +6429,9 @@ import (
 func main() {
 	exampleUser := fake.BuildFakeUser()
 	exampleThing := fake.BuildFakeThing()
-	exampleThing.BelongsToUser = exampleUser.ID
+	exampleThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing := fake.BuildFakeAnotherThing()
-	exampleAnotherThing.BelongsToUser = exampleUser.ID
+	exampleAnotherThing.BelongsToAccount = exampleUser.ID
 	exampleAnotherThing.BelongsToThing = exampleThing.ID
 	filter := fake.BuildFleshedOutQueryFilter()
 }
@@ -6473,8 +6473,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6486,7 +6486,7 @@ func main() {
 	exampleThing.ID
 	exampleAnotherThing.ID
 	exampleYetAnotherThing.ID
-	exampleYetAnotherThing.BelongsToUser
+	exampleYetAnotherThing.BelongsToAccount
 }
 `
 		actual := renderVariableDeclarationsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgsForCreation(p))
@@ -6524,8 +6524,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6534,7 +6534,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToUser)
+	exampleFunction(exampleThing.ID, exampleAnotherThing.ID, exampleYetAnotherThing.ID, exampleYetAnotherThing.BelongsToAccount)
 }
 `
 		actual := renderCallArgsToString(t, p.LastDataType().buildRequisiteFakeVarCallArgs(p))
@@ -6547,8 +6547,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		p.DataTypes[0].BelongsToUser = true
-		p.DataTypes[0].RestrictedToUser = true
+		p.DataTypes[0].BelongsToAccount = true
+		p.DataTypes[0].RestrictedToAccountMembers = true
 
 		expected := `
 package main
@@ -6593,8 +6593,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		p.DataTypes[0].BelongsToUser = true
-		p.DataTypes[0].RestrictedToUser = true
+		p.DataTypes[0].BelongsToAccount = true
+		p.DataTypes[0].RestrictedToAccountMembers = true
 
 		expected := `
 package main
@@ -6735,9 +6735,9 @@ func main() {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
-			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
+			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToAccount: true,
 		}
 
 		expected := `
@@ -6831,9 +6831,9 @@ func main() {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
-			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
+			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToAccount: true,
 		}
 
 		expected := `
@@ -6842,7 +6842,7 @@ package main
 import ()
 
 func main() {
-	exampleFunction(exampleAnotherThing.BelongsToThing, exampleAnotherThing.ID, exampleAnotherThing.BelongsToUser)
+	exampleFunction(exampleAnotherThing.BelongsToThing, exampleAnotherThing.ID, exampleAnotherThing.BelongsToAccount)
 }
 `
 		actual := renderCallArgsToString(t, dt.BuildRequisiteFakeVarCallArgsForDBClientArchiveMethodTest())
@@ -6879,8 +6879,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		p.DataTypes[2].BelongsToUser = true
-		p.DataTypes[2].RestrictedToUser = true
+		p.DataTypes[2].BelongsToAccount = true
+		p.DataTypes[2].RestrictedToAccountMembers = true
 
 		expected := `
 package main
@@ -6928,8 +6928,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -6975,9 +6975,9 @@ func main() {
 		t.Parallel()
 
 		dt := DataType{
-			BelongsToStruct: wordsmith.FromSingularPascalCase("Thing"),
-			Name:            wordsmith.FromSingularPascalCase("AnotherThing"),
-			BelongsToUser:   true,
+			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thing"),
+			Name:             wordsmith.FromSingularPascalCase("AnotherThing"),
+			BelongsToAccount: true,
 		}
 
 		expected := `
@@ -7048,8 +7048,8 @@ func main() {
 
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
-		p.DataTypes[0].RestrictedToUser = true
-		p.DataTypes[0].BelongsToUser = true
+		p.DataTypes[0].RestrictedToAccountMembers = true
+		p.DataTypes[0].BelongsToAccount = true
 
 		expected := `
 package main
@@ -7102,8 +7102,8 @@ func main() {
 		p := buildExampleTodoListProject()
 		p.DataTypes = BuildOwnershipChain("Thing", "AnotherThing", "YetAnotherThing")
 		for i := range p.DataTypes {
-			p.DataTypes[i].BelongsToUser = true
-			p.DataTypes[i].RestrictedToUser = true
+			p.DataTypes[i].BelongsToAccount = true
+			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
 		expected := `
@@ -7120,7 +7120,7 @@ func main() {
 
 	exampleUser := fake.BuildFakeUser()
 	exampleYetAnotherThing := fake.BuildFakeYetAnotherThing()
-	exampleYetAnotherThing.BelongsToUser = exampleUser.ID
+	exampleYetAnotherThing.BelongsToAccount = exampleUser.ID
 
 }
 `

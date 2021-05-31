@@ -15,31 +15,31 @@ const (
 	FlagParsingLibrary     = "github.com/spf13/pflag"
 	SessionManagerLibrary  = "github.com/alexedwards/scs/v2"
 
-	// UserIDVarName is what we normally call a user ID
+	// UserIDVarName is what we normally call a user ID.
 	UserIDVarName = "userID"
 
-	// UserIDFieldName is what we normally call a user ID in a struct definition
-	UserIDFieldName = "UserID"
+	// UserOwnershipFieldName represents the allowed field name for representing ownership by a user.
+	UserOwnershipFieldName = "BelongsToAccount"
 
-	// UserOwnershipFieldName represents the allowed field name for representing ownership by a user
-	UserOwnershipFieldName = "BelongsToUser"
+	// AccountOwnershipFieldName represents the allowed field name for representing ownership by an account.
+	AccountOwnershipFieldName = "BelongsToAccount"
 
-	// ContextVarName is what we normally call a context.Context
+	// ContextVarName is what we normally call a context.Context.
 	ContextVarName = "ctx"
 
-	// FilterVarName is what we normally call a models.QueryFilter
+	// FilterVarName is what we normally call a models.QueryFilter.
 	FilterVarName = "filter"
 
-	// LoggerVarName is what we normally call a logging.Logger
+	// LoggerVarName is what we normally call a logging.Logger.
 	LoggerVarName = "logger"
 
-	// SpanVarName is what we normally call a tracing span
+	// SpanVarName is what we normally call a tracing span.
 	SpanVarName = "span"
 
-	// RequestVarName is what we normally call an HTTP request
+	// RequestVarName is what we normally call an HTTP request.
 	RequestVarName = "req"
 
-	// ResponseVarName is what we normally call an HTTP response
+	// ResponseVarName is what we normally call an HTTP response.
 	ResponseVarName = "res"
 )
 

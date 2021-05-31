@@ -3,9 +3,36 @@ package querier
 import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
+
+func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
+	scanFields = []jen.Code{
+		jen.AddressOf().ID("x").Dot("ID"),
+		jen.AddressOf().ID("x").Dot("ExternalID"),
+	}
+
+	for _, field := range typ.Fields {
+		scanFields = append(scanFields, jen.AddressOf().ID("x").Dot(field.Name.Singular()))
+	}
+
+	scanFields = append(scanFields,
+		jen.AddressOf().ID("x").Dot("CreatedOn"),
+		jen.AddressOf().ID("x").Dot("LastUpdatedOn"),
+		jen.AddressOf().ID("x").Dot("ArchivedOn"),
+	)
+
+	if typ.BelongsToAccount {
+		scanFields = append(scanFields, jen.AddressOf().ID("x").Dot(constants.AccountOwnershipFieldName))
+	}
+	if typ.BelongsToStruct != nil {
+		scanFields = append(scanFields, jen.AddressOf().ID("x").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+
+	return scanFields
+}
 
 func buildScanSomethingRow(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
@@ -25,7 +52,9 @@ func buildScanSomethingRow(proj *models.Project, typ models.DataType) []jen.Code
 			jen.Line(),
 			jen.ID("x").Op("=").Op("&").Qual(proj.TypesPackage(), sn).Values(),
 			jen.Line(),
-			jen.ID("targetVars").Assign().Index().Interface().Valuesln(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("ExternalID"), jen.Op("&").ID("x").Dot("Name"), jen.Op("&").ID("x").Dot("Details"), jen.Op("&").ID("x").Dot("CreatedOn"), jen.Op("&").ID("x").Dot("LastUpdatedOn"), jen.Op("&").ID("x").Dot("ArchivedOn"), jen.Op("&").ID("x").Dot("BelongsToAccount")),
+			jen.ID("targetVars").Assign().Index().Interface().Valuesln(
+				buildScanFields(typ)...,
+			),
 			jen.Line(),
 			jen.If(jen.ID("includeCounts")).Body(
 				jen.ID("targetVars").Op("=").ID("append").Call(
@@ -516,6 +545,32 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 	}
 }
 
+func buildCreateInitFields(typ models.DataType) []jen.Code {
+	createInitColumns := []jen.Code{
+		jen.ID("ID").MapAssign().ID("id"),
+	}
+
+	queryBuildingArgs := typ.BuildDBQuerierCreationMethodQueryBuildingArgs()
+	queryBuildingArgs = queryBuildingArgs[:len(queryBuildingArgs)-1]
+	queryBuildingArgs = append(queryBuildingArgs, jen.ID("x"))
+
+	for _, field := range typ.Fields {
+		fn := field.Name.Singular()
+		createInitColumns = append(createInitColumns, jen.ID(fn).MapAssign().ID("input").Dot(fn))
+	}
+
+	if typ.BelongsToStruct != nil {
+		createInitColumns = append(createInitColumns, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToAccount {
+		createInitColumns = append(createInitColumns, jen.ID(constants.AccountOwnershipFieldName).MapAssign().ID("input").Dot(constants.AccountOwnershipFieldName))
+	}
+
+	createInitColumns = append(createInitColumns, jen.ID("CreatedOn").MapAssign().ID("q").Dot("currentTime").Call())
+
+	return createInitColumns
+}
+
 func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -585,7 +640,9 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				)),
 			),
 			jen.Line(),
-			jen.ID("x").Assign().Op("&").Qual(proj.TypesPackage(), sn).Valuesln(jen.ID("ID").Op(":").ID("id"), jen.ID("Name").Op(":").ID("input").Dot("Name"), jen.ID("Details").Op(":").ID("input").Dot("Details"), jen.ID("BelongsToAccount").Op(":").ID("input").Dot("BelongsToAccount"), jen.ID("CreatedOn").Op(":").ID("q").Dot("currentTime").Call()),
+			jen.ID("x").Assign().Op("&").Qual(proj.TypesPackage(), sn).Valuesln(
+				buildCreateInitFields(typ)...,
+			),
 			jen.Line(),
 			jen.If(jen.ID("err").Op("=").ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
