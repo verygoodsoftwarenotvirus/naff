@@ -208,7 +208,7 @@ func TestClient_BuildWebsocketURL(T *testing.T) {
 		c, _ := NewClient(mustParseURL(exampleURI))
 		ctx := context.Background()
 
-		expected := "ws://{{ projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff"
+		expected := "ws://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff"
 		actual := c.BuildWebsocketURL(ctx, nil, "things", "and", "stuff")
 
 		assert.Equal(t, expected, actual)

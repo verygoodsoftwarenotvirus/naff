@@ -1,6 +1,8 @@
 package project
 
 import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/converters"
 	"log"
 	"sync"
 	"time"
@@ -62,6 +64,11 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/fakes"
+	mocktypes "gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
 
 	"github.com/gosuri/uiprogress"
 )
@@ -127,23 +134,18 @@ func RenderProject(proj *naffmodels.Project) {
 		"images":                    images.RenderPackage,
 		"uploads":                   uploads.RenderPackage,
 		"mockuploads":               mockuploads.RenderPackage,
+		"httpclient":                httpclient.RenderPackage,
+		"requests":                  requests.RenderPackage,
+		"mocktypes":                 mocktypes.RenderPackage,
+		"types":                     types.RenderPackage,
+		"fakes":                     fakes.RenderPackage,
+		"converters":                converters.RenderPackage,
+		"miscellaneous":             misc.RenderPackage,
 
-		//"httpclient":                httpclient.RenderPackage,
-		//"requests":                  requests.RenderPackage,
 		//"testutil":                  testutil.RenderPackage,
 		//"frontendtests":             frontendtests.RenderPackage,
-		//"mocktypes":                 mocktypes.RenderPackage,
-		//"models":                    types.RenderPackage,
-		//"fakemodels":                fakes.RenderPackage,
 		//"integrationtests":          integration.RenderPackage,
 		//"loadtests":                 load.RenderPackage,
-		//"miscellaneous":             misc.RenderPackage,
-		//"accountsservice":           accounts.RenderPackage,
-		//"adminservice":              admin.RenderPackage,
-		//"auditservice":              auditservice.RenderPackage,
-		//"frontendservice":           frontend.RenderPackage,
-		//"mockuploads":               mockuploads.RenderPackage,
-		//"converters":                converters.RenderPackage,
 	}
 
 	var wg sync.WaitGroup

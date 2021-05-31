@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	clientName = "{{ projectName }}_client_v1"
+	clientName = "{{ route_fmt projectName }}_client_v1"
 )
 
 // Builder is a client for interacting with v1 of our HTTP API.

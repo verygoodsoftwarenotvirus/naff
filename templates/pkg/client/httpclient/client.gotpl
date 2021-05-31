@@ -23,7 +23,7 @@ import (
 
 const (
 	defaultTimeout = 30 * time.Second
-	clientName     = "{{ projectName }}_client_v1"
+	clientName     = "{{ route_fmt projectName }}_client_v1"
 )
 
 type authMethod struct{}

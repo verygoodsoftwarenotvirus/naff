@@ -263,7 +263,7 @@ func TestBuilder_BuildWebsocketURL(T *testing.T) {
 
 		require.NoError(t, err)
 
-		expected := "ws://{{ projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff"
+		expected := "ws://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru/api/v1/things/and/stuff"
 		actual := c.BuildWebsocketURL(ctx, "things", "and", "stuff")
 
 		assert.Equal(t, expected, actual)
