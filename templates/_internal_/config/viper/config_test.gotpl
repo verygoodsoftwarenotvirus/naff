@@ -16,7 +16,7 @@ import (
 	{{ projectImport "internal/server" }}
 	{{ projectImport "internal/services/audit" }}
 	authservice {{ projectImport "internal/services/authentication" }}
-	{{ generated "typeImports" }}
+	{{ typeImports }}
 	{{ projectImport "internal/storage" }}
 	{{ projectImport "internal/uploads" }}
 	{{ projectImport "pkg/types" }}
@@ -42,9 +42,6 @@ func TestFromConfig(T *testing.T) {
 				HTTPPort:        1234,
 				Debug:           false,
 				StartupDeadline: time.Minute,
-			},
-			AuditLog: audit.Config{
-				Enabled: true,
 			},
 			Meta: config.MetaSettings{
 				RunMode: config.DevelopmentRunMode,
@@ -97,6 +94,9 @@ func TestFromConfig(T *testing.T) {
 				Debug: false,
 			},
 			Services: config.ServicesConfigurations{
+				AuditLog: audit.Config{
+					Enabled: true,
+				},
 				Auth: authservice.Config{
 					Cookies: authservice.CookieConfig{
 						Name:     "{{ route_fmt projectName }}cookie",

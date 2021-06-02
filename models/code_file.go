@@ -3,10 +3,11 @@ package models
 import (
 	"bytes"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 )
 
 type CodeFile struct {
@@ -39,6 +40,15 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 		},
 		"generated": func(s string) string {
 			return cf.generated[s]
+		},
+		"typeImports": func() string {
+			imports := []string{}
+
+			for _, typ := range cf.proj.DataTypes {
+				imports = append(imports, fmt.Sprintf("\t%q", cf.proj.ServicePackage(typ.Name.PackageName())))
+			}
+
+			return strings.Join(imports, "\n")
 		},
 	}
 }

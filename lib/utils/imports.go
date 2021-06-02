@@ -81,6 +81,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportName(constants.AssertPkg, "assert")
 	file.ImportName(constants.MustAssertPkg, "require")
 	file.ImportName(constants.MockPkg, "mock")
+	file.ImportAlias("github.com/go-ozzo/ozzo-validation/v4", "validation")
 	file.ImportAlias(constants.FakeLibrary, "fake")
 	file.ImportName(constants.TracingLibrary, "trace")
 	file.ImportName(constants.SessionManagerLibrary, "scs")

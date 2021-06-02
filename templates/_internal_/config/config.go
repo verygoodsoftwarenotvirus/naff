@@ -1,0 +1,297 @@
+package config
+
+import (
+	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+)
+
+func configDotGo(proj *models.Project) *jen.File {
+	code := jen.NewFile(packageName)
+
+	utils.AddImports(proj, code, false)
+
+	code.Add(
+		jen.Const().Defs(
+			jen.Comment("DevelopmentRunMode is the run mode for a development environment."),
+			jen.ID("DevelopmentRunMode").ID("runMode").Op("=").Lit("development"),
+			jen.Comment("TestingRunMode is the run mode for a testing environment."),
+			jen.ID("TestingRunMode").ID("runMode").Op("=").Lit("testing"),
+			jen.Comment("ProductionRunMode is the run mode for a production environment."),
+			jen.ID("ProductionRunMode").ID("runMode").Op("=").Lit("production"),
+			jen.Comment("DefaultRunMode is the default run mode."),
+			jen.ID("DefaultRunMode").Op("=").ID("DevelopmentRunMode"),
+			jen.Comment("DefaultStartupDeadline is the default amount of time we allow for server startup."),
+			jen.ID("DefaultStartupDeadline").Op("=").Qual("time", "Minute"),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Var().Defs(
+			jen.ID("errNilDatabaseConnection").Op("=").Qual("errors", "New").Call(jen.Lit("nil DB connection provided")),
+			jen.ID("errNilConfig").Op("=").Qual("errors", "New").Call(jen.Lit("nil config provided")),
+			jen.ID("errInvalidDatabaseProvider").Op("=").Qual("errors", "New").Call(jen.Lit("invalid database provider")),
+		),
+		jen.Line(),
+	)
+
+	serviceConfigurations := []jen.Code{}
+	for _, typ := range proj.DataTypes {
+		serviceConfigurations = append(serviceConfigurations, jen.ID(typ.Name.Plural()).Qual(proj.ServicePackage(typ.Name.PackageName()), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase(typ.Name.Singular()), true)))
+	}
+
+	serviceConfigurations = append(serviceConfigurations,
+		jen.ID("Auth").Qual(proj.AuthServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Auth"), false)),
+		jen.ID("Webhooks").Qual(proj.WebhooksServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Webhook"), true)),
+		jen.ID("AuditLog").Qual(proj.AuditServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("AuditLog"), false)),
+		jen.ID("Frontend").Qual(proj.FrontendServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Frontend"), false)),
+	)
+
+	code.Add(
+		jen.Type().Defs(
+			jen.Comment("runMode describes what method of operation the server is under."),
+			jen.ID("runMode").ID("string"),
+			jen.Line(),
+			jen.Comment("ServicesConfigurations collects the various service configurations."),
+			jen.ID("ServicesConfigurations").Struct(
+				serviceConfigurations...,
+			),
+			jen.Line(),
+			jen.Comment("InstanceConfig configures an instance of the service. It is composed of all the other setting structs."),
+			jen.ID("InstanceConfig").Struct(
+				jen.ID("Search").Qual(proj.InternalSearchPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Search"), false)),
+				jen.ID("Encoding").Qual(proj.EncodingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Encoding"), false)),
+				jen.ID("Uploads").Qual(proj.UploadsPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Upload"), true)),
+				jen.ID("Observability").Qual(proj.ObservabilityPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Observability"), false)),
+				jen.ID("Routing").Qual(proj.RoutingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Routing"), false)),
+				jen.ID("Capitalism").Qual(proj.CapitalismPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Capitalism"), false)),
+				jen.ID("Meta").ID("MetaSettings").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Meta"), false)),
+				jen.ID("Database").Qual(proj.DatabasePackage("config"), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Database"), false)),
+				jen.ID("Services").ID("ServicesConfigurations").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Service"), true)),
+				jen.ID("Server").Qual(proj.HTTPServerPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Server"), false)),
+			),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("InstanceConfig")).ID("EncodeToFile").Params(jen.ID("path").ID("string"),
+			jen.ID("marshaller").Func().Params(jen.ID("v").Interface()).Params(jen.Index().ID("byte"),
+				jen.ID("error"))).Params(jen.ID("error")).Body(
+			jen.List(jen.ID("byteSlice"),
+				jen.ID("err")).Op(":=").ID("marshaller").Call(jen.Op("*").ID("cfg")),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().ID("err"),
+			),
+			jen.Line(),
+			jen.Return().Qual("os", "WriteFile").Call(
+				jen.ID("path"),
+				jen.ID("byteSlice"),
+				jen.Octal(600),
+			),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Var().ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Op("=").Parens(jen.Op("*").ID("InstanceConfig")).Call(jen.ID("nil")),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("ValidateWithContext validates a InstanceConfig struct."),
+		jen.Line(),
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("InstanceConfig")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Search").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Search portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Uploads").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Uploads portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Routing").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Routing portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Meta").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Meta portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Capitalism").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Capitalism portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Encoding portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Encoding portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Observability").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Observability portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Database").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Database portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Server").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating HTTPServer portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("AuditLog").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating AuditLog portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Auth").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Auth service portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Frontend").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Frontend service portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Webhooks").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Webhooks service portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Items").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit("error validating Items service portion of config: %w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Line(),
+			jen.Return().ID("nil"),
+		),
+		jen.Line(),
+	)
+
+	code.Add(
+		jen.Comment("ProvideDatabaseClient provides a database implementation dependent on the configuration."),
+		jen.Line(),
+		jen.Comment("NOTE: you may be tempted to move this to the database/config package. This is a fool's errand."),
+		jen.Line(),
+		jen.Func().ID("ProvideDatabaseClient").Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
+			jen.ID("rawDB").Op("*").Qual("database/sql", "DB"),
+			jen.ID("cfg").Op("*").ID("InstanceConfig"),
+		).Params(
+			jen.ID("database").Dot("DataManager"),
+			jen.ID("error"),
+		).Body(
+			jen.If(jen.ID("rawDB").Op("==").ID("nil")).Body(
+				jen.Return().List(jen.ID("nil"),
+					jen.ID("errNilDatabaseConnection"),
+				),
+			),
+			jen.Line(),
+			jen.If(jen.ID("cfg").Op("==").ID("nil")).Body(
+				jen.Return().List(jen.ID("nil"),
+					jen.ID("errNilConfig"),
+				),
+			),
+			jen.Line(),
+			jen.Var().ID("qb").Qual(proj.DatabasePackage("querybuilding"), "SQLQueryBuilder"),
+			jen.ID("shouldCreateTestUser").Op(":=").ID("cfg").Dot("Meta").Dot("RunMode").Op("!=").ID("ProductionRunMode"),
+			jen.Line(),
+			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("cfg").Dot("Database").Dot("Provider")))).Body(
+				jen.Case(jen.Lit("sqlite")).Body(
+					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "sqlite"), "ProvideSqlite").Call(jen.ID("logger")),
+				),
+				jen.Case(jen.Lit("mariadb")).Body(
+					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "mariadb"), "ProvideMariaDB").Call(jen.ID("logger")),
+				),
+				jen.Case(jen.Lit("postgres")).Body(
+					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "postgres"), "ProvidePostgres").Call(jen.ID("logger")),
+				),
+				jen.Default().Body(
+					jen.Return().List(jen.ID("nil"),
+						jen.Qual("fmt", "Errorf").Call(
+							jen.Lit("%w: %q"),
+							jen.ID("errInvalidDatabaseProvider"),
+							jen.ID("cfg").Dot("Database").Dot("Provider"),
+						),
+					),
+				),
+			),
+			jen.Line(),
+			jen.Return().Qual(proj.DatabasePackage("querier"), "ProvideDatabaseClient").Call(
+				jen.ID("ctx"),
+				jen.ID("logger"),
+				jen.ID("rawDB"),
+				jen.Op("&").ID("cfg").Dot("Database"),
+				jen.ID("qb"),
+				jen.ID("shouldCreateTestUser"),
+			),
+		),
+		jen.Line(),
+	)
+
+	return code
+}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
@@ -33,6 +34,24 @@ func WriteXHeader(varName, status string) jen.Code {
 	return jen.ID(varName).Dot("WriteHeader").Call(
 		jen.Qual("net/http", status),
 	)
+}
+
+func BuildStructTag(value wordsmith.SuperPalabra, plural bool) map[string]string {
+	var uvn, rn string
+
+	if plural {
+		uvn = value.PluralUnexportedVarName()
+		rn = value.PluralRouteName()
+	} else {
+		uvn = value.UnexportedVarName()
+		rn = value.RouteName()
+	}
+
+	return map[string]string{
+		"json":         uvn,
+		"mapstructure": rn,
+		"toml":         fmt.Sprintf("%s,omitempty", rn),
+	}
 }
 
 // ExpectMethod creates a test expectation for a gievn method
