@@ -34,6 +34,29 @@ func BuildTodoApp() *models.Project {
 				RestrictedToAccountMembers: true,
 				SearchEnabled:              true,
 			},
+			//{
+			//	Name: wordsmith.FromSingularPascalCase("Fart"),
+			//	Fields: []models.DataField{
+			//		{
+			//			Name:                  wordsmith.FromSingularPascalCase("Name"),
+			//			Type:                  "string",
+			//			Pointer:               false,
+			//			ValidForCreationInput: true,
+			//			ValidForUpdateInput:   true,
+			//		},
+			//		{
+			//			Name:                  wordsmith.FromSingularPascalCase("Details"),
+			//			Type:                  "string",
+			//			DefaultValue:          "''",
+			//			Pointer:               false,
+			//			ValidForCreationInput: true,
+			//			ValidForUpdateInput:   true,
+			//		},
+			//	},
+			//	BelongsToAccount:           true,
+			//	RestrictedToAccountMembers: true,
+			//	SearchEnabled:              true,
+			//},
 		},
 	}
 

@@ -249,7 +249,7 @@ func FindAndFixImportBlock(pkgRoot, filepath string) error {
 	fart := fmt.Sprintf("%s\n%s\n%s", head, newImportBlock, tail)
 
 	os.Remove(filepath)
-	if err := ioutil.WriteFile(filepath, []byte(fart), 0644); err != nil {
+	if err = ioutil.WriteFile(filepath, []byte(fart), 0644); err != nil {
 		return err
 	}
 
@@ -302,6 +302,7 @@ func importIsStdLib(imp string) bool {
 		"debug/macho",
 		"debug/pe",
 		"debug/plan9obj",
+		"embed",
 		"encoding",
 		"encoding/ascii85",
 		"encoding/asn1",
@@ -368,6 +369,7 @@ func importIsStdLib(imp string) bool {
 		"internal/trace",
 		"internal/xcoff",
 		"io",
+		"io/fs",
 		"io/ioutil",
 		"log",
 		"log/syslog",

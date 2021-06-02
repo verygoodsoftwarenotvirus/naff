@@ -13,7 +13,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	searchIndices := []jen.Code{
 		jen.Comment("search index paths."),
-		jen.Line(),
 	}
 	defaultSearchIndexCount := len(searchIndices)
 	for _, typ := range proj.DataTypes {
@@ -44,7 +43,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Line(),
 			func() jen.Code {
 				if len(searchIndices) > defaultSearchIndexCount {
-					return jen.Null().Add(searchIndices...)
+					return jen.Null().Add(utils.IntersperseWithNewlines(searchIndices)...)
 				}
 				return jen.Null()
 			}(),
@@ -282,24 +281,27 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Provider").MapAssign().Lit("bleve"),
 				),
 				jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
-					jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
-						jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
-							jen.ID("Issuer").MapAssign().Lit("todo_service"),
-							jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
-							jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
+					append([]jen.Code{
+						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
+							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
+								jen.ID("Issuer").MapAssign().Lit("todo_service"),
+								jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
+								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
+							),
+							jen.ID("Cookies").MapAssign().ID("localCookies"),
+							jen.ID("Debug").MapAssign().ID("true"),
+							jen.ID("EnableUserSignup").MapAssign().ID("true"),
+							jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
+							jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
 						),
-						jen.ID("Cookies").MapAssign().ID("localCookies"),
-						jen.ID("Debug").MapAssign().ID("true"),
-						jen.ID("EnableUserSignup").MapAssign().ID("true"),
-						jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
-						jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
-					),
-					jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
-					jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-						jen.ID("Debug").MapAssign().ID("true"),
-						jen.ID("Enabled").MapAssign().ID("false"),
-					),
-					jen.Null().Add(serviceConfigs...),
+						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
+						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
+							jen.ID("Debug").MapAssign().ID("true"),
+							jen.ID("Enabled").MapAssign().ID("false"),
+						),
+					},
+						serviceConfigs...,
+					)...,
 				),
 				jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
@@ -356,24 +358,25 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Provider").MapAssign().Lit("bleve"),
 				),
 				jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
-					jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
-						jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
-							jen.ID("Issuer").MapAssign().Lit("todo_service"),
-							jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
-							jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
+					append([]jen.Code{
+						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
+							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
+								jen.ID("Issuer").MapAssign().Lit("todo_service"),
+								jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
+								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
+							),
+							jen.ID("Cookies").MapAssign().ID("localCookies"),
+							jen.ID("Debug").MapAssign().ID("true"),
+							jen.ID("EnableUserSignup").MapAssign().ID("true"),
+							jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
+							jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
 						),
-						jen.ID("Cookies").MapAssign().ID("localCookies"),
-						jen.ID("Debug").MapAssign().ID("true"),
-						jen.ID("EnableUserSignup").MapAssign().ID("true"),
-						jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
-						jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
-					),
-					jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
-					jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-						jen.ID("Debug").MapAssign().ID("true"),
-						jen.ID("Enabled").MapAssign().ID("false"),
-					),
-					jen.Null().Add(serviceConfigs...),
+						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
+						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
+							jen.ID("Debug").MapAssign().ID("true"),
+							jen.ID("Enabled").MapAssign().ID("false"),
+						),
+					}, serviceConfigs...)...,
 				),
 				jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
@@ -448,30 +451,31 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("Provider").MapAssign().Lit("bleve"),
 					),
 					jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
-						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
-							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
-								jen.ID("Issuer").MapAssign().Lit("todo_service"),
-								jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
-								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
+						append([]jen.Code{
+							jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
+								jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
+									jen.ID("Issuer").MapAssign().Lit("todo_service"),
+									jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
+									jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
+								),
+								jen.ID("Cookies").MapAssign().Qual(proj.AuthServicePackage(), "CookieConfig").Valuesln(
+									jen.ID("Name").MapAssign().ID("defaultCookieName"),
+									jen.ID("Domain").MapAssign().ID("defaultCookieDomain"),
+									jen.ID("SigningKey").MapAssign().ID("debugCookieSecret"),
+									jen.ID("Lifetime").MapAssign().Qual(proj.AuthServicePackage(), "DefaultCookieLifetime"),
+									jen.ID("SecureOnly").MapAssign().ID("false"),
+								),
+								jen.ID("Debug").MapAssign().ID("false"),
+								jen.ID("EnableUserSignup").MapAssign().ID("true"),
+								jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
+								jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
 							),
-							jen.ID("Cookies").MapAssign().Qual(proj.AuthServicePackage(), "CookieConfig").Valuesln(
-								jen.ID("Name").MapAssign().ID("defaultCookieName"),
-								jen.ID("Domain").MapAssign().ID("defaultCookieDomain"),
-								jen.ID("SigningKey").MapAssign().ID("debugCookieSecret"),
-								jen.ID("Lifetime").MapAssign().Qual(proj.AuthServicePackage(), "DefaultCookieLifetime"),
-								jen.ID("SecureOnly").MapAssign().ID("false"),
+							jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
+							jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
+								jen.ID("Debug").MapAssign().ID("true"),
+								jen.ID("Enabled").MapAssign().ID("false"),
 							),
-							jen.ID("Debug").MapAssign().ID("false"),
-							jen.ID("EnableUserSignup").MapAssign().ID("true"),
-							jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
-							jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
-						),
-						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
-						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("Enabled").MapAssign().ID("false"),
-						),
-						jen.Null().Add(serviceConfigs...),
+						}, serviceConfigs...)...,
 					),
 					jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
 						jen.ID("Debug").MapAssign().ID("false"),

@@ -10,12 +10,13 @@ import (
 	dbconfig {{ projectImport "internal/database/config" }}
 	{{ projectImport "internal/encoding" }}
 	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "internal/observability/metrics" }}
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "internal/server" }}
 	{{ projectImport "internal/services/audit" }}
 	authservice {{ projectImport "internal/services/authentication" }}
-	{{ projectImport "internal/services/items" }}
+	{{ generated "typeImports" }}
 	{{ projectImport "internal/storage" }}
 	{{ projectImport "internal/uploads" }}
 	{{ projectImport "pkg/types" }}
@@ -106,9 +107,7 @@ func TestFromConfig(T *testing.T) {
 					MinimumPasswordLength: 8,
 					EnableUserSignup:      true,
 				},
-				Items: items.Config{
-					SearchIndexPath: "/items_index_path",
-				},
+				{{ generated "testConfigFields" }}
 			},
 			Database: dbconfig.Config{
 				Provider:                  "postgres",

@@ -203,6 +203,8 @@ var standardLibraryHints = map[string]string{
 	"internal/testlog":                  "testlog",
 	"internal/trace":                    "trace",
 	"io":                                "io",
+	"embed":                             "embd",
+	"io/fs":                             "io/fs",
 	"io/ioutil":                         "ioutil",
 	"log":                               "log",
 	"log/syslog":                        "syslog",

@@ -72,6 +72,16 @@ func FakeError() jen.Code {
 	return jen.Qual("errors", "New").Call(jen.Lit("blah"))
 }
 
+func IntersperseWithNewlines(input []jen.Code) []jen.Code {
+	output := []jen.Code{}
+
+	for _, code := range input {
+		output = append(output, code, jen.Line())
+	}
+
+	return output
+}
+
 func buildSingleValueTestifyFunc(pkg, method string) func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 	return func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
 		args := []jen.Code{
@@ -310,11 +320,12 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 		}
 
 		var b bytes.Buffer
-		if err := file.Render(&b); err != nil {
+		if err = file.Render(&b); err != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 
-		if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
+		fileContent := b.Bytes()
+		if err = ioutil.WriteFile(fp, fileContent, 0644); err != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 
@@ -346,7 +357,7 @@ func RenderStringFile(proj *models.Project, path, file string) error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(fp, []byte(file), 0644); err != nil {
+		if err = ioutil.WriteFile(fp, []byte(file), 0644); err != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 

@@ -28,7 +28,7 @@ func mainDotGoString(proj *models.Project) string {
 func buildSwitchCases(proj *models.Project) []jen.Code {
 	switchCases := []jen.Code{}
 
-	for _, typ := range proj.DataTypes {
+	for i, typ := range proj.DataTypes {
 		pn := typ.Name.Plural()
 		if typ.SearchEnabled {
 			switchCases = append(switchCases,
@@ -71,6 +71,12 @@ func buildSwitchCases(proj *models.Project) []jen.Code {
 						),
 					),
 				),
+				func() jen.Code {
+					if i == len(proj.DataTypes)-1 {
+						return jen.Null()
+					}
+					return jen.Line()
+				}(),
 			)
 		}
 	}

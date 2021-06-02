@@ -189,7 +189,7 @@ func FromConfig(input *config.InstanceConfig) (*viper.Viper, error) {
 		cfg.Set(ConfigKeyUploaderFilesystemRootDirectory, input.Uploads.Storage.FilesystemConfig.RootDirectory)
 	}
 
-	cfg.Set(ConfigKeyItemsSearchIndexPath, input.Services.Items.SearchIndexPath)
+	{{ generated "serviceConfigs" }}
 
 	return cfg, nil
 }

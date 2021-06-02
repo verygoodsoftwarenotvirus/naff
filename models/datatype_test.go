@@ -219,7 +219,7 @@ import (
 
 func example(ctx context.Context, thingID, anotherThingID, yetAnotherThingID, userID uint64) {}
 `
-		actual := renderFunctionParamsToString(t, p.LastDataType().buildGetSomethingParams(p))
+		actual := renderFunctionParamsToString(t, p.LastDataType().buildGetSomethingParams(p, true))
 
 		assert.Equal(t, expected, actual)
 	})

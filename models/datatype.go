@@ -89,7 +89,7 @@ func (typ DataType) MultipleOwnersBelongingToUser(p *Project) bool {
 	return count > 1
 }
 
-func (typ DataType) buildGetSomethingParams(p *Project) []jen.Code {
+func (typ DataType) buildGetSomethingParams(p *Project, includeAccountParam bool) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
@@ -99,8 +99,8 @@ func (typ DataType) buildGetSomethingParams(p *Project) []jen.Code {
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
-		lp = append(lp, jen.ID("userID"))
+	if typ.RestrictedToUserAtSomeLevel(p) && includeAccountParam {
+		lp = append(lp, jen.ID("accountID"))
 	}
 
 	if len(lp) > 0 {
@@ -120,8 +120,10 @@ func (typ DataType) buildArchiveSomethingParams() []jen.Code {
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
 	if typ.BelongsToAccount {
-		lp = append(lp, jen.ID("userID"))
+		lp = append(lp, jen.ID("accountID"))
 	}
+
+	lp = append(lp, jen.ID("archivedBy"))
 
 	params = append(params, jen.List(lp...).ID("uint64"))
 
@@ -129,11 +131,11 @@ func (typ DataType) buildArchiveSomethingParams() []jen.Code {
 }
 
 func (typ DataType) BuildInterfaceDefinitionExistenceMethodParams(p *Project) []jen.Code {
-	return typ.buildGetSomethingParams(p)
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) BuildInterfaceDefinitionRetrievalMethodParams(p *Project) []jen.Code {
-	return typ.buildGetSomethingParams(p)
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) BuildInterfaceDefinitionArchiveMethodParams() []jen.Code {
@@ -145,11 +147,15 @@ func (typ DataType) BuildDBClientArchiveMethodParams() []jen.Code {
 }
 
 func (typ DataType) BuildDBClientRetrievalMethodParams(p *Project) []jen.Code {
-	return typ.buildGetSomethingParams(p)
+	return typ.buildGetSomethingParams(p, true)
+}
+
+func (typ DataType) BuildDBClientAuditLogRetrievalMethodParams(p *Project) []jen.Code {
+	return typ.buildGetSomethingParams(p, false)
 }
 
 func (typ DataType) BuildDBClientExistenceMethodParams(p *Project) []jen.Code {
-	return typ.buildGetSomethingParams(p)
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) BuildDBQuerierArchiveMethodParams() []jen.Code {
@@ -163,17 +169,17 @@ func (typ DataType) BuildDBQuerierArchiveQueryMethodParams() []jen.Code {
 }
 
 func (typ DataType) BuildDBQuerierRetrievalMethodParams(p *Project) []jen.Code {
-	params := typ.buildGetSomethingParams(p)
+	params := typ.buildGetSomethingParams(p, true)
 
 	return params[1:]
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryMethodParams(p *Project) []jen.Code {
-	return typ.buildGetSomethingParams(p)
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryMethodParams(p *Project) []jen.Code {
-	params := typ.buildGetSomethingParams(p)
+	params := typ.buildGetSomethingParams(p, true)
 
 	return params[1:]
 }
@@ -250,8 +256,8 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p 
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.IDf("%sTableName", pt.Name.PluralUnexportedVarName()),
-					jen.IDf("%sUserOwnershipColumn", pt.Name.PluralUnexportedVarName()),
-				).MapAssign().ID("userID"),
+					jen.IDf("%sAccountOwnershipColumn", pt.Name.PluralUnexportedVarName()),
+				).MapAssign().ID("accountID"),
 			)
 		}
 
@@ -271,7 +277,7 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p 
 		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
-		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
+		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sAccountOwnershipColumn", puvn)).MapAssign().ID("accountID"))
 	}
 
 	return whereValues
@@ -398,8 +404,8 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p *
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.IDf("%sTableName", pt.Name.PluralUnexportedVarName()),
-					jen.IDf("%sUserOwnershipColumn", pt.Name.PluralUnexportedVarName()),
-				).MapAssign().ID("userID"),
+					jen.IDf("%sAccountOwnershipColumn", pt.Name.PluralUnexportedVarName()),
+				).MapAssign().ID("accountID"),
 			)
 		}
 
@@ -419,14 +425,14 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p *
 		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sTableOwnershipColumn", puvn)).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
-		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sUserOwnershipColumn", puvn)).MapAssign().ID("userID"))
+		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", puvn), jen.IDf("%sAccountOwnershipColumn", puvn)).MapAssign().ID("accountID"))
 	}
 
 	return whereValues
 }
 
 func (typ DataType) BuildDBQuerierExistenceMethodParams(p *Project) []jen.Code {
-	return typ.buildGetSomethingParams(p)
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) buildGetSomethingArgs(p *Project) []jen.Code {
@@ -440,7 +446,7 @@ func (typ DataType) buildGetSomethingArgs(p *Project) []jen.Code {
 	params = append(params, jen.IDf("%sID", uvn))
 
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		params = append(params, jen.ID("userID"))
+		params = append(params, jen.ID("accountID"))
 	}
 
 	return params
@@ -456,7 +462,7 @@ func (typ DataType) buildArchiveSomethingArgs() []jen.Code {
 	params = append(params, jen.IDf("%sID", uvn))
 
 	if typ.BelongsToAccount {
-		params = append(params, jen.ID("userID"))
+		params = append(params, jen.ID("accountID"))
 	}
 
 	return params
@@ -604,7 +610,7 @@ func (typ DataType) BuildArgsForServiceRouteExistenceCheck(p *Project) []jen.Cod
 	}
 
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		args = append(args, jen.ID("userID"))
+		args = append(args, jen.ID("accountID"))
 	}
 
 	return args
@@ -700,7 +706,7 @@ func (typ DataType) BuildGetSomethingLogValues(p *Project) jen.Code {
 	params = append(params, jen.Litf("%s_id", typ.Name.RouteName()).Op(":").IDf("%sID", typ.Name.UnexportedVarName()))
 
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		params = append(params, jen.Lit("user_id").Op(":").ID("userID"))
+		params = append(params, jen.Lit("user_id").Op(":").ID("accountID"))
 	}
 
 	return jen.Map(jen.ID("string")).Interface().Valuesln(params...)
@@ -715,7 +721,7 @@ func (typ DataType) BuildGetListOfSomethingLogValues(p *Project) *jen.Statement 
 	}
 
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		params = append(params, jen.Lit("user_id").Op(":").ID("userID"))
+		params = append(params, jen.Lit("user_id").Op(":").ID("accountID"))
 	}
 
 	if len(params) > 0 {
@@ -734,7 +740,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		lp = append(lp, jen.ID("userID"))
+		lp = append(lp, jen.ID("accountID"))
 	}
 
 	if len(lp) > 0 {
@@ -757,7 +763,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsArgs(p *Project) []jen.Code {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		params = append(params, jen.ID("userID"))
+		params = append(params, jen.ID("accountID"))
 	}
 
 	params = append(params,
@@ -796,7 +802,7 @@ func (typ DataType) buildGetListOfSomethingParams(p *Project, isModelsPackage bo
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		lp = append(lp, jen.ID("userID"))
+		lp = append(lp, jen.ID("accountID"))
 	}
 
 	if len(lp) > 0 {
@@ -845,6 +851,8 @@ func (typ DataType) buildCreateSomethingParams(p *Project, isModelsPackage bool)
 	} else {
 		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)))
 	}
+
+	params = append(params, jen.ID("createdByUser").Uint64())
 
 	return params
 }
@@ -971,6 +979,8 @@ func (typ DataType) buildUpdateSomethingParams(p *Project, updatedVarName string
 		params = append(params, jen.ID(updatedVarName).Op("*").Qual(p.TypesPackage(), sn))
 	}
 
+	params = append(params, jen.ID("changedByUser").Uint64(), jen.ID("changes").Index().PointerTo().Qual(p.TypesPackage(), "FieldChangeSummary"))
+
 	return params
 }
 
@@ -1040,7 +1050,7 @@ func (typ DataType) buildGetListOfSomethingArgs(p *Project) []jen.Code {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 	if typ.RestrictedToUserAtSomeLevel(p) {
-		params = append(params, jen.ID("userID"))
+		params = append(params, jen.ID("accountID"))
 	}
 	params = append(params, jen.ID("filter"))
 
@@ -1916,14 +1926,14 @@ func (typ DataType) buildRequisiteFakeVarDecs(p *Project, createCtx bool) []jen.
 	}
 
 	if typ.OwnedByAUserAtSomeLevel(p) {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("Account")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeAccount").Call())
 	}
 
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", pt.Name.Singular())).Call())
 		if pt.BelongsToAccount {
-			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("BelongsToAccount").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("BelongsToAccount").Equals().ID(buildFakeVarName("Account")).Dot("ID"))
 		}
 		if pt.BelongsToStruct != nil {
 			lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dotf("BelongsTo%s", pt.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
@@ -1932,7 +1942,7 @@ func (typ DataType) buildRequisiteFakeVarDecs(p *Project, createCtx bool) []jen.
 
 	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	if typ.BelongsToAccount {
-		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToAccount").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToAccount").Equals().ID(buildFakeVarName("Account")).Dot("ID"))
 	}
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
@@ -1948,11 +1958,11 @@ func (typ DataType) buildRequisiteFakeVarDecForModifierFuncs(p *Project, createC
 		lines = append(lines, constants.CreateCtx(), jen.Line())
 	}
 	if typ.BelongsToAccount {
-		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
+		lines = append(lines, jen.ID(buildFakeVarName("Account")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeAccount").Call())
 	}
 	lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Assign().Qual(p.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	if typ.BelongsToAccount {
-		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToAccount").Equals().ID(buildFakeVarName("User")).Dot("ID"))
+		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dot("BelongsToAccount").Equals().ID(buildFakeVarName("Account")).Dot("ID"))
 	}
 	if typ.BelongsToStruct != nil {
 		lines = append(lines, jen.ID(buildFakeVarName(typ.Name.Singular())).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))

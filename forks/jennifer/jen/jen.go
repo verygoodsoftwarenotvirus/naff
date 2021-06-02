@@ -36,6 +36,7 @@ func (f *File) Render(w io.Writer) error {
 	if err := f.render(f, body, nil); err != nil {
 		return err
 	}
+
 	source := &bytes.Buffer{}
 	if len(f.headers) > 0 {
 		for _, c := range f.headers {
@@ -52,6 +53,7 @@ func (f *File) Render(w io.Writer) error {
 			return err
 		}
 	}
+
 	for _, c := range f.comments {
 		if err := Comment(c).render(f, source, nil); err != nil {
 			return err
@@ -60,30 +62,39 @@ func (f *File) Render(w io.Writer) error {
 			return err
 		}
 	}
+
 	if _, err := fmt.Fprintf(source, "package %s", f.name); err != nil {
 		return err
 	}
+
 	if f.CanonicalPath != "" {
 		if _, err := fmt.Fprintf(source, " // import %q", f.CanonicalPath); err != nil {
 			return err
 		}
 	}
+
 	if _, err := fmt.Fprint(source, "\n\n"); err != nil {
 		return err
 	}
+
 	if err := f.renderImports(source); err != nil {
 		return err
 	}
+
 	if _, err := source.Write(body.Bytes()); err != nil {
 		return err
 	}
-	formatted, err := format.Source(source.Bytes())
+
+	sourceContent := source.Bytes()
+	formatted, err := format.Source(sourceContent)
 	if err != nil {
 		return fmt.Errorf("Error %s while formatting source:\n%s", err, source.String())
 	}
+
 	if _, err := w.Write(formatted); err != nil {
 		return err
 	}
+
 	return nil
 }
 
