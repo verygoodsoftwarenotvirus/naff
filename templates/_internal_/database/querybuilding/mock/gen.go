@@ -2,6 +2,8 @@ package mock
 
 import (
 	_ "embed"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -17,7 +19,6 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
-		"mock_item_sql_query_builder.go":                    mockItemSQLQueryBuilderDotGo(proj),
 		"mock_user_sql_query_builder.go":                    mockUserSQLQueryBuilderDotGo(proj),
 		"mock_webhook_sql_query_builder.go":                 mockWebhookSQLQueryBuilderDotGo(proj),
 		"mock_account_sql_query_builder.go":                 mockAccountSQLQueryBuilderDotGo(proj),
@@ -32,14 +33,18 @@ func RenderPackage(proj *models.Project) error {
 		}
 	}
 
+	jenFiles := map[string]*jen.File{}
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("mock_%s_sql_query_builder.go", typ.Name.RouteName())] = mockIterablesSQLQueryBuilderDotGo(proj, typ)
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
 	return nil
-}
-
-//go:embed mock_item_sql_query_builder.gotpl
-var mockItemSQLQueryBuilderTemplate string
-
-func mockItemSQLQueryBuilderDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mockItemSQLQueryBuilderTemplate, nil)
 }
 
 //go:embed mock_user_sql_query_builder.gotpl

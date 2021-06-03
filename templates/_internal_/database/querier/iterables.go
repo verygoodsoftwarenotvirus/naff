@@ -647,7 +647,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.If(jen.Err().Equals().ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
-				jen.ID("audit").Dotf("Build%sCreationEventEntry", sn).Call(
+				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sCreationEventEntry", sn)).Call(
 					jen.ID("x"),
 					jen.ID("createdByUser"),
 				),
@@ -760,7 +760,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.If(jen.Err().Equals().ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
-				jen.ID("audit").Dotf("Build%sUpdateEventEntry", sn).Call(
+				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sUpdateEventEntry", sn)).Call(
 					jen.ID("changedByUser"),
 					jen.ID("updated").Dot("ID"),
 					jen.ID("updated").Dot("BelongsToAccount"),
@@ -881,7 +881,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			jen.If(jen.Err().Equals().ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
-				jen.ID("audit").Dotf("Build%sArchiveEventEntry", sn).Call(
+				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sArchiveEventEntry", sn)).Call(
 					jen.ID("archivedBy"),
 					jen.ID("accountID"),
 					jen.IDf("%sID", uvn),

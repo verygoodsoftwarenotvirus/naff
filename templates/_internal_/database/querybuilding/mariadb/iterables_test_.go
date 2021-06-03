@@ -2,10 +2,11 @@ package mariadb
 
 import (
 	"fmt"
+
 	"github.com/Masterminds/squirrel"
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func buildPrefixedStringColumns(typ models.DataType) []string {
@@ -117,9 +118,10 @@ func buildTestMariaDB_BuildGetItemQuery(proj *models.Project, typ models.DataTyp
 	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
 	cols := buildPrefixedStringColumns(typ)
 
-	qb := typ.ModifyQueryBuilderWithJoinClauses(proj, squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
 		Select(cols...).
-		From(tableName)).
+		From(tableName)
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb).
 		Where(whereValues)
 	query, _, _ := qb.ToSql()
 
@@ -171,6 +173,17 @@ func buildTestMariaDB_BuildGetItemQuery(proj *models.Project, typ models.DataTyp
 }
 
 func buildTestMariaDB_BuildGetAllItemsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	tableName := typ.Name.PluralRouteName()
+
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+		Select(fmt.Sprintf(countQuery, tableName)).
+		From(tableName).
+		Where(squirrel.Eq{
+			fmt.Sprintf("%s.archived_on", tableName): nil,
+		})
+
+	query, _, _ := qb.ToSql()
+
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetAllItemsCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -183,7 +196,7 @@ func buildTestMariaDB_BuildGetAllItemsCountQuery(proj *models.Project, typ model
 					jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL"),
+					jen.ID("expectedQuery").Op(":=").Lit(query),
 					jen.ID("actualQuery").Op(":=").ID("q").Dot("BuildGetAllItemsCountQuery").Call(jen.ID("ctx")),
 					jen.Newline(),
 					jen.ID("assertArgCountMatchesQuery").Call(
@@ -204,6 +217,21 @@ func buildTestMariaDB_BuildGetAllItemsCountQuery(proj *models.Project, typ model
 }
 
 func buildTestMariaDB_BuildGetBatchOfItemsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	tableName := typ.Name.PluralRouteName()
+	cols := buildPrefixedStringColumns(typ)
+
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+		Select(cols...).
+		From(tableName).
+		Where(squirrel.Gt{
+			fmt.Sprintf("%s.%s", tableName, "id"): whateverValue,
+		}).
+		Where(squirrel.Lt{
+			fmt.Sprintf("%s.%s", tableName, "id"): whateverValue,
+		})
+
+	query, _, _ := qb.ToSql()
+
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetBatchOfItemsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -218,7 +246,7 @@ func buildTestMariaDB_BuildGetBatchOfItemsQuery(proj *models.Project, typ models
 					jen.Newline(),
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Op(":=").List(jen.ID("uint64").Call(jen.Lit(1)), jen.ID("uint64").Call(jen.Lit(1000))),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account FROM items WHERE items.id > ? AND items.id < ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(query),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
 						jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetBatchOfItemsQuery").Call(
@@ -250,6 +278,11 @@ func buildTestMariaDB_BuildGetBatchOfItemsQuery(proj *models.Project, typ models
 }
 
 func buildTestMariaDB_BuildGetItemsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	tableName := typ.Name.PluralRouteName()
+	cols := buildPrefixedStringColumns(typ)
+
+	query, _ := buildListQuery(tableName, "belongs_to_account", cols, 0, false)
+
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetItemsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -265,7 +298,7 @@ func buildTestMariaDB_BuildGetItemsQuery(proj *models.Project, typ models.DataTy
 					jen.ID("exampleUser").Op(":=").ID("fakes").Dot("BuildFakeUser").Call(),
 					jen.ID("filter").Op(":=").ID("fakes").Dot("BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account, (SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ?) as total_count, (SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.created_on > ? AND items.created_on < ? AND items.last_updated_on > ? AND items.last_updated_on < ?) as filtered_count FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.created_on > ? AND items.created_on < ? AND items.last_updated_on > ? AND items.last_updated_on < ? GROUP BY items.id LIMIT 20 OFFSET 180"),
+					jen.ID("expectedQuery").Op(":=").Lit(query),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
 						jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetItemsQuery").Call(
@@ -298,6 +331,36 @@ func buildTestMariaDB_BuildGetItemsQuery(proj *models.Project, typ models.DataTy
 }
 
 func buildTestMariaDB_BuildGetItemsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	tableName := typ.Name.PluralRouteName()
+	cols := buildPrefixedStringColumns(typ)
+
+	var qb squirrel.SelectBuilder
+	whereValues := squirrel.Eq{
+		fmt.Sprintf("%s.%s", tableName, "id"):          []string{whateverValue, whateverValue, whateverValue},
+		fmt.Sprintf("%s.%s", tableName, "archived_on"): nil,
+	}
+	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+		whereValues[fmt.Sprintf("%s.%s", tableName, "belongs_to_account")] = whateverValue
+	}
+
+	var whenThenStatement string
+	for i, id := range []uint64{789, 123, 456} {
+		if i != 0 {
+			whenThenStatement += " "
+		}
+		whenThenStatement += fmt.Sprintf("WHEN %d THEN %d", id, i)
+	}
+	whenThenStatement += " END"
+
+	qb = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+		Select(cols...).
+		From(tableName).
+		Where(whereValues).
+		OrderBy(fmt.Sprintf("CASE %s.%s %s", tableName, "id", whenThenStatement)).
+		Limit(20)
+
+	expectedQuery, _, _ := qb.ToSql()
+
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetItemsWithIDsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -314,7 +377,7 @@ func buildTestMariaDB_BuildGetItemsWithIDsQuery(proj *models.Project, typ models
 					jen.ID("exampleIDs").Op(":=").Index().ID("uint64").Valuesln(
 						jen.Lit(789), jen.Lit(123), jen.Lit(456)),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.id IN (?,?,?) ORDER BY CASE items.id WHEN 789 THEN 0 WHEN 123 THEN 1 WHEN 456 THEN 2 END LIMIT 20"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
 						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleIDs").Index(jen.Lit(0)), jen.ID("exampleIDs").Index(jen.Lit(1)), jen.ID("exampleIDs").Index(jen.Lit(2))),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetItemsWithIDsQuery").Call(

@@ -48,7 +48,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Valuesln(
-						jen.ID("Server").MapAssign().ID("server").Dot("Config").Valuesln(
+						jen.ID("Server").MapAssign().Qual(proj.HTTPServerPackage(), "Config").Valuesln(
 							jen.ID("HTTPPort").MapAssign().Lit(1234),
 							jen.ID("Debug").MapAssign().ID("false"),
 							jen.ID("StartupDeadline").MapAssign().Qual("time", "Minute"),
