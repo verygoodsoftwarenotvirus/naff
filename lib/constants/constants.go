@@ -5,15 +5,18 @@ import (
 )
 
 const (
-	CoreOAuth2Pkg          = "golang.org/x/oauth2"
-	AssertPkg              = "github.com/stretchr/testify/assert"
-	MustAssertPkg          = "github.com/stretchr/testify/require"
-	MockPkg                = "github.com/stretchr/testify/mock"
-	DependencyInjectionPkg = "github.com/google/wire"
-	FakeLibrary            = "github.com/brianvoe/gofakeit/v5"
-	TracingLibrary         = "go.opencensus.io/trace"
-	FlagParsingLibrary     = "github.com/spf13/pflag"
-	SessionManagerLibrary  = "github.com/alexedwards/scs/v2"
+	RBACLibrary               = "gopkg.in/mikespook/gorbac.v2"
+	TracingAttributionLibrary = "go.opentelemetry.io/otel/attribute"
+	AssertPkg                 = "github.com/stretchr/testify/assert"
+	MustAssertPkg             = "github.com/stretchr/testify/require"
+	MockPkg                   = "github.com/stretchr/testify/mock"
+	TestSuitePackage          = "github.com/stretchr/testify/suite"
+	DependencyInjectionPkg    = "github.com/google/wire"
+	FakeLibrary               = "github.com/brianvoe/gofakeit/v5"
+	TracingLibrary            = "go.opentelemetry.io/otel/trace"
+	FlagParsingLibrary        = "github.com/spf13/pflag"
+	SessionManagerLibrary     = "github.com/alexedwards/scs/v2"
+	SearchLibrary             = "github.com/blevesearch/bleve/v2"
 
 	// UserIDVarName is what we normally call a user ID.
 	UserIDVarName = "userID"

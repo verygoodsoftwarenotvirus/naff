@@ -64,7 +64,7 @@ func buildbuildTestServiceFuncDecl(proj *models.Project, typ models.DataType) []
 		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("Service")).Body(
 			jen.Return().AddressOf().ID("Service").Valuesln(serviceValues...),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -106,7 +106,7 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("TestProvide%sService", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
@@ -116,15 +116,15 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.Error()).Body(
 					jen.Return().List(jen.AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(), jen.Nil()),
 				),
-				jen.Line(),
+				jen.Newline(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					provideServiceLines...,
 				),
-				jen.Line(),
+				jen.Newline(),
 				utils.AssertNotNil(jen.ID("s"), nil),
 				utils.AssertNoError(jen.Err(), nil),
 			),
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext(
 				"with error providing unit counter",
 				jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Equals().Func().Params(
@@ -133,16 +133,16 @@ func buildTestProvideServiceFuncDecl(proj *models.Project, typ models.DataType) 
 				).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter"), jen.Error()).Body(
 					jen.Return().List(jen.Nil(), constants.ObligatoryError()),
 				),
-				jen.Line(),
+				jen.Newline(),
 				jen.List(jen.ID("s"), jen.Err()).Assign().ID(fmt.Sprintf("Provide%sService", pn)).Callln(
 					provideServiceLines...,
 				),
-				jen.Line(),
+				jen.Newline(),
 				utils.AssertNil(jen.ID("s"), nil),
 				utils.AssertError(jen.Err(), nil),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines

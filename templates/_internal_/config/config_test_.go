@@ -2,6 +2,7 @@ package config
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -28,22 +29,24 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	}
 
 	for _, typ := range proj.DataTypes {
-		serviceConfigs = append(serviceConfigs,
-			jen.ID(typ.Name.Plural()).MapAssign().Qual(proj.ServicePackage(typ.Name.PackageName()), "Config").Valuesln(
-				jen.ID("SearchIndexPath").MapAssign().Litf("/%s_index_path", typ.Name.PluralRouteName()),
-			),
-		)
+		if typ.SearchEnabled {
+			serviceConfigs = append(serviceConfigs,
+				jen.ID(typ.Name.Plural()).MapAssign().Qual(proj.ServicePackage(typ.Name.PackageName()), "Config").Valuesln(
+					jen.ID("SearchIndexPath").MapAssign().Litf("/%s_index_path", typ.Name.PluralRouteName()),
+				),
+			)
+		}
 	}
 
 	code.Add(
 		jen.Func().ID("TestServerConfig_EncodeToFile").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Valuesln(
 						jen.ID("Server").MapAssign().ID("server").Dot("Config").Valuesln(
 							jen.ID("HTTPPort").MapAssign().Lit(1234),
@@ -74,7 +77,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("ConnectionDetails").MapAssign().ID("database").Dot("ConnectionDetails").Call(jen.Lit("postgres://username:passwords@host/table")),
 						),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.List(jen.ID("f"),
 						jen.ID("err")).Op(":=").Qual("io/ioutil", "TempFile").Call(
 						jen.Lit(""),
@@ -84,7 +87,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("cfg").Dot("EncodeToFile").Call(
@@ -94,14 +97,14 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error marshaling"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Values(),
-					jen.Line(),
+					jen.Newline(),
 					jen.List(jen.ID("f"),
 						jen.ID("err")).Op(":=").Qual("io/ioutil", "TempFile").Call(
 						jen.Lit(""),
@@ -111,7 +114,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
 						jen.ID("cfg").Dot("EncodeToFile").Call(
@@ -127,21 +130,21 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Func().ID("TestServerConfig_ProvideDatabaseClient").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("supported providers"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
-					jen.Line(),
+					constants.LoggerVar().Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+					jen.Newline(),
 					jen.For(jen.List(jen.ID("_"), jen.ID("provider")).Op(":=").Range().Index().ID("string").Values(
 						jen.Lit("sqlite"),
 						jen.Lit("postgres"),
@@ -152,11 +155,11 @@ func configTestDotGo(proj *models.Project) *jen.File {
 								jen.ID("Provider").MapAssign().ID("provider"),
 							),
 						),
-						jen.Line(),
+						jen.Newline(),
 						jen.List(jen.ID("x"),
 							jen.ID("err")).Op(":=").ID("ProvideDatabaseClient").Call(
 							jen.ID("ctx"),
-							jen.ID("logger"),
+							constants.LoggerVar(),
 							jen.Op("&").Qual("database/sql", "DB").Values(),
 							jen.ID("cfg"),
 						),
@@ -171,20 +174,20 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with nil *sql.DB"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+					constants.LoggerVar().Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Values(),
-					jen.Line(),
+					jen.Newline(),
 					jen.List(jen.ID("x"),
 						jen.ID("err")).Op(":=").ID("ProvideDatabaseClient").Call(
 						jen.ID("ctx"),
-						jen.ID("logger"),
+						constants.LoggerVar(),
 						jen.ID("nil"),
 						jen.ID("cfg"),
 					),
@@ -198,25 +201,25 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid provider"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
-					jen.Line(),
+					constants.LoggerVar().Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+					jen.Newline(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Valuesln(
 						jen.ID("Database").MapAssign().ID("config").Dot("Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("provider"),
 						),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.List(jen.ID("x"),
 						jen.ID("err")).Op(":=").ID("ProvideDatabaseClient").Call(
 						jen.ID("ctx"),
-						jen.ID("logger"),
+						constants.LoggerVar(),
 						jen.Op("&").Qual("database/sql", "DB").Values(),
 						jen.ID("cfg"),
 					),
@@ -231,7 +234,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code

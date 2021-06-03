@@ -79,7 +79,7 @@ func deferStmt(t *ast.DeferStmt) jen.Code {
 
 func labeledStmt(t *ast.LabeledStmt) jen.Code {
 	ret := jen.ID("jen")
-	return ret.Add(ident(t.Label)).Dot("Op").Call(jen.Lit(":")).Dot("Line").Call().Dot("Add").Callln(stmt(t.Stmt))
+	return ret.Add(ident(t.Label)).Dot("Op").Call(jen.Lit(":")).Dot("Newline").Call().Dot("Add").Callln(stmt(t.Stmt))
 }
 
 func sendStmt(t *ast.SendStmt) jen.Code {

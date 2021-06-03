@@ -21,16 +21,16 @@ func creatorConfigsDotGo(proj *models.Project) *jen.File {
 func buildBuildBasicCreatorTemplate() []jen.Code {
 	return []jen.Code{
 		jen.Comment("//go:embed templates/creator.gotpl"),
-		jen.Line(),
+		jen.Newline(),
 		jen.Var().ID("basicCreatorTemplateSrc").ID("string"),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().ID("buildBasicCreatorTemplate").Params(jen.ID("cfg").Op("*").ID("basicCreatorTemplateConfig")).Params(jen.ID("string")).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicCreatorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.Op("&").ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("String").Call(),
 		),
 	}
@@ -43,7 +43,7 @@ func basicCreatorTemplateConfig() []jen.Code {
 			jen.ID("SubmissionURL").String(),
 			jen.ID("Fields").Slice().ID("formField"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -161,6 +161,6 @@ func buildCreatorConfigs(types []models.DataType) []jen.Code {
 		jen.Var().ID("creatorConfigs").Op("=").Map(jen.ID("string")).Op("*").ID("basicCreatorTemplateConfig").Valuesln(
 			iterableCreatorConfigs...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }

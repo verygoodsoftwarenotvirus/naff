@@ -1,7 +1,6 @@
 package constants
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"testing"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -103,29 +102,6 @@ func main() {
 }
 `
 		actual := testutils.RenderIndependentStatementToString(t, result)
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
-func TestLoggerParam(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		result := models.LoggerParam()
-
-		expected := `
-package main
-
-import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-)
-
-func example(logger v1.Logger) {}
-`
-		actual := testutils.RenderFunctionParamsToString(t, []jen.Code{result})
 
 		assert.Equal(t, expected, actual)
 	})

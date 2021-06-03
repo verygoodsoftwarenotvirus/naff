@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -11,73 +12,97 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	const openTelemetryTrace = "go.opentelemetry.io/otel/trace"
-
 	code.Add(
-		jen.Func().ID("attachUint8ToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("attachmentKey").ID("string"), jen.ID("id").ID("uint8")).Body(
+		jen.Func().ID("attachUint8ToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("attachmentKey").ID("string"),
+			jen.ID("id").ID("uint8")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Int64").Call(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int64").Call(
 					jen.ID("attachmentKey"),
 					jen.ID("int64").Call(jen.ID("id")),
-				)))),
-		jen.Line(),
+				)),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().ID("attachUint64ToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("attachmentKey").ID("string"), jen.ID("id").ID("uint64")).Body(
+		jen.Func().ID("attachUint64ToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("attachmentKey").ID("string"),
+			jen.ID("id").ID("uint64")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Int64").Call(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int64").Call(
 					jen.ID("attachmentKey"),
 					jen.ID("int64").Call(jen.ID("id")),
-				)))),
-		jen.Line(),
+				)),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().ID("attachStringToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.List(jen.ID("key"), jen.ID("str")).ID("string")).Body(
+		jen.Func().ID("attachStringToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.List(jen.ID("key"),
+				jen.ID("str")).ID("string")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "String").Call(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "String").Call(
 					jen.ID("key"),
 					jen.ID("str"),
-				)))),
-		jen.Line(),
+				)),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().ID("attachBooleanToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("key").ID("string"), jen.ID("b").ID("bool")).Body(
+		jen.Func().ID("attachBooleanToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("key").ID("string"),
+			jen.ID("b").ID("bool")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Bool").Call(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Bool").Call(
 					jen.ID("key"),
 					jen.ID("b"),
-				)))),
-		jen.Line(),
+				)),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().ID("attachSliceToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("key").ID("string"), jen.ID("slice").Interface()).Body(
-			jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Array").Call(
+		jen.Func().ID("attachSliceToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("key").ID("string"),
+			jen.ID("slice").Interface()).Body(
+			jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Array").Call(
 				jen.ID("key"),
 				jen.ID("slice"),
-			))),
-		jen.Line(),
+			)),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachToSpan allows a user to attach any value to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("key").ID("string"), jen.ID("val").Interface()).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("key").ID("string"),
+			jen.ID("val").Interface()).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Any").Call(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
 					jen.ID("key"),
 					jen.ID("val"),
-				)))),
-		jen.Line(),
+				)),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachFilterToSpan provides a consistent way to attach a filter's info to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachFilterToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("page").ID("uint64"), jen.ID("limit").ID("uint8"), jen.ID("sortBy").ID("string")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachFilterToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("page").ID("uint64"),
+			jen.ID("limit").ID("uint8"),
+			jen.ID("sortBy").ID("string")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("FilterPageKey"),
@@ -94,77 +119,91 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				jen.ID("sortBy"),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachAuditLogEntryIDToSpan attaches an audit log entry ID to a given span."),
-		jen.Line(),
-		jen.Func().ID("AttachAuditLogEntryIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("entryID").ID("uint64")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachAuditLogEntryIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("entryID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("AuditLogEntryIDKey"),
 				jen.ID("entryID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachAuditLogEntryEventTypeToSpan attaches an audit log entry ID to a given span."),
-		jen.Line(),
-		jen.Func().ID("AttachAuditLogEntryEventTypeToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("eventType").ID("string")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachAuditLogEntryEventTypeToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("eventType").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("AuditLogEntryEventTypeKey"),
 				jen.ID("eventType"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachAccountIDToSpan provides a consistent way to attach an account's ID to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachAccountIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("accountID").ID("uint64")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachAccountIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("accountID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachRequestingUserIDToSpan provides a consistent way to attach a user's ID to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachRequestingUserIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("userID").ID("uint64")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachRequestingUserIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("userID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("RequesterIDKey"),
 				jen.ID("userID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachChangeSummarySpan provides a consistent way to attach a SessionContextData object to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachChangeSummarySpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("typeName").ID("string"), jen.ID("changes").Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary")).Body(
-			jen.For(jen.List(jen.ID("i"), jen.ID("change")).Op(":=").Range().ID("changes")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Any").Call(
+		jen.Newline(),
+		jen.Func().ID("AttachChangeSummarySpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("typeName").ID("string"),
+			jen.ID("changes").Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary")).Body(
+			jen.For(jen.List(jen.ID("i"),
+				jen.ID("change")).Op(":=").Range().ID("changes")).Body(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.field_changes.%d"),
 						jen.ID("typeName"),
 						jen.ID("i"),
 					),
 					jen.ID("change"),
-				)))),
-		jen.Line(),
+				)),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachSessionContextDataToSpan provides a consistent way to attach a SessionContextData object to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachSessionContextDataToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachSessionContextDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")).Body(
 			jen.If(jen.ID("sessionCtxData").Op("!=").ID("nil")).Body(
 				jen.ID("attachUint64ToSpan").Call(
 					jen.ID("span"),
@@ -181,38 +220,44 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.ID("keys").Dot("ServiceRoleKey"),
 					jen.ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
 				),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachAPIClientDatabaseIDToSpan is a consistent way to attach an API client's database row ID to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachAPIClientDatabaseIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("clientID").ID("uint64")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachAPIClientDatabaseIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("clientID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("APIClientDatabaseIDKey"),
 				jen.ID("clientID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachAPIClientClientIDToSpan is a consistent way to attach an API client's ID to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachAPIClientClientIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("clientID").ID("string")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachAPIClientClientIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("clientID").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("APIClientClientIDKey"),
 				jen.ID("clientID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachUserToSpan provides a consistent way to attach a user to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachUserToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("user").Op("*").Qual(proj.TypesPackage(), "User")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachUserToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("user").Op("*").Qual(proj.TypesPackage(), "User")).Body(
 			jen.If(jen.ID("user").Op("!=").ID("nil")).Body(
 				jen.ID("AttachUserIDToSpan").Call(
 					jen.ID("span"),
@@ -222,74 +267,86 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.ID("span"),
 					jen.ID("user").Dot("Username"),
 				),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachUserIDToSpan provides a consistent way to attach a user's ID to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachUserIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("userID").ID("uint64")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachUserIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("userID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("UserIDKey"),
 				jen.ID("userID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachUsernameToSpan provides a consistent way to attach a user's username to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachUsernameToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("username").ID("string")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachUsernameToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("username").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("UsernameKey"),
 				jen.ID("username"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachWebhookIDToSpan provides a consistent way to attach a webhook's ID to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachWebhookIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("webhookID").ID("uint64")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachWebhookIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("webhookID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("WebhookIDKey"),
 				jen.ID("webhookID"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachURLToSpan attaches a given URI to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachURLToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("u").Op("*").Qual("net/url", "URL")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachURLToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("u").Op("*").Qual("net/url", "URL")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("RequestURIKey"),
 				jen.ID("u").Dot("String").Call(),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachRequestURIToSpan attaches a given URI to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachRequestURIToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("uri").ID("string")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachRequestURIToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("uri").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("RequestURIKey"),
 				jen.ID("uri"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachRequestToSpan attaches a given *http.Request to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachRequestToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachRequestToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.If(jen.ID("req").Op("!=").ID("nil")).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
@@ -301,18 +358,29 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.ID("keys").Dot("RequestMethodKey"),
 					jen.ID("req").Dot("Method"),
 				),
-				jen.Line(),
-				jen.ID("htmxHeaderSpanKeys").Op(":=").Map(jen.ID("string")).ID("string").Valuesln(jen.Lit("HX-Prompt").Op(":").Lit("htmx.prompt"), jen.Lit("HX-Target").Op(":").Lit("htmx.target"), jen.Lit("HX-Request").Op(":").Lit("htmx.request"), jen.Lit("HX-Trigger").Op(":").Lit("htmx.trigger"), jen.Lit("HX-Current-URL").Op(":").Lit("htmx.currentURL"), jen.Lit("HX-Trigger-LabelName").Op(":").Lit("htmx.triggerName"), jen.Lit("HX-History-Restore-Request").Op(":").Lit("htmx.historyRestoreRequest")),
-				jen.Line(),
-				jen.For(jen.List(jen.ID("header"), jen.ID("spanKey")).Op(":=").Range().ID("htmxHeaderSpanKeys")).Body(
-					jen.If(jen.ID("val").Op(":=").ID("req").Dot("Header").Dot("Get").Call(jen.ID("header")), jen.ID("val").Op("!=").Lit("")).Body(
+				jen.Newline(),
+				jen.ID("htmxHeaderSpanKeys").Op(":=").Map(jen.ID("string")).ID("string").Valuesln(jen.Lit("HX-Prompt").Op(":").Lit("htmx.prompt"),
+					jen.Lit("HX-Target").Op(":").Lit("htmx.target"),
+					jen.Lit("HX-Request").Op(":").Lit("htmx.request"),
+					jen.Lit("HX-Trigger").Op(":").Lit("htmx.trigger"),
+					jen.Lit("HX-Current-URL").Op(":").Lit("htmx.currentURL"),
+					jen.Lit("HX-Trigger-LabelName").Op(":").Lit("htmx.triggerName"),
+					jen.Lit("HX-History-Restore-Request").Op(":").Lit("htmx.historyRestoreRequest")),
+				jen.Newline(),
+				jen.For(jen.List(jen.ID("header"),
+					jen.ID("spanKey")).Op(":=").Range().ID("htmxHeaderSpanKeys")).Body(
+					jen.If(jen.ID("val").Op(":=").ID("req").Dot("Header").Dot("Get").Call(jen.ID("header")),
+						jen.ID("val").Op("!=").Lit("")).Body(
 						jen.ID("attachStringToSpan").Call(
 							jen.ID("span"),
 							jen.ID("spanKey"),
 							jen.ID("val"),
-						))),
-				jen.Line(),
-				jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("req").Dot("Header")).Body(
+						),
+					),
+				),
+				jen.Newline(),
+				jen.For(jen.List(jen.ID("k"),
+					jen.ID("v")).Op(":=").Range().ID("req").Dot("Header")).Body(
 					jen.ID("attachSliceToSpan").Call(
 						jen.ID("span"),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -321,27 +389,31 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 							jen.ID("k"),
 						),
 						jen.ID("v"),
-					)),
-			)),
-		jen.Line(),
+					),
+				),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachResponseToSpan attaches a given *http.Response to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachResponseToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("res").Op("*").Qual("net/http", "Response")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachResponseToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("res").Op("*").Qual("net/http", "Response")).Body(
 			jen.If(jen.ID("res").Op("!=").ID("nil")).Body(
 				jen.ID("AttachRequestToSpan").Call(
 					jen.ID("span"),
 					jen.ID("res").Dot("Request"),
 				),
-				jen.Line(),
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Int").Call(
+				jen.Newline(),
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int").Call(
 					jen.ID("keys").Dot("ResponseStatusKey"),
 					jen.ID("res").Dot("StatusCode"),
 				)),
-				jen.Line(),
-				jen.For(jen.List(jen.ID("k"), jen.ID("v")).Op(":=").Range().ID("res").Dot("Header")).Body(
+				jen.Newline(),
+				jen.For(jen.List(jen.ID("k"),
+					jen.ID("v")).Op(":=").Range().ID("res").Dot("Header")).Body(
 					jen.ID("attachSliceToSpan").Call(
 						jen.ID("span"),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -350,31 +422,41 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 							jen.ID("k"),
 						),
 						jen.ID("v"),
-					)),
-			)),
-		jen.Line(),
+					),
+				),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachErrorToSpan attaches a given error to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachErrorToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("description").ID("string"), jen.ID("err").ID("error")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachErrorToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("description").ID("string"),
+			jen.ID("err").ID("error")).Body(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("span").Dot("RecordError").Callln(
 					jen.ID("err"),
-					jen.Qual(openTelemetryTrace, "WithTimestamp").Call(jen.Qual("time", "Now").Call()),
-					jen.Qual(openTelemetryTrace, "WithAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "String").Call(
+					jen.Qual(constants.TracingLibrary, "WithTimestamp").Call(jen.Qual("time", "Now").Call()),
+					jen.Qual(constants.TracingLibrary, "WithAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "String").Call(
 						jen.Lit("error.description"),
 						jen.ID("description"),
-					)),
-				))),
-		jen.Line(),
+					),
+					),
+				),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachDatabaseQueryToSpan attaches a given search query to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachDatabaseQueryToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.List(jen.ID("queryDescription"), jen.ID("query")).ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachDatabaseQueryToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.List(jen.ID("queryDescription"),
+				jen.ID("query")).ID("string"),
+			jen.ID("args").Index().Interface()).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("DatabaseQueryKey"),
@@ -385,23 +467,27 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				jen.Lit("query_description"),
 				jen.ID("queryDescription"),
 			),
-			jen.Line(),
-			jen.For(jen.List(jen.ID("i"), jen.ID("arg")).Op(":=").Range().ID("args")).Body(
-				jen.ID("span").Dot("SetAttributes").Call(jen.Qual("go.opentelemetry.io/otel/attribute", "Any").Call(
+			jen.Newline(),
+			jen.For(jen.List(jen.ID("i"),
+				jen.ID("arg")).Op(":=").Range().ID("args")).Body(
+				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("query_args_%d"),
 						jen.ID("i"),
 					),
 					jen.ID("arg"),
-				))),
+				),
+				),
+			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachQueryFilterToSpan attaches a given query filter to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachQueryFilterToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachQueryFilterToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Body(
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
 				jen.ID("attachUint8ToSpan").Call(
 					jen.ID("span"),
@@ -443,26 +529,31 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.ID("span"),
 					jen.ID("keys").Dot("FilterIsNilKey"),
 					jen.ID("true"),
-				))),
-		jen.Line(),
+				),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachSearchQueryToSpan attaches a given search query to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachSearchQueryToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("query").ID("string")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachSearchQueryToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("query").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("SearchQueryKey"),
 				jen.ID("query"),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("AttachUserAgentDataToSpan attaches a given search query to a span."),
-		jen.Line(),
-		jen.Func().ID("AttachUserAgentDataToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("ua").Op("*").Qual("github.com/mssola/user_agent", "UserAgent")).Body(
+		jen.Newline(),
+		jen.Func().ID("AttachUserAgentDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("ua").Op("*").Qual("github.com/mssola/user_agent", "UserAgent")).Body(
 			jen.If(jen.ID("ua").Op("!=").ID("nil")).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
@@ -479,21 +570,26 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.ID("keys").Dot("UserAgentBotKey"),
 					jen.ID("ua").Dot("Bot").Call(),
 				),
-			)),
-		jen.Line(),
+			),
+		),
+		jen.Newline(),
 	)
 
-	code.Add(
-		jen.Comment("AttachItemIDToSpan attaches an item ID to a given span."),
-		jen.Line(),
-		jen.Func().ID("AttachItemIDToSpan").Params(jen.ID("span").Qual(openTelemetryTrace, "Span"), jen.ID("itemID").ID("uint64")).Body(
-			jen.ID("attachUint64ToSpan").Call(
-				jen.ID("span"),
-				jen.ID("keys").Dot("ItemIDKey"),
-				jen.ID("itemID"),
-			)),
-		jen.Line(),
-	)
+	for _, typ := range proj.DataTypes {
+		code.Add(
+			jen.Commentf("Attach%sIDToSpan attaches %s ID to a given span.", typ.Name.Singular(), typ.Name.SingularCommonNameWithPrefix()),
+			jen.Newline(),
+			jen.Func().IDf("Attach%sIDToSpan", typ.Name.Singular()).Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+				jen.IDf("%sID", typ.Name.UnexportedVarName()).ID("uint64")).Body(
+				jen.ID("attachUint64ToSpan").Call(
+					jen.ID("span"),
+					jen.ID("keys").Dotf("%sIDKey", typ.Name.Singular()),
+					jen.IDf("%sID", typ.Name.UnexportedVarName()),
+				),
+			),
+			jen.Newline(),
+		)
+	}
 
 	return code
 }

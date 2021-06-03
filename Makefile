@@ -33,7 +33,7 @@ vendor:
 	GO111MODULE=on go mod vendor
 
 .PHONY: revendor
-revendor: vendor-clean vendor
+revendor: vendor-clean clean_example_output vendor
 
 .PHONY: install
 install:

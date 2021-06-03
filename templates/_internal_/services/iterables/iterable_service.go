@@ -39,13 +39,13 @@ func buildSomethingServiceConstantDefs(proj *models.Project, typ models.DataType
 			jen.ID("createMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_create_input", srn)),
 			jen.Commentf("updateMiddlewareCtxKey is a string alias we can use for referring to %s update data in contexts.", cn),
 			jen.ID("updateMiddlewareCtxKey").Qual(proj.TypesPackage(), "ContextKey").Equals().Lit(fmt.Sprintf("%s_update_input", srn)),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName").Equals().Lit(puvn),
 			jen.ID("counterDescription").String().Equals().Lit(fmt.Sprintf("the number of %s managed by the %s service", puvn, puvn)),
 			jen.ID("topicName").String().Equals().Lit(prn),
 			jen.ID("serviceName").String().Equals().Lit(fmt.Sprintf("%s_service", prn)),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -58,7 +58,7 @@ func buildSomethingServiceVarDefs(proj *models.Project, typ models.DataType) []j
 		jen.Var().Defs(
 			jen.Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", sn)).Equals().Parens(jen.PointerTo().ID("Service")).Call(jen.Nil()),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -110,7 +110,7 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 		typeDefs = append(typeDefs,
 			jen.Comment("SearchIndex is a type alias for dependency injection's sake"),
 			jen.ID("SearchIndex").Qual(proj.InternalSearchPackage(), "IndexManager"),
-			jen.Line(),
+			jen.Newline(),
 		)
 		structFields = append(structFields,
 			jen.ID("search").ID("SearchIndex"),
@@ -120,14 +120,14 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 	typeDefs = append(typeDefs,
 		jen.Commentf("Service handles to-do list %s", pcn),
 		jen.ID("Service").Struct(structFields...),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		typeDefs = append(typeDefs,
 			jen.Comment("UserIDFetcher is a function that fetches user IDs."),
 			jen.ID("UserIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -135,19 +135,19 @@ func buildServiceTypeDecls(proj *models.Project, typ models.DataType) []jen.Code
 		typeDefs = append(typeDefs,
 			jen.Commentf("%sIDFetcher is a function that fetches %s IDs.", ot.Name.Singular(), ot.Name.SingularCommonName()),
 			jen.IDf("%sIDFetcher", ot.Name.Singular()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
 	typeDefs = append(typeDefs,
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("%sIDFetcher is a function that fetches %s IDs.", sn, cn),
 		jen.ID(fmt.Sprintf("%sIDFetcher", sn)).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()),
 	)
 
 	lines := []jen.Code{
 		jen.Type().Defs(typeDefs...),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -213,18 +213,18 @@ func buildProvideServiceFuncDecl(proj *models.Project, typ models.DataType) []je
 
 	lines := []jen.Code{
 		jen.Commentf("Provide%sService builds a new %sService.", pn, pn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().ID(fmt.Sprintf("Provide%sService", pn)).Paramsln(params...).Params(jen.PointerTo().ID("Service"), jen.Error()).Body(
 			jen.List(jen.ID(fmt.Sprintf("%sCounter", uvn)), jen.Err()).Assign().ID(fmt.Sprintf("%sCounterProvider", uvn)).Call(jen.ID("counterName"), jen.ID("counterDescription")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("error initializing counter: %w"), jen.Err())),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("svc").Assign().AddressOf().ID("Service").Valuesln(serviceValues...),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("svc"), jen.Nil()),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -236,7 +236,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 
 	lines := []jen.Code{
 		jen.Commentf("Provide%sServiceSearchIndex provides a search index for the service", pn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().IDf("Provide%sServiceSearchIndex", pn).Paramsln(
 			jen.ID("searchSettings").Qual(proj.ConfigPackage(), "SearchSettings"),
 			jen.ID("indexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider"),
@@ -246,7 +246,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 				jen.Lit("index_path"),
 				jen.ID("searchSettings").Dotf("%sIndexPath", pn),
 			).Dot("Debug").Call(jen.Litf("setting up %s search index", pcn)),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("searchIndex"), jen.ID("indexInitErr")).Assign().ID("indexProvider").Call(
 				jen.ID("searchSettings").Dotf("%sIndexPath", pn),
 				jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", pn)),
@@ -256,7 +256,7 @@ func buildProvideServiceSearchIndexFuncDecl(proj *models.Project, typ models.Dat
 				jen.ID(constants.LoggerVarName).Dot("Error").Call(jen.ID("indexInitErr"), jen.Litf("setting up %s search index", pcn)),
 				jen.Return(jen.Nil(), jen.ID("indexInitErr")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return(jen.ID("searchIndex"), jen.Nil()),
 		),
 	}

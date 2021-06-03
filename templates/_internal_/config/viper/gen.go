@@ -4,10 +4,10 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 	"strings"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -40,7 +40,9 @@ var configTemplate string
 func configDotGo(proj *models.Project) string {
 	serviceConfigCodes := []jen.Code{}
 	for _, typ := range proj.DataTypes {
-		serviceConfigCodes = append(serviceConfigCodes, jen.ID("cfg").Dot("Set").Call(jen.IDf("ConfigKey%sSearchIndexPath", typ.Name.Plural()), jen.ID("input").Dot("Services").Dot(typ.Name.Plural()).Dot("SearchIndexPath")), jen.Line())
+		if typ.SearchEnabled {
+			serviceConfigCodes = append(serviceConfigCodes, jen.ID("cfg").Dot("Set").Call(jen.IDf("ConfigKey%sSearchIndexPath", typ.Name.Plural()), jen.ID("input").Dot("Services").Dot(typ.Name.Plural()).Dot("SearchIndexPath")), jen.Newline())
+		}
 	}
 
 	var b bytes.Buffer
@@ -66,7 +68,7 @@ func configTestDotGo(proj *models.Project) string {
 		imports = append(imports, fmt.Sprintf("\t%q", proj.ServicePackage(typ.Name.PackageName())))
 		var b bytes.Buffer
 		if err := jen.Null().Add(
-			jen.Line(),
+			jen.Newline(),
 			jen.ID(typ.Name.Plural()).MapAssign().Qual(proj.ServicePackage(typ.Name.PackageName()), "Config").Valuesln(
 				func() jen.Code {
 					if typ.SearchEnabled {
@@ -80,7 +82,7 @@ func configTestDotGo(proj *models.Project) string {
 					jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 		).RenderWithoutFormatting(&b); err != nil {
 			panic(err)
 		}
@@ -110,16 +112,16 @@ func keysDotGo(proj *models.Project) string {
 	keyDeclarations := []jen.Code{}
 	for _, typ := range proj.DataTypes {
 		keyDeclarations = append(keyDeclarations,
-			jen.Line(),
+			jen.Newline(),
 			jen.IDf("%sKey", typ.Name.PluralUnexportedVarName()).Equals().ID("servicesKey").Plus().ID("x").Plus().Lit(typ.Name.PluralRouteName()),
-			jen.Line(),
+			jen.Newline(),
 		)
 
 		if typ.SearchEnabled {
 			keyDeclarations = append(keyDeclarations,
-				jen.Line(),
+				jen.Newline(),
 				jen.Commentf("ConfigKey%sSearchIndexPath is the key viper will use to refer to the SearchSettings.%sSearchIndexPath setting.", typ.Name.Plural(), typ.Name.Plural()),
-				jen.Line(),
+				jen.Newline(),
 				jen.IDf("ConfigKey%sSearchIndexPath", typ.Name.Plural()).Equals().IDf("%sKey", typ.Name.PluralUnexportedVarName()).Plus().ID("x").Plus().Lit("search_index_path"),
 			)
 		}

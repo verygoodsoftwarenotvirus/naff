@@ -45,7 +45,7 @@ func buildSwitchCases(proj *models.Project) []jen.Code {
 						// this statement is goofy because it renders a format variable.
 						jen.Qual("log", "Fatalf").Call(jen.Lit("error fetching "+typ.Name.PluralCommonName()+" from database: %v"), jen.Err()),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.For().Body(
 						jen.Select().Body(
 							jen.Case(jen.ID(typ.Name.PluralUnexportedVarName()).Assign().ReceiveFromChannel().ID("outputChan")).Body(
@@ -75,7 +75,7 @@ func buildSwitchCases(proj *models.Project) []jen.Code {
 					if i == len(proj.DataTypes)-1 {
 						return jen.Null()
 					}
-					return jen.Line()
+					return jen.Newline()
 				}(),
 			)
 		}

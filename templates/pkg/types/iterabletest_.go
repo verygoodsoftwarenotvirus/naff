@@ -34,14 +34,14 @@ func buildTestSomething_Update(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext("happy path",
 				func() []jen.Code {
 					lines := []jen.Code{
 						jen.ID("i").Assign().AddressOf().ID(sn).Values(),
-						jen.Line(),
+						jen.Newline(),
 						jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
-						jen.Line(),
+						jen.Newline(),
 						jen.ID("i").Dot("Update").Call(jen.ID("expected")),
 					}
 					lines = append(lines, assertCalls...)
@@ -49,7 +49,7 @@ func buildTestSomething_Update(typ models.DataType) []jen.Code {
 				}()...,
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -72,18 +72,18 @@ func buildTestSomething_ToUpdateInput(proj *models.Project, typ models.DataType)
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_ToUpdateInput", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext(
 				"happy path",
 				jen.ID(uvn).Assign().AddressOf().ID(sn).Valuesln(updateInputFields...),
-				jen.Line(),
+				jen.Newline(),
 				jen.ID("expected").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(expectedFields...),
 				jen.ID("actual").Assign().ID(uvn).Dot("ToUpdateInput").Call(),
-				jen.Line(),
+				jen.Newline(),
 				utils.AssertEqual(jen.ID("expected"), jen.ID("actual"), nil),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines

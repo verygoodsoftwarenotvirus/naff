@@ -80,7 +80,7 @@ func buildCheckSomethingEquality(proj *models.Project, typ models.DataType) []je
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").PointerTo().Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).PointerTo().Qual(proj.TypesPackage(), sn)).Body(
 			buildEqualityCheckLines(typ)...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -94,11 +94,11 @@ func buildTestSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s", pn).Params(jen.ID("test").PointerTo().Qual("testing", "T")).Body(
 			buildTestCreating(proj, typ),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Listing"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext("should be able to be read in a list", buildTestListing(proj, typ)...),
 			)),
-			jen.Line(),
+			jen.Newline(),
 			func() jen.Code {
 				if typ.SearchEnabled {
 					return jen.ID("test").Dot("Run").Call(jen.Lit("Searching"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
@@ -106,7 +106,7 @@ func buildTestSomething(proj *models.Project, typ models.DataType) []jen.Code {
 							fmt.Sprintf("should be able to be search for %s", pcn),
 							buildTestSearching(proj, typ)...,
 						),
-						jen.Line(),
+						jen.Newline(),
 						utils.BuildSubTestWithoutContext(
 							fmt.Sprintf("should only receive your own %s", pcn),
 							buildTestSearchingForOnlyYourOwnItems(proj, typ)...,
@@ -115,30 +115,30 @@ func buildTestSomething(proj *models.Project, typ models.DataType) []jen.Code {
 				}
 				return jen.Null()
 			}(),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("ExistenceChecking"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"it should return false with no error when checking something that does not exist",
 					buildTestExistenceCheckingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				),
-				jen.Line(),
+				jen.Newline(),
 				utils.BuildSubTestWithoutContext(
 					fmt.Sprintf("it should return true with no error when the relevant %s exists", scn),
 					buildTestExistenceCheckingShouldBeReadable(proj, typ)...,
 				),
 			)),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("test").Dot("Run").Call(jen.Lit("Reading"), jen.Func().Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 				utils.BuildSubTestWithoutContext(
 					"it should return an error when trying to read something that does not exist",
 					buildTestReadingShouldFailWhenTryingToReadSomethingThatDoesNotExist(proj, typ)...,
 				),
-				jen.Line(),
+				jen.Newline(),
 				utils.BuildSubTestWithoutContext("it should be readable", buildTestReadingShouldBeReadable(proj, typ)...),
 			)),
-			jen.Line(),
+			jen.Newline(),
 			buildTestUpdating(proj, typ),
-			jen.Line(),
+			jen.Newline(),
 			buildTestDeleting(proj, typ),
 		),
 	}
@@ -171,7 +171,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) (line
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -197,7 +197,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType) (line
 			creationArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return lines
@@ -230,7 +230,7 @@ func buildRequisiteCreationCodeWithoutType(proj *models.Project, typ models.Data
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -248,7 +248,7 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType, includ
 
 	for _, ot := range parentTypes {
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Clean up %s.", ot.Name.SingularCommonName()),
 			utils.AssertNoError(
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", ot.Name.Singular()).Call(
@@ -261,7 +261,7 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType, includ
 
 	if includeSelf {
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 			utils.AssertNoError(
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s",
@@ -298,7 +298,7 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj *models
 func buildEqualityCheckLines(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.ID("t").Dot("Helper").Call(),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertNotZero(jen.ID("actual").Dot("ID"), nil),
 	}
 
@@ -357,7 +357,7 @@ func buildRequisiteCreationCodeFor404Tests(proj *models.Project, typ models.Data
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -381,7 +381,7 @@ func buildRequisiteCleanupCodeFor404s(proj *models.Project, typ models.DataType,
 
 	for _, t := range typesToCleanup {
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Clean up %s.", t.Name.SingularCommonName()),
 			utils.AssertNoError(
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", t.Name.Singular()).Call(
@@ -427,7 +427,7 @@ func buildSubtestsForCreation404Tests(proj *models.Project, typ models.DataType)
 
 		creationArgs := append(buildCreationArgumentsFor404s(proj, createdVarPrefix, typ, i), jen.IDf("example%sInput", sn))
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Create %s.", scn),
 			utils.BuildFakeVar(proj, sn),
 			func() jen.Code {
@@ -445,7 +445,7 @@ func buildSubtestsForCreation404Tests(proj *models.Project, typ models.DataType)
 			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Create%s", sn).Call(
 				creationArgs...,
 			),
-			jen.Line(),
+			jen.Newline(),
 			utils.AssertNil(jen.IDf("%s%s", createdVarPrefix, sn), nil),
 			utils.AssertError(jen.Err(), nil),
 		)
@@ -453,7 +453,7 @@ func buildSubtestsForCreation404Tests(proj *models.Project, typ models.DataType)
 		lines = append(lines, buildRequisiteCleanupCodeFor404s(proj, typ, i)...)
 
 		subtests = append(subtests,
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext(fmt.Sprintf("should fail to create for nonexistent %s", ot.Name.SingularCommonName()),
 				lines...,
 			),
@@ -470,7 +470,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) jen.Code {
 
 	lines := []jen.Code{
 		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
@@ -478,13 +478,13 @@ func buildTestCreating(proj *models.Project, typ models.DataType) jen.Code {
 	lines = append(lines,
 		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.IDf("created%s", typ.Name.Singular())),
-		jen.Line(),
+		jen.Newline(),
 		jen.Comment("Clean up."),
 		jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
@@ -548,10 +548,10 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
-			jen.Line(),
+			jen.Newline(),
 			utils.AppendItemsToList(jen.ID("expected"), jen.IDf("%s%s", createdVarPrefix, sn)),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Assert %s list equality.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", pn).Call(
 			listArgs...,
@@ -563,7 +563,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Lit("expected %d to be <= %d"), jen.Len(jen.ID("expected")),
 			jen.Len(jen.ID("actual").Dot(pn)),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Comment("Clean up."),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("actual").Dot(pn)).Body(
 			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
@@ -632,12 +632,12 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
-			jen.Line(),
+			jen.Newline(),
 			utils.AppendItemsToList(jen.ID("expected"), jen.IDf("%s%s", createdVarPrefix, sn)),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(20)),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Assert %s list equality.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Search%s", pn).Call(
 			searchArgs...,
@@ -649,7 +649,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Lit("expected results length %d to be <= %d"), jen.Len(jen.ID("expected")),
 			jen.Len(jen.ID("actual")),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Comment("Clean up."),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("expected")).Body(
 			jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
@@ -696,13 +696,13 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.List(jen.ID("ca"), jen.Err()).Assign().Qual(proj.TestUtilsPackage(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userA"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.List(jen.ID("clientA"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 			constants.CtxVar(),
 			jen.ID("ca").Dot("ClientID"),
@@ -714,7 +714,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 			jen.True(),
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientA"), jen.Err()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Create %s for user A.", pcn),
 		jen.IDf("example%sA", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		jen.Var().ID("createdForA").Index().PointerTo().Qual(proj.TypesPackage(), sn),
@@ -737,31 +737,31 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 				jen.IDf("example%sInputA", sn).Dot(firstStringField.Singular()),
 				jen.ID("i"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("clientA").Dotf("Create%s", sn).Call(
 				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInputA", sn))...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
-			jen.Line(),
+			jen.Newline(),
 			utils.AppendItemsToList(jen.ID("createdForA"), jen.IDf("%s%s", createdVarPrefix, sn)),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(20)),
 		jen.ID("query").Assign().IDf("example%sA", sn).Dot(firstStringField.Singular()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Comment("create user and oauth2 client B."),
 		jen.List(jen.ID("userB"), jen.Err()).Assign().Qual(proj.TestUtilsPackage(), "CreateObligatoryUser").Call(
 			jen.ID("urlToUse"),
 			jen.ID("debug"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.List(jen.ID("cb"), jen.Err()).Assign().Qual(proj.TestUtilsPackage(), "CreateObligatoryClient").Call(
 			jen.ID("urlToUse"),
 			jen.ID("userB"),
 		),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.List(jen.ID("clientB"), jen.Err()).Assign().Qual(proj.HTTPClientPackage(), "NewClient").Callln(
 			constants.CtxVar(),
 			jen.ID("cb").Dot("ClientID"),
@@ -773,7 +773,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 			jen.True(),
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("test"), jen.ID("clientB"), jen.Err()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Create %s for user B.", pcn),
 		jen.IDf("example%sB", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		jen.IDf("example%sB", sn).Dot(firstStringField.Singular()).Equals().ID("reverse").Call(jen.IDf("example%sA", sn).Dot(firstStringField.Singular())),
@@ -797,17 +797,17 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 				jen.IDf("example%sInputB", sn).Dot(firstStringField.Singular()),
 				jen.ID("i"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("clientB").Dotf("Create%s", sn).Call(
 				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInputB", sn))...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.IDf("%sCreationErr", uvn)),
-			jen.Line(),
+			jen.Newline(),
 			utils.AppendItemsToList(jen.ID("createdForB"), jen.IDf("%s%s", createdVarPrefix, sn)),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("expected").Assign().ID("createdForA"),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Assert %s list equality.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("clientA").Dotf("Search%s", pn).Call(
 			searchArgs...,
@@ -819,7 +819,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 			jen.Lit("expected results length %d to be <= %d"), jen.Len(jen.ID("expected")),
 			jen.Len(jen.ID("actual")),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Comment("Clean up."),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("createdForA")).Body(
 			jen.Err().Equals().ID("clientA").Dotf("Archive%s", sn).Call(
@@ -827,7 +827,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 			),
 			utils.AssertNoError(jen.Err(), nil),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("%s%s", createdVarPrefix, sn)).Assign().Range().ID("createdForB")).Body(
 			jen.Err().Equals().ID("clientB").Dotf("Archive%s", sn).Call(
 				buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
@@ -877,14 +877,14 @@ func buildTestExistenceCheckingShouldBeReadable(proj *models.Project, typ models
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Fetch %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("%sExists", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
 		utils.AssertTrue(jen.ID("actual"), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 		utils.AssertNoError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
@@ -939,16 +939,16 @@ func buildTestReadingShouldBeReadable(proj *models.Project, typ models.DataType)
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Fetch %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual")),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 		utils.AssertNoError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
@@ -1024,7 +1024,7 @@ func buildRequisiteCreationCodeForUpdate404Tests(proj *models.Project, typ model
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -1065,7 +1065,7 @@ func buildRequisiteCreationCodeForUpdate404Tests(proj *models.Project, typ model
 			creationArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Change %s.", scn),
 		jen.IDf("%s%s", createdVarPrefix, sn).Dot("Update").Call(
 			jen.ID(utils.BuildFakeVarName(sn)).Dot("ToUpdateInput").Call(),
@@ -1080,7 +1080,7 @@ func buildRequisiteCreationCodeForUpdate404Tests(proj *models.Project, typ model
 			revisedUpdateArgs...,
 		),
 		utils.AssertError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return lines
@@ -1101,7 +1101,7 @@ func buildRequisiteCleanupCodeForUpdate404s(proj *models.Project, typ models.Dat
 
 	for _, t := range typesToCleanup {
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Clean up %s.", t.Name.SingularCommonName()),
 			utils.AssertNoError(
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", t.Name.Singular()).Call(
@@ -1138,12 +1138,12 @@ func buildSubtestsForUpdate404Tests(proj *models.Project, typ models.DataType) [
 
 		cleanupCode := buildRequisiteCleanupCodeForUpdate404s(proj, typ)
 		if len(cleanupCode) > 0 {
-			lines = append(lines, jen.Line())
+			lines = append(lines, jen.Newline())
 		}
 		lines = append(lines, cleanupCode...)
 
 		subtests = append(subtests,
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext(
 				fmt.Sprintf("it should return an error when trying to update something that belongs to %s that does not exist", ot.Name.SingularCommonNameWithPrefix()),
 				lines...,
@@ -1160,7 +1160,7 @@ func buildTestUpdating(proj *models.Project, typ models.DataType) jen.Code {
 			"it should return an error when trying to update something that does not exist",
 			buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj, typ)...,
 		),
-		jen.Line(),
+		jen.Newline(),
 		utils.BuildSubTestWithoutContext("it should be updatable", buildTestUpdatingShouldBeUpdatable(proj, typ)...),
 	}
 
@@ -1180,24 +1180,24 @@ func buildTestUpdatingShouldBeUpdatable(proj *models.Project, typ models.DataTyp
 	}
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
-	lines = append(lines, jen.Line(),
+	lines = append(lines, jen.Newline(),
 		jen.Commentf("Change %s.", scn),
 		jen.List(jen.IDf("created%s", sn).Dot("Update").Call(jen.ID(utils.BuildFakeVarName(sn)).Dot("ToUpdateInput").Call())),
 		jen.Err().Equals().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(
 			buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
 		),
 		utils.AssertNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Fetch %s.", scn),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Assert %s equality.", scn),
 		jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.ID(utils.BuildFakeVarName(sn)), jen.ID("actual")),
 		utils.AssertNotNil(jen.ID("actual").Dot("LastUpdatedOn"), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 		utils.AssertNoError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
@@ -1209,7 +1209,7 @@ func buildTestUpdatingShouldBeUpdatable(proj *models.Project, typ models.DataTyp
 
 	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
 	if len(cleanupCode) > 0 {
-		lines = append(lines, jen.Line())
+		lines = append(lines, jen.Newline())
 	}
 	lines = append(lines, cleanupCode...)
 
@@ -1235,13 +1235,13 @@ func buildTestUpdatingShouldFailWhenTryingToChangeSomethingThatDoesNotExist(proj
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName(sn)).Dot("ID").Equals().ID("nonexistentID"),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Update%s", sn).Call(args...), nil),
 	)
 
 	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
 	if len(cleanupCode) > 0 {
-		lines = append(lines, jen.Line())
+		lines = append(lines, jen.Newline())
 	}
 	lines = append(lines, cleanupCode...)
 
@@ -1275,7 +1275,7 @@ func buildRequisiteCreationCodeFor404DeletionTests(proj *models.Project, typ mod
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -1297,7 +1297,7 @@ func buildRequisiteCleanupCodeFor404DeletionTests(proj *models.Project, typ mode
 
 	for _, t := range typesToCleanup {
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Clean up %s.", t.Name.SingularCommonName()),
 			utils.AssertNoError(
 				jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", t.Name.Singular()).Call(
@@ -1351,7 +1351,7 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 		archiveArgs := buildParamsForDeletionWithNonexistentID(proj, typ, i)
 
 		lines = append(lines,
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("Create %s.", scn),
 			utils.BuildFakeVar(proj, sn),
 			func() jen.Code {
@@ -1370,7 +1370,7 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 				creationArgs...,
 			),
 			jen.ID("checkValueAndError").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
-			jen.Line(),
+			jen.Newline(),
 			utils.AssertError(jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", sn).Call(
 				archiveArgs...,
 			), nil),
@@ -1379,7 +1379,7 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 		lines = append(lines, buildRequisiteCleanupCodeFor404DeletionTests(proj, typ, i)...)
 
 		subtests = append(subtests,
-			jen.Line(),
+			jen.Newline(),
 			utils.BuildSubTestWithoutContext(fmt.Sprintf("returns error when trying to archive post belonging to nonexistent %s", ot.Name.SingularCommonName()),
 				lines...,
 			),
@@ -1392,13 +1392,13 @@ func buildSubtestsForDeletion404Tests(proj *models.Project, typ models.DataType)
 func buildTestDeleting(proj *models.Project, typ models.DataType) jen.Code {
 	subtests := []jen.Code{
 		utils.BuildSubTestWithoutContext("it should return an error when trying to delete something that does not exist", buildTestDeletingShouldFailForNonexistent(proj, typ)...),
-		jen.Line(),
+		jen.Newline(),
 		utils.BuildSubTestWithoutContext("should be able to be deleted", buildTestDeletingShouldBeAbleToBeDeleted(proj, typ)...),
 	}
 
 	notFoundSubtests := buildSubtestsForDeletion404Tests(proj, typ)
 	if len(notFoundSubtests) > 0 {
-		subtests = append(subtests, jen.Line())
+		subtests = append(subtests, jen.Newline())
 	}
 	subtests = append(subtests, notFoundSubtests...)
 
@@ -1410,13 +1410,13 @@ func buildTestDeleting(proj *models.Project, typ models.DataType) jen.Code {
 func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	lines = append(lines, buildRequisiteCreationCode(proj, typ)...)
 
 	lines = append(lines,
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("Clean up %s.", typ.Name.SingularCommonName()),
 		utils.AssertNoError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
@@ -1428,7 +1428,7 @@ func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.D
 
 	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
 	if len(cleanupCode) > 0 {
-		lines = append(lines, jen.Line())
+		lines = append(lines, jen.Newline())
 	}
 	lines = append(lines, cleanupCode...)
 
@@ -1438,7 +1438,7 @@ func buildTestDeletingShouldBeAbleToBeDeleted(proj *models.Project, typ models.D
 func buildTestDeletingShouldFailForNonexistent(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		utils.StartSpanWithInlineCtx(proj, true, jen.ID("t").Dot("Name").Call()),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	archiveArgs := buildParamsForMethodThatHandlesAnInstanceWithStructsButIDsOnly(proj, typ)
@@ -1447,7 +1447,7 @@ func buildTestDeletingShouldFailForNonexistent(proj *models.Project, typ models.
 	lines = append(lines, buildRequisiteCreationCodeWithoutType(proj, typ)...)
 
 	lines = append(lines,
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertError(
 			jen.IDf("%sClient", proj.Name.UnexportedVarName()).Dotf("Archive%s", typ.Name.Singular()).Call(
 				archiveArgs...,
@@ -1458,7 +1458,7 @@ func buildTestDeletingShouldFailForNonexistent(proj *models.Project, typ models.
 
 	cleanupCode := buildRequisiteCleanupCode(proj, typ, false)
 	if len(cleanupCode) > 0 {
-		lines = append(lines, jen.Line())
+		lines = append(lines, jen.Newline())
 	}
 	lines = append(lines, cleanupCode...)
 

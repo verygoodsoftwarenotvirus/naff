@@ -62,7 +62,7 @@ func runTojenForFile(filename, pkg string) (string, error) {
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/config",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mariadb",
 	}
 
 	for _, pkg := range allPackages {
@@ -157,8 +157,8 @@ func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, er
 				replacement: ")\n\n\tcode.Add(",
 			},
 			{
-				replacer:    `\,\n\n\t\tjen\.Line\(\)\,`,
-				replacement: ",\n\t\tjen.Line(),",
+				replacer:    `\,\n\n\t\tjen\.Newline\(\)\,`,
+				replacement: ",\n\t\tjen.Newline(),",
 			},
 			{
 				replacer:    `\.Comment\(\"\/\/\s`,
@@ -166,14 +166,14 @@ func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, er
 			},
 			{
 				replacer:    `jen\.Func\(\)\.Comment\(\"([0-9a-zA-Z\d\-\,\:\.\*\s\t\(\)\/\\\'` + "`" + `]+)\"\)`,
-				replacement: "jen.Comment(\"$1\"),\n\t\tjen.Line(),\n\t\tjen.Func()",
+				replacement: "jen.Comment(\"$1\"),\n\t\tjen.Newline(),\n\t\tjen.Func()",
 			},
 			{
 				replacer:    `code\.Add\(jen`,
 				replacement: "code.Add(\n\t\tjen",
 			},
 			{
-				replacer:    `code\.Add\(\n\t\tjen\.Null\(\)\,\n\t\tjen\.Line\(\)\,\n\t\)`,
+				replacer:    `code\.Add\(\n\t\tjen\.Null\(\)\,\n\t\tjen\.Newline\(\)\,\n\t\)`,
 				replacement: "",
 			},
 			{
@@ -193,7 +193,7 @@ func doTheThingForFile(path, pkg, outputPath string, writeFile bool) (string, er
 				replacement: "jen.Var()",
 			},
 			{
-				replacer:    `\n\tcode\.Add\(func\(\) jen\.Code \{\n\t\treturn nil\n\t\}\,\n\t\tjen\.Line\(\)\,\n\t\)`,
+				replacer:    `\n\tcode\.Add\(func\(\) jen\.Code \{\n\t\treturn nil\n\t\}\,\n\t\tjen\.Newline\(\)\,\n\t\)`,
 				replacement: "",
 			},
 		}

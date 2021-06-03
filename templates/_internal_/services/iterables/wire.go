@@ -41,7 +41,7 @@ func buildWireProviders(typ models.DataType) []jen.Code {
 				}(),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -52,11 +52,11 @@ func buildWireProvideSomethingDataManager(proj *models.Project, typ models.DataT
 
 	lines := []jen.Code{
 		jen.Commentf("Provide%sDataManager turns a database into an %sDataManager.", sn, sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().ID(fmt.Sprintf("Provide%sDataManager", sn)).Params(jen.ID("db").Qual(proj.DatabasePackage(), "DataManager")).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn))).Body(
 			jen.Return().ID("db"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -67,11 +67,11 @@ func buildWireProvideSomethingDataServer(proj *models.Project, typ models.DataTy
 
 	lines := []jen.Code{
 		jen.Commentf("Provide%sDataServer is an arbitrary function for dependency injection's sake.", sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().ID(fmt.Sprintf("Provide%sDataServer", sn)).Params(jen.ID("s").PointerTo().ID("Service")).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataServer", sn))).Body(
 			jen.Return().ID("s"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines

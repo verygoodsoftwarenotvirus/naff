@@ -40,22 +40,22 @@ func buildScanSomethingRow(proj *models.Project, typ models.DataType) []jen.Code
 
 	return []jen.Code{
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct.", sn, scnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("scan%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").Qual(proj.DatabasePackage(), "Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.Err().ID("error")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("include_counts"),
 				jen.ID("includeCounts"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("x").Equals().AddressOf().Qual(proj.TypesPackage(), sn).Values(),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("targetVars").Assign().Index().Interface().Valuesln(
 				buildScanFields(typ)...,
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("includeCounts")).Body(
 				jen.ID("targetVars").Equals().ID("append").Call(
 					jen.ID("targetVars"),
@@ -63,19 +63,19 @@ func buildScanSomethingRow(proj *models.Project, typ models.DataType) []jen.Code
 					jen.AddressOf().ID("totalCount"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit(""),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("x"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -87,16 +87,16 @@ func buildScanListOfSomethingRows(proj *models.Project, typ models.DataType) []j
 
 	return []jen.Code{
 		jen.Commentf("scan%s takes some database rows and turns them into a slice of %s.", pn, pcn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("scan%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").Qual(proj.DatabasePackage(), "ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID(puvn).Index().PointerTo().Qual(proj.TypesPackage(), sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.Err().ID("error")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("include_counts"),
 				jen.ID("includeCounts"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.For(jen.ID("rows").Dot("Next").Call()).Body(
 				jen.List(jen.ID("x"), jen.ID("fc"), jen.ID("tc"), jen.ID("scanErr")).Assign().ID("q").Dotf("scan%s", sn).Call(
 					jen.ID("ctx"),
@@ -106,37 +106,37 @@ func buildScanListOfSomethingRows(proj *models.Project, typ models.DataType) []j
 				jen.If(jen.ID("scanErr").DoesNotEqual().ID("nil")).Body(
 					jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.ID("scanErr")),
 				),
-				jen.Line(),
+				jen.Newline(),
 				jen.If(jen.ID("includeCounts")).Body(
 					jen.If(jen.ID("filteredCount").IsEqualTo().Lit(0)).Body(
 						jen.ID("filteredCount").Equals().ID("fc"),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.If(jen.ID("totalCount").IsEqualTo().Lit(0)).Body(
 						jen.ID("totalCount").Equals().ID("tc"),
 					)),
-				jen.Line(),
+				jen.Newline(),
 				jen.ID(puvn).Equals().ID("append").Call(
 					jen.ID(puvn),
 					jen.ID("x"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("q").Dot("checkRowsForErrorAndClose").Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("handling rows"),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID(puvn), jen.ID("filteredCount"), jen.ID("totalCount"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -148,20 +148,20 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 
 	return []jen.Code{
 		jen.Commentf("%sExists fetches whether %s exists from the database.", sn, scnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("%sExists", sn).Params(typ.BuildDBClientExistenceMethodParams(proj)...).Params(jen.ID("exists").ID("bool"), jen.Err().ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("false"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("false"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dotf("%sIDKey", sn),
 				jen.IDf("%sID", uvn),
 			).Dot("WithValue").Call(
@@ -176,13 +176,13 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("Build%sExistsQuery", sn).Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
 				jen.ID("accountID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("result"), jen.Err()).Assign().ID("q").Dot("performBooleanQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -192,15 +192,15 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("false"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("performing %s existence check", scn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("result"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -212,19 +212,19 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 
 	return []jen.Code{
 		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Get%s", sn).Params(typ.BuildDBClientRetrievalMethodParams(proj)...).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
 				jen.IDf("%sID", uvn),
@@ -233,13 +233,13 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.ID("keys").Dotf("%sIDKey", sn).MapAssign().IDf("%sID", uvn),
 				jen.ID("keys").Dot("UserIDKey").MapAssign().ID("accountID"),
 			),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildGet%sQuery", sn).Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
@@ -252,7 +252,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.ID("query"),
 				jen.ID("args").Spread(),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.Err()).Assign().ID("q").Dotf("scan%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("row"),
@@ -261,15 +261,15 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("scanning %s", scn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID(uvn), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -279,13 +279,13 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 
 	return []jen.Code{
 		jen.Commentf("GetAll%sCount fetches the count of %s from the database that meet a particular filter.", pn, pcn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("GetAll%sCount", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Uint64(), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger"),
-			jen.Line(),
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger"),
+			jen.Newline(),
 			jen.List(jen.ID("count"), jen.Err()).Assign().ID("q").Dot("performCountQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -295,15 +295,15 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.Lit(0), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("querying for count of %s", pcn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("count"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -315,30 +315,30 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 
 	return []jen.Code{
 		jen.Commentf("GetAll%s fetches a list of all %s in the database.", pn, pcn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("GetAll%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("results").Chan().Index().PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("batchSize").ID("uint16")).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("results").IsEqualTo().ID("nil")).Body(
 				jen.Return().ID("ErrNilInputProvided"),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("batch_size"),
 				jen.ID("batchSize"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("count"), jen.Err()).Assign().ID("q").Dotf("GetAll%sCount", pn).Call(jen.ID("ctx")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("fetching count of %s", pcn),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.For(jen.ID("beginID").Assign().Uint64().Call(jen.Lit(1)), jen.ID("beginID").Op("<=").ID("count"), jen.ID("beginID").Op("+=").Uint64().Call(jen.ID("batchSize"))).Body(
 				jen.ID("endID").Assign().ID("beginID").Plus().Uint64().Call(jen.ID("batchSize")),
 				jen.Go().Func().Params(jen.List(jen.ID("begin"), jen.ID("end")).Uint64()).Body(
@@ -347,8 +347,8 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 						jen.ID("begin"),
 						jen.ID("end"),
 					),
-					jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("query").MapAssign().ID("query"), jen.Lit("begin").MapAssign().ID("begin"), jen.Lit("end").MapAssign().ID("end"))),
-					jen.Line(),
+					constants.LoggerVar().Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("query").MapAssign().ID("query"), jen.Lit("begin").MapAssign().ID("begin"), jen.Lit("end").MapAssign().ID("end"))),
+					jen.Newline(),
 					jen.List(jen.ID("rows"), jen.ID("queryErr")).Assign().ID("q").Dot("db").Dot("Query").Call(
 						jen.ID("query"),
 						jen.ID("args").Spread(),
@@ -358,36 +358,36 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 						jen.Qual("database/sql", "ErrNoRows"),
 					)).Body(
 						jen.Return()).Else().If(jen.ID("queryErr").DoesNotEqual().ID("nil")).Body(
-						jen.ID("logger").Dot("Error").Call(
+						constants.LoggerVar().Dot("Error").Call(
 							jen.ID("queryErr"),
 							jen.Lit("querying for database rows"),
 						),
 						jen.Return(),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("scanErr")).Assign().ID("q").Dotf("scan%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("rows"),
 						jen.ID("false"),
 					),
 					jen.If(jen.ID("scanErr").DoesNotEqual().ID("nil")).Body(
-						jen.ID("logger").Dot("Error").Call(
+						constants.LoggerVar().Dot("Error").Call(
 							jen.ID("scanErr"),
 							jen.Lit("scanning database rows"),
 						),
 						jen.Return(),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("results").ReceiveFromChannel().ID(puvn),
 				).Call(
 					jen.ID("beginID"),
 					jen.ID("endID"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().ID("nil"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -399,21 +399,21 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 
 	return []jen.Code{
 		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter.", pn, pcn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Get%s", pn).Params(typ.BuildDBClientListRetrievalMethodParams(proj)...).Params(jen.ID("x").PointerTo().ID("types").Dotf("%sList", sn), jen.Err().ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("x").Equals().AddressOf().ID("types").Dotf("%sList", sn).Values(),
-			jen.ID("logger").Assign().ID("filter").Dot("AttachToLogger").Call(jen.ID("q").Dot("logger")).Dot("WithValue").Call(
+			constants.LoggerVar().Assign().ID("filter").Dot("AttachToLogger").Call(jen.ID("q").Dot("logger")).Dot("WithValue").Call(
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("accountID"),
@@ -422,18 +422,18 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 				jen.ID("span"),
 				jen.ID("filter"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("filter").DoesNotEqual().ID("nil")).Body(
 				jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Equals().List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildGet%sQuery", pn).Call(
 				jen.ID("ctx"),
 				jen.ID("accountID"),
 				jen.ID("false"),
 				jen.ID("filter"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID("q").Dot("performReadQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -444,12 +444,12 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("executing %s list retrieval query", pcn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.List(jen.ID("x").Dot(pn), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.Err()).Equals().ID("q").Dotf("scan%s", pn).Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
@@ -457,15 +457,15 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("scanning %s", pcn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -477,30 +477,30 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 
 	return []jen.Code{
 		jen.Commentf("Get%sWithIDs fetches %s from the database within a given set of IDs.", pn, pcn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Get%sWithIDs", pn).Params(typ.BuildGetListOfSomethingFromIDsParams(proj)...).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("limit").IsEqualTo().Lit(0)).Body(
 				jen.ID("limit").Equals().ID("uint8").Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.ID("keys").Dot("UserIDKey").MapAssign().ID("accountID"),
 				jen.Lit("limit").MapAssign().ID("limit"),
 				jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")),
 			)),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildGet%sWithIDsQuery", pn).Call(
 				jen.ID("ctx"),
 				jen.ID("accountID"),
@@ -508,7 +508,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 				jen.ID("ids"),
 				jen.ID("false"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID("q").Dot("performReadQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -519,12 +519,12 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("fetching %s from database", pcn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.Err()).Assign().ID("q").Dotf("scan%s", pn).Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
@@ -533,15 +533,15 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("scanning %s", pcn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID(puvn), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -578,20 +578,20 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s in the database.", sn, scnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Create%s", sn).Params(typ.BuildDBClientCreationMethodParams(proj)...).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("input").IsEqualTo().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("createdByUser").IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("RequesterIDKey"),
 				jen.ID("createdByUser"),
 			),
@@ -599,7 +599,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID("span"),
 				jen.ID("createdByUser"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("tx"), jen.Err()).Assign().ID("q").Dot("db").Dot("BeginTx").Call(
 				jen.ID("ctx"),
 				jen.ID("nil"),
@@ -607,17 +607,17 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("beginning transaction"),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildCreate%sQuery", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("input"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Commentf("create the %s.", scn),
 			jen.List(jen.ID("id"), jen.Err()).Assign().ID("q").Dot("performWriteQuery").Call(
 				jen.ID("ctx"),
@@ -634,16 +634,16 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				),
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("creating %s", scn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("x").Assign().AddressOf().Qual(proj.TypesPackage(), sn).Valuesln(
 				buildCreateInitFields(typ)...,
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
@@ -658,30 +658,30 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				),
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("writing %s creation audit log entry", scn),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("tx").Dot("Commit").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("committing transaction"),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
 				jen.ID("x").Dot("ID"),
 			),
-			jen.ID("logger").Dot("Info").Call(jen.Litf("%s created", scn)),
-			jen.Line(),
+			constants.LoggerVar().Dot("Info").Call(jen.Litf("%s created", scn)),
+			jen.Newline(),
 			jen.Return().List(jen.ID("x"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -691,20 +691,20 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 
 	return []jen.Code{
 		jen.Commentf("Update%s updates a particular %s. Note that Update%s expects the provided input to have a valid ID.", sn, scn, sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Update%s", sn).Params(typ.BuildDBClientUpdateMethodParams(proj, "updated")...).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("updated").IsEqualTo().ID("nil")).Body(
 				jen.Return().ID("ErrNilInputProvided"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("changedByUser").IsEqualTo().Lit(0)).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dotf("%sIDKey", sn),
 				jen.ID("updated").Dot("ID"),
 			),
@@ -720,7 +720,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID("span"),
 				jen.ID("changedByUser"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("tx"), jen.Err()).Assign().ID("q").Dot("db").Dot("BeginTx").Call(
 				jen.ID("ctx"),
 				jen.ID("nil"),
@@ -728,12 +728,12 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("beginning transaction"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildUpdate%sQuery", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("updated"),
@@ -751,12 +751,12 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				),
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("updating %s", scn),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
@@ -773,26 +773,26 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				),
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("writing %s update audit log entry", scn),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("tx").Dot("Commit").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("committing transaction"),
 				),
 			),
-			jen.Line(),
-			jen.ID("logger").Dot("Info").Call(jen.Litf("%s updated", scn)),
-			jen.Line(),
+			jen.Newline(),
+			constants.LoggerVar().Dot("Info").Call(jen.Litf("%s updated", scn)),
+			jen.Newline(),
 			jen.Return().ID("nil"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -804,23 +804,23 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 
 	return []jen.Code{
 		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Archive%s", sn).Params(typ.BuildDBClientArchiveMethodParams()...).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("archivedBy").IsEqualTo().Lit(0)).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("accountID"),
@@ -833,13 +833,13 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 				jen.ID("span"),
 				jen.IDf("%sID", uvn),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 				jen.ID("keys").Dotf("%sIDKey", sn).MapAssign().IDf("%sID", uvn),
 				jen.ID("keys").Dot("UserIDKey").MapAssign().ID("archivedBy"),
 				jen.ID("keys").Dot("AccountIDKey").MapAssign().ID("accountID"),
 			)),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("tx"), jen.Err()).Assign().ID("q").Dot("db").Dot("BeginTx").Call(
 				jen.ID("ctx"),
 				jen.ID("nil"),
@@ -847,18 +847,18 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("beginning transaction"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildArchive%sQuery", sn).Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
 				jen.ID("accountID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("q").Dot("performWriteQueryIgnoringReturn").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
@@ -872,12 +872,12 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 				),
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("updating %s", scn),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("q").Dot("createAuditLogEntryInTransaction").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
@@ -893,26 +893,26 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 				),
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("writing %s archive audit log entry", scn),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("tx").Dot("Commit").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("committing transaction"),
 				),
 			),
-			jen.Line(),
-			jen.ID("logger").Dot("Info").Call(jen.Litf("%s archived", scn)),
-			jen.Line(),
+			jen.Newline(),
+			constants.LoggerVar().Dot("Info").Call(jen.Litf("%s archived", scn)),
+			jen.Newline(),
 			jen.Return().ID("nil"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -923,16 +923,16 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 
 	return []jen.Code{
 		jen.Commentf("GetAuditLogEntriesFor%s fetches a list of audit log entries from the database that relate to a given %s.", sn, scn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("GetAuditLogEntriesFor%s", sn).Params(typ.BuildDBClientAuditLogRetrievalMethodParams(proj)...).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
-			jen.Line(),
-			jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dotf("%sIDKey", sn),
 				jen.IDf("%sID", uvn),
 			),
@@ -940,12 +940,12 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 				jen.ID("span"),
 				jen.IDf("%sID", uvn),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildGetAuditLogEntriesFor%sQuery", sn).Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("rows"), jen.Err()).Assign().ID("q").Dot("performReadQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -956,12 +956,12 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("querying database for audit log entries"),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.List(jen.ID("auditLogEntries"), jen.ID("_"), jen.Err()).Assign().ID("q").Dot("scanAuditLogEntries").Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
@@ -970,15 +970,15 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
-					jen.ID("logger"),
+					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Lit("scanning audit log entries"),
 				)),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("auditLogEntries"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -993,7 +993,7 @@ func newIterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Var().Defs(
 			jen.ID("_").Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("SQLQuerier")).Call(jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(buildScanSomethingRow(proj, typ)...)

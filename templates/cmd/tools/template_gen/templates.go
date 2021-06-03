@@ -23,7 +23,7 @@ func buildParseTemplate() []jen.Code {
 		jen.Func().ID("parseTemplate").Params(jen.List(jen.ID("name"), jen.ID("source")).ID("string"), jen.ID("funcMap").Qual("text/template", "FuncMap")).Params(jen.Op("*").Qual("text/template", "Template")).Body(
 			jen.Return().Qual("text/template", "Must").Call(jen.Qual("text/template", "New").Call(jen.ID("name")).Dot("Funcs").Call(jen.ID("mergeFuncMaps").Call(jen.ID("defaultTemplateFuncMap"), jen.ID("funcMap"))).Dot("Parse").Call(jen.ID("source"))),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -32,20 +32,20 @@ func buildMergeFuncMaps() []jen.Code {
 		jen.Func().ID("mergeFuncMaps").Params(jen.List(jen.ID("a"),
 			jen.ID("b")).Qual("text/template", "FuncMap")).Params(jen.Qual("text/template", "FuncMap")).Body(
 			jen.ID("out").Op(":=").Map(jen.ID("string")).Interface().Values(),
-			jen.Line(),
+			jen.Newline(),
 			jen.For(jen.List(jen.ID("k"),
 				jen.ID("v")).Op(":=").Range().ID("a")).Body(
 				jen.ID("out").Index(jen.ID("k")).Op("=").ID("v"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.For(jen.List(jen.ID("k"),
 				jen.ID("v")).Op(":=").Range().ID("b")).Body(
 				jen.ID("out").Index(jen.ID("k")).Op("=").ID("v"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().ID("out"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -60,6 +60,6 @@ func buildFormFieldDecl() []jen.Code {
 			jen.ID("InputPlaceholder").ID("string"),
 			jen.ID("Required").ID("bool"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }

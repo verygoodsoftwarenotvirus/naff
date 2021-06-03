@@ -2,6 +2,7 @@ package authorization
 
 import (
 	_ "embed"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,6 +10,8 @@ import (
 )
 
 const (
+	packageName = "authorization"
+
 	basePackagePath = "internal/authorization"
 )
 
@@ -16,8 +19,6 @@ const (
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
 		"service_role_test.go":  serviceRoleTestDotGo(proj),
-		"account_role.go":       accountRoleDotGo(proj),
-		"account_role_test.go":  accountRoleTestDotGo(proj),
 		"authorization.go":      authorizationDotGo(proj),
 		"authorization_test.go": authorizationTestDotGo(proj),
 		"permissions.go":        permissionsDotGo(proj),
@@ -31,6 +32,17 @@ func RenderPackage(proj *models.Project) error {
 		}
 	}
 
+	jenFiles := map[string]*jen.File{
+		"account_role.go":      accountRoleDotGo(proj),
+		"account_role_test.go": accountRoleTestDotGo(proj),
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -39,20 +51,6 @@ var serviceRoleTestTemplate string
 
 func serviceRoleTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, serviceRoleTestTemplate, nil)
-}
-
-//go:embed account_role.gotpl
-var accountRoleTemplate string
-
-func accountRoleDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountRoleTemplate, nil)
-}
-
-//go:embed account_role_test.gotpl
-var accountRoleTestTemplate string
-
-func accountRoleTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, accountRoleTestTemplate, nil)
 }
 
 //go:embed authorization.gotpl

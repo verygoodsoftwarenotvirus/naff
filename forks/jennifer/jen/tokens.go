@@ -3,7 +3,6 @@ package jen
 import (
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -909,9 +908,9 @@ func (s *Statement) ID(name string) *Statement {
 
 // IDf renders an identifier.
 func IDf(name string, args ...interface{}) *Statement {
-	if len(args) == 0 {
-		log.Panicf("IDf called for name %q with no arguments, are you sure you don't mean ID?", name)
-	}
+	//if len(args) == 0 {
+	//	log.Panicf("IDf called for name %q with no arguments, are you sure you don't mean ID?", name)
+	//}
 	return newStatement().IDf(name, args...)
 }
 
@@ -987,20 +986,20 @@ func (s *Statement) Qual(path, name string) *Statement {
 	return s
 }
 
-// Line inserts a blank line.
-func Line() *Statement {
-	return newStatement().Line()
+// Newline inserts a blank line.
+func Newline() *Statement {
+	return newStatement().Newline()
 }
 
-// Line inserts a blank line.
-func (g *Group) Line() *Statement {
-	s := Line()
+// Newline inserts a blank line.
+func (g *Group) Newline() *Statement {
+	s := Newline()
 	g.items = append(g.items, s)
 	return s
 }
 
-// Line inserts a blank line.
-func (s *Statement) Line() *Statement {
+// Newline inserts a blank line.
+func (s *Statement) Newline() *Statement {
 	t := token{
 		typ:     layoutToken,
 		content: "\n",

@@ -66,12 +66,10 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/converters"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/fakes"
 	mocktypes "gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
 	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/frontend"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/integration"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/load"
 	testutils "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/utils"
 
 	"github.com/gosuri/uiprogress"
@@ -143,11 +141,9 @@ func RenderProject(proj *naffmodels.Project) {
 		"mocktypes":                 mocktypes.RenderPackage,
 		"types":                     types.RenderPackage,
 		"fakes":                     fakes.RenderPackage,
-		"converters":                converters.RenderPackage,
 		"miscellaneous":             misc.RenderPackage,
 		"frontendtests":             frontendtests.RenderPackage,
 		"integrationtests":          integration.RenderPackage,
-		"loadtests":                 load.RenderPackage,
 		"testutils":                 testutils.RenderPackage,
 	}
 

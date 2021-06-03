@@ -19,14 +19,14 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 
 	code.Add(
 		jen.Var().Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().IDf("%sDataManager", sn)).Call(jen.Nil()),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Commentf("%sDataManager is a mocked models.%sDataManager for testing.", sn, sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual(constants.MockPkg, "Mock")),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(buildSomethingExists(proj, typ)...)
@@ -52,12 +52,12 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 
 	lines := []jen.Code{
 		jen.Commentf("%s is a mock function.", funcName),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).ID(funcName).Params(params...).Params(jen.Bool(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Bool").Call(jen.Zero()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -72,13 +72,13 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function.", sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", sn).Params(params...).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -91,14 +91,14 @@ func buildGetAllSomethingsCount(proj *models.Project, typ models.DataType) []jen
 
 	lines := []jen.Code{
 		jen.Commentf("GetAll%sCount is a mock function.", pn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
 			constants.CtxParam(),
 		).Params(jen.Uint64(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Uint64()), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -111,7 +111,7 @@ func buildGetAllSomethings(proj *models.Project, typ models.DataType) []jen.Code
 
 	lines := []jen.Code{
 		jen.Commentf("GetAll%s is a mock function.", pn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%s", pn).Params(
 			constants.CtxParam(),
 			jen.ID("results").Chan().Index().Qual(proj.TypesPackage(), sn),
@@ -121,7 +121,7 @@ func buildGetAllSomethings(proj *models.Project, typ models.DataType) []jen.Code
 				jen.ID("args").Dot("Error").Call(jen.Zero()),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -137,7 +137,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function.", pn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%s", pn).Params(params...).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)),
 			jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
@@ -148,7 +148,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 				jen.ID("args").Dot("Error").Call(jen.One()),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -164,7 +164,7 @@ func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.
 
 	lines := []jen.Code{
 		jen.Commentf("Get%sWithIDs is a mock function.", pn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sWithIDs", pn).
 			Params(params...).
 			Params(jen.Index().Qual(proj.TypesPackage(), sn), jen.Error()).
@@ -177,7 +177,7 @@ func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.
 					jen.ID("args").Dot("Error").Call(jen.One()),
 				),
 			),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -192,7 +192,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 
 	lines := []jen.Code{
 		jen.Commentf("Create%s is a mock function.", sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Create%s", sn).Params(
 			params...,
 		).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn),
@@ -202,7 +202,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 			jen.Return().List(jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.PointerTo().Qual(proj.TypesPackage(), sn)), jen.ID("args").Dot("Error").Call(jen.One())),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -217,7 +217,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 
 	lines := []jen.Code{
 		jen.Commentf("Update%s is a mock function.", sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Update%s", sn).Params(
 			params...,
 		).Params(jen.Error()).Body(
@@ -225,7 +225,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				args...,
 			).Dot("Error").Call(jen.Zero()),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -240,11 +240,11 @@ func buildArchiveSomething(typ models.DataType) []jen.Code {
 
 	lines := []jen.Code{
 		jen.Commentf("Archive%s is a mock function.", sn),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(callArgs...).Dot("Error").Call(jen.Zero()),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines

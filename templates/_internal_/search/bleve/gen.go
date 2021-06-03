@@ -2,6 +2,7 @@ package bleve
 
 import (
 	_ "embed"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,16 +10,15 @@ import (
 )
 
 const (
+	packageName = "bleve"
+
 	basePackagePath = "internal/search/bleve"
 )
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
-		"bleve.go":      bleveDotGo(proj),
-		"bleve_test.go": bleveTestDotGo(proj),
 		"doc.go":        docDotGo(proj),
-		"mappings.go":   mappingsDotGo(proj),
 		"utils.go":      utilsDotGo(proj),
 		"utils_test.go": utilsTestDotGo(proj),
 		"wire.go":       wireDotGo(proj),
@@ -30,21 +30,19 @@ func RenderPackage(proj *models.Project) error {
 		}
 	}
 
+	jenFiles := map[string]*jen.File{
+		"bleve.go":      bleveDotGo(proj),
+		"bleve_test.go": bleveTestDotGo(proj),
+		"mappings.go":   mappingsDotGo(proj),
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
 	return nil
-}
-
-//go:embed bleve.gotpl
-var bleveTemplate string
-
-func bleveDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, bleveTemplate, nil)
-}
-
-//go:embed bleve_test.gotpl
-var bleveTestTemplate string
-
-func bleveTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, bleveTestTemplate, nil)
 }
 
 //go:embed doc.gotpl
@@ -52,13 +50,6 @@ var Template string
 
 func docDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, Template, nil)
-}
-
-//go:embed mappings.gotpl
-var mappingsTemplate string
-
-func mappingsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mappingsTemplate, nil)
 }
 
 //go:embed utils.gotpl

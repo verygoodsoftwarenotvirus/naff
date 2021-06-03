@@ -2,6 +2,7 @@ package server
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -20,13 +21,13 @@ func buildDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Comment("Build builds a server."),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().ID("Build").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("cfg").Op("*").Qual(proj.ConfigPackage(), "InstanceConfig"),
-			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
+			constants.LoggerVar().Qual(proj.InternalLoggingPackage(), "Logger"),
 		).Params(jen.Op("*").ID("server").Dot("HTTPServer"), jen.ID("error")).Body(
-			jen.Qual("github.com/google/wire", "Build").Callln(
+			jen.Qual(constants.DependencyInjectionPkg, "Build").Callln(
 				append([]jen.Code{
 					jen.Qual(proj.InternalSearchPackage("bleve"), "Providers"),
 					jen.Qual(proj.ConfigPackage(), "Providers"),
@@ -55,10 +56,10 @@ func buildDotGo(proj *models.Project) *jen.File {
 					imports...,
 				)...,
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().List(jen.ID("nil"), jen.ID("nil")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code

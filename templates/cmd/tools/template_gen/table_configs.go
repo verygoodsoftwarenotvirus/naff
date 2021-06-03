@@ -15,9 +15,9 @@ func tableConfigsDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Comment("//go:embed templates/table.gotpl"),
-		jen.Line(),
+		jen.Newline(),
 		jen.Var().ID("basicTableTemplateSrc").ID("string"),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(buildBuildBasicTableTemplate()...)
@@ -42,7 +42,7 @@ func buildBasicTableTemplateConfig() []jen.Code {
 			jen.ID("IncludeCreatedOn").ID("bool"),
 			jen.ID("IncludeDeleteRow").ID("bool"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -50,14 +50,14 @@ func buildBuildBasicTableTemplate() []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("buildBasicTableTemplate").Params(jen.ID("cfg").Op("*").ID("basicTableTemplateConfig")).Params(jen.ID("string")).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicTableTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.Op("&").ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("String").Call(),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -182,6 +182,6 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 
 	return []jen.Code{
 		jen.Var().ID("tableConfigs").Op("=").Map(jen.ID("string")).Op("*").ID("basicTableTemplateConfig").Valuesln(tableConfigs...),
-		jen.Line(),
+		jen.Newline(),
 	}
 }

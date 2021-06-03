@@ -41,7 +41,7 @@ func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType
 				jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
 				jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchPackage(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
 			),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -59,7 +59,7 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 	lines := []jen.Code{
 		jen.Commentf("%s represents %s.", sn, cnwp),
 		jen.ID(sn).Struct(buildBaseModelStructFields(typ)...),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("%sList represents a list of %s.", sn, pcn),
 		jen.IDf("%sList", sn).Struct(
 			jen.ID("Pagination"),
@@ -76,26 +76,26 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 		lines = append(lines,
 			jen.Commentf("%sSearchHelper contains all the owner IDs for search purposes.", sn),
 			jen.IDf("%sSearchHelper", sn).Struct(fields...),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
 	lines = append(lines,
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("%sCreationInput represents what a user could set as input for creating %s.", sn, pcn),
 		jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s.", sn, pcn),
 		jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("%sDataManager describes a structure capable of storing %s permanently.", sn, pcn),
 		jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(proj, typ)...),
-		jen.Line(),
+		jen.Newline(),
 		jen.Commentf("%sDataServer describes a structure capable of serving traffic related to %s.", sn, pcn),
 		jen.IDf("%sDataServer", sn).Interface(
 			jen.ID("CreationInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 			jen.ID("UpdateInputMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-			jen.Line(),
+			jen.Newline(),
 			func() jen.Code {
 				if typ.SearchEnabled {
 					return jen.ID("SearchHandler").Params(
@@ -146,9 +146,9 @@ func buildUpdateSomething(typ models.DataType) []jen.Code {
 
 	lines := []jen.Code{
 		jen.Commentf("Update merges an %sInput with %s.", sn, cnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Body(buildUpdateFunctionLogic(typ.Fields)...),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -161,7 +161,7 @@ func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
 
 	lines := []jen.Code{
 		jen.Commentf("ToUpdateInput creates a %sUpdateInput struct for %s.", sn, cnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToUpdateInput").Params().Params(
 			jen.PointerTo().IDf("%sUpdateInput", sn),
 		).Body(
@@ -178,7 +178,7 @@ func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
 				return jen.Return(jen.AddressOf().IDf("%sUpdateInput", sn).Valuesln(lines...))
 			}(),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -198,7 +198,7 @@ func buildSomethingToSearchHelper(proj *models.Project, typ models.DataType) []j
 
 	lines := []jen.Code{
 		jen.Commentf("ToSearchHelper creates a %sSearchHelper struct for %s.", sn, cnwp),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToSearchHelper").Params(params...).ReturnParams(
 			jen.PointerTo().IDf("%sSearchHelper", sn),
 		).Body(
@@ -217,7 +217,7 @@ func buildSomethingToSearchHelper(proj *models.Project, typ models.DataType) []j
 				return jen.Return(jen.AddressOf().IDf("%sSearchHelper", sn).Valuesln(lines...))
 			}(),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -380,7 +380,7 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			panic(fmt.Sprintf("unaccounted for type!: %q", strings.ToLower(field.Type)))
 		}
 		if i != len(fields)-1 {
-			out = append(out, jen.Line())
+			out = append(out, jen.Newline())
 		}
 	}
 

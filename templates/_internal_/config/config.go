@@ -2,6 +2,7 @@ package config
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -25,7 +26,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("DefaultStartupDeadline is the default amount of time we allow for server startup."),
 			jen.ID("DefaultStartupDeadline").Op("=").Qual("time", "Minute"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -34,7 +35,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("errNilConfig").Op("=").Qual("errors", "New").Call(jen.Lit("nil config provided")),
 			jen.ID("errInvalidDatabaseProvider").Op("=").Qual("errors", "New").Call(jen.Lit("invalid database provider")),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	serviceConfigurations := []jen.Code{}
@@ -53,12 +54,12 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Type().Defs(
 			jen.Comment("runMode describes what method of operation the server is under."),
 			jen.ID("runMode").ID("string"),
-			jen.Line(),
+			jen.Newline(),
 			jen.Comment("ServicesConfigurations collects the various service configurations."),
 			jen.ID("ServicesConfigurations").Struct(
 				serviceConfigurations...,
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Comment("InstanceConfig configures an instance of the service. It is composed of all the other setting structs."),
 			jen.ID("InstanceConfig").Struct(
 				jen.ID("Search").Qual(proj.InternalSearchPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Search"), false)),
@@ -73,12 +74,12 @@ func configDotGo(proj *models.Project) *jen.File {
 				jen.ID("Server").Qual(proj.HTTPServerPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Server"), false)),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("EncodeToFile renders your config to a file given your favorite encoder."),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("InstanceConfig")).ID("EncodeToFile").Params(jen.ID("path").ID("string"),
 			jen.ID("marshaller").Func().Params(jen.ID("v").Interface()).Params(jen.Index().ID("byte"),
 				jen.ID("error"))).Params(jen.ID("error")).Body(
@@ -87,24 +88,24 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().ID("err"),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().Qual("os", "WriteFile").Call(
 				jen.ID("path"),
 				jen.ID("byteSlice"),
 				jen.Octal(600),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Op("=").Parens(jen.Op("*").ID("InstanceConfig")).Call(jen.ID("nil")),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("ValidateWithContext validates a InstanceConfig struct."),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("InstanceConfig")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Search").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
@@ -113,7 +114,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Uploads").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -121,7 +122,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Routing").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -129,7 +130,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Meta").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -137,7 +138,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Capitalism").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -145,7 +146,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -153,7 +154,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -161,7 +162,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Observability").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -169,7 +170,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Database").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -177,7 +178,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Server").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -185,7 +186,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("AuditLog").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -193,7 +194,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Auth").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -201,7 +202,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Frontend").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -209,7 +210,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Webhooks").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -217,7 +218,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Items").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 				jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
@@ -225,20 +226,20 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("err"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().ID("nil"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("ProvideDatabaseClient provides a database implementation dependent on the configuration."),
-		jen.Line(),
+		jen.Newline(),
 		jen.Comment("NOTE: you may be tempted to move this to the database/config package. This is a fool's errand."),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().ID("ProvideDatabaseClient").Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
+			constants.LoggerVar().Qual(proj.InternalLoggingPackage(), "Logger"),
 			jen.ID("rawDB").Op("*").Qual("database/sql", "DB"),
 			jen.ID("cfg").Op("*").ID("InstanceConfig"),
 		).Params(
@@ -250,25 +251,25 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.ID("errNilDatabaseConnection"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("cfg").Op("==").ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"),
 					jen.ID("errNilConfig"),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Var().ID("qb").Qual(proj.DatabasePackage("querybuilding"), "SQLQueryBuilder"),
 			jen.ID("shouldCreateTestUser").Op(":=").ID("cfg").Dot("Meta").Dot("RunMode").Op("!=").ID("ProductionRunMode"),
-			jen.Line(),
+			jen.Newline(),
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("cfg").Dot("Database").Dot("Provider")))).Body(
 				jen.Case(jen.Lit("sqlite")).Body(
-					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "sqlite"), "ProvideSqlite").Call(jen.ID("logger")),
+					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "sqlite"), "ProvideSqlite").Call(constants.LoggerVar()),
 				),
 				jen.Case(jen.Lit("mariadb")).Body(
-					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "mariadb"), "ProvideMariaDB").Call(jen.ID("logger")),
+					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "mariadb"), "ProvideMariaDB").Call(constants.LoggerVar()),
 				),
 				jen.Case(jen.Lit("postgres")).Body(
-					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "postgres"), "ProvidePostgres").Call(jen.ID("logger")),
+					jen.ID("qb").Op("=").Qual(proj.DatabasePackage("querybuilding", "postgres"), "ProvidePostgres").Call(constants.LoggerVar()),
 				),
 				jen.Default().Body(
 					jen.Return().List(jen.ID("nil"),
@@ -280,17 +281,17 @@ func configDotGo(proj *models.Project) *jen.File {
 					),
 				),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().Qual(proj.DatabasePackage("querier"), "ProvideDatabaseClient").Call(
 				jen.ID("ctx"),
-				jen.ID("logger"),
+				constants.LoggerVar(),
 				jen.ID("rawDB"),
 				jen.Op("&").ID("cfg").Dot("Database"),
 				jen.ID("qb"),
 				jen.ID("shouldCreateTestUser"),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code

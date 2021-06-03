@@ -1922,7 +1922,7 @@ func (typ DataType) BuildCallArgsForHTTPClientUpdateMethodTest(p *Project) []jen
 func (typ DataType) buildRequisiteFakeVarDecs(p *Project, createCtx bool) []jen.Code {
 	lines := []jen.Code{}
 	if createCtx {
-		lines = append(lines, constants.CreateCtx(), jen.Line())
+		lines = append(lines, constants.CreateCtx(), jen.Newline())
 	}
 
 	if typ.OwnedByAUserAtSomeLevel(p) {
@@ -1955,7 +1955,7 @@ func (typ DataType) buildRequisiteFakeVarDecForModifierFuncs(p *Project, createC
 	lines := []jen.Code{}
 
 	if createCtx {
-		lines = append(lines, constants.CreateCtx(), jen.Line())
+		lines = append(lines, constants.CreateCtx(), jen.Newline())
 	}
 	if typ.BelongsToAccount {
 		lines = append(lines, jen.ID(buildFakeVarName("Account")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeAccount").Call())
@@ -1980,7 +1980,7 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientRetrievalMethodTest(p *Proj
 }
 
 func (typ DataType) BuildRequisiteFakeVarsForDBClientCreateMethodTest(p *Project) []jen.Code {
-	lines := []jen.Code{constants.CreateCtx(), jen.Line()}
+	lines := []jen.Code{constants.CreateCtx(), jen.Newline()}
 
 	if typ.BelongsToAccount {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
@@ -2006,9 +2006,9 @@ func (typ DataType) BuildRequisiteFakeVarsForDBClientArchiveMethodTest(p *Projec
 
 	return append([]jen.Code{
 		constants.CreateCtx(),
-		jen.Line(),
+		jen.Newline(),
 		jen.Var().ID("expected").Error(),
-		jen.Line(),
+		jen.Newline(),
 	}, lines...)
 }
 
@@ -2279,7 +2279,7 @@ func (typ DataType) BuildRequisiteVarsForDBClientUpdateMethodTest(p *Project) []
 	lines := []jen.Code{
 		constants.CreateCtx(),
 		jen.Var().ID("expected").Error(),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.BelongsToAccount {
 				return jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call()
@@ -2293,7 +2293,7 @@ func (typ DataType) BuildRequisiteVarsForDBClientUpdateMethodTest(p *Project) []
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines

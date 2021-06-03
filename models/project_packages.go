@@ -82,6 +82,10 @@ func (p *Project) InternalLoggingPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"observability", "logging"}, parts...)...)
 }
 
+func (p *Project) InternalRoutingPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"routing"}, parts...)...)
+}
+
 func (p *Project) InternalSearchPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"search"}, parts...)...)
 }
@@ -138,8 +142,12 @@ func (p *Project) WebhooksServicePackage() string {
 	return p.ServicePackage("webhooks")
 }
 
-func (p *Project) TestUtilsPackage(parts ...string) string {
-	return p.RelativePath(append([]string{"tests", "utils"}, parts...)...)
+func (p *Project) TestsPackage(parts ...string) string {
+	return p.RelativePath(append([]string{"tests"}, parts...)...)
+}
+
+func (p *Project) TestUtilsPackage() string {
+	return p.TestsPackage("utils")
 }
 
 func (p *Project) ObservabilityPackage(parts ...string) string {

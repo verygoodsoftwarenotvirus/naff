@@ -16,7 +16,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("base64ImagePrefix").Op("=").Lit("data:image/png;base64,"),
 			jen.ID("otpAuthURL").Op("=").Lit(`otpauth://totp/todo:username?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=&issuer=todo`),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -41,7 +41,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Qual("encoding/base64", "StdEncoding").Dot("EncodeToString").Call(jen.ID("b").Dot("Bytes").Call()),
 			)),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code

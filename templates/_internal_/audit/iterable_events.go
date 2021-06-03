@@ -24,12 +24,12 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Commentf("%sArchiveEvent is the event type used to indicate an item was archived.", n.Singular()),
 			jen.IDf("%sArchiveEvent", n.Singular()).Op("=").Litf("%s_archived", n.RouteName()),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Commentf("Build%sCreationEventEntry builds an entry creation input for when %s is created.", n.Singular(), n.SingularCommonNameWithPrefix()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().IDf("Build%sCreationEventEntry", n.Singular()).Params(
 			jen.ID(n.UnexportedVarName()).Op("*").Qual(proj.TypesPackage(), n.Singular()),
 			jen.ID("createdByUser").ID("uint64")).Params(
@@ -44,14 +44,18 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Commentf("Build%sUpdateEventEntry builds an entry creation input for when %s is updated.", n.Singular(), n.SingularCommonNameWithPrefix()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().IDf("Build%sUpdateEventEntry", n.Singular()).Params(
-			jen.List(jen.ID("changedByUser"), jen.IDf("%sID", n.UnexportedVarName()), jen.ID("accountID")).ID("uint64"),
+			jen.List(
+				jen.ID("changedByUser"),
+				jen.IDf("%sID", n.UnexportedVarName()),
+				jen.ID("accountID"),
+			).ID("uint64"),
 			jen.ID("changes").Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary"),
 		).Params(
 			jen.Op("*").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
@@ -65,12 +69,12 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Commentf("Build%sArchiveEventEntry builds an entry creation input for when %s is archived.", n.Singular(), n.SingularCommonNameWithPrefix()),
-		jen.Line(),
+		jen.Newline(),
 		jen.Func().IDf("Build%sArchiveEventEntry", n.Singular()).Params(
 			jen.List(jen.ID("archivedByUser"), jen.ID("accountID"), jen.IDf("%sID", n.UnexportedVarName())).ID("uint64")).Params(
 			jen.Op("*").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
@@ -83,7 +87,7 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code

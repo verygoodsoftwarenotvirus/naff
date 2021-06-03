@@ -31,7 +31,7 @@ func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 }
 
 func includeOwnerFetchers(proj *models.Project, typ models.DataType) []jen.Code {
-	out := []jen.Code{jen.Line()}
+	out := []jen.Code{jen.Newline()}
 
 	if typ.OwnedByAUserAtSomeLevel(proj) {
 		out = append(out,
@@ -43,7 +43,7 @@ func includeOwnerFetchers(proj *models.Project, typ models.DataType) []jen.Code 
 		out = append(out, jen.ID("s").Dotf("%sIDFetcher", btsuvn).Equals().IDf("%sIDFetcher", btsuvn))
 	}
 
-	out = append(out, jen.Line())
+	out = append(out, jen.Newline())
 
 	return out
 }
@@ -56,7 +56,7 @@ func buildRelevantIDFetchers(proj *models.Project, typ models.DataType) []jen.Co
 			jen.ID("userIDFetcher").Assign().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 				jen.Return().ID(utils.BuildFakeVarName("User")).Dot("ID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -78,7 +78,7 @@ func buildRelevantIDFetchers(proj *models.Project, typ models.DataType) []jen.Co
 			jen.IDf("%sIDFetcher", ot.Name.UnexportedVarName()).Assign().Func().Params(jen.Underscore().PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 				jen.Return().ID(utils.BuildFakeVarName(ot.Name.Singular())).Dot("ID"),
 			),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -115,7 +115,7 @@ func setupDataManagersForCreation(proj *models.Project, typ models.DataType, act
 			jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 			jen.ID(dataManagerVarName).Dot("On").Call(callArgs...).Dot("Return").Call(returnVals...),
 			jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -131,7 +131,7 @@ func setupDataManagersForCreation(proj *models.Project, typ models.DataType, act
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(actualCallArgs...).Dot("Return").Call(returnValues...),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return
@@ -169,11 +169,11 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 	firstSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	firstSubtestLines = append(firstSubtestLines,
 		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -181,7 +181,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sList", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -190,21 +190,21 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ListHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName, "ed"),
 	)
 
 	secondSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
-	secondSubtestLines = append(secondSubtestLines, jen.Line(),
+	secondSubtestLines = append(secondSubtestLines, jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(
 			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -212,7 +212,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sList", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -221,11 +221,11 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ListHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName, "ed"),
 	)
 
@@ -234,7 +234,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()), constants.ObligatoryError()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -243,22 +243,22 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ListHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 
 	fourthSubtestLines := append([]jen.Code{jen.ID("s").Assign().ID("buildTestService").Call()}, includeOwnerFetchers(proj, typ)...)
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectedArgs...).Dot("Return").Call(jen.IDf("example%sList", sn), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -266,7 +266,7 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sList", sn)),
 		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -275,27 +275,27 @@ func buildTestServiceListFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ListHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName, "ed"),
 	)
 
-	block := append([]jen.Code{jen.ID("T").Dot("Parallel").Call(), jen.Line()}, buildRelevantIDFetchers(proj, typ)...)
+	block := append([]jen.Code{jen.ID("T").Dot("Parallel").Call(), jen.Newline()}, buildRelevantIDFetchers(proj, typ)...)
 	block = append(block,
-		jen.Line(), utils.BuildSubTestWithoutContext("happy path", firstSubtestLines...),
-		jen.Line(), utils.BuildSubTestWithoutContext("with no rows returned", secondSubtestLines...),
-		jen.Line(), utils.BuildSubTestWithoutContext(fmt.Sprintf("with error fetching %s from database", pcn), thirdSubtestLines...),
-		jen.Line(), utils.BuildSubTestWithoutContext("with error encoding response", fourthSubtestLines...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("happy path", firstSubtestLines...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("with no rows returned", secondSubtestLines...),
+		jen.Newline(), utils.BuildSubTestWithoutContext(fmt.Sprintf("with error fetching %s from database", pcn), thirdSubtestLines...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("with error encoding response", fourthSubtestLines...),
 	)
 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_ListHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -308,9 +308,9 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 
 	happyPathSubtest := []jen.Code{
 		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
 		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
@@ -318,7 +318,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
 		),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(
@@ -348,7 +348,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Get%sWithIDs", pn),
@@ -361,7 +361,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Nil(),
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -369,7 +369,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("[]models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -382,25 +382,25 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("SearchHandler").Call(
 			jen.ID(constants.ResponseVarName),
 			jen.ID(constants.RequestVarName),
 		),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("si", fmt.Sprintf("%sDataManager", uvn), "ed"),
 	}
 
 	searchErrSubtest := []jen.Code{
 		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -427,7 +427,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -440,22 +440,22 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("SearchHandler").Call(
 			jen.ID(constants.ResponseVarName),
 			jen.ID(constants.RequestVarName),
 		),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("si"),
 	}
 
 	noRowsSubtest := []jen.Code{
 		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
 		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
@@ -463,7 +463,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
 		),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -490,7 +490,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Get%sWithIDs", pn),
@@ -503,7 +503,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual("database/sql", "ErrNoRows"),
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -511,7 +511,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("[]models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -524,22 +524,22 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("SearchHandler").Call(
 			jen.ID(constants.ResponseVarName),
 			jen.ID(constants.RequestVarName),
 		),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("si", fmt.Sprintf("%sDataManager", uvn), "ed"),
 	}
 
 	fetchErrSubtest := []jen.Code{
 		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
 		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
@@ -547,7 +547,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
 		),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -574,7 +574,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Get%sWithIDs", pn),
@@ -587,7 +587,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			constants.ObligatoryError(),
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -600,22 +600,22 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("SearchHandler").Call(
 			jen.ID(constants.ResponseVarName),
 			jen.ID(constants.RequestVarName),
 		),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("si", fmt.Sprintf("%sDataManager", uvn)),
 	}
 
 	encodeErrSubtest := []jen.Code{
 		jen.ID("s").Assign().ID("buildTestService").Call(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("userIDFetcher").Equals().ID("userIDFetcher"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName("Query")).Assign().Lit("whatever"),
 		jen.ID(utils.BuildFakeVarName("Limit")).Assign().Uint8().Call(jen.Lit(123)),
 		jen.ID(utils.BuildFakeVarName(fmt.Sprintf("%sList", sn))).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call().Dot(pn),
@@ -623,7 +623,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn)).Body(
 			jen.IDf("example%sIDs", sn).Equals().Append(jen.IDf("example%sIDs", sn), jen.ID("x").Dot("ID")),
 		),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -650,7 +650,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.IDf("%sDataManager", uvn).Dot("On").Call(
 			jen.Litf("Get%sWithIDs", pn),
@@ -663,7 +663,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Nil(),
 		),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -671,7 +671,7 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("[]models.%s", sn)),
 		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -684,31 +684,31 @@ func buildTestServiceSearchFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("SearchHandler").Call(
 			jen.ID(constants.ResponseVarName),
 			jen.ID(constants.RequestVarName),
 		),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("si", fmt.Sprintf("%sDataManager", uvn), "ed"),
 	}
 
-	block := append([]jen.Code{jen.ID("T").Dot("Parallel").Call(), jen.Line()}, buildRelevantIDFetchers(proj, typ)...)
+	block := append([]jen.Code{jen.ID("T").Dot("Parallel").Call(), jen.Newline()}, buildRelevantIDFetchers(proj, typ)...)
 	block = append(block,
-		jen.Line(), utils.BuildSubTestWithoutContext("happy path", happyPathSubtest...),
-		jen.Line(), utils.BuildSubTestWithoutContext("with error conducting search", searchErrSubtest...),
-		jen.Line(), utils.BuildSubTestWithoutContext("with now rows returned", noRowsSubtest...),
-		jen.Line(), utils.BuildSubTestWithoutContext("with error fetching from database", fetchErrSubtest...),
-		jen.Line(), utils.BuildSubTestWithoutContext("with error encoding response", encodeErrSubtest...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("happy path", happyPathSubtest...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("with error conducting search", searchErrSubtest...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("with now rows returned", noRowsSubtest...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("with error fetching from database", fetchErrSubtest...),
+		jen.Newline(), utils.BuildSubTestWithoutContext("with error encoding response", encodeErrSubtest...),
 	)
 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_SearchHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -723,7 +723,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	buildInitialLines := func() []jen.Code {
 		lines := []jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		}
 
 		for _, ot := range proj.FindOwnerTypeChain(typ) {
@@ -756,7 +756,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 					existsCallArgs...,
 				).Dot("Return").Call(jen.True(), jen.Nil()),
 				jen.ID("s").Dotf("%sDataManager", otuvn).Equals().IDf("%sDataManager", otuvn),
-				jen.Line(),
+				jen.Newline(),
 			)
 		}
 
@@ -764,7 +764,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	}
 
 	happyPathSubtest := append(buildInitialLines(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -779,7 +779,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	happyPathSubtest = append(happyPathSubtest, buildExpectationLines()...)
@@ -792,20 +792,20 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sCreationInput", sn)),
 		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 		jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 			jen.Qual(constants.MockPkg, "Anything"),
 		),
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 		jen.ID("r").Dot("On").Call(
 			jen.Lit("Report"),
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -829,7 +829,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -837,7 +837,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -846,7 +846,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(
 			jen.Qual("context", "WithValue").Call(
 				jen.ID(constants.RequestVarName).Dot("Context").Call(),
@@ -854,11 +854,11 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID(utils.BuildFakeVarName("Input")),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("CreateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return utils.AssertExpectationsFor(fmt.Sprintf("%sDataManager", uvn), "mc", "r", "si", "ed")
@@ -868,7 +868,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	)
 
 	noInputSubtest := append(buildInitialLines(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -877,14 +877,14 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("CreateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 	)
 
 	creationErrSubtest := append(buildInitialLines(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -899,7 +899,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	creationErrSubtest = append(creationErrSubtest, buildExpectationLines()...)
@@ -912,7 +912,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sCreationInput", sn)),
 		).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Parens(jen.Nil()), constants.ObligatoryError()),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -921,7 +921,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(
 			jen.Qual("context", "WithValue").Call(
 				jen.ID(constants.RequestVarName).Dot("Context").Call(),
@@ -929,16 +929,16 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID(utils.BuildFakeVarName("Input")),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("CreateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(fmt.Sprintf("%sDataManager", uvn)),
 	)
 
 	encodeErrSubtest := append(buildInitialLines(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -953,7 +953,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	encodeErrSubtest = append(encodeErrSubtest, buildExpectationLines()...)
@@ -966,20 +966,20 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%sCreationInput", sn)),
 		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.ID("s").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 		jen.ID("mc").Dot("On").Call(jen.Lit("Increment"),
 			jen.Qual(constants.MockPkg, "Anything"),
 		),
 		jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 		jen.ID("r").Dot("On").Call(
 			jen.Lit("Report"),
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -1003,7 +1003,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -1011,7 +1011,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().Qual("net/http/httptest", "NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1020,7 +1020,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(
 			jen.Qual("context", "WithValue").Call(
 				jen.ID(constants.RequestVarName).Dot("Context").Call(),
@@ -1028,11 +1028,11 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 				jen.ID(utils.BuildFakeVarName("Input")),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("CreateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusCreated"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return utils.AssertExpectationsFor(fmt.Sprintf("%sDataManager", uvn), "mc", "r", "si", "ed")
@@ -1044,33 +1044,33 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 	block := append(
 		[]jen.Code{
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		buildRelevantIDFetchers(proj, typ)...,
 	)
 	block = append(block,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("happy path"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				happyPathSubtest...,
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("without input attached"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				noInputSubtest...,
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Litf("with error creating %s", scn),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				creationErrSubtest...,
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("with error encoding response"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
@@ -1083,7 +1083,7 @@ func buildTestServiceCreateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Func().ID(fmt.Sprintf("Test%sService_CreateHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -1108,13 +1108,13 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 	firstSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 
 	firstSubtestLines = append(firstSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1131,11 +1131,11 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedCallArgs...).Dot("Return").Call(jen.True(), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1144,11 +1144,11 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ExistenceHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	firstSubtest := utils.BuildSubTestWithoutContext("happy path", firstSubtestLines...)
@@ -1156,13 +1156,13 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 	secondSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 
 	secondSubtestLines = append(secondSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(), func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1178,11 +1178,11 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedCallArgs...).Dot("Return").Call(jen.False(), jen.Qual("database/sql", "ErrNoRows")),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1191,11 +1191,11 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ExistenceHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	secondSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with no such %s in database", scn), secondSubtestLines...)
@@ -1203,13 +1203,13 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 	thirdSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 
 	thirdSubtestLines = append(thirdSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(), func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID(utils.BuildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID")
@@ -1225,11 +1225,11 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedCallArgs...).Dot("Return").Call(jen.False(), constants.ObligatoryError()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1238,27 +1238,27 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ExistenceHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	thirdSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with error fetching %s from database", scn), thirdSubtestLines...)
 
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
-		jen.Line(),
+		jen.Newline(),
 	}
 	block = append(block, buildRelevantIDFetchers(proj, typ)...)
 
 	block = append(block,
-		jen.Line(),
+		jen.Newline(),
 		firstSubtest,
-		jen.Line(),
+		jen.Newline(),
 		secondSubtest,
-		jen.Line(),
+		jen.Newline(),
 		thirdSubtest,
 	)
 
@@ -1266,7 +1266,7 @@ func buildTestServiceExistenceFuncDecl(proj *models.Project, typ models.DataType
 		jen.Func().ID(fmt.Sprintf("Test%sService_ExistenceHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -1289,13 +1289,13 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	firstSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 
 	firstSubtestLines = append(firstSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1312,11 +1312,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectationArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -1324,7 +1324,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1333,11 +1333,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ReadHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName, "ed"),
 	)
 	firstSubtest := utils.BuildSubTestWithoutContext("happy path", firstSubtestLines...)
@@ -1345,12 +1345,12 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	secondSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	secondSubtestLines = append(secondSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1367,11 +1367,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectationArgs...).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1380,11 +1380,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ReadHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	secondSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with no such %s in database", scn), secondSubtestLines...)
@@ -1392,12 +1392,12 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	thirdSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	thirdSubtestLines = append(thirdSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1414,11 +1414,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectationArgs...).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()), constants.ObligatoryError()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1427,11 +1427,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ReadHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	thirdSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with error fetching %s from database", scn), thirdSubtestLines...)
@@ -1439,12 +1439,12 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 	fourthSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	fourthSubtestLines = append(fourthSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1461,11 +1461,11 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(getSomethingExpectationArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -1473,7 +1473,7 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1482,33 +1482,33 @@ func buildTestServiceReadFuncDecl(proj *models.Project, typ models.DataType) []j
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ReadHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName, "ed"),
 	)
 	fourthSubtest := utils.BuildSubTestWithoutContext("with error encoding response", fourthSubtestLines...)
 
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	block = append(block, buildRelevantIDFetchers(proj, typ)...)
 	block = append(block,
-		jen.Line(), firstSubtest,
-		jen.Line(), secondSubtest,
-		jen.Line(), thirdSubtest,
-		jen.Line(), fourthSubtest,
+		jen.Newline(), firstSubtest,
+		jen.Newline(), secondSubtest,
+		jen.Newline(), thirdSubtest,
+		jen.Newline(), fourthSubtest,
 	)
 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_ReadHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -1531,12 +1531,12 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	firstSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	firstSubtestLines = append(firstSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1551,11 +1551,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID(dataManagerVarName).Dot("On").Call(
@@ -1564,14 +1564,14 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 		jen.ID("r").Dot("On").Call(
 			jen.Lit("Report"),
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -1595,7 +1595,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -1603,7 +1603,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1612,13 +1612,13 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("updateMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("UpdateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("r", dataManagerVarName, "ed"),
 	)
 	firstSubtest := utils.BuildSubTestWithoutContext("happy path", firstSubtestLines...)
@@ -1626,12 +1626,12 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	secondSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	secondSubtestLines = append(secondSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1640,9 +1640,9 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("UpdateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusBadRequest"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
 	)
 	secondSubtest := utils.BuildSubTestWithoutContext("without update input", secondSubtestLines...)
@@ -1650,12 +1650,12 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	thirdSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	thirdSubtestLines = append(thirdSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1670,15 +1670,15 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()), jen.Qual("database/sql", "ErrNoRows")),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1687,13 +1687,13 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("updateMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("UpdateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	thirdSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with no rows fetching %s", scn), thirdSubtestLines...)
@@ -1701,12 +1701,12 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	fourthSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	fourthSubtestLines = append(fourthSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1721,15 +1721,15 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()), constants.ObligatoryError()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1738,13 +1738,13 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("updateMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("UpdateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	fourthSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with error fetching %s", scn), fourthSubtestLines...)
@@ -1752,12 +1752,12 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	fifthSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	fifthSubtestLines = append(fifthSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1772,11 +1772,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID(dataManagerVarName).Dot("On").Call(
@@ -1785,7 +1785,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1794,13 +1794,13 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("updateMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("UpdateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(dataManagerVarName),
 	)
 	fifthSubtest := utils.BuildSubTestWithoutContext(fmt.Sprintf("with error updating %s", scn), fifthSubtestLines...)
@@ -1808,12 +1808,12 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 	sixthSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	sixthSubtestLines = append(sixthSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1828,11 +1828,11 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			return jen.Null()
 		}(),
 		jen.ID(utils.BuildFakeVarName("Input")).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID(utils.BuildFakeVarName(sn))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(expectedDBRetrievalCallArgs...).Dot("Return").Call(jen.ID(utils.BuildFakeVarName(sn)), jen.Nil()),
 		jen.ID(dataManagerVarName).Dot("On").Call(
@@ -1841,14 +1841,14 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("r").Assign().AddressOf().Qual("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "Reporter").Values(),
 		jen.ID("r").Dot("On").Call(
 			jen.Lit("Report"),
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 		).Dot("Return").Call(),
 		jen.ID("s").Dot("reporter").Equals().ID("r"),
-		jen.Line(),
+		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -1872,7 +1872,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			}
 			return jen.Null()
 		}(),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("ed").Assign().AddressOf().Qual(proj.EncodingPackage("mock"), "EncoderDecoder").Values(),
 		jen.ID("ed").Dot("On").Call(
 			jen.Lit("EncodeResponse"),
@@ -1880,7 +1880,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 			jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Litf("*models.%s", sn)),
 		).Dot("Return").Call(constants.ObligatoryError()),
 		jen.ID("s").Dot("encoderDecoder").Equals().ID("ed"),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -1889,30 +1889,30 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.RequestVarName).Equals().ID(constants.RequestVarName).Dot("WithContext").Call(jen.Qual("context", "WithValue").Call(jen.ID(constants.RequestVarName).Dot("Context").Call(), jen.ID("updateMiddlewareCtxKey"), jen.ID(utils.BuildFakeVarName("Input")))),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("UpdateHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusOK"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor("r", dataManagerVarName, "ed"),
 	)
 	sixthSubtest := utils.BuildSubTestWithoutContext("with error encoding response", sixthSubtestLines...)
 
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	block = append(block, buildRelevantIDFetchers(proj, typ)...)
 	block = append(block,
-		jen.Line(),
-		firstSubtest, jen.Line(),
-		secondSubtest, jen.Line(),
-		thirdSubtest, jen.Line(),
-		fourthSubtest, jen.Line(),
-		fifthSubtest, jen.Line(),
+		jen.Newline(),
+		firstSubtest, jen.Newline(),
+		secondSubtest, jen.Newline(),
+		thirdSubtest, jen.Newline(),
+		fourthSubtest, jen.Newline(),
+		fifthSubtest, jen.Newline(),
 		sixthSubtest,
 	)
 
@@ -1920,7 +1920,7 @@ func buildTestServiceUpdateFuncDecl(proj *models.Project, typ models.DataType) [
 		jen.Func().ID(fmt.Sprintf("Test%sService_UpdateHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines
@@ -1957,7 +1957,7 @@ func setupDataManagersForDeletion(proj *models.Project, typ models.DataType, act
 			jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 			jen.ID(dataManagerVarName).Dot("On").Call(callArgs...).Dot("Return").Call(returnVals...),
 			jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-			jen.Line(),
+			jen.Newline(),
 		)
 	}
 
@@ -1973,7 +1973,7 @@ func setupDataManagersForDeletion(proj *models.Project, typ models.DataType, act
 		jen.ID(dataManagerVarName).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 		jen.ID(dataManagerVarName).Dot("On").Call(actualCallArgs...).Dot("Return").Call(returnValues...),
 		jen.ID("s").Dot(fmt.Sprintf("%sDataManager", uvn)).Equals().ID(dataManagerVarName),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return
@@ -1996,11 +1996,11 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		lines := append(
 			[]jen.Code{
 				jen.ID("s").Assign().ID("buildTestService").Call(),
-				jen.Line(),
+				jen.Newline(),
 			},
 			includeOwnerFetchers(proj, typ)...,
 		)
-		lines = append(lines, jen.Line())
+		lines = append(lines, jen.Newline())
 
 		if includeSelf {
 			lines = append(lines,
@@ -2020,7 +2020,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 				jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 					jen.Return().ID(utils.BuildFakeVarName(sn)).Dot("ID"),
 				),
-				jen.Line(),
+				jen.Newline(),
 			)
 		}
 
@@ -2056,7 +2056,7 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					jen.Qual(constants.MockPkg, "AnythingOfType").Call(jen.Lit("newsman.Event")),
 				).Dot("Return").Call(),
 				jen.ID("s").Dot("reporter").Equals().ID("r"),
-				jen.Line(),
+				jen.Newline(),
 				func() jen.Code {
 					if typ.SearchEnabled {
 						return jen.ID("si").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
@@ -2081,11 +2081,11 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 					}
 					return jen.Null()
 				}(),
-				jen.Line(),
+				jen.Newline(),
 				jen.ID("mc").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.ID("mc").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(),
 				jen.ID("s").Dot(fmt.Sprintf("%sCounter", uvn)).Equals().ID("mc"),
-				jen.Line(),
+				jen.Newline(),
 			)
 		}
 
@@ -2098,11 +2098,11 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 			),
 			utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 			utils.RequireNoError(jen.Err(), nil),
-			jen.Line(),
+			jen.Newline(),
 			jen.ID("s").Dot("ArchiveHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-			jen.Line(),
+			jen.Newline(),
 			utils.AssertEqual(jen.Qual("net/http", expectedStatus), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-			jen.Line(),
+			jen.Newline(),
 			utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, index), elems...)...),
 		)
 
@@ -2143,12 +2143,12 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	secondSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	secondSubtestLines = append(secondSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -2165,12 +2165,12 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
 		),
-		jen.Line(), jen.Line(),
+		jen.Newline(), jen.Newline(),
 	)
 
 	secondSubtestLines = append(secondSubtestLines, setupDataManagersForDeletion(proj, typ, expectedCallArgs, []jen.Code{jen.Qual("database/sql", "ErrNoRows")}, -1, false, false)...)
 	secondSubtestLines = append(secondSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -2179,11 +2179,11 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ArchiveHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusNotFound"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, -1))...),
 	)
 	subtests = append(subtests, utils.BuildSubTestWithoutContext(fmt.Sprintf("with no %s in database", scn), secondSubtestLines...))
@@ -2191,12 +2191,12 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 	thirdSubtestLines := append(
 		[]jen.Code{
 			jen.ID("s").Assign().ID("buildTestService").Call(),
-			jen.Line(),
+			jen.Newline(),
 		},
 		includeOwnerFetchers(proj, typ)...,
 	)
 	thirdSubtestLines = append(thirdSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(utils.BuildFakeVarName(sn)).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -2213,12 +2213,12 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		jen.ID("s").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
 			jen.Return(jen.ID(utils.BuildFakeVarName(sn)).Dot("ID")),
 		),
-		jen.Line(), jen.Line(),
+		jen.Newline(), jen.Newline(),
 	)
 
 	thirdSubtestLines = append(thirdSubtestLines, setupDataManagersForDeletion(proj, typ, expectedCallArgs, []jen.Code{constants.ObligatoryError()}, -1, false, false)...)
 	thirdSubtestLines = append(thirdSubtestLines,
-		jen.Line(),
+		jen.Newline(),
 		jen.ID(constants.ResponseVarName).Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.List(jen.ID(constants.RequestVarName), jen.Err()).Assign().Qual("net/http", "NewRequest").Callln(
 			jen.Qual("net/http", "MethodGet"),
@@ -2227,31 +2227,31 @@ func buildTestServiceArchiveFuncDecl(proj *models.Project, typ models.DataType) 
 		),
 		utils.RequireNotNil(jen.ID(constants.RequestVarName), nil),
 		utils.RequireNoError(jen.Err(), nil),
-		jen.Line(),
+		jen.Newline(),
 		jen.ID("s").Dot("ArchiveHandler").Call(jen.ID(constants.ResponseVarName), jen.ID(constants.RequestVarName)),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertEqual(jen.Qual("net/http", "StatusInternalServerError"), jen.ID(constants.ResponseVarName).Dot("Code"), nil),
-		jen.Line(),
+		jen.Newline(),
 		utils.AssertExpectationsFor(append(determineMockExpecters(proj, typ, -1))...),
 	)
 	subtests = append(subtests, utils.BuildSubTestWithoutContext("with error writing to database", thirdSubtestLines...))
 
 	block := []jen.Code{
 		jen.ID("T").Dot("Parallel").Call(),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	block = append(block, buildRelevantIDFetchers(proj, typ)...)
 
 	for _, st := range subtests {
-		block = append(block, jen.Line(), st)
+		block = append(block, jen.Newline(), st)
 	}
 
 	lines := []jen.Code{
 		jen.Func().ID(fmt.Sprintf("Test%sService_ArchiveHandler", pn)).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			block...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 
 	return lines

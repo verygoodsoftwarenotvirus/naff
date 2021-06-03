@@ -13,9 +13,9 @@ func editorConfigsDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Comment("//go:embed templates/editor.gotpl"),
-		jen.Line(),
+		jen.Newline(),
 		jen.Var().ID("basicEditorTemplateSrc").ID("string"),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(buildBuildBasicEditorTemplate()...)
@@ -29,14 +29,14 @@ func buildBuildBasicEditorTemplate() []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("buildBasicEditorTemplate").Params(jen.ID("cfg").Op("*").ID("basicEditorTemplateConfig")).Params(jen.ID("string")).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
-			jen.Line(),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicEditorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.Op("&").ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
-			jen.Line(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("String").Call(),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -45,7 +45,7 @@ func buildBasicEditorTemplateConfig() []jen.Code {
 		jen.Type().ID("basicEditorTemplateConfig").Struct(jen.ID("SubmissionURL").ID("string"),
 			jen.ID("Fields").Index().ID("formField"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }
 
@@ -155,6 +155,6 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 		jen.Var().ID("editorConfigs").Op("=").Map(jen.ID("string")).Op("*").ID("basicEditorTemplateConfig").Valuesln(
 			editorTemplateConfigs...,
 		),
-		jen.Line(),
+		jen.Newline(),
 	}
 }

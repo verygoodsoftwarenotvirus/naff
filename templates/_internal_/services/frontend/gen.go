@@ -71,8 +71,8 @@ func RenderPackage(proj *models.Project) error {
 	jenFiles := map[string]*jen.File{}
 
 	for _, typ := range proj.DataTypes {
-		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj)
-		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj)
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
 	}
 
 	for path, file := range jenFiles {

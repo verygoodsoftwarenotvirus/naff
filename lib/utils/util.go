@@ -95,7 +95,7 @@ func IntersperseWithNewlines(input []jen.Code) []jen.Code {
 	output := []jen.Code{}
 
 	for _, code := range input {
-		output = append(output, code, jen.Line())
+		output = append(output, code, jen.Newline())
 	}
 
 	return output
@@ -164,7 +164,7 @@ func BuildSubTestWithoutContext(name string, testInstructions ...jen.Code) jen.C
 func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Code) jen.Code {
 	insts := []jen.Code{}
 	if includeContext {
-		insts = append(insts, constants.CreateCtx(), jen.Line())
+		insts = append(insts, constants.CreateCtx(), jen.Newline())
 	}
 	insts = append(insts, testInstructions...)
 
@@ -244,10 +244,10 @@ func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen
 			constants.CtxVar(),
 			spanName,
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
-		jen.Line(),
-		jen.Line(),
+		jen.Newline(),
+		jen.Newline(),
 	)
 
 	return g
@@ -273,10 +273,10 @@ func StartSpanWithInlineCtx(proj *models.Project, saveCtx bool, spanName jen.Cod
 			constants.InlineCtx(),
 			spanName,
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
-		jen.Line(),
-		jen.Line(),
+		jen.Newline(),
+		jen.Newline(),
 	)
 
 	return g

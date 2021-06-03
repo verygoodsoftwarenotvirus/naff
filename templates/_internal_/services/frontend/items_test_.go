@@ -6,7 +6,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesTestDotGo(proj *models.Project) *jen.File {
+func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code, false)
@@ -150,7 +150,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -165,7 +165,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("strings", "NewReader").Call(jen.ID("form").Dot("Encode").Call()),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -300,7 +300,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -383,7 +383,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -533,7 +533,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -717,7 +717,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -838,7 +838,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -991,7 +991,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -1006,7 +1006,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				jen.Qual("strings", "NewReader").Call(jen.ID("form").Dot("Encode").Call()),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -1087,7 +1087,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -1296,7 +1296,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -1495,7 +1495,7 @@ func iterablesTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code

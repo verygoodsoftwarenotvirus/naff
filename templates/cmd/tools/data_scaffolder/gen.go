@@ -88,20 +88,20 @@ func buildInitializers(proj *models.Project) []jen.Code {
 	*/
 
 	for _, typ := range proj.DataTypes {
-		initializers = append(initializers, jen.Line(), jen.Line(),
+		initializers = append(initializers, jen.Newline(), jen.Newline(),
 
 			jen.ID("wg").Dot("Add").Call(jen.One()),
-			jen.Line(),
+			jen.Newline(),
 			jen.Go().Func().Params(jen.ID("wg").PointerTo().Qual("sync", "WaitGroup")).Body(
 				jen.For(jen.ID("j").Assign().Zero(), jen.ID("j").LessThan().Int().Call(jen.ID("dataCount")), jen.ID("j").Increment()).Body(
 					jen.ID("iterationLogger").Assign().ID("userLogger").Dot("WithValue").Call(jen.Lit("creating"), jen.Lit("items")).Dot("WithValue").Call(jen.Lit("iteration"), jen.ID("j")),
-					jen.Line(),
+					jen.Newline(),
 					jen.Commentf("create %s", typ.Name.SingularCommonName()),
 					jen.List(jen.IDf("created%s", typ.Name.Singular()), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName())).Assign().ID("userClient").Dot("CreateItem").Call(constants.CtxVar(), jen.Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", typ.Name.Singular())).Call()),
 					jen.If(jen.IDf("%sCreationErr", typ.Name.UnexportedVarName()).DoesNotEqual().Nil()).Body(
 						jen.ID("quitter").Dot("ComplainAndQuit").Call(jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("creating %s ", typ.Name.SingularCommonName())+"#%d: %w"), jen.ID("j"), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName()))),
 					),
-					jen.Line(),
+					jen.Newline(),
 					jen.ID("iterationLogger").Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("created%s", typ.Name.Singular()).Dot("ID")).Dot("Debug").Call(jen.Lit("created item")),
 				),
 				jen.ID("wg").Dot("Done").Call(),

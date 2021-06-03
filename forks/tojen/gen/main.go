@@ -108,7 +108,7 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 	}
 	// add the generated functions to the created jen file
 	for _, name := range decls {
-		codes = append(codes, jen.ID("code").Dot("Add").Callln(jen.ID(name).Call(), jen.Qual(jenImp, "Line").Call()))
+		codes = append(codes, jen.ID("code").Dot("Add").Callln(jen.ID(name).Call(), jen.Qual(jenImp, "Newline").Call()))
 	}
 	// return the created jen file
 	codes = append(codes, jen.Return().ID("code"))
@@ -126,7 +126,7 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 
 func genNewJenFile(name string) jen.Code {
 	const varName = "code"
-	return jen.ID(varName).Op(":=").Qual(jenImp, "NewFile").Call(jen.ID("packageName")).Line().Line().Qual(utilsImp, "AddImports").Call(jen.ID("proj"), jen.ID(varName), jen.False()).Line().Line()
+	return jen.ID(varName).Op(":=").Qual(jenImp, "NewFile").Call(jen.ID("packageName")).Newline().Newline().Qual(utilsImp, "AddImports").Call(jen.ID("proj"), jen.ID(varName), jen.False()).Newline().Newline()
 }
 
 func genMainFunc() jen.Code {

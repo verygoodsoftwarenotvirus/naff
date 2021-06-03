@@ -27,30 +27,15 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		file.ImportName("embed", "embed")
 	}
 
-	file.ImportName(proj.InternalAuthenticationPackage(), "authentication")
-	file.ImportName(proj.InternalAuthorizationPackage(), "authorization")
 	file.ImportAlias(proj.InternalAuthenticationPackage("mock"), "mockauth")
-	file.ImportName(proj.ConfigPackage(), "config")
-	file.ImportName(proj.EncodingPackage(), "encoding")
 	file.ImportAlias(proj.EncodingPackage("mock"), "mockencoding")
-	file.ImportName(proj.MetricsPackage(), "metrics")
+	file.ImportAlias(proj.InternalRoutingPackage("mock"), "mockrouting")
+	file.ImportAlias(proj.InternalSearchPackage("mock"), "mocksearch")
 	file.ImportAlias(proj.MetricsPackage("mock"), "mockmetrics")
-	file.ImportName(proj.InternalTracingPackage(), "tracing")
-	file.ImportName(proj.InternalSearchPackage(), "search")
-	file.ImportName(proj.InternalSecretsPackage(), "secrets")
-	file.ImportName(proj.InternalEventsPackage(), "events")
-	file.ImportName(proj.InternalSearchPackage("bleve"), "bleve")
-	file.ImportName(proj.InternalSearchPackage("mock"), "mocksearch")
 
 	file.ImportAlias(proj.DatabasePackage("config"), "dbconfig")
 	file.ImportAlias(proj.DatabasePackage("client"), "dbclient")
-	file.ImportName(proj.DatabasePackage("queriers", "mariadb"), "mariadb")
-	file.ImportName(proj.DatabasePackage("queriers", "postgres"), "postgres")
-	file.ImportName(proj.DatabasePackage("queriers", "sqlite"), "sqlite")
-
-	file.ImportName(proj.TypesPackage(), "types")
-	file.ImportAlias(proj.TypesPackage("mock"), "mockmodels")
-	file.ImportName(proj.TypesPackage("fakes"), "fakes")
+	file.ImportAlias(proj.TypesPackage("mock"), "mocktypes")
 
 	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
 
@@ -68,23 +53,12 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		file.ImportAlias(filepath.Join(pkgRoot, "internal", "services", pn), fmt.Sprintf("%sservice", pn))
 	}
 
-	file.ImportName(filepath.Join(pkgRoot, "tests", "frontend"), "frontend")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "integration"), "integration")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "load"), "load")
 	file.ImportAlias(proj.TestUtilsPackage(), "testutils")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 
-	file.ImportName(constants.CoreOAuth2Pkg, "oauth2")
-	file.ImportName(proj.InternalLoggingPackage(), "logging")
-	file.ImportName(filepath.Join(proj.InternalLoggingPackage(), "zerolog"), "zerolog")
-	file.ImportName(constants.AssertPkg, "assert")
-	file.ImportName(constants.MustAssertPkg, "require")
-	file.ImportName(constants.MockPkg, "mock")
 	file.ImportAlias("github.com/go-ozzo/ozzo-validation/v4", "validation")
 	file.ImportAlias(constants.FakeLibrary, "fake")
-	file.ImportName(constants.TracingLibrary, "trace")
-	file.ImportName(constants.SessionManagerLibrary, "scs")
 
 	// databases
 	file.ImportAlias("github.com/lib/pq", "postgres")
@@ -92,59 +66,90 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
 
 	file.ImportNames(map[string]string{
-		"context":           "context",
-		"fmt":               "fmt",
-		"net/http":          "http",
-		"net/http/httputil": "httputil",
-		"errors":            "errors",
-		"net/url":           "url",
-		"path":              "path",
-		"strings":           "strings",
-		"time":              "time",
-		"bytes":             "bytes",
-		"encoding/json":     "json",
-		"io":                "io",
-		"io/ioutil":         "ioutil",
-		"reflect":           "reflect",
-
-		"github.com/boombuler/barcode/qr":             "qr",
-		"github.com/DATA-DOG/go-sqlmock":              "sqlmock",
-		"github.com/GuiaBolso/darwin":                 "darwin",
-		"github.com/Masterminds/squirrel":             "squirrel",
-		"github.com/boombuler/barcode":                "barcode",
-		"github.com/emicklei/hazana":                  "hazana",
-		"github.com/go-chi/chi":                       "chi",
-		"github.com/go-chi/chi/middleware":            "middleware",
-		"github.com/go-chi/cors":                      "cors",
-		"github.com/google/wire":                      "wire",
-		"github.com/gorilla/securecookie":             "securecookie",
-		"github.com/heptiolabs/healthcheck":           "healthcheck",
-		"github.com/moul/http2curl":                   "http2curl",
-		"github.com/pquerna/otp":                      "otp",
-		"github.com/spf13/afero":                      "afero",
-		"github.com/spf13/viper":                      "viper",
-		"github.com/tebeka/selenium":                  "selenium",
-		"gitlab.com/verygoodsoftwarenotvirus/newsman": "newsman",
-		"golang.org/x/crypto":                         "crypto",
-		"github.com/spf13/pflag":                      "flag",
-		"github.com/pquerna/otp/totp":                 "totp",
-		"golang.org/x/oauth2/clientcredentials":       "clientcredentials",
+		"context":                            "context",
+		"fmt":                                "fmt",
+		"net/http":                           "http",
+		"net/http/httputil":                  "httputil",
+		"errors":                             "errors",
+		"net/url":                            "url",
+		"path":                               "path",
+		"strings":                            "strings",
+		"time":                               "time",
+		"bytes":                              "bytes",
+		"encoding/json":                      "json",
+		"io":                                 "io",
+		"io/ioutil":                          "ioutil",
+		"reflect":                            "reflect",
+		proj.InternalAuthenticationPackage(): "authentication",
+		proj.InternalAuthorizationPackage():  "authorization",
+		proj.ConfigPackage():                 "config",
+		proj.EncodingPackage():               "encoding",
+		proj.MetricsPackage():                "metrics",
+		proj.InternalTracingPackage():        "tracing",
+		proj.InternalSearchPackage():         "search",
+		proj.InternalSecretsPackage():        "secrets",
+		proj.InternalEventsPackage():         "events",
+		proj.InternalSearchPackage("bleve"):  "bleve",
+		proj.InternalSearchPackage("mock"):   "mocksearch",
+		proj.DatabasePackage("queriers", "mariadb"):        "mariadb",
+		proj.DatabasePackage("queriers", "postgres"):       "postgres",
+		proj.DatabasePackage("queriers", "sqlite"):         "sqlite",
+		proj.TypesPackage():                                "types",
+		proj.TypesPackage("fakes"):                         "fakes",
+		proj.TestsPackage("frontend"):                      "frontend",
+		proj.TestsPackage("integration"):                   "integration",
+		proj.TestsPackage("load"):                          "load",
+		proj.InternalLoggingPackage():                      "logging",
+		proj.InternalLoggingPackage("zerolog"):             "zerolog",
+		constants.RBACLibrary:                              "gorbac",
+		constants.TracingAttributionLibrary:                "attribute",
+		constants.AssertPkg:                                "assert",
+		constants.MustAssertPkg:                            "require",
+		constants.TestSuitePackage:                         "suite",
+		constants.MockPkg:                                  "mock",
+		constants.TracingLibrary:                           "trace",
+		constants.SessionManagerLibrary:                    "scs",
+		"github.com/boombuler/barcode/qr":                  "qr",
+		"github.com/DATA-DOG/go-sqlmock":                   "sqlmock",
+		"github.com/GuiaBolso/darwin":                      "darwin",
+		"github.com/Masterminds/squirrel":                  "squirrel",
+		"github.com/boombuler/barcode":                     "barcode",
+		"github.com/emicklei/hazana":                       "hazana",
+		"github.com/go-chi/chi":                            "chi",
+		"github.com/blevesearch/bleve/v2/analysis/lang/en": "en",
+		"github.com/blevesearch/bleve/v2/mapping":          "mapping",
+		"github.com/blevesearch/bleve/v2/search/searcher":  "searcher",
+		constants.SearchLibrary:                            "bleve",
+		"github.com/go-chi/chi/middleware":                 "middleware",
+		"github.com/go-chi/cors":                           "cors",
+		constants.DependencyInjectionPkg:                   "wire",
+		"github.com/gorilla/securecookie":                  "securecookie",
+		"github.com/heptiolabs/healthcheck":                "healthcheck",
+		"github.com/moul/http2curl":                        "http2curl",
+		"github.com/pquerna/otp":                           "otp",
+		"github.com/spf13/afero":                           "afero",
+		"github.com/spf13/viper":                           "viper",
+		"github.com/tebeka/selenium":                       "selenium",
+		"golang.org/x/crypto":                              "crypto",
+		constants.FlagParsingLibrary:                       "flag",
+		"github.com/pquerna/otp/totp":                      "totp",
+		"golang.org/x/oauth2/clientcredentials":            "clientcredentials",
 	})
 
-	file.Line()
+	file.Newline()
 }
 
-type mport struct {
+type importDef struct {
 	name,
 	path string
 }
 
-type importList []mport
+type importList []importDef
 
 type importSet struct {
-	stdlibImports   []mport
-	localLibImports []mport
-	externalImports []mport
+	stdlibImports   []importDef
+	localLibImports []importDef
+	externalImports []importDef
 }
 
 func (s *importSet) render() string {
@@ -184,9 +189,9 @@ func (l importList) Swap(i, j int) {
 
 func (l importList) toSet(pkgRoot string) *importSet {
 	is := &importSet{
-		stdlibImports:   []mport{},
-		localLibImports: []mport{},
-		externalImports: []mport{},
+		stdlibImports:   []importDef{},
+		localLibImports: []importDef{},
+		externalImports: []importDef{},
 	}
 
 	for _, imp := range l {
@@ -233,7 +238,7 @@ func FindAndFixImportBlock(pkgRoot, filepath string) error {
 
 	for _, imp := range allLines[startLine+1 : endLine] {
 		if x := strings.TrimSpace(string(imp)); x != "" {
-			y := mport{path: strings.ReplaceAll(x, `"`, "")}
+			y := importDef{path: strings.ReplaceAll(x, `"`, "")}
 			if z := strings.Split(y.path, " "); len(z) > 1 {
 				y.name = z[0]
 				y.path = z[1]

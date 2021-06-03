@@ -25,7 +25,7 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("exampleUpdateInput").Op("*").ID("types").Dot("ItemUpdateInput"),
 			),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	code.Add(
@@ -59,7 +59,7 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("helper").Dot("res").Op("=").ID("httptest").Dot("NewRecorder").Call(),
 			jen.Return().ID("helper"),
 		),
-		jen.Line(),
+		jen.Newline(),
 	)
 
 	return code
