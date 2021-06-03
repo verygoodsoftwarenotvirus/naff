@@ -3,10 +3,11 @@ package mariadb
 import (
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+
+	"github.com/Masterminds/squirrel"
 )
 
 func buildPrefixedStringColumns(typ models.DataType) []string {
@@ -37,15 +38,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(buildTestMariaDB_BuildSomethingExistsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetItemQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetAllItemsCountQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetBatchOfItemsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetItemsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetItemsWithIDsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildCreateItemQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildUpdateItemQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildArchiveItemQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetAuditLogEntriesForItemQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetSomethingQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetSomethingsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildCreateSomethingQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildUpdateSomethingQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildArchiveSomethingQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
 
 	return code
 }
@@ -113,7 +114,7 @@ func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models
 	}
 }
 
-func buildTestMariaDB_BuildGetItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
 	cols := buildPrefixedStringColumns(typ)
@@ -172,7 +173,7 @@ func buildTestMariaDB_BuildGetItemQuery(proj *models.Project, typ models.DataTyp
 	}
 }
 
-func buildTestMariaDB_BuildGetAllItemsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 
 	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
@@ -216,7 +217,7 @@ func buildTestMariaDB_BuildGetAllItemsCountQuery(proj *models.Project, typ model
 	}
 }
 
-func buildTestMariaDB_BuildGetBatchOfItemsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	cols := buildPrefixedStringColumns(typ)
 
@@ -277,7 +278,7 @@ func buildTestMariaDB_BuildGetBatchOfItemsQuery(proj *models.Project, typ models
 	}
 }
 
-func buildTestMariaDB_BuildGetItemsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	cols := buildPrefixedStringColumns(typ)
 
@@ -330,7 +331,7 @@ func buildTestMariaDB_BuildGetItemsQuery(proj *models.Project, typ models.DataTy
 	}
 }
 
-func buildTestMariaDB_BuildGetItemsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	cols := buildPrefixedStringColumns(typ)
 
@@ -410,7 +411,7 @@ func buildTestMariaDB_BuildGetItemsWithIDsQuery(proj *models.Project, typ models
 	}
 }
 
-func buildTestMariaDB_BuildCreateItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildCreateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -467,7 +468,7 @@ func buildTestMariaDB_BuildCreateItemQuery(proj *models.Project, typ models.Data
 	}
 }
 
-func buildTestMariaDB_BuildUpdateItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildUpdateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -514,7 +515,7 @@ func buildTestMariaDB_BuildUpdateItemQuery(proj *models.Project, typ models.Data
 	}
 }
 
-func buildTestMariaDB_BuildArchiveItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildArchiveItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -562,7 +563,7 @@ func buildTestMariaDB_BuildArchiveItemQuery(proj *models.Project, typ models.Dat
 	}
 }
 
-func buildTestMariaDB_BuildGetAuditLogEntriesForItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetAuditLogEntriesForItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
