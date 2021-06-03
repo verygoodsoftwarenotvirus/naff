@@ -318,10 +318,12 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		pTableName := pt.Name.PluralRouteName()
+
 		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.archived_on", pTableName)] = nil
 
 		if pt.BelongsToAccount && pt.RestrictedToAccountMembers {
-			whereValues[fmt.Sprintf("%s.belongs_to_user", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+			whereValues[fmt.Sprintf("%s.belongs_to_account", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("Account")).Dot("ID"))
 		}
 
 		if pt.BelongsToStruct != nil {
@@ -329,11 +331,13 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 		}
 	}
 
+	whereValues[fmt.Sprintf("%s.archived_on", tableName)] = nil
+
 	if typ.BelongsToStruct != nil {
 		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
-		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot(constants.UserOwnershipFieldName))
+		whereValues[fmt.Sprintf("%s.belongs_to_account", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot(constants.AccountOwnershipFieldName))
 	}
 
 	return whereValues
@@ -355,10 +359,12 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClau
 	}
 	for _, pt := range p.FindOwnerTypeChain(typ) {
 		pTableName := pt.Name.PluralRouteName()
+
 		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.archived_on", pTableName)] = nil
 
 		if pt.BelongsToAccount && pt.RestrictedToAccountMembers {
-			whereValues[fmt.Sprintf("%s.belongs_to_user", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+			whereValues[fmt.Sprintf("%s.belongs_to_account", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("Account")).Dot("ID"))
 		}
 
 		if pt.BelongsToStruct != nil {
@@ -366,11 +372,13 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClau
 		}
 	}
 
+	whereValues[fmt.Sprintf("%s.archived_on", tableName)] = nil
+
 	if typ.BelongsToStruct != nil && !typ.IsEnumeration {
 		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers && !typ.IsEnumeration {
-		whereValues[fmt.Sprintf("%s.belongs_to_user", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("User")).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.belongs_to_account", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("Account")).Dot("ID"))
 	}
 
 	return whereValues

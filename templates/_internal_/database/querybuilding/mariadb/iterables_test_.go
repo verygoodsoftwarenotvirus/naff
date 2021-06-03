@@ -1,17 +1,71 @@
 package mariadb
 
 import (
+	"fmt"
+	"github.com/Masterminds/squirrel"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
+
+func buildPrefixedStringColumns(typ models.DataType) []string {
+	tableName := typ.Name.PluralRouteName()
+	out := []string{
+		fmt.Sprintf("%s.id", tableName),
+		fmt.Sprintf("%s.external_id", tableName),
+	}
+
+	for _, field := range typ.Fields {
+		out = append(out, fmt.Sprintf("%s.%s", tableName, field.Name.RouteName()))
+	}
+
+	out = append(out, fmt.Sprintf("%s.created_on", tableName), fmt.Sprintf("%s.last_updated_on", tableName), fmt.Sprintf("%s.archived_on", tableName))
+	if typ.BelongsToAccount {
+		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
+	}
+	if typ.BelongsToStruct != nil {
+		out = append(out, fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName()))
+	}
+
+	return out
+}
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(
+	code.Add(buildTestMariaDB_BuildSomethingExistsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetItemQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetAllItemsCountQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetBatchOfItemsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetItemsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetItemsWithIDsQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildCreateItemQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildUpdateItemQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildArchiveItemQuery(proj, typ)...)
+	code.Add(buildTestMariaDB_BuildGetAuditLogEntriesForItemQuery(proj, typ)...)
+
+	return code
+}
+
+func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	tableName := typ.Name.PluralRouteName()
+
+	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj)
+
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).Select(fmt.Sprintf("%s.id", tableName)).
+		Prefix(existencePrefix).
+		From(tableName)
+
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	qb = qb.Suffix(existenceSuffix).
+		Where(whereValues)
+
+	query, _, _ := qb.ToSql()
+
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildItemExistsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -24,14 +78,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Newline(),
 					jen.ID("exampleAccount").Op(":=").ID("fakes").Dot("BuildFakeAccount").Call(),
-					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
-					jen.ID("exampleItem").Dot("BelongsToAccount").Op("=").ID("exampleAccount").Dot("ID"),
+					jen.IDf("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
+					jen.IDf("exampleItem").Dot("BelongsToAccount").Op("=").ID("exampleAccount").Dot("ID"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT EXISTS ( SELECT items.id FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.id = ? )"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
-					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildItemExistsQuery").Call(
+					jen.ID("expectedQuery").Op(":=").Lit(query),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.IDf("exampleItem").Dot("BelongsToAccount"), jen.IDf("exampleItem").Dot("ID")),
+					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildItemExistsQuery").Call(
 						jen.ID("ctx"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("exampleItem").Dot("ID"),
 						jen.ID("exampleAccount").Dot("ID"),
 					),
 					jen.Newline(),
@@ -54,9 +109,21 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildGetItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	tableName := typ.Name.PluralRouteName()
+	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
+	cols := buildPrefixedStringColumns(typ)
+
+	qb := typ.ModifyQueryBuilderWithJoinClauses(proj, squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+		Select(cols...).
+		From(tableName)).
+		Where(whereValues)
+	query, _, _ := qb.ToSql()
+
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -72,8 +139,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
 					jen.ID("exampleItem").Dot("BelongsToAccount").Op("=").ID("exampleAccount").Dot("ID"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.id = ?"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("expectedQuery").Op(":=").Lit(query),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetItemQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleItem").Dot("ID"),
@@ -99,9 +167,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildGetAllItemsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetAllItemsCountQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -130,9 +200,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildGetBatchOfItemsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetBatchOfItemsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -147,7 +219,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Op(":=").List(jen.ID("uint64").Call(jen.Lit(1)), jen.ID("uint64").Call(jen.Lit(1000))),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account FROM items WHERE items.id > ? AND items.id < ?"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetBatchOfItemsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("beginID"),
@@ -173,9 +246,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildGetItemsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetItemsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -191,7 +266,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("filter").Op(":=").ID("fakes").Dot("BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account, (SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ?) as total_count, (SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.created_on > ? AND items.created_on < ? AND items.last_updated_on > ? AND items.last_updated_on < ?) as filtered_count FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.created_on > ? AND items.created_on < ? AND items.last_updated_on > ? AND items.last_updated_on < ? GROUP BY items.id LIMIT 20 OFFSET 180"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetItemsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -218,9 +294,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildGetItemsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetItemsWithIDsQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -233,10 +311,12 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Newline(),
 					jen.ID("exampleUser").Op(":=").ID("fakes").Dot("BuildFakeUser").Call(),
-					jen.ID("exampleIDs").Op(":=").Index().ID("uint64").Valuesln(jen.Lit(789), jen.Lit(123), jen.Lit(456)),
+					jen.ID("exampleIDs").Op(":=").Index().ID("uint64").Valuesln(
+						jen.Lit(789), jen.Lit(123), jen.Lit(456)),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit("SELECT items.id, items.external_id, items.name, items.details, items.created_on, items.last_updated_on, items.archived_on, items.belongs_to_account FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.id IN (?,?,?) ORDER BY CASE items.id WHEN 789 THEN 0 WHEN 123 THEN 1 WHEN 456 THEN 2 END LIMIT 20"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleIDs").Index(jen.Lit(0)), jen.ID("exampleIDs").Index(jen.Lit(1)), jen.ID("exampleIDs").Index(jen.Lit(2))),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleIDs").Index(jen.Lit(0)), jen.ID("exampleIDs").Index(jen.Lit(1)), jen.ID("exampleIDs").Index(jen.Lit(2))),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetItemsWithIDsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -264,9 +344,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildCreateItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildCreateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -288,7 +370,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO items (external_id,name,details,belongs_to_account) VALUES (?,?,?,?)"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("ExternalID"), jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount")),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleItem").Dot("ExternalID"), jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildCreateItemQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
@@ -318,9 +401,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildUpdateItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildUpdateItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -337,7 +422,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("exampleItem").Dot("BelongsToAccount").Op("=").ID("exampleAccount").Dot("ID"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET name = ?, details = ?, last_updated_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND belongs_to_account = ? AND id = ?"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildUpdateItemQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleItem"),
@@ -362,9 +448,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildArchiveItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildArchiveItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -381,7 +469,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("exampleItem").Dot("BelongsToAccount").Op("=").ID("exampleAccount").Dot("ID"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit("UPDATE items SET last_updated_on = UNIX_TIMESTAMP(), archived_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND belongs_to_account = ? AND id = ?"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ID"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccount").Dot("ID"), jen.ID("exampleItem").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildArchiveItemQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleItem").Dot("ID"),
@@ -407,9 +496,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
+}
 
-	code.Add(
+func buildTestMariaDB_BuildGetAuditLogEntriesForItemQuery(proj *models.Project, typ models.DataType) []jen.Code {
+	return []jen.Code{
 		jen.Func().ID("TestMariaDB_BuildGetAuditLogEntriesForItemQuery").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -452,7 +543,5 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
-
-	return code
+	}
 }

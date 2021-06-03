@@ -13,6 +13,9 @@ import (
 const (
 	packageName = "mariadb"
 
+	existencePrefix = "SELECT EXISTS ("
+	existenceSuffix = ")"
+
 	basePackagePath = "internal/database/querybuilding/mariadb"
 )
 
