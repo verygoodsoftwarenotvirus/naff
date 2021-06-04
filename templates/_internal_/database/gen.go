@@ -2,7 +2,9 @@ package database
 
 import (
 	_ "embed"
+	"fmt"
 	"path/filepath"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -34,7 +36,16 @@ func RenderPackage(proj *models.Project) error {
 var databaseTemplate string
 
 func databaseDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, databaseTemplate, nil)
+	dataManagers := []string{}
+	for _, typ := range proj.DataTypes {
+		dataManagers = append(dataManagers, fmt.Sprintf("types.%sDataManager", typ.Name.Singular()))
+	}
+
+	generated := map[string]string{
+		"dataManagers": strings.Join(dataManagers, "\n\t\t"),
+	}
+
+	return models.RenderCodeFile(proj, databaseTemplate, generated)
 }
 
 //go:embed database_mock.gotpl
