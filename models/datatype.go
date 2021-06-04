@@ -163,7 +163,21 @@ func (typ DataType) BuildDBQuerierArchiveMethodParams() []jen.Code {
 }
 
 func (typ DataType) BuildDBQuerierArchiveQueryMethodParams() []jen.Code {
-	return typ.buildArchiveSomethingParams()
+	params := []jen.Code{ctxParam()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.BelongsToAccount {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	params = append(params, jen.List(lp...).ID("uint64"))
+
+	return params
 }
 
 func (typ DataType) BuildDBQuerierRetrievalMethodParams(p *Project) []jen.Code {
@@ -752,6 +766,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	params = append(params,
 		jen.ID("limit").Uint8(),
 		jen.ID("ids").Index().Uint64(),
+		jen.ID("forAdmin").Bool(),
 	)
 
 	return params
@@ -837,7 +852,24 @@ func (typ DataType) BuildDBQuerierListRetrievalMethodParams(p *Project) []jen.Co
 }
 
 func (typ DataType) BuildDBQuerierListRetrievalQueryBuildingMethodParams(p *Project) []jen.Code {
-	return typ.buildGetListOfSomethingParams(p, false)
+	params := []jen.Code{ctxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	params = append(params, jen.ID("forAdmin").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
+
+	return params
 }
 
 const creationObjectVarName = "input"
@@ -878,9 +910,9 @@ func (typ DataType) BuildDBQuerierCreationQueryBuildingMethodParams(p *Project, 
 
 	sn := typ.Name.Singular()
 	if isModelsPackage {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").ID(sn))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").IDf("%sCreationInput", sn))
 	} else {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), sn))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)))
 	}
 
 	return params
@@ -992,8 +1024,16 @@ func (typ DataType) BuildDBQuerierUpdateMethodParams(p *Project, updatedVarName 
 	return typ.buildUpdateSomethingParams(p, updatedVarName, false)
 }
 
-func (typ DataType) BuildDBQuerierUpdateQueryBuildingMethodParams(p *Project, updatedVarName string) []jen.Code {
-	return typ.buildUpdateSomethingParams(p, updatedVarName, false)
+func (typ DataType) BuildDBQuerierUpdateQueryBuildingMethodParams(p *Project) []jen.Code {
+	params := []jen.Code{ctxParam()}
+
+	sn := typ.Name.Singular()
+
+	params = append(params,
+		jen.ID("input").Op("*").Qual(p.TypesPackage(), sn),
+	)
+
+	return params
 }
 
 func (typ DataType) BuildInterfaceDefinitionUpdateMethodParams(p *Project, updatedVarName string) []jen.Code {
