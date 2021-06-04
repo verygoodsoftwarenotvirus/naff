@@ -146,16 +146,5 @@ const (
 	// WebhooksTableOwnershipColumn is what the webhooks table calls the <> column.
 	WebhooksTableOwnershipColumn = accountOwnershipColumn
 
-	//
-	// Items Table.
-	//
-
-	// ItemsTableName is what the items table calls itself.
-	ItemsTableName = "items"
-	// ItemsTableNameColumn is what the items table calls the name column.
-	ItemsTableNameColumn = "name"
-	// ItemsTableDetailsColumn is what the items table calls the details column.
-	ItemsTableDetailsColumn = "details"
-	// ItemsTableAccountOwnershipColumn is what the items table calls the user ownership column.
-	ItemsTableAccountOwnershipColumn = accountOwnershipColumn
+	{{ generated "queryConstants" }}
 )

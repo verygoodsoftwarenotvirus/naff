@@ -163,15 +163,11 @@ func (typ DataType) BuildDBQuerierArchiveMethodParams() []jen.Code {
 }
 
 func (typ DataType) BuildDBQuerierArchiveQueryMethodParams() []jen.Code {
-	params := typ.buildArchiveSomethingParams()
-
-	return params[1:]
+	return typ.buildArchiveSomethingParams()
 }
 
 func (typ DataType) BuildDBQuerierRetrievalMethodParams(p *Project) []jen.Code {
-	params := typ.buildGetSomethingParams(p, true)
-
-	return params[1:]
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryMethodParams(p *Project) []jen.Code {
@@ -179,9 +175,7 @@ func (typ DataType) BuildDBQuerierRetrievalQueryMethodParams(p *Project) []jen.C
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryMethodParams(p *Project) []jen.Code {
-	params := typ.buildGetSomethingParams(p, true)
-
-	return params[1:]
+	return typ.buildGetSomethingParams(p, true)
 }
 
 func (typ DataType) ModifyQueryBuildingStatementWithJoinClauses(p *Project, qbStmt *jen.Statement) *jen.Statement {
@@ -843,9 +837,7 @@ func (typ DataType) BuildDBQuerierListRetrievalMethodParams(p *Project) []jen.Co
 }
 
 func (typ DataType) BuildDBQuerierListRetrievalQueryBuildingMethodParams(p *Project) []jen.Code {
-	params := typ.buildGetListOfSomethingParams(p, false)
-
-	return params[1:]
+	return typ.buildGetListOfSomethingParams(p, false)
 }
 
 const creationObjectVarName = "input"
@@ -1001,9 +993,7 @@ func (typ DataType) BuildDBQuerierUpdateMethodParams(p *Project, updatedVarName 
 }
 
 func (typ DataType) BuildDBQuerierUpdateQueryBuildingMethodParams(p *Project, updatedVarName string) []jen.Code {
-	params := typ.buildUpdateSomethingParams(p, updatedVarName, false)
-
-	return params[1:]
+	return typ.buildUpdateSomethingParams(p, updatedVarName, false)
 }
 
 func (typ DataType) BuildInterfaceDefinitionUpdateMethodParams(p *Project, updatedVarName string) []jen.Code {

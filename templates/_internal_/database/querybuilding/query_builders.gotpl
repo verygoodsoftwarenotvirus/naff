@@ -88,19 +88,7 @@ type (
 		BuildGetAuditLogEntriesForWebhookQuery(ctx context.Context, webhookID uint64) (query string, args []interface{})
 	}
 
-	// ItemSQLQueryBuilder describes a structure capable of generating query/arg pairs for certain situations.
-	ItemSQLQueryBuilder interface {
-		BuildItemExistsQuery(ctx context.Context, itemID, accountID uint64) (query string, args []interface{})
-		BuildGetItemQuery(ctx context.Context, itemID, accountID uint64) (query string, args []interface{})
-		BuildGetAllItemsCountQuery(ctx context.Context) string
-		BuildGetBatchOfItemsQuery(ctx context.Context, beginID, endID uint64) (query string, args []interface{})
-		BuildGetItemsQuery(ctx context.Context, accountID uint64, forAdmin bool, filter *types.QueryFilter) (query string, args []interface{})
-		BuildGetItemsWithIDsQuery(ctx context.Context, accountID uint64, limit uint8, ids []uint64, forAdmin bool) (query string, args []interface{})
-		BuildCreateItemQuery(ctx context.Context, input *types.ItemCreationInput) (query string, args []interface{})
-		BuildUpdateItemQuery(ctx context.Context, input *types.Item) (query string, args []interface{})
-		BuildArchiveItemQuery(ctx context.Context, itemID, accountID uint64) (query string, args []interface{})
-		BuildGetAuditLogEntriesForItemQuery(ctx context.Context, itemID uint64) (query string, args []interface{})
-	}
+	{{ generated "queryBuilderInterfaceDeclarations" }}
 
 	// SQLQueryBuilder describes anything that builds SQL queries to manage our data.
 	SQLQueryBuilder interface {
@@ -113,6 +101,6 @@ type (
 		AuditLogEntrySQLQueryBuilder
 		APIClientSQLQueryBuilder
 		WebhookSQLQueryBuilder
-		ItemSQLQueryBuilder
+		{{ generated "querybuilderInterfaces" }}
 	}
 )
