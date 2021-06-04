@@ -1,6 +1,10 @@
 package misc
 
-func makefile() string {
+import (
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+)
+
+func makefile(proj *models.Project) string {
 	return `define MAGE_INQUIRY
 _______________________________________________
 |         Did you mean to invoke mage?        |
