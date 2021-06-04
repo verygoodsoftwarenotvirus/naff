@@ -557,7 +557,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			listArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Qual(constants.AssertPkg, "True").Callln(
+		jen.Qual(constants.AssertionLibrary, "True").Callln(
 			jen.ID("t"),
 			jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot(pn)),
 			jen.Lit("expected %d to be <= %d"), jen.Len(jen.ID("expected")),
@@ -643,7 +643,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 			searchArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Qual(constants.AssertPkg, "True").Callln(
+		jen.Qual(constants.AssertionLibrary, "True").Callln(
 			jen.ID("t"),
 			jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual")),
 			jen.Lit("expected results length %d to be <= %d"), jen.Len(jen.ID("expected")),
@@ -813,7 +813,7 @@ func buildTestSearchingForOnlyYourOwnItems(proj *models.Project, typ models.Data
 			searchArgs...,
 		),
 		jen.ID("checkValueAndError").Call(jen.ID("t"), jen.ID("actual"), jen.Err()),
-		jen.Qual(constants.AssertPkg, "True").Callln(
+		jen.Qual(constants.AssertionLibrary, "True").Callln(
 			jen.ID("t"),
 			jen.Len(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual")),
 			jen.Lit("expected results length %d to be <= %d"), jen.Len(jen.ID("expected")),

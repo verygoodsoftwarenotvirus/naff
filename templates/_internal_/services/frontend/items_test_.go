@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -52,7 +53,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("exampleSessionContextData"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("exampleItem"),
 						jen.ID("actual"),
@@ -189,7 +190,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -214,7 +215,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -238,7 +239,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("unauthorizedRedirectResponseCode"),
 						jen.ID("res").Dot("Code"),
@@ -321,7 +322,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("req"),
 						jen.ID("sessionCtxData"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expected"),
 						jen.ID("actual"),
@@ -417,7 +418,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusCreated"),
 						jen.ID("res").Dot("Code"),
@@ -447,7 +448,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("unauthorizedRedirectResponseCode"),
 						jen.ID("res").Dot("Code"),
@@ -482,7 +483,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
 						jen.ID("res").Dot("Code"),
@@ -521,7 +522,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),
@@ -578,7 +579,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -629,7 +630,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -658,7 +659,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("unauthorizedRedirectResponseCode"),
 						jen.ID("res").Dot("Code"),
@@ -704,7 +705,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),
@@ -752,7 +753,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("exampleSessionContextData"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("exampleItemList"),
 						jen.ID("actual"),
@@ -874,7 +875,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -915,7 +916,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -943,7 +944,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("unauthorizedRedirectResponseCode"),
 						jen.ID("res").Dot("Code"),
@@ -979,7 +980,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),
@@ -1028,7 +1029,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("req"),
 						jen.ID("sessionCtxData"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expected"),
 						jen.ID("actual"),
@@ -1136,7 +1137,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -1163,7 +1164,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("unauthorizedRedirectResponseCode"),
 						jen.ID("res").Dot("Code"),
@@ -1185,7 +1186,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
 						jen.ID("res").Dot("Code"),
@@ -1228,7 +1229,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),
@@ -1283,7 +1284,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),
@@ -1350,7 +1351,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("res").Dot("Code"),
@@ -1379,7 +1380,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("unauthorizedRedirectResponseCode"),
 						jen.ID("res").Dot("Code"),
@@ -1423,7 +1424,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),
@@ -1482,7 +1483,7 @@ func iterablesTestDotGo(proj *models.Project, _ models.DataType) *jen.File {
 						jen.ID("res"),
 						jen.ID("req"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("res").Dot("Code"),

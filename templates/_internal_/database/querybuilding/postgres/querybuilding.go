@@ -1,4 +1,4 @@
-package mariadb
+package postgres
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func applyFilterToSubCountQueryBuilder(tableName string, queryBuilder squirrel.S
 func buildTotalCountQuery(tableName string, forAdmin bool) (query string, args []interface{}) {
 	where := squirrel.Eq{}
 
-	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 	totalCountQueryBuilder := sqlBuilder.
 		Select(fmt.Sprintf(columnCountQueryTemplate, tableName)).
 		From(tableName)
@@ -57,7 +57,7 @@ func buildTotalCountQuery(tableName string, forAdmin bool) (query string, args [
 func buildFilteredCountQuery(tableName string, forAdmin bool) (query string, args []interface{}) {
 	where := squirrel.Eq{}
 
-	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 	filteredCountQueryBuilder := sqlBuilder.
 		Select(fmt.Sprintf(columnCountQueryTemplate, tableName)).
@@ -109,7 +109,7 @@ func applyFleshedOutQueryFilterWithCode(qb squirrel.SelectBuilder, tableName str
 }
 
 func buildListQuery(tableName string, columns []string, forAdmin bool) (query string, args []interface{}) {
-	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	sqlBuilder := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 	filteredCountQuery, filteredCountQueryArgs := buildFilteredCountQuery(tableName, forAdmin)
 	totalCountQuery, totalCountQueryArgs := buildTotalCountQuery(tableName, forAdmin)

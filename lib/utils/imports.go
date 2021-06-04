@@ -103,7 +103,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		proj.InternalLoggingPackage("zerolog"):             "zerolog",
 		constants.RBACLibrary:                              "gorbac",
 		constants.TracingAttributionLibrary:                "attribute",
-		constants.AssertPkg:                                "assert",
+		constants.AssertionLibrary:                         "assert",
 		constants.MustAssertPkg:                            "require",
 		constants.TestSuitePackage:                         "suite",
 		constants.MockPkg:                                  "mock",

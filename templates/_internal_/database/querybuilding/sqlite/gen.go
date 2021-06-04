@@ -2,6 +2,8 @@ package sqlite
 
 import (
 	_ "embed"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,6 +11,8 @@ import (
 )
 
 const (
+	packageName = "sqlite"
+
 	basePackagePath = "internal/database/querybuilding/sqlite"
 )
 
@@ -26,8 +30,6 @@ func RenderPackage(proj *models.Project) error {
 		"doc.go":                           docDotGo(proj),
 		"generic.go":                       genericDotGo(proj),
 		"generic_test.go":                  genericTestDotGo(proj),
-		"items.go":                         itemsDotGo(proj),
-		"items_test.go":                    itemsTestDotGo(proj),
 		"sqlite.go":                        sqliteDotGo(proj),
 		"sqlite_test.go":                   sqliteTestDotGo(proj),
 		"migrations.go":                    migrationsDotGo(proj),
@@ -40,6 +42,18 @@ func RenderPackage(proj *models.Project) error {
 
 	for path, file := range files {
 		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
+	jenFiles := map[string]*jen.File{}
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
@@ -122,20 +136,6 @@ var genericTestTemplate string
 
 func genericTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, genericTestTemplate, nil)
-}
-
-//go:embed items.gotpl
-var itemsTemplate string
-
-func itemsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemsTemplate, nil)
-}
-
-//go:embed items_test.gotpl
-var itemsTestTemplate string
-
-func itemsTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemsTestTemplate, nil)
 }
 
 //go:embed sqlite.gotpl

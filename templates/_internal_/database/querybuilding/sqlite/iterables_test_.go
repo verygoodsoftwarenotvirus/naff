@@ -1,4 +1,4 @@
-package mariadb
+package sqlite
 
 import (
 	"fmt"
@@ -40,21 +40,21 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTestMariaDB_BuildSomethingExistsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetSomethingsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildCreateSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildUpdateSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildArchiveSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildSomethingExistsQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildGetSomethingQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildGetAllSomethingsCountQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildGetBatchOfSomethingsQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildGetSomethingsQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildCreateSomethingQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildUpdateSomethingQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildArchiveSomethingQuery(proj, typ)...)
+	code.Add(buildTestSqlite_BuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
 
 	return code
 }
 
-func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -72,7 +72,7 @@ func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_Build%sExistsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_Build%sExistsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -118,7 +118,7 @@ func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models
 	}
 }
 
-func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	sn := typ.Name.Singular()
 
@@ -133,7 +133,7 @@ func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.Da
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGet%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildGet%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -179,7 +179,7 @@ func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.Da
 	}
 }
 
-func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
@@ -193,7 +193,7 @@ func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ 
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGetAll%sCountQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildGetAll%sCountQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -224,7 +224,7 @@ func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ 
 	}
 }
 
-func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
@@ -243,7 +243,7 @@ func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ m
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGetBatchOf%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildGetBatchOf%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -287,7 +287,7 @@ func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ m
 	}
 }
 
-func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 	cols := buildPrefixedStringColumns(typ)
@@ -295,7 +295,7 @@ func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.D
 	query, _ := buildListQuery(tableName, cols, false)
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGet%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildGet%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -341,7 +341,7 @@ func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.D
 	}
 }
 
-func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 	cols := buildPrefixedStringColumns(typ)
@@ -374,7 +374,7 @@ func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ m
 	expectedQuery, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGet%sWithIDsQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildGet%sWithIDsQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -445,7 +445,7 @@ func buildCreationStringColumnsAndArgs(typ models.DataType) (cols []string, args
 	return
 }
 
-func buildTestMariaDB_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -463,7 +463,7 @@ func buildTestMariaDB_BuildCreateSomethingQuery(proj *models.Project, typ models
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildCreate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildCreate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -528,7 +528,7 @@ func buildUpdateQueryParts(typ models.DataType) []string {
 	return out
 }
 
-func buildTestMariaDB_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -564,7 +564,7 @@ func buildTestMariaDB_BuildUpdateSomethingQuery(proj *models.Project, typ models
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildUpdate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildUpdate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -646,14 +646,14 @@ func buildTestBuildArchiveSomethingQueryBuilder(typ models.DataType) (qb squirre
 	return qb, expectedArgs, callArgs
 }
 
-func buildTestMariaDB_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
 	qb, _, _ := buildTestBuildArchiveSomethingQueryBuilder(typ)
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildArchive%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildArchive%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -699,7 +699,7 @@ func buildTestMariaDB_BuildArchiveSomethingQuery(proj *models.Project, typ model
 	}
 }
 
-func buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestSqlite_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
 	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).Select(
@@ -716,7 +716,7 @@ func buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proj
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestSqlite_BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(

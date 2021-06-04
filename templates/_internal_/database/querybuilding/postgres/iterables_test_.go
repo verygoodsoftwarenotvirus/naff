@@ -1,4 +1,4 @@
-package mariadb
+package postgres
 
 import (
 	"fmt"
@@ -40,27 +40,27 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTestMariaDB_BuildSomethingExistsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetSomethingsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildCreateSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildUpdateSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildArchiveSomethingQuery(proj, typ)...)
-	code.Add(buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildSomethingExistsQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildGetSomethingQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildGetAllSomethingsCountQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildGetBatchOfSomethingsQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildGetSomethingsQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildGetSomethingsWithIDsQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildCreateSomethingQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildUpdateSomethingQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildArchiveSomethingQuery(proj, typ)...)
+	code.Add(buildTestPostgres_BuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
 
 	return code
 }
 
-func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
 	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj)
 
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).Select(fmt.Sprintf("%s.id", tableName)).
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).Select(fmt.Sprintf("%s.id", tableName)).
 		Prefix(existencePrefix).
 		From(tableName)
 
@@ -72,7 +72,7 @@ func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_Build%sExistsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_Build%sExistsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -118,14 +118,14 @@ func buildTestMariaDB_BuildSomethingExistsQuery(proj *models.Project, typ models
 	}
 }
 
-func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	sn := typ.Name.Singular()
 
 	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
 	cols := buildPrefixedStringColumns(typ)
 
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).
 		Select(cols...).
 		From(tableName)
 	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb).
@@ -133,7 +133,7 @@ func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.Da
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGet%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildGet%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -179,11 +179,11 @@ func buildTestMariaDB_BuildGetSomethingQuery(proj *models.Project, typ models.Da
 	}
 }
 
-func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).
 		Select(fmt.Sprintf(countQuery, tableName)).
 		From(tableName).
 		Where(squirrel.Eq{
@@ -193,7 +193,7 @@ func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ 
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGetAll%sCountQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildGetAll%sCountQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -224,13 +224,13 @@ func buildTestMariaDB_BuildGetAllSomethingsCountQuery(proj *models.Project, typ 
 	}
 }
 
-func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
 	cols := buildPrefixedStringColumns(typ)
 
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).
 		Select(cols...).
 		From(tableName).
 		Where(squirrel.Gt{
@@ -243,7 +243,7 @@ func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ m
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGetBatchOf%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildGetBatchOf%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -287,7 +287,7 @@ func buildTestMariaDB_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ m
 	}
 }
 
-func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 	cols := buildPrefixedStringColumns(typ)
@@ -295,7 +295,7 @@ func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.D
 	query, _ := buildListQuery(tableName, cols, false)
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGet%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildGet%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -341,7 +341,7 @@ func buildTestMariaDB_BuildGetSomethingsQuery(proj *models.Project, typ models.D
 	}
 }
 
-func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 	cols := buildPrefixedStringColumns(typ)
@@ -364,7 +364,7 @@ func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ m
 	}
 	whenThenStatement += " END"
 
-	qb = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).
 		Select(cols...).
 		From(tableName).
 		Where(whereValues).
@@ -374,7 +374,7 @@ func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ m
 	expectedQuery, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGet%sWithIDsQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildGet%sWithIDsQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -387,11 +387,16 @@ func buildTestMariaDB_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ m
 					jen.Newline(),
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleIDs").Op(":=").Index().ID("uint64").Valuesln(
-						jen.Lit(789), jen.Lit(123), jen.Lit(456)),
+						jen.Lit(789),
+						jen.Lit(123),
+						jen.Lit(456),
+					),
+					jen.ID("exampleIDsAsStrings").Assign().ID("joinUint64s").Call(jen.ID("exampleIDs")),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
-						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleIDs").Index(jen.Lit(0)), jen.ID("exampleIDs").Index(jen.Lit(1)), jen.ID("exampleIDs").Index(jen.Lit(2))),
+						jen.ID("exampleUser").Dot("ID"),
+					),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGet%sWithIDsQuery", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -445,7 +450,7 @@ func buildCreationStringColumnsAndArgs(typ models.DataType) (cols []string, args
 	return
 }
 
-func buildTestMariaDB_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -455,7 +460,7 @@ func buildTestMariaDB_BuildCreateSomethingQuery(proj *models.Project, typ models
 		valueArgs = append(valueArgs, whateverValue)
 	}
 
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).
 		Insert(tableName).
 		Columns(fieldCols...).
 		Values(valueArgs...)
@@ -463,7 +468,7 @@ func buildTestMariaDB_BuildCreateSomethingQuery(proj *models.Project, typ models
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildCreate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildCreate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -528,7 +533,7 @@ func buildUpdateQueryParts(typ models.DataType) []string {
 	return out
 }
 
-func buildTestMariaDB_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -541,7 +546,7 @@ func buildTestMariaDB_BuildUpdateSomethingQuery(proj *models.Project, typ models
 	}
 
 	eq := squirrel.Eq{"id": whateverValue}
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).Update(tableName)
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).Update(tableName)
 	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
 			qb = qb.Set(field.Name.RouteName(), jen.ID("input").Dot(field.Name.Singular()))
@@ -564,7 +569,7 @@ func buildTestMariaDB_BuildUpdateSomethingQuery(proj *models.Project, typ models
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildUpdate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildUpdate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -637,7 +642,7 @@ func buildTestBuildArchiveSomethingQueryBuilder(typ models.DataType) (qb squirre
 
 	expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
-	qb = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).
+	qb = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).
 		Update(tableName).
 		Set("last_updated_on", squirrel.Expr(timestampCall)).
 		Set("archived_on", squirrel.Expr(timestampCall)).
@@ -646,14 +651,14 @@ func buildTestBuildArchiveSomethingQueryBuilder(typ models.DataType) (qb squirre
 	return qb, expectedArgs, callArgs
 }
 
-func buildTestMariaDB_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
 	qb, _, _ := buildTestBuildArchiveSomethingQueryBuilder(typ)
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildArchive%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildArchive%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -699,10 +704,10 @@ func buildTestMariaDB_BuildArchiveSomethingQuery(proj *models.Project, typ model
 	}
 }
 
-func buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestPostgres_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
-	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question).Select(
+	qb := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).Select(
 		"audit_log.id",
 		"audit_log.external_id",
 		"audit_log.event_type",
@@ -716,7 +721,7 @@ func buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proj
 	query, _, _ := qb.ToSql()
 
 	return []jen.Code{
-		jen.Func().IDf("TestMariaDB_BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestPostgres_BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -730,10 +735,12 @@ func buildTestMariaDB_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proj
 					jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Qual("fmt", "Sprintf").Call(
-						jen.Lit(query),
+						jen.Qual("fmt", "Sprintf").Call(jen.Lit(query)),
 						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Call(jen.ID("nil")),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.IDf("example%s", sn).Dot("ID"),
+					),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGetAuditLogEntriesFor%sQuery", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),

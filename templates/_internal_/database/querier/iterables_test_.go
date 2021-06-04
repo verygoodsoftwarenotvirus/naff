@@ -408,7 +408,7 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.IDf("example%s", sn),
 						jen.ID("actual"),
@@ -569,7 +569,7 @@ func buildTestQuerier_GetAllSomethingsCount(proj *models.Project, typ models.Dat
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("exampleCount"),
 						jen.ID("actual"),
@@ -982,7 +982,7 @@ func buildTestQuerier_GetSomethings(proj *models.Project, typ models.DataType) [
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.IDf("example%sList", sn),
 						jen.ID("actual"),
@@ -1042,7 +1042,7 @@ func buildTestQuerier_GetSomethings(proj *models.Project, typ models.DataType) [
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.IDf("example%sList", sn),
 						jen.ID("actual"),
@@ -1250,7 +1250,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.IDf("example%sList", sn).Dot(pn),
 						jen.ID("actual"),
@@ -1348,7 +1348,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.IDf("example%sList", sn).Dot(pn),
 						jen.ID("actual"),
@@ -1545,7 +1545,7 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.IDf("example%s", sn),
 						jen.ID("actual"),
@@ -2549,7 +2549,7 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("exampleAuditLogEntriesList").Dot("Entries"),
 						jen.ID("actual"),

@@ -7,7 +7,7 @@ import (
 const (
 	RBACLibrary               = "gopkg.in/mikespook/gorbac.v2"
 	TracingAttributionLibrary = "go.opentelemetry.io/otel/attribute"
-	AssertPkg                 = "github.com/stretchr/testify/assert"
+	AssertionLibrary          = "github.com/stretchr/testify/assert"
 	MustAssertPkg             = "github.com/stretchr/testify/require"
 	MockPkg                   = "github.com/stretchr/testify/mock"
 	TestSuitePackage          = "github.com/stretchr/testify/suite"
