@@ -185,7 +185,7 @@ void myprint(char* s) {
 	f.Func().Id("init").Params().Block(
 		Id("cs").Op(":=").Qual("C", "CString").Call(Lit("Hello from stdio\n")),
 		Qual("C", "myprint").Call(Id("cs")),
-		Qual("C", "free").Call(Qual("unsafe", "Pointer").Parens(Id("cs"))),
+		Qual("C", "free").Call(Qual("unsafe", "IsPointer").Parens(Id("cs"))),
 	)
 	fmt.Printf("%#v", f)
 	// Output:
@@ -206,7 +206,7 @@ void myprint(char* s) {
 	// func init() {
 	// 	cs := C.CString("Hello from stdio\n")
 	// 	C.myprint(cs)
-	// 	C.free(unsafe.Pointer(cs))
+	// 	C.free(unsafe.IsPointer(cs))
 	// }
 }
 

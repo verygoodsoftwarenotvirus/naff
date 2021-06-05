@@ -294,7 +294,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 					if x, identOK := field.Type.(*ast.Ident); identOK {
 						df.Type = x.Name
 					} else if y, starOK := field.Type.(*ast.StarExpr); starOK {
-						df.Pointer = true
+						df.IsPointer = true
 						df.Type = y.X.(*ast.Ident).Name
 					}
 

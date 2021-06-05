@@ -304,7 +304,7 @@ func buildEqualityCheckLines(typ models.DataType) []jen.Code {
 
 	for _, field := range typ.Fields {
 		sn := field.Name.Singular()
-		if !field.Pointer {
+		if !field.IsPointer {
 			lines = append(lines, utils.AssertEqual(
 				jen.ID("expected").Dot(sn),
 				jen.ID("actual").Dot(sn),

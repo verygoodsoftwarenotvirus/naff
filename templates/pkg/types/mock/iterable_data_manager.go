@@ -23,7 +23,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	)
 
 	code.Add(
-		jen.Commentf("%sDataManager is a mocked models.%sDataManager for testing.", sn, sn),
+		jen.Commentf("%sDataManager is a mocked types.%sDataManager for testing.", sn, sn),
 		jen.Newline(),
 		jen.Type().IDf("%sDataManager", sn).Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Newline(),
@@ -38,6 +38,7 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
 	code.Add(buildArchiveSomething(typ)...)
+	code.Add(buildGetAuditLogEntriesForSomething(proj, typ)...)
 
 	return code
 }
@@ -114,9 +115,10 @@ func buildGetAllSomethings(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%s", pn).Params(
 			constants.CtxParam(),
-			jen.ID("results").Chan().Index().Qual(proj.TypesPackage(), sn),
+			jen.ID("results").Chan().Index().PointerTo().Qual(proj.TypesPackage(), sn),
+			jen.ID("bucketSize").Uint16(),
 		).Params(jen.Error()).Body(
-			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("results")),
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.ID("results"), jen.ID("bucketSize")),
 			jen.Return().List(
 				jen.ID("args").Dot("Error").Call(jen.Zero()),
 			),
@@ -167,12 +169,12 @@ func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.
 		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Get%sWithIDs", pn).
 			Params(params...).
-			Params(jen.Index().Qual(proj.TypesPackage(), sn), jen.Error()).
+			Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), sn), jen.Error()).
 			Body(
 				jen.ID("args").Assign().ID("m").Dot("Called").Call(callArgs...),
 				jen.Return().List(
 					jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(
-						jen.Index().Qual(proj.TypesPackage(), sn),
+						jen.Index().PointerTo().Qual(proj.TypesPackage(), sn),
 					),
 					jen.ID("args").Dot("Error").Call(jen.One()),
 				),
@@ -243,6 +245,26 @@ func buildArchiveSomething(typ models.DataType) []jen.Code {
 		jen.Newline(),
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("Archive%s", sn).Params(params...).Params(jen.Error()).Body(
 			jen.Return().ID("m").Dot("Called").Call(callArgs...).Dot("Error").Call(jen.Zero()),
+		),
+		jen.Newline(),
+	}
+
+	return lines
+}
+
+func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+
+	lines := []jen.Code{
+		jen.Commentf("GetAuditLogEntriesFor%s is a mock function.", sn),
+		jen.Newline(),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAuditLogEntriesFor%s", sn).Params(constants.CtxParam(), jen.IDf("%sID", n.UnexportedVarName()).Uint64()).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"), jen.Error()).Body(
+			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.IDf("%sID", n.UnexportedVarName())),
+			jen.Return().List(
+				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry")),
+				jen.ID("args").Dot("Error").Call(jen.One()),
+			),
 		),
 		jen.Newline(),
 	}

@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	ValidationLibrary         = "github.com/go-ozzo/ozzo-validation/v4"
 	RBACLibrary               = "gopkg.in/mikespook/gorbac.v2"
 	TracingAttributionLibrary = "go.opentelemetry.io/otel/attribute"
 	AssertionLibrary          = "github.com/stretchr/testify/assert"

@@ -32,7 +32,7 @@ type DataField struct {
 	Type                  string
 	UnderlyingType        types.Type
 	Pos                   token.Pos
-	Pointer               bool
+	IsPointer             bool
 	DefaultValue          string
 	ValidForCreationInput bool
 	ValidForUpdateInput   bool
@@ -140,6 +140,13 @@ func (typ DataType) BuildInterfaceDefinitionRetrievalMethodParams(p *Project) []
 
 func (typ DataType) BuildInterfaceDefinitionArchiveMethodParams() []jen.Code {
 	return typ.buildArchiveSomethingParams()
+}
+
+func (typ DataType) BuildInterfaceDefinitionAuditLogEntryRetrievalMethodParams() []jen.Code {
+	return []jen.Code{
+		ctxParam(),
+		jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64(),
+	}
 }
 
 func (typ DataType) BuildDBClientArchiveMethodParams() []jen.Code {
@@ -478,7 +485,7 @@ func (typ DataType) buildArchiveSomethingArgs() []jen.Code {
 	params = append(params, jen.IDf("%sID", uvn))
 
 	if typ.BelongsToAccount {
-		params = append(params, jen.ID("accountID"))
+		params = append(params, jen.ID("accountID"), jen.ID("archivedBy"))
 	}
 
 	return params
@@ -766,7 +773,6 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	params = append(params,
 		jen.ID("limit").Uint8(),
 		jen.ID("ids").Index().Uint64(),
-		jen.ID("forAdmin").Bool(),
 	)
 
 	return params
@@ -919,7 +925,7 @@ func (typ DataType) BuildDBQuerierCreationQueryBuildingMethodParams(p *Project, 
 }
 
 func (typ DataType) buildCreateSomethingArgs() []jen.Code {
-	params := []jen.Code{ctxVar(), jen.ID(creationObjectVarName)}
+	params := []jen.Code{ctxVar(), jen.ID(creationObjectVarName), jen.ID("createdByUser")}
 
 	return params
 }
@@ -1006,12 +1012,16 @@ func (typ DataType) buildUpdateSomethingParams(p *Project, updatedVarName string
 
 	sn := typ.Name.Singular()
 	if isModelsPackage {
-		params = append(params, jen.ID(updatedVarName).Op("*").ID(sn))
+		params = append(params,
+			jen.ID(updatedVarName).Op("*").ID(sn),
+			jen.ID("changedByUser").Uint64(), jen.ID("changes").Index().PointerTo().ID("FieldChangeSummary"),
+		)
 	} else {
-		params = append(params, jen.ID(updatedVarName).Op("*").Qual(p.TypesPackage(), sn))
+		params = append(params,
+			jen.ID(updatedVarName).Op("*").Qual(p.TypesPackage(), sn),
+			jen.ID("changedByUser").Uint64(), jen.ID("changes").Index().PointerTo().Qual(p.TypesPackage(), "FieldChangeSummary"),
+		)
 	}
-
-	params = append(params, jen.ID("changedByUser").Uint64(), jen.ID("changes").Index().PointerTo().Qual(p.TypesPackage(), "FieldChangeSummary"))
 
 	return params
 }
@@ -1061,7 +1071,7 @@ func (typ DataType) buildUpdateSomethingArgsWithExampleVars(p *Project, updatedV
 }
 
 func (typ DataType) buildUpdateSomethingArgs(updatedVarName string) []jen.Code {
-	params := []jen.Code{ctxVar(), jen.ID(updatedVarName)}
+	params := []jen.Code{ctxVar(), jen.ID(updatedVarName), jen.ID("changedByUser"), jen.ID("changes")}
 
 	return params
 }

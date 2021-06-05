@@ -212,7 +212,7 @@ func migrationsDotGo(proj *models.Project) string {
 			rn := field.Name.RouteName()
 
 			query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
-			if !field.Pointer {
+			if !field.IsPointer {
 				query += ` NOT NULL`
 			}
 			if field.DefaultValue != "" {

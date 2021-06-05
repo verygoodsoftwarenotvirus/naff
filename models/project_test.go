@@ -22,7 +22,7 @@ func buildExampleTodoListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -30,7 +30,7 @@ func buildExampleTodoListProject() *Project {
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
 						DefaultValue:          "''",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -54,7 +54,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -67,7 +67,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -80,7 +80,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Title"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -95,7 +95,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Content"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -110,7 +110,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Icon"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -123,7 +123,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("PostReactionIcon"),
 						Type:                  "uint64",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -138,7 +138,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Text"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -171,7 +171,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -179,7 +179,7 @@ func TestProject_Validate(T *testing.T) {
 							Name:                  wordsmith.FromSingularPascalCase("Details"),
 							Type:                  "string",
 							DefaultValue:          "''",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -260,7 +260,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -273,7 +273,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -286,7 +286,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -376,7 +376,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -389,7 +389,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -402,7 +402,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Title"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -417,7 +417,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Content"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -460,7 +460,7 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -473,7 +473,7 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -486,7 +486,7 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Title"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -501,7 +501,7 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Content"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -548,7 +548,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -561,7 +561,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -574,7 +574,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Title"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -589,7 +589,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Content"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -761,7 +761,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -770,7 +770,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
@@ -843,7 +843,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(58),
@@ -852,7 +852,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(71),
@@ -897,7 +897,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               true,
+						IsPointer:             true,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -906,7 +906,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(53),
@@ -951,7 +951,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               true,
+						IsPointer:             true,
 						ValidForCreationInput: false,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -960,7 +960,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   false,
 						Pos:                   token.Pos(73),
@@ -1011,7 +1011,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1026,7 +1026,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1035,7 +1035,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1089,7 +1089,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1104,7 +1104,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1113,7 +1113,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1243,7 +1243,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1258,7 +1258,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1267,7 +1267,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1318,7 +1318,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -1327,7 +1327,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
@@ -1376,7 +1376,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -1385,7 +1385,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
@@ -1458,7 +1458,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -1467,7 +1467,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),

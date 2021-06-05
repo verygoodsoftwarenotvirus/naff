@@ -2,6 +2,8 @@ package fakes
 
 import (
 	_ "embed"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,6 +11,8 @@ import (
 )
 
 const (
+	packageName = "fakes"
+
 	basePackagePath = "pkg/types/fakes"
 )
 
@@ -27,11 +31,22 @@ func RenderPackage(proj *models.Project) error {
 		"webhook.go":                 webhookDotGo(proj),
 		"auth.go":                    authDotGo(proj),
 		"doc.go":                     docDotGo(proj),
-		"item.go":                    itemDotGo(proj),
 	}
 
 	for path, file := range files {
 		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
+	jenFiles := map[string]*jen.File{}
+
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.RouteName())] = iterablesDotGo(proj, typ)
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
@@ -121,11 +136,4 @@ var docTemplate string
 
 func docDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, docTemplate, nil)
-}
-
-//go:embed item.gotpl
-var itemTemplate string
-
-func itemDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemTemplate, nil)
 }
