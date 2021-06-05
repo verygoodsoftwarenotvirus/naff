@@ -2,6 +2,8 @@ package requests
 
 import (
 	_ "embed"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,6 +11,8 @@ import (
 )
 
 const (
+	packageName = "requests"
+
 	basePackagePath = "pkg/client/httpclient/requests"
 )
 
@@ -19,8 +23,6 @@ func RenderPackage(proj *models.Project) error {
 		"admin.go":                  adminDotGo(proj),
 		"api_clients.go":            apiClientsDotGo(proj),
 		"builder.go":                builderDotGo(proj),
-		"items.go":                  itemsDotGo(proj),     // DELETE ME
-		"items_test.go":             itemsTestDotGo(proj), // DELETE ME
 		"paseto_test.go":            pasetoTestDotGo(proj),
 		"test_helpers_test.go":      testHelpersTestDotGo(proj),
 		"users.go":                  usersDotGo(proj),
@@ -39,13 +41,21 @@ func RenderPackage(proj *models.Project) error {
 		"builder_test.go":           builderTestDotGo(proj),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = iterablesDotGo(typ)
-	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = iterablesTestDotGo(typ)
-	//}
-
 	for path, file := range files {
 		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
+	jenFiles := map[string]*jen.File{}
+
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("%s_events.go", typ.Name.RouteName())] = iterablesDotGo(proj, typ)
+		jenFiles[fmt.Sprintf("%s_events_test.go", typ.Name.RouteName())] = iterablesTestDotGo(proj, typ)
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
@@ -79,20 +89,6 @@ var builderTemplate string
 
 func builderDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, builderTemplate, nil)
-}
-
-//go:embed items.gotpl
-var itemsTemplate string
-
-func itemsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemsTemplate, nil)
-}
-
-//go:embed items_test.gotpl
-var itemsTestTemplate string
-
-func itemsTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemsTestTemplate, nil)
 }
 
 //go:embed paseto_test.gotpl

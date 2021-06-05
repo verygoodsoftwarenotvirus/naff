@@ -16,14 +16,14 @@ const (
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	files := map[string]*jen.File{}
+	jenFiles := map[string]*jen.File{}
 
 	for _, typ := range proj.DataTypes {
-		files[fmt.Sprintf("%s_events.go", typ.Name.RouteName())] = iterableEventsDotGo(proj, typ)
-		files[fmt.Sprintf("%s_events_test.go", typ.Name.RouteName())] = iterableEventsTestDotGo(proj, typ)
+		jenFiles[fmt.Sprintf("%s_events.go", typ.Name.RouteName())] = iterableEventsDotGo(proj, typ)
+		jenFiles[fmt.Sprintf("%s_events_test.go", typ.Name.RouteName())] = iterableEventsTestDotGo(proj, typ)
 	}
 
-	for path, file := range files {
+	for path, file := range jenFiles {
 		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
