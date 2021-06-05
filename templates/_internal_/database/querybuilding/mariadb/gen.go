@@ -1,10 +1,12 @@
 package mariadb
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -152,11 +154,107 @@ func mariadbTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, mariadbTestTemplate, nil)
 }
 
+func typeToMariaDBType(t string) string {
+	typeMap := map[string]string{
+		//"[]string": "LONGTEXT",
+		"string":   "LONGTEXT",
+		"*string":  "LONGTEXT",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"int8":     "INTEGER",
+		"*int8":    "INTEGER",
+		"int16":    "INTEGER",
+		"*int16":   "INTEGER",
+		"int32":    "INTEGER",
+		"*int32":   "INTEGER",
+		"int64":    "INTEGER",
+		"*int64":   "INTEGER",
+		"uint":     "INTEGER UNSIGNED",
+		"*uint":    "INTEGER UNSIGNED",
+		"uint8":    "INTEGER UNSIGNED",
+		"*uint8":   "INTEGER UNSIGNED",
+		"uint16":   "INTEGER UNSIGNED",
+		"*uint16":  "INTEGER UNSIGNED",
+		"uint32":   "INTEGER UNSIGNED",
+		"*uint32":  "INTEGER UNSIGNED",
+		"uint64":   "INTEGER UNSIGNED",
+		"*uint64":  "INTEGER UNSIGNED",
+		"float32":  "DOUBLE PRECISION",
+		"*float32": "DOUBLE PRECISION",
+		"float64":  "DOUBLE PRECISION",
+		"*float64": "DOUBLE PRECISION",
+	}
+
+	if x, ok := typeMap[strings.TrimSpace(t)]; ok {
+		return x
+	}
+
+	panic(fmt.Sprintf("unknown type!: %q", t))
+}
+
 //go:embed migrations.gotpl
 var migrationsTemplate string
 
 func migrationsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, migrationsTemplate, nil)
+	typeMigrations := []jen.Code{}
+	for i, typ := range proj.DataTypes {
+		pn := typ.Name.Plural()
+		prn := typ.Name.PluralRouteName()
+
+		migrationLines := []jen.Code{
+			jen.Litf("CREATE TABLE IF NOT EXISTS %s (", prn),
+			jen.Lit("    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,"),
+			jen.Lit("    `external_id` VARCHAR(36) NOT NULL,"),
+		}
+		for _, field := range typ.Fields {
+			rn := field.Name.RouteName()
+
+			query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
+			if !field.Pointer {
+				query += ` NOT NULL`
+			}
+			if field.DefaultValue != "" {
+				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+			}
+
+			migrationLines = append(migrationLines, jen.Lit(fmt.Sprintf("%s,", query)))
+		}
+		migrationLines = append(migrationLines,
+			jen.Lit("    `created_on` BIGINT UNSIGNED,"),
+			jen.Lit("    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,"),
+			jen.Lit("    `archived_on` BIGINT UNSIGNED DEFAULT NULL,"),
+			jen.Lit("    `belongs_to_account` BIGINT UNSIGNED NOT NULL,"),
+			jen.Lit("    PRIMARY KEY (`id`),"),
+			jen.Lit("    FOREIGN KEY (`belongs_to_account`) REFERENCES accounts(`id`) ON DELETE CASCADE"),
+			jen.Lit(");"),
+		)
+
+		typeMigrations = append(typeMigrations,
+			jen.Valuesln(
+				jen.ID("Version").MapAssign().Lit(0.15+float64(i)*.01),
+				jen.ID("Description").MapAssign().Litf("create %s table", prn),
+				jen.ID("Script").MapAssign().Qual("strings", "Join").Call(jen.Index().String().Valuesln(migrationLines...), jen.Lit("\n")),
+			),
+			jen.Valuesln(
+				jen.ID("Version").MapAssign().Lit(0.16+float64(i)*.01),
+				jen.ID("Description").MapAssign().Litf("create %s table creation trigger", prn),
+				jen.ID("Script").MapAssign().ID("buildCreationTriggerScript").Call(jen.Qual(proj.QuerybuildersPackage(), fmt.Sprintf("%sTableName", pn))),
+			),
+		)
+	}
+
+	var b bytes.Buffer
+	if err := jen.Listln(typeMigrations...).RenderWithoutFormatting(&b); err != nil {
+		panic(err)
+	}
+
+	generated := map[string]string{
+		"typeMigrations": fmt.Sprintf("%s,", b.String()),
+	}
+
+	return models.RenderCodeFile(proj, migrationsTemplate, generated)
 }
 
 //go:embed users.gotpl

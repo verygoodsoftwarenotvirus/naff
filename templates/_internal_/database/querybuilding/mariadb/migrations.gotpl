@@ -202,29 +202,7 @@ var (
 			Description: "create webhooks table creation trigger",
 			Script:      buildCreationTriggerScript(querybuilding.WebhooksTableName),
 		},
-		{
-			Version:     0.15,
-			Description: "create items table",
-			Script: strings.Join([]string{
-				"CREATE TABLE IF NOT EXISTS items (",
-				"    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,",
-				"    `external_id` VARCHAR(36) NOT NULL,",
-				"    `name` LONGTEXT NOT NULL,",
-				"    `details` LONGTEXT NOT NULL DEFAULT '',",
-				"    `created_on` BIGINT UNSIGNED,",
-				"    `last_updated_on` BIGINT UNSIGNED DEFAULT NULL,",
-				"    `archived_on` BIGINT UNSIGNED DEFAULT NULL,",
-				"    `belongs_to_account` BIGINT UNSIGNED NOT NULL,",
-				"    PRIMARY KEY (`id`),",
-				"    FOREIGN KEY (`belongs_to_account`) REFERENCES accounts(`id`) ON DELETE CASCADE",
-				");",
-			}, "\n"),
-		},
-		{
-			Version:     0.16,
-			Description: "create items table creation trigger",
-			Script:      buildCreationTriggerScript(querybuilding.ItemsTableName),
-		},
+		{{ generated "typeMigrations" }}
 	}
 )
 

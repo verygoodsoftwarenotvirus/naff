@@ -1,10 +1,12 @@
 package sqlite
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -152,11 +154,114 @@ func sqliteTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, sqliteTestTemplate, nil)
 }
 
+func typeToSqliteType(t string) string {
+	typeMap := map[string]string{
+		"string":   "TEXT",
+		"*string":  "TEXT",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"int8":     "INTEGER",
+		"*int8":    "INTEGER",
+		"int16":    "INTEGER",
+		"*int16":   "INTEGER",
+		"int32":    "INTEGER",
+		"*int32":   "INTEGER",
+		"int64":    "INTEGER",
+		"*int64":   "INTEGER",
+		"uint":     "INTEGER",
+		"*uint":    "INTEGER",
+		"uint8":    "INTEGER",
+		"*uint8":   "INTEGER",
+		"uint16":   "INTEGER",
+		"*uint16":  "INTEGER",
+		"uint32":   "INTEGER",
+		"*uint32":  "INTEGER",
+		"uint64":   "INTEGER",
+		"*uint64":  "INTEGER",
+		"float32":  "REAL",
+		"*float32": "REAL",
+		"float64":  "REAL",
+		"*float64": "REAL",
+	}
+
+	if x, ok := typeMap[t]; ok {
+		return x
+	}
+
+	panic(fmt.Sprintf("unknown type!: %q", t))
+}
+
 //go:embed migrations.gotpl
 var migrationsTemplate string
 
 func migrationsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, migrationsTemplate, nil)
+	typeMigrations := []jen.Code{}
+	for i, typ := range proj.DataTypes {
+		prn := typ.Name.PluralRouteName()
+
+		scriptParts := []string{
+			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
+			`				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,`,
+			`				external_id TEXT NOT NULL,`,
+		}
+
+		for _, field := range typ.Fields {
+			rn := field.Name.RouteName()
+
+			query := fmt.Sprintf("				%s %s", rn, typeToSqliteType(field.Type))
+			if !field.Pointer {
+				query += ` NOT NULL`
+			}
+			if field.DefaultValue != "" {
+				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+			}
+
+			scriptParts = append(scriptParts, fmt.Sprintf("%s,", query))
+		}
+
+		scriptParts = append(scriptParts,
+			`				created_on INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
+			`				last_updated_on INTEGER DEFAULT NULL,`,
+			`				archived_on INTEGER DEFAULT NULL,`,
+		)
+
+		if typ.BelongsToAccount {
+			scriptParts = append(scriptParts,
+				`				belongs_to_account INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE`,
+			)
+		}
+		if typ.BelongsToStruct != nil {
+			scriptParts = append(scriptParts,
+				fmt.Sprintf(`				belongs_to_%s INTEGER NOT NULL,`, typ.BelongsToStruct.RouteName()),
+				fmt.Sprintf(`				FOREIGN KEY(belongs_to_%s) REFERENCES %s(id)`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
+			)
+		}
+
+		scriptParts = append(scriptParts,
+			`			);`,
+		)
+
+		typeMigrations = append(typeMigrations,
+			jen.Valuesln(
+				jen.ID("Version").MapAssign().Lit(0.08+float64(i)*.01),
+				jen.ID("Description").MapAssign().Litf("create %s table", prn),
+				jen.ID("Script").MapAssign().RawString(strings.Join(scriptParts, "\n")),
+			),
+		)
+	}
+
+	var b bytes.Buffer
+	if err := jen.Listln(typeMigrations...).RenderWithoutFormatting(&b); err != nil {
+		panic(err)
+	}
+
+	generated := map[string]string{
+		"typeMigrations": fmt.Sprintf("%s,", b.String()),
+	}
+
+	return models.RenderCodeFile(proj, migrationsTemplate, generated)
 }
 
 //go:embed users.gotpl

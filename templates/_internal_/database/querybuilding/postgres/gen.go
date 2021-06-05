@@ -1,10 +1,12 @@
 package postgres
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -152,11 +154,130 @@ func postgresTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, postgresTestTemplate, nil)
 }
 
+func typeToPostgresType(t string) string {
+	typeMap := map[string]string{
+		"string":   "TEXT",
+		"*string":  "TEXT",
+		"bool":     "BOOLEAN",
+		"*bool":    "BOOLEAN",
+		"int":      "INTEGER",
+		"*int":     "INTEGER",
+		"int8":     "INTEGER",
+		"*int8":    "INTEGER",
+		"int16":    "INTEGER",
+		"*int16":   "INTEGER",
+		"int32":    "INTEGER",
+		"*int32":   "INTEGER",
+		"int64":    "INTEGER",
+		"*int64":   "INTEGER",
+		"uint":     "INTEGER",
+		"*uint":    "INTEGER",
+		"uint8":    "INTEGER",
+		"*uint8":   "INTEGER",
+		"uint16":   "INTEGER",
+		"*uint16":  "INTEGER",
+		"uint32":   "BIGINT",
+		"*uint32":  "BIGINT",
+		"uint64":   "BIGINT",
+		"*uint64":  "BIGINT",
+		"float32":  "DOUBLE PRECISION",
+		"*float32": "DOUBLE PRECISION",
+		"float64":  "DOUBLE PRECISION",
+		"*float64": "DOUBLE PRECISION",
+	}
+
+	if x, ok := typeMap[t]; ok {
+		return x
+	}
+
+	panic(fmt.Sprintf("unknown type!: %q", t))
+}
+
 //go:embed migrations.gotpl
 var migrationsTemplate string
 
 func migrationsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, migrationsTemplate, nil)
+	typeMigrations := []jen.Code{}
+	for i, typ := range proj.DataTypes {
+		prn := typ.Name.PluralRouteName()
+
+		scriptParts := []string{
+			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
+			`				id BIGSERIAL NOT NULL PRIMARY KEY`,
+			`				external_id TEXT NOT NULL`,
+		}
+
+		for _, field := range typ.Fields {
+			rn := field.Name.RouteName()
+
+			query := fmt.Sprintf("				%s %s", rn, typeToPostgresType(field.Type))
+			if !field.Pointer {
+				query += ` NOT NULL`
+			}
+			if field.DefaultValue != "" {
+				query += fmt.Sprintf(` DEFAULT %s`, field.DefaultValue)
+			}
+
+			scriptParts = append(scriptParts, fmt.Sprintf("%s", query))
+		}
+
+		scriptParts = append(scriptParts,
+			`				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())`,
+			`				last_updated_on BIGINT DEFAULT NULL`,
+		)
+
+		if !typ.BelongsToAccount && typ.BelongsToStruct == nil {
+			scriptParts = append(scriptParts,
+				`				archived_on BIGINT DEFAULT NULL`,
+			)
+		} else {
+			scriptParts = append(scriptParts,
+				`				archived_on BIGINT DEFAULT NULL`, // note the comma
+			)
+		}
+
+		if typ.BelongsToAccount {
+			scriptParts = append(scriptParts,
+				`				belongs_to_account BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE`,
+			)
+		}
+		if typ.BelongsToStruct != nil {
+			scriptParts = append(scriptParts,
+				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL REFERENCES %s(id) ON DELETE CASCADE`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
+			)
+		}
+
+		for j, sp := range scriptParts {
+			if j != len(scriptParts)-1 {
+				if !strings.HasSuffix(sp, "(") {
+					scriptParts[j] = fmt.Sprintf("%s,", sp)
+				}
+			}
+		}
+
+		scriptParts = append(scriptParts,
+			`			);`,
+		)
+
+		typeMigrations = append(typeMigrations,
+			jen.Valuesln(
+				jen.ID("Version").MapAssign().Lit(0.08+float64(i)*.01),
+				jen.ID("Description").MapAssign().Litf("create %s table", prn),
+				jen.ID("Script").MapAssign().RawString(strings.Join(scriptParts, "\n")),
+			),
+		)
+	}
+
+	var b bytes.Buffer
+	if err := jen.Listln(typeMigrations...).RenderWithoutFormatting(&b); err != nil {
+		panic(err)
+	}
+
+	generated := map[string]string{
+		"typeMigrations": fmt.Sprintf("%s,", b.String()),
+	}
+
+	return models.RenderCodeFile(proj, migrationsTemplate, generated)
 }
 
 //go:embed users.gotpl
