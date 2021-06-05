@@ -75,7 +75,7 @@ func queryBuildersDotGo(proj *models.Project) string {
 				jen.IDf("BuildGetAll%sCountQuery", pn).Params(constants.CtxParam()).String(),
 				jen.IDf("BuildGetBatchOf%sQuery", pn).Params(constants.CtxParam(), jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),
 				jen.IDf("BuildGet%sQuery", pn).Params(typ.BuildDBQuerierListRetrievalQueryBuildingMethodParams(proj)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),
-				jen.IDf("BuildGet%sWithIDsQuery", pn).Params(typ.BuildGetListOfSomethingFromIDsParams(proj)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),
+				jen.IDf("BuildGet%sWithIDsQuery", pn).Params(typ.BuildGetListOfSomethingFromIDsQueryBuilderParams(proj)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),
 				jen.IDf("BuildCreate%sQuery", sn).Params(typ.BuildDBQuerierCreationQueryBuildingMethodParams(proj, false)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),
 				jen.IDf("BuildUpdate%sQuery", sn).Params(typ.BuildDBQuerierUpdateQueryBuildingMethodParams(proj)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),
 				jen.IDf("BuildArchive%sQuery", sn).Params(typ.BuildDBQuerierArchiveQueryMethodParams()...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()),

@@ -778,6 +778,31 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	return params
 }
 
+func (typ DataType) BuildGetListOfSomethingFromIDsQueryBuilderParams(p *Project) []jen.Code {
+	params := []jen.Code{ctxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	params = append(params,
+		jen.ID("limit").Uint8(),
+		jen.ID("ids").Index().Uint64(),
+		jen.ID("forAdmin").Bool(),
+	)
+
+	return params
+}
+
 func (typ DataType) BuildGetListOfSomethingFromIDsArgs(p *Project) []jen.Code {
 	params := []jen.Code{ctxVar()}
 

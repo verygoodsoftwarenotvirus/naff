@@ -2,6 +2,8 @@ package httpclient
 
 import (
 	_ "embed"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -9,6 +11,8 @@ import (
 )
 
 const (
+	packageName = "httpclient"
+
 	basePackagePath = "pkg/client/httpclient"
 )
 
@@ -22,7 +26,6 @@ func RenderPackage(proj *models.Project) error {
 		"audit_log_test.go":           auditLogTestDotGo(proj),
 		"helpers_test.go":             helpersTestDotGo(proj),
 		"auth.go":                     authDotGo(proj),
-		"items_test.go":               itemsTestDotGo(proj),
 		"roundtripper_cookie.go":      roundtripperCookieDotGo(proj),
 		"users.go":                    usersDotGo(proj),
 		"users_test.go":               usersTestDotGo(proj),
@@ -45,19 +48,26 @@ func RenderPackage(proj *models.Project) error {
 		"roundtripper_base_test.go":   roundtripperBaseTestDotGo(proj),
 		"errors.go":                   errorsDotGo(proj),
 		"helpers.go":                  helpersDotGo(proj),
-		"items.go":                    itemsDotGo(proj),
 		"audit_log.go":                auditLogDotGo(proj),
 		"client_test.go":              clientTestDotGo(proj),
 		"webhooks.go":                 webhooksDotGo(proj),
 	}
 
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = iterablesDotGo(typ)
-	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = iterablesTestDotGo(typ)
-	//}
-
 	for path, file := range files {
 		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+			return err
+		}
+	}
+
+	jenFiles := map[string]*jen.File{}
+
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
+	}
+
+	for path, file := range jenFiles {
+		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
 			return err
 		}
 	}
@@ -112,13 +122,6 @@ var authTemplate string
 
 func authDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, authTemplate, nil)
-}
-
-//go:embed items_test.gotpl
-var itemsTestTemplate string
-
-func itemsTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemsTestTemplate, nil)
 }
 
 //go:embed roundtripper_cookie.gotpl
@@ -273,13 +276,6 @@ var helpersTemplate string
 
 func helpersDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, helpersTemplate, nil)
-}
-
-//go:embed items.gotpl
-var itemsTemplate string
-
-func itemsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, itemsTemplate, nil)
 }
 
 //go:embed audit_log.gotpl
