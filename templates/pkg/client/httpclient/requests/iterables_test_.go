@@ -1,10 +1,11 @@
 package requests
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/experimental/pkg/client/httpclient/requests"
+	"fmt"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
@@ -12,29 +13,36 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	prn := typ.Name.PluralRouteName()
+
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildItemExistsRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_Build%sExistsRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPathFormat").Op("=").Lit("/api/v1/items/%d"),
-			),
+			jen.Newline(),
+			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildItemExistsRequest").Call(
+					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("true"),
 						jen.Qual("net/http", "MethodHead"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
@@ -46,12 +54,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid ID"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildItemExistsRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Lit(0),
 					),
@@ -70,32 +81,36 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildGetItemRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_BuildGet%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPathFormat").Op("=").Lit("/api/v1/items/%d"),
-			),
+			jen.Newline(),
+			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
+					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.Newline(),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("true"),
 						jen.Qual("net/http", "MethodGet"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildGetItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
+					jen.Newline(),
 					jen.ID("assertRequestQuality").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -103,12 +118,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid ID"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildGetItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Lit(0),
 					),
@@ -127,16 +145,19 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildGetItemsRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_BuildGet%sRequest", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPath").Op("=").Lit("/api/v1/items"),
-			),
+			jen.Newline(),
+			jen.Newline(),
+			jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s", prn),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+					jen.Newline(),
 					jen.ID("filter").Op(":=").Parens(jen.Op("*").ID("types").Dot("QueryFilter")).Call(jen.ID("nil")),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("true"),
@@ -144,7 +165,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.Lit("includeArchived=false&limit=20&page=1&sortBy=asc"),
 						jen.ID("expectedPath"),
 					),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildGetItemsRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("filter"),
 					),
@@ -152,6 +174,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.ID("t"),
 						jen.ID("err"),
 					),
+					jen.Newline(),
 					jen.ID("assertRequestQuality").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -163,58 +186,66 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
-	code.Add(
-		jen.Func().ID("TestBuilder_BuildSearchItemsRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPath").Op("=").Lit("/api/v1/items/search"),
-			),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("limit").Op(":=").ID("types").Dot("DefaultQueryFilter").Call().Dot("Limit"),
-					jen.ID("exampleQuery").Op(":=").Lit("whatever"),
-					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
-						jen.ID("true"),
-						jen.Qual("net/http", "MethodGet"),
-						jen.Lit("limit=20&q=whatever"),
-						jen.ID("expectedPath"),
-					),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildSearchItemsRequest").Call(
-						jen.ID("helper").Dot("ctx"),
-						jen.ID("exampleQuery"),
-						jen.ID("limit"),
-					),
-					jen.ID("assert").Dot("NoError").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.ID("assertRequestQuality").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-						jen.ID("spec"),
+	if typ.SearchEnabled {
+		code.Add(
+			jen.Func().IDf("TestBuilder_BuildSearch%sRequest", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+				jen.ID("T").Dot("Parallel").Call(),
+				jen.Newline(),
+				jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s/search", prn),
+				jen.Newline(),
+				jen.ID("T").Dot("Run").Call(
+					jen.Lit("standard"),
+					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+						jen.ID("t").Dot("Parallel").Call(),
+						jen.Newline(),
+						jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+						jen.Newline(),
+						jen.ID("limit").Op(":=").ID("types").Dot("DefaultQueryFilter").Call().Dot("Limit"),
+						jen.ID("exampleQuery").Op(":=").Lit("whatever"),
+						jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
+							jen.ID("true"),
+							jen.Qual("net/http", "MethodGet"),
+							jen.Lit("limit=20&q=whatever"),
+							jen.ID("expectedPath"),
+						),
+						jen.Newline(),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildSearch%sRequest", pn).Call(
+							jen.ID("helper").Dot("ctx"),
+							jen.ID("exampleQuery"),
+							jen.ID("limit"),
+						),
+						jen.ID("assert").Dot("NoError").Call(
+							jen.ID("t"),
+							jen.ID("err"),
+						),
+						jen.Newline(),
+						jen.ID("assertRequestQuality").Call(
+							jen.ID("t"),
+							jen.ID("actual"),
+							jen.ID("spec"),
+						),
 					),
 				),
 			),
-		),
-		jen.Newline(),
-	)
+			jen.Newline(),
+		)
+	}
 
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildCreateItemRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_BuildCreate%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPath").Op("=").Lit("/api/v1/items"),
-			),
+			jen.Newline(),
+			jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s", prn),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("exampleInput").Op(":=").ID("fakes").Dot("BuildFakeItemCreationInput").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildCreateItemRequest").Call(
+					jen.ID("exampleInput").Op(":=").ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleInput"),
 					),
@@ -222,12 +253,14 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.ID("t"),
 						jen.ID("err"),
 					),
+					jen.Newline(),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("false"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit(""),
 						jen.ID("expectedPath"),
 					),
+					jen.Newline(),
 					jen.ID("assertRequestQuality").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -235,12 +268,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with nil input"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildCreateItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("nil"),
 					),
@@ -254,14 +290,17 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid input"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildCreateItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
-						jen.Op("&").ID("types").Dot("ItemCreationInput").Valuesln(),
+						jen.Op("&").ID("types").Dotf("%sCreationInput", sn).Values(),
 					),
 					jen.ID("assert").Dot("Nil").Call(
 						jen.ID("t"),
@@ -278,32 +317,36 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildUpdateItemRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_BuildUpdate%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPathFormat").Op("=").Lit("/api/v1/items/%d"),
-			),
+			jen.Newline(),
+			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
+					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.Newline(),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("false"),
 						jen.Qual("net/http", "MethodPut"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildUpdateItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildUpdate%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
-						jen.ID("exampleItem"),
+						jen.IDf("example%s", sn),
 					),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
+					jen.Newline(),
 					jen.ID("assertRequestQuality").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -311,12 +354,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with nil input"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildUpdateItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildUpdate%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("nil"),
 					),
@@ -335,32 +381,36 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildArchiveItemRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_BuildArchive%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPathFormat").Op("=").Lit("/api/v1/items/%d"),
-			),
+			jen.Newline(),
+			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
+					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.Newline(),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("true"),
 						jen.Qual("net/http", "MethodDelete"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildArchiveItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildArchive%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
+					jen.Newline(),
 					jen.ID("assertRequestQuality").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -368,12 +418,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid ID"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildArchiveItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildArchive%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Lit(0),
 					),
@@ -392,20 +445,22 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestBuilder_BuildGetAuditLogForItemRequest").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestBuilder_BuildGetAuditLogFor%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
-			jen.Var().Defs(
-				jen.ID("expectedPath").Op("=").Lit("/api/v1/items/%d/audit"),
-			),
+			jen.Newline(),
+			jen.Const().ID("expectedPath").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d/audit"),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildGetAuditLogForItemRequest").Call(
+					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
 					jen.ID("require").Dot("NotNil").Call(
 						jen.ID("t"),
@@ -415,12 +470,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.ID("t"),
 						jen.ID("err"),
 					),
+					jen.Newline(),
 					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 						jen.ID("true"),
 						jen.Qual("net/http", "MethodGet"),
 						jen.Lit(""),
 						jen.ID("expectedPath"),
-						jen.ID("exampleItem").Dot("ID"),
+						jen.IDf("example%s", sn).Dot("ID"),
 					),
 					jen.ID("assertRequestQuality").Call(
 						jen.ID("t"),
@@ -429,12 +485,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid ID"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dot("BuildGetAuditLogForItemRequest").Call(
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Lit(0),
 					),
