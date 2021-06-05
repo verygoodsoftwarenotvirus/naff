@@ -38,7 +38,7 @@ type (
 		adminService      types.AdminService
 		apiClientsService types.APIClientDataService
 		webhooksService   types.WebhookDataService
-		itemsService      types.ItemDataService
+		{{ generated "typeServiceDeclarationFields" }}
 		encoder           encoding.ServerEncoderDecoder
 		logger            logging.Logger
 		router            routing.Router
@@ -58,7 +58,7 @@ func ProvideHTTPServer(
 	usersService types.UserDataService,
 	accountsService types.AccountDataService,
 	apiClientsService types.APIClientDataService,
-	itemsService types.ItemDataService,
+	{{ generated "typeServiceParams" }}
 	webhooksService types.WebhookDataService,
 	adminService types.AdminService,
 	frontendService frontend.Service,
@@ -82,7 +82,7 @@ func ProvideHTTPServer(
 		usersService:      usersService,
 		accountsService:   accountsService,
 		authService:       authService,
-		itemsService:      itemsService,
+		{{ generated "typeServiceConstructorFields" }}
 		apiClientsService: apiClientsService,
 	}
 
