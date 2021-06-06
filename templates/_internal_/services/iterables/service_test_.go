@@ -1,6 +1,7 @@
 package iterables
 
 import (
+	"fmt"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -12,12 +13,17 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	rn := typ.Name.RouteName()
+	uvn := typ.Name.UnexportedVarName()
+
 	code.Add(
 		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("service")).Body(
 			jen.Return().Op("&").ID("service").Valuesln(jen.ID("logger").Op(":").ID("logging").Dot("NewNoopLogger").Call(),
-				jen.ID("itemCounter").Op(":").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
-				jen.ID("itemDataManager").Op(":").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-				jen.ID("itemIDFetcher").Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0)),
+				jen.IDf("%sCounter", uvn).Op(":").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+				jen.IDf("%sDataManager", uvn).Op(":").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.IDf("%sIDFetcher", uvn).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0)),
 				jen.ID("encoderDecoder").Op(":").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 				jen.ID("search").Op(":").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 				jen.ID("tracer").Op(":").Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.Lit("test")))),
@@ -25,7 +31,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestProvideItemsService").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestProvide%sService", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -33,9 +39,9 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.Var().ID("ucp").ID("metrics").Dot("UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
+					jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
 						jen.ID("description")).ID("string"),
-					).Params(jen.ID("metrics").Dot("UnitCounter")).Body(
+					).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter")).Body(
 						jen.Return().Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 					),
 					jen.Newline(),
@@ -43,15 +49,15 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("rpm").Dot("On").Callln(
 						jen.Lit("BuildRouteParamIDFetcher"),
 						jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
-						jen.ID("ItemIDURIParamKey"),
-						jen.Lit("item"),
+						jen.IDf("%sIDURIParamKey", sn),
+						jen.Lit(rn),
 					).Dot("Return").Call(jen.Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
 					jen.Newline(),
 					jen.List(jen.ID("s"),
 						jen.ID("err")).Op(":=").ID("ProvideService").Callln(
 						jen.ID("logging").Dot("NewNoopLogger").Call(),
 						jen.ID("Config").Values(jen.ID("SearchIndexPath").Op(":").Lit("example/path")),
-						jen.Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
+						jen.Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 						jen.Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 						jen.ID("ucp"),
 						jen.Func().Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
@@ -84,9 +90,9 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.Var().ID("ucp").ID("metrics").Dot("UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
+					jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
 						jen.ID("description")).ID("string"),
-					).Params(jen.ID("metrics").Dot("UnitCounter")).Body(
+					).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter")).Body(
 						jen.Return().Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 					),
 					jen.Newline(),
@@ -94,7 +100,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.ID("err")).Op(":=").ID("ProvideService").Callln(
 						jen.ID("logging").Dot("NewNoopLogger").Call(),
 						jen.ID("Config").Values(jen.ID("SearchIndexPath").Op(":").Lit("example/path")),
-						jen.Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
+						jen.Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 						jen.Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 						jen.ID("ucp"),
 						jen.Func().Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),

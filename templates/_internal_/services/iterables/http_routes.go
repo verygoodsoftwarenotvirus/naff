@@ -1,6 +1,7 @@
 package iterables
 
 import (
+	"fmt"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -11,10 +12,19 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	uvn := typ.Name.UnexportedVarName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	scn := typ.Name.SingularCommonName()
+	pcn := typ.Name.PluralCommonName()
+	rn := typ.Name.RouteName()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+
 	code.Add(
 		jen.Const().Defs(
-			jen.Comment("ItemIDURIParamKey is a standard string that we'll use to refer to item IDs with."),
-			jen.ID("ItemIDURIParamKey").Op("=").Lit("itemID"),
+			jen.Commentf("%sIDURIParamKey is a standard string that we'll use to refer to %s IDs with.", sn, scn),
+			jen.IDf("%sIDURIParamKey", sn).Op("=").Litf("%sID", uvn),
 		),
 		jen.Newline(),
 	)
@@ -33,7 +43,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("CreateHandler is our item creation route."),
+		jen.Commentf("CreateHandler is our %s creation route.", scn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("CreateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
@@ -76,7 +86,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 			jen.Newline(),
 			jen.Comment("check session context data for parsed input struct."),
-			jen.ID("input").Op(":=").ID("new").Call(jen.Qual(proj.TypesPackage(), "ItemCreationInput")),
+			jen.ID("input").Op(":=").ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))),
 			jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("ctx"), jen.ID("req"), jen.ID("input")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("err"),
@@ -109,8 +119,8 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Newline(),
 			jen.ID("input").Dot("BelongsToAccount").Op("=").ID("sessionCtxData").Dot("ActiveAccountID"),
 			jen.Newline(),
-			jen.Comment("create item in database."),
-			jen.List(jen.ID("item"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("CreateItem").Call(
+			jen.Commentf("create %s in database.", scn),
+			jen.List(jen.ID(uvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Create%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("input"),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
@@ -120,7 +130,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("creating item"),
+					jen.Litf("creating %s", scn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),
@@ -129,28 +139,28 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Return(),
 			),
 			jen.Newline(),
-			jen.Qual(proj.InternalTracingPackage(), "AttachItemIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
-				jen.ID("item").Dot("ID"),
+				jen.ID(uvn).Dot("ID"),
 			),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), "ItemIDKey"),
-				jen.ID("item").Dot("ID"),
+				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
+				jen.ID(uvn).Dot("ID"),
 			),
 			jen.Newline(),
 			jen.Comment("notify interested parties."),
 			func() jen.Code {
 				return jen.Null()
 			}(),
-			jen.If(jen.ID("searchIndexErr").Op(":=").ID("s").Dot("search").Dot("Index").Call(jen.ID("ctx"), jen.ID("item").Dot("ID"), jen.ID("item")), jen.ID("searchIndexErr").Op("!=").ID("nil")).Body(
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.ID("err"), jen.ID("logger"), jen.ID("span"), jen.Lit("adding item to search index")),
+			jen.If(jen.ID("searchIndexErr").Op(":=").ID("s").Dot("search").Dot("Index").Call(jen.ID("ctx"), jen.ID(uvn).Dot("ID"), jen.ID(uvn)), jen.ID("searchIndexErr").Op("!=").ID("nil")).Body(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.ID("err"), jen.ID("logger"), jen.ID("span"), jen.Litf("adding %s to search index", scn)),
 			),
 			jen.Newline(),
-			jen.ID("s").Dot("itemCounter").Dot("Increment").Call(jen.ID("ctx")),
+			jen.ID("s").Dotf("%sCounter", uvn).Dot("Increment").Call(jen.ID("ctx")),
 			jen.ID("s").Dot("encoderDecoder").Dot("EncodeResponseWithStatus").Call(
 				jen.ID("ctx"),
 				jen.ID("res"),
-				jen.ID("item"),
+				jen.ID(uvn),
 				jen.Qual("net/http", "StatusCreated"),
 			),
 		),
@@ -158,7 +168,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("ReadHandler returns a GET handler that returns an item."),
+		jen.Commentf("ReadHandler returns a GET handler that returns %s.", scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ReadHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
@@ -200,21 +210,21 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
 			jen.Newline(),
-			jen.Comment("determine item ID."),
-			jen.ID("itemID").Op(":=").ID("s").Dot("itemIDFetcher").Call(jen.ID("req")),
-			jen.Qual(proj.InternalTracingPackage(), "AttachItemIDToSpan").Call(
+			jen.Commentf("determine %s ID.", scn),
+			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), "ItemIDKey"),
-				jen.ID("itemID"),
+				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
+				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.Comment("fetch item from database."),
-			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("GetItem").Call(
+			jen.Commentf("fetch %s from database.", scn),
+			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
 			jen.If(jen.Qual("errors", "Is").Call(
@@ -231,7 +241,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("retrieving item"),
+					jen.Litf("retrieving %s", scn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),
@@ -251,7 +261,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("ExistenceHandler returns a HEAD handler that returns 200 if an item exists, 404 otherwise."),
+		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise.", scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ExistenceHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
@@ -291,21 +301,21 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
 			jen.Newline(),
-			jen.Comment("determine item ID."),
-			jen.ID("itemID").Op(":=").ID("s").Dot("itemIDFetcher").Call(jen.ID("req")),
-			jen.Qual(proj.InternalTracingPackage(), "AttachItemIDToSpan").Call(
+			jen.Commentf("determine %s ID.", scn),
+			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), "ItemIDKey"),
-				jen.ID("itemID"),
+				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
+				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
 			jen.Comment("check the database."),
-			jen.List(jen.ID("exists"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("ItemExists").Call(
+			jen.List(jen.ID("exists"), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
 			jen.If(jen.Op("!").Qual("errors", "Is").Call(
@@ -316,7 +326,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("checking item existence"),
+					jen.Litf("checking %s existence", scn),
 				)),
 			jen.Newline(),
 			jen.If(jen.Op("!").ID("exists").Op("||").Qual("errors", "Is").Call(
@@ -391,19 +401,19 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("items"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("GetItems").Call(
+			jen.List(jen.ID(puvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", pn).Call(
 				jen.ID("ctx"),
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 				jen.ID("filter"),
 			),
 			jen.If(jen.Qual("errors", "Is").Call(jen.ID("err"), jen.Qual("database/sql", "ErrNoRows"))).Body(
 				jen.Comment("in the event no rows exist, return an empty list."),
-				jen.ID("items").Op("=").Op("&").Qual(proj.TypesPackage(), "ItemList").Values(jen.ID("Items").Op(":").Index().Op("*").Qual(proj.TypesPackage(), "Item").Values())).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID(puvn).Op("=").Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values(jen.ID(pn).Op(":").Index().Op("*").Qual(proj.TypesPackage(), sn).Values())).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("retrieving items"),
+					jen.Litf("retrieving %s", pcn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),
@@ -416,7 +426,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
 				jen.ID("ctx"),
 				jen.ID("res"),
-				jen.ID("items"),
+				jen.ID(puvn),
 			),
 		),
 		jen.Newline(),
@@ -496,7 +506,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.ID("err"),
 						jen.ID("logger"),
 						jen.ID("span"),
-						jen.Lit("executing item search query"),
+						jen.Litf("executing %s search query", scn),
 					),
 					jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 						jen.ID("ctx"),
@@ -505,8 +515,8 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.Return(),
 				),
 				jen.Newline(),
-				jen.Comment("fetch items from database."),
-				jen.List(jen.ID("items"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("GetItemsWithIDs").Call(
+				jen.Commentf("fetch %s from database.", pcn),
+				jen.List(jen.ID(puvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%sWithIDs", pn).Call(
 					jen.ID("ctx"),
 					jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 					jen.ID("filter").Dot("Limit"),
@@ -517,12 +527,12 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.Qual("database/sql", "ErrNoRows"),
 				)).Body(
 					jen.Comment("in the event no rows exist, return an empty list."),
-					jen.ID("items").Op("=").Index().Op("*").Qual(proj.TypesPackage(), "Item").Values()).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+					jen.ID(puvn).Op("=").Index().Op("*").Qual(proj.TypesPackage(), sn).Values()).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.ID("err"),
 						jen.ID("logger"),
 						jen.ID("span"),
-						jen.Lit("searching items"),
+						jen.Litf("searching %s", pcn),
 					),
 					jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 						jen.ID("ctx"),
@@ -535,7 +545,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
 					jen.ID("ctx"),
 					jen.ID("res"),
-					jen.ID("items"),
+					jen.ID(puvn),
 				),
 			),
 			jen.Newline(),
@@ -543,7 +553,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	code.Add(
-		jen.Comment("UpdateHandler returns a handler that updates an item."),
+		jen.Commentf("UpdateHandler returns a handler that updates %s.", scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("UpdateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
@@ -586,7 +596,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 			jen.Newline(),
 			jen.Comment("check for parsed input attached to session context data."),
-			jen.ID("input").Op(":=").ID("new").Call(jen.Qual(proj.TypesPackage(), "ItemUpdateInput")),
+			jen.ID("input").Op(":=").ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))),
 			jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
@@ -620,21 +630,21 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 			jen.ID("input").Dot("BelongsToAccount").Op("=").ID("sessionCtxData").Dot("ActiveAccountID"),
 			jen.Newline(),
-			jen.Comment("determine item ID."),
-			jen.ID("itemID").Op(":=").ID("s").Dot("itemIDFetcher").Call(jen.ID("req")),
+			jen.Commentf("determine %s ID.", scn),
+			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), "ItemIDKey"),
-				jen.ID("itemID"),
+				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
+				jen.IDf("%sID", uvn),
 			),
-			jen.Qual(proj.InternalTracingPackage(), "AttachItemIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.Comment("fetch item from database."),
-			jen.List(jen.ID("item"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("GetItem").Call(
+			jen.Commentf("fetch %s from database.", scn),
+			jen.List(jen.ID(uvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
 			jen.If(jen.Qual("errors", "Is").Call(
@@ -651,7 +661,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("retrieving item for update"),
+					jen.Litf("retrieving %s for update", scn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),
@@ -660,18 +670,18 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Return(),
 			),
 			jen.Newline(),
-			jen.Comment("update the item."),
-			jen.ID("changeReport").Op(":=").ID("item").Dot("Update").Call(jen.ID("input")),
+			jen.Commentf("update the %s.", scn),
+			jen.ID("changeReport").Op(":=").ID(uvn).Dot("Update").Call(jen.ID("input")),
 			jen.Qual(proj.InternalTracingPackage(), "AttachChangeSummarySpan").Call(
 				jen.ID("span"),
-				jen.Lit("item"),
+				jen.Lit(rn),
 				jen.ID("changeReport"),
 			),
 			jen.Newline(),
-			jen.Comment("update item in database."),
-			jen.If(jen.ID("err").Op("=").ID("s").Dot("itemDataManager").Dot("UpdateItem").Call(
+			jen.Commentf("update %s in database.", scn),
+			jen.If(jen.ID("err").Op("=").ID("s").Dotf("%sDataManager", uvn).Dotf("Update%s", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("item"),
+				jen.ID(uvn),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 				jen.ID("changeReport"),
 			), jen.ID("err").Op("!=").ID("nil")).Body(
@@ -679,7 +689,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("updating item"),
+					jen.Litf("updating %s", scn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),
@@ -693,14 +703,14 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				if typ.SearchEnabled {
 					return jen.If(jen.ID("searchIndexErr").Op(":=").ID("s").Dot("search").Dot("Index").Call(
 						jen.ID("ctx"),
-						jen.ID("item").Dot("ID"),
-						jen.ID("item"),
+						jen.ID(uvn).Dot("ID"),
+						jen.ID(uvn),
 					), jen.ID("searchIndexErr").Op("!=").ID("nil")).Body(
 						jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
-							jen.Lit("updating item in search index"),
+							jen.Litf("updating %s in search index", scn),
 						),
 					)
 				}
@@ -711,14 +721,14 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
 				jen.ID("ctx"),
 				jen.ID("res"),
-				jen.ID("item"),
+				jen.ID(uvn),
 			),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Comment("ArchiveHandler returns a handler that archives an item."),
+		jen.Commentf("ArchiveHandler returns a handler that archives %s.", scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ArchiveHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
@@ -760,21 +770,21 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
 			jen.Newline(),
-			jen.Comment("determine item ID."),
-			jen.ID("itemID").Op(":=").ID("s").Dot("itemIDFetcher").Call(jen.ID("req")),
+			jen.Commentf("determine %s ID.", scn),
+			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), "ItemIDKey"),
-				jen.ID("itemID"),
+				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
+				jen.IDf("%sID", uvn),
 			),
-			jen.Qual(proj.InternalTracingPackage(), "AttachItemIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.Comment("archive the item in the database."),
-			jen.ID("err").Op("=").ID("s").Dot("itemDataManager").Dot("ArchiveItem").Call(
+			jen.Commentf("archive the %s in the database.", scn),
+			jen.ID("err").Op("=").ID("s").Dotf("%sDataManager", uvn).Dotf("Archive%s", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 			),
@@ -789,7 +799,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("archiving item"),
+					jen.Litf("archiving %s", scn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),
@@ -799,11 +809,11 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 			jen.Newline(),
 			jen.Comment("notify interested parties."),
-			jen.ID("s").Dot("itemCounter").Dot("Decrement").Call(jen.ID("ctx")),
+			jen.ID("s").Dotf("%sCounter", uvn).Dot("Decrement").Call(jen.ID("ctx")),
 			jen.Newline(),
 			jen.If(jen.ID("indexDeleteErr").Op(":=").ID("s").Dot("search").Dot("Delete").Call(
 				jen.ID("ctx"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			), jen.ID("indexDeleteErr").Op("!=").ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("err"),
@@ -819,7 +829,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("AuditEntryHandler returns a GET handler that returns all audit log entries related to an item."),
+		jen.Commentf("AuditEntryHandler returns a GET handler that returns all audit log entries related to %s.", scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("AuditEntryHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
@@ -858,20 +868,20 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 			),
 			jen.Newline(),
-			jen.Comment("determine item ID."),
-			jen.ID("itemID").Op(":=").ID("s").Dot("itemIDFetcher").Call(jen.ID("req")),
-			jen.Qual(proj.InternalTracingPackage(), "AttachItemIDToSpan").Call(
+			jen.Commentf("determine %s ID.", scn),
+			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), "ItemIDKey"),
-				jen.ID("itemID"),
+				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
+				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dot("itemDataManager").Dot("GetAuditLogEntriesForItem").Call(
+			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("GetAuditLogEntriesFor%s", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("itemID"),
+				jen.IDf("%sID", uvn),
 			),
 			jen.If(jen.Qual("errors", "Is").Call(jen.ID("err"), jen.Qual("database/sql", "ErrNoRows"))).Body(
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
@@ -884,7 +894,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit("retrieving audit log entries for item"),
+					jen.Litf("retrieving audit log entries for %s", scn),
 				),
 				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
 					jen.ID("ctx"),

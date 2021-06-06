@@ -76,7 +76,7 @@ func configTestDotGo(proj *models.Project) string {
 					}
 					return jen.Null()
 				}(),
-				jen.ID("Logger").MapAssign().Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
+				jen.ID("Logging").MapAssign().Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
 					jen.ID("Name").MapAssign().Lit(typ.Name.PluralRouteName()),
 					jen.ID("Level").MapAssign().Qual(proj.InternalLoggingPackage(), "InfoLevel"),
 					jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"),

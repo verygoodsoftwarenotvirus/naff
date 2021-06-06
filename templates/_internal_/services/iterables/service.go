@@ -1,6 +1,7 @@
 package iterables
 
 import (
+	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -11,19 +12,24 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
+	uvn := typ.Name.UnexportedVarName()
+	rn := typ.Name.RouteName()
+	prn := typ.Name.PluralRouteName()
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName").Op("=").Lit("items"),
-			jen.ID("counterDescription").ID("string").Op("=").Lit("the number of items managed by the items service"),
-			jen.ID("serviceName").ID("string").Op("=").Lit("items_service"),
+			jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName").Op("=").Lit(prn),
+			jen.ID("counterDescription").ID("string").Op("=").Litf("the number of %s managed by the %s service", pcn, pcn),
+			jen.ID("serviceName").ID("string").Op("=").Litf("%s_service", prn),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual(proj.TypesPackage(), "ItemDataService").Op("=").Parens(jen.Op("*").ID("service")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)).Op("=").Parens(jen.Op("*").ID("service")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
@@ -35,11 +41,11 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Commentf("service handles %s.", pcn),
 			jen.ID("service").Struct(
 				jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
-				jen.ID("itemDataManager").Qual(proj.TypesPackage(), "ItemDataManager"),
-				jen.ID("itemIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+				jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)),
+				jen.IDf("%sIDFetcher", uvn).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
 				jen.ID("sessionContextDataFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.TypesPackage(), "SessionContextData"),
 					jen.ID("error")),
-				jen.ID("itemCounter").Qual(proj.MetricsPackage(), "UnitCounter"),
+				jen.IDf("%sCounter", uvn).Qual(proj.MetricsPackage(), "UnitCounter"),
 				jen.ID("encoderDecoder").Qual(proj.EncodingPackage(), "ServerEncoderDecoder"),
 				jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
 				func() jen.Code {
@@ -54,12 +60,12 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("ProvideService builds a new ItemsService."),
+		jen.Commentf("ProvideService builds a new %sService.", pn),
 		jen.Newline(),
 		jen.Func().ID("ProvideService").Paramsln(
 			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 			jen.ID("cfg").ID("Config"),
-			jen.ID("itemDataManager").Qual(proj.TypesPackage(), "ItemDataManager"),
+			jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)),
 			jen.ID("encoder").Qual(proj.EncodingPackage(), "ServerEncoderDecoder"),
 			jen.ID("counterProvider").Qual(proj.MetricsPackage(), "UnitCounterProvider"),
 			func() jen.Code {
@@ -69,14 +75,14 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				return jen.Null()
 			}(),
 			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
-		).Params(jen.Qual(proj.TypesPackage(), "ItemDataService"), jen.ID("error")).Body(
+		).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)), jen.ID("error")).Body(
 
 			func() jen.Code {
 				if typ.SearchEnabled {
 					return jen.List(jen.ID("searchIndexManager"),
 						jen.ID("indexInitErr")).Op(":=").ID("indexProvider").Call(
 						jen.Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("cfg").Dot("SearchIndexPath")),
-						jen.Qual(proj.TypesPackage(), "ItemsSearchIndexName"),
+						jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", pn)),
 						jen.ID("logger"),
 					)
 				}
@@ -87,7 +93,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					return jen.If(jen.ID("indexInitErr").Op("!=").ID("nil")).Body(
 						jen.ID("logger").Dot("Error").Call(
 							jen.ID("indexInitErr"),
-							jen.Lit("setting up items search index"),
+							jen.Litf("setting up %s search index", pcn),
 						),
 						jen.Return().List(jen.ID("nil"),
 							jen.ID("indexInitErr")),
@@ -98,15 +104,15 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 			jen.Newline(),
 			jen.ID("svc").Op(":=").Op("&").ID("service").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("itemIDFetcher").Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
+				jen.IDf("%sIDFetcher", uvn).Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
 					jen.ID("logger"),
-					jen.ID("ItemIDURIParamKey"),
-					jen.Lit("item"),
+					jen.IDf("%sIDURIParamKey", sn),
+					jen.Lit(rn),
 				),
 				jen.ID("sessionContextDataFetcher").Op(":").Qual(proj.AuthServicePackage(), "FetchContextFromRequest"),
-				jen.ID("itemDataManager").Op(":").ID("itemDataManager"),
+				jen.IDf("%sDataManager", uvn).Op(":").IDf("%sDataManager", uvn),
 				jen.ID("encoderDecoder").Op(":").ID("encoder"),
-				jen.ID("itemCounter").Op(":").Qual(proj.MetricsPackage(), "EnsureUnitCounter").Call(
+				jen.IDf("%sCounter", uvn).Op(":").Qual(proj.MetricsPackage(), "EnsureUnitCounter").Call(
 					jen.ID("counterProvider"),
 					jen.ID("logger"),
 					jen.ID("counterName"),
