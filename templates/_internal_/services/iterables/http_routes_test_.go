@@ -100,7 +100,6 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("itemCounter").Op("=").ID("unitCounter"),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Index"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -113,6 +112,7 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusCreated"),
@@ -246,6 +246,7 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("CreateHandler").Call(
@@ -295,7 +296,6 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("CreateItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -359,7 +359,6 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("CreateItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -372,15 +371,10 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
 					jen.Newline(),
 					jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
-					jen.Newline(),
-					jen.ID("unitCounter").Dot("On").Callln(
-						jen.Lit("Increment"),
-						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-					).Dot("Return").Call(),
+					jen.ID("unitCounter").Dot("On").Call(jen.Lit("Increment"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
 					jen.ID("helper").Dot("service").Dot("itemCounter").Op("=").ID("unitCounter"),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Index"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -393,6 +387,7 @@ func buildTestItemsService_CreateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusCreated"),
@@ -425,7 +420,6 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -436,8 +430,8 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.ID("nil"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -450,6 +444,7 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -473,8 +468,8 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -483,12 +478,14 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
 					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ReadHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -510,7 +507,6 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -521,8 +517,8 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -534,6 +530,7 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
@@ -556,7 +553,6 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -567,8 +563,8 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -580,6 +576,7 @@ func buildTestItemsService_ReadHandler(proj *models.Project, typ models.DataType
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -611,7 +608,6 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ItemExists"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -627,6 +623,7 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -649,8 +646,8 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -659,12 +656,14 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
 					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ExistenceHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -686,7 +685,6 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ItemExists"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -697,8 +695,8 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -710,6 +708,7 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
@@ -732,7 +731,6 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ItemExists"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -743,8 +741,8 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -756,6 +754,7 @@ func buildTestItemsService_ExistenceHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
@@ -785,10 +784,10 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.Newline(),
 					jen.ID("exampleItemList").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemList").Call(),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItems"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -799,8 +798,8 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.ID("nil"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -813,6 +812,7 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -836,8 +836,8 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -846,12 +846,14 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
 					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ListHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -873,7 +875,6 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItems"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -884,8 +885,8 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -898,6 +899,7 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -923,7 +925,6 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItems"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -934,8 +935,8 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -947,6 +948,7 @@ func buildTestItemsService_ListHandler(proj *models.Project, typ models.DataType
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -969,6 +971,7 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 	return []jen.Code{
 		jen.Func().ID("TestItemsService_SearchHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
+			jen.Newline(),
 			jen.ID("exampleQuery").Op(":=").Lit("whatever"),
 			jen.ID("exampleLimit").Op(":=").ID("uint8").Call(jen.Lit(123)),
 			jen.ID("exampleItemList").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemList").Call(),
@@ -985,10 +988,12 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Valuesln(jen.ID("exampleQuery")), jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
+					jen.Newline(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(
+						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery")),
+						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1001,7 +1006,6 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItemsWithIDs"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1013,8 +1017,8 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.ID("nil"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1027,6 +1031,7 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -1051,8 +1056,8 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1061,12 +1066,14 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
 					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("SearchHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -1086,10 +1093,10 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Valuesln(jen.ID("exampleQuery"))).Dot("Encode").Call(),
+					jen.Newline(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Values(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery"))).Dot("Encode").Call(),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1100,8 +1107,8 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1113,6 +1120,7 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -1133,10 +1141,12 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Valuesln(jen.ID("exampleQuery")), jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
+					jen.Newline(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(
+						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery")),
+						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1149,7 +1159,6 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItemsWithIDs"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1161,8 +1170,8 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1175,6 +1184,7 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -1199,10 +1209,11 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Valuesln(jen.ID("exampleQuery")), jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Valuesln(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(
+						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery")),
+						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1215,7 +1226,6 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItemsWithIDs"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1227,8 +1237,8 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1240,6 +1250,7 @@ func buildTestItemsService_SearchHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -1298,7 +1309,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1319,7 +1329,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Index"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1332,6 +1341,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -1386,6 +1396,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
@@ -1409,6 +1420,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -1448,6 +1460,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
@@ -1490,7 +1503,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1506,6 +1518,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
@@ -1553,7 +1566,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1569,6 +1581,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -1616,7 +1629,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1640,6 +1652,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -1687,7 +1700,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1708,7 +1720,6 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Index"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1721,6 +1732,7 @@ func buildTestItemsService_UpdateHandler(proj *models.Project, typ models.DataTy
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -1755,7 +1767,6 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ArchiveItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1766,7 +1777,6 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1775,17 +1785,14 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
 					jen.Newline(),
 					jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
-					jen.Newline(),
-					jen.ID("unitCounter").Dot("On").Callln(
-						jen.Lit("Decrement"),
-						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-					).Dot("Return").Call(),
+					jen.ID("unitCounter").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
 					jen.ID("helper").Dot("service").Dot("itemCounter").Op("=").ID("unitCounter"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNoContent"),
@@ -1807,8 +1814,8 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1817,12 +1824,14 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
 					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -1844,7 +1853,6 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ArchiveItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1853,8 +1861,8 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 						jen.ID("helper").Dot("exampleUser").Dot("ID"),
 					).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1866,6 +1874,7 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
@@ -1888,7 +1897,6 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ArchiveItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1897,8 +1905,8 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 						jen.ID("helper").Dot("exampleUser").Dot("ID"),
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1910,6 +1918,7 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
@@ -1932,7 +1941,6 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("ArchiveItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1943,7 +1951,6 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
 					jen.Newline(),
 					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.Newline(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1952,17 +1959,14 @@ func buildTestItemsService_ArchiveHandler(proj *models.Project, typ models.DataT
 					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
 					jen.Newline(),
 					jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
-					jen.Newline(),
-					jen.ID("unitCounter").Dot("On").Callln(
-						jen.Lit("Decrement"),
-						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-					).Dot("Return").Call(),
+					jen.ID("unitCounter").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
 					jen.ID("helper").Dot("service").Dot("itemCounter").Op("=").ID("unitCounter"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNoContent"),
@@ -1993,10 +1997,10 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.Newline(),
 					jen.ID("exampleAuditLogEntries").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntryList").Call().Dot("Entries"),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetAuditLogEntriesForItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2006,8 +2010,8 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("nil"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2020,6 +2024,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
@@ -2041,8 +2046,8 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 					jen.Newline(),
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2056,6 +2061,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
@@ -2077,7 +2083,6 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetAuditLogEntriesForItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2087,8 +2092,8 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2100,6 +2105,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
@@ -2122,7 +2128,6 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("itemDataManager").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "ItemDataManager").Values(),
-					jen.Newline(),
 					jen.ID("itemDataManager").Dot("On").Callln(
 						jen.Lit("GetAuditLogEntriesForItem"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2132,8 +2137,8 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.ID("helper").Dot("service").Dot("itemDataManager").Op("=").ID("itemDataManager"),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.Newline(),
+					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2145,6 +2150,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
 					),
+					jen.Newline(),
 					jen.ID("assert").Dot("Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
