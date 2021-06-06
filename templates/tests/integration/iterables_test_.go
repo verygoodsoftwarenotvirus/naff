@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -13,6 +14,11 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+	uvn := typ.Name.UnexportedVarName()
+	pn := typ.Name.Plural()
+	pcn := typ.Name.PluralCommonName()
 
 	code.Add(
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(proj.TypesPackage(), sn)).Body(
@@ -26,7 +32,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("t"),
 				jen.ID("expected").Dot("Name"),
 				jen.ID("actual").Dot("Name"),
-				jen.Lit("expected BucketName for item #%d to be %v, but it was %v "),
+				jen.Lit("expected BucketName for "+scn+" #%d to be %v, but it was %v "),
 				jen.ID("expected").Dot("ID"),
 				jen.ID("expected").Dot("Name"),
 				jen.ID("actual").Dot("Name"),
@@ -35,7 +41,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("t"),
 				jen.ID("expected").Dot("Details"),
 				jen.ID("actual").Dot("Details"),
-				jen.Lit("expected Details for item #%d to be %v, but it was %v "),
+				jen.Lit("expected Details for "+scn+" #%d to be %v, but it was %v "),
 				jen.ID("expected").Dot("ID"),
 				jen.ID("expected").Dot("Details"),
 				jen.ID("actual").Dot("Details"),
@@ -49,7 +55,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Creating").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Creating", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Lit("should be creatable"),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
@@ -62,49 +68,49 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-						jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-						jen.List(jen.ID("createdItem"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+						jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+						jen.List(jen.IDf("created%s", sn), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItemInput"),
+							jen.IDf("example%sInput", sn),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
-							jen.ID("createdItem"),
+							jen.IDf("created%s", sn),
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("assert item equality"),
-						jen.ID("checkItemEquality").Call(
+						jen.Commentf("assert %s equality", scn),
+						jen.IDf("check%sEquality", sn).Call(
 							jen.ID("t"),
-							jen.ID("exampleItem"),
-							jen.ID("createdItem"),
+							jen.IDf("example%s", sn),
+							jen.IDf("created%s", sn),
 						),
 						jen.Newline(),
-						jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dot("GetAuditLogForItem").Call(
+						jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("createdItem").Dot("ID"),
+							jen.IDf("created%s", sn).Dot("ID"),
 						),
 						jen.Qual(constants.MustAssertPkg, "NoError").Call(
 							jen.ID("t"),
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.ID("expectedAuditLogEntries").Op(":=").Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), "ItemCreationEvent"))),
+						jen.ID("expectedAuditLogEntries").Op(":=").Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn)))),
 						jen.ID("validateAuditLogEntries").Call(
 							jen.ID("t"),
 							jen.ID("expectedAuditLogEntries"),
 							jen.ID("auditLogEntries"),
-							jen.ID("createdItem").Dot("ID"),
-							jen.Qual(proj.InternalAuditPackage(), "ItemAssignmentKey"),
+							jen.IDf("created%s", sn).Dot("ID"),
+							jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
 						),
 						jen.Newline(),
 						jen.Comment("clean up"),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("createdItem").Dot("ID"),
+								jen.IDf("created%s", sn).Dot("ID"),
 							),
 						),
 					)),
@@ -113,7 +119,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Listing").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Listing", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Lit("should be readable in paginated form"),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
@@ -126,30 +132,30 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create items"),
+						jen.Commentf("create %s", pcn),
 						jen.Var().ID("expected").Index().Op("*").Qual(proj.TypesPackage(), sn),
 						jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
-							jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-							jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
+							jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+							jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 							jen.Newline(),
-							jen.List(jen.ID("createdItem"), jen.ID("itemCreationErr")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+							jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("exampleItemInput"),
+								jen.IDf("example%sInput", sn),
 							),
 							jen.ID("requireNotNilAndNoProblems").Call(
 								jen.ID("t"),
-								jen.ID("createdItem"),
-								jen.ID("itemCreationErr"),
+								jen.IDf("created%s", sn),
+								jen.IDf("%sCreationErr", uvn),
 							),
 							jen.Newline(),
 							jen.ID("expected").Op("=").ID("append").Call(
 								jen.ID("expected"),
-								jen.ID("createdItem"),
+								jen.IDf("created%s", sn),
 							),
 						),
 						jen.Newline(),
-						jen.Comment("assert item list equality"),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("GetItems").Call(
+						jen.Commentf("assert %s list equality", scn),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Get%s", pn).Call(
 							jen.ID("ctx"),
 							jen.ID("nil"),
 						),
@@ -160,19 +166,19 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Qual(constants.AssertionLibrary, "True").Callln(
 							jen.ID("t"),
-							jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot("Items")),
+							jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot(pn)),
 							jen.Lit("expected %d to be <= %d"),
 							jen.ID("len").Call(jen.ID("expected")),
-							jen.ID("len").Call(jen.ID("actual").Dot("Items")),
+							jen.ID("len").Call(jen.ID("actual").Dot(pn)),
 						),
 						jen.Newline(),
 						jen.Comment("clean up"),
-						jen.For(jen.List(jen.ID("_"), jen.ID("createdItem")).Op(":=").Range().ID("actual").Dot("Items")).Body(
+						jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Op(":=").Range().ID("actual").Dot(pn)).Body(
 							jen.Qual(constants.AssertionLibrary, "NoError").Call(
 								jen.ID("t"),
-								jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+								jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 									jen.ID("ctx"),
-									jen.ID("createdItem").Dot("ID"),
+									jen.IDf("created%s", sn).Dot("ID"),
 								),
 							)),
 					)),
@@ -181,9 +187,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Searching").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Searching", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("should be able to be search for items"),
+				jen.Litf("should be able to be search for %s", pcn),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -194,39 +200,39 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create items"),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
+						jen.Commentf("create %s", pcn),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 						jen.Var().ID("expected").Index().Op("*").Qual(proj.TypesPackage(), sn),
 						jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
-							jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-							jen.ID("exampleItemInput").Dot("Name").Op("=").Qual("fmt", "Sprintf").Call(
+							jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+							jen.IDf("example%sInput", sn).Dot("Name").Op("=").Qual("fmt", "Sprintf").Call(
 								jen.Lit("%s %d"),
-								jen.ID("exampleItemInput").Dot("Name"),
+								jen.IDf("example%sInput", sn).Dot("Name"),
 								jen.ID("i"),
 							),
 							jen.Newline(),
-							jen.List(jen.ID("createdItem"), jen.ID("itemCreationErr")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+							jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("exampleItemInput"),
+								jen.IDf("example%sInput", sn),
 							),
 							jen.ID("requireNotNilAndNoProblems").Call(
 								jen.ID("t"),
-								jen.ID("createdItem"),
-								jen.ID("itemCreationErr"),
+								jen.IDf("created%s", sn),
+								jen.IDf("%sCreationErr", uvn),
 							),
 							jen.Newline(),
 							jen.ID("expected").Op("=").ID("append").Call(
 								jen.ID("expected"),
-								jen.ID("createdItem"),
+								jen.IDf("created%s", sn),
 							),
 						),
 						jen.Newline(),
 						jen.ID("exampleLimit").Op(":=").ID("uint8").Call(jen.Lit(20)),
 						jen.Newline(),
-						jen.Comment("assert item list equality"),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("SearchItems").Call(
+						jen.Commentf("assert %s list equality", scn),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Search%s", pn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItem").Dot("Name"),
+							jen.IDf("example%s", sn).Dot("Name"),
 							jen.ID("exampleLimit"),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
@@ -243,12 +249,12 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Newline(),
 						jen.Comment("clean up"),
-						jen.For(jen.List(jen.ID("_"), jen.ID("createdItem")).Op(":=").Range().ID("expected")).Body(
+						jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Op(":=").Range().ID("expected")).Body(
 							jen.Qual(constants.AssertionLibrary, "NoError").Call(
 								jen.ID("t"),
-								jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+								jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 									jen.ID("ctx"),
-									jen.ID("createdItem").Dot("ID"),
+									jen.IDf("created%s", sn).Dot("ID"),
 								),
 							)),
 					)),
@@ -257,9 +263,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Searching_ReturnsOnlyItemsThatBelongToYou").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Searching_ReturnsOnly%sThatBelongToYou", pn, pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("should only receive your own items"),
+				jen.Litf("should only receive your own %s", pcn),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -270,39 +276,39 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create items"),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
+						jen.Commentf("create %s", pcn),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 						jen.Var().ID("expected").Index().Op("*").Qual(proj.TypesPackage(), sn),
 						jen.For(jen.ID("i").Op(":=").Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
-							jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-							jen.ID("exampleItemInput").Dot("Name").Op("=").Qual("fmt", "Sprintf").Call(
+							jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+							jen.IDf("example%sInput", sn).Dot("Name").Op("=").Qual("fmt", "Sprintf").Call(
 								jen.Lit("%s %d"),
-								jen.ID("exampleItemInput").Dot("Name"),
+								jen.IDf("example%sInput", sn).Dot("Name"),
 								jen.ID("i"),
 							),
 							jen.Newline(),
-							jen.List(jen.ID("createdItem"), jen.ID("itemCreationErr")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+							jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("exampleItemInput"),
+								jen.IDf("example%sInput", sn),
 							),
 							jen.ID("requireNotNilAndNoProblems").Call(
 								jen.ID("t"),
-								jen.ID("createdItem"),
-								jen.ID("itemCreationErr"),
+								jen.IDf("created%s", sn),
+								jen.IDf("%sCreationErr", uvn),
 							),
 							jen.Newline(),
 							jen.ID("expected").Op("=").ID("append").Call(
 								jen.ID("expected"),
-								jen.ID("createdItem"),
+								jen.IDf("created%s", sn),
 							),
 						),
 						jen.Newline(),
 						jen.ID("exampleLimit").Op(":=").ID("uint8").Call(jen.Lit(20)),
 						jen.Newline(),
-						jen.Comment("assert item list equality"),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("SearchItems").Call(
+						jen.Commentf("assert %s list equality", scn),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Search%s", pn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItem").Dot("Name"),
+							jen.IDf("example%s", sn).Dot("Name"),
 							jen.ID("exampleLimit"),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
@@ -319,12 +325,12 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Newline(),
 						jen.Comment("clean up"),
-						jen.For(jen.List(jen.ID("_"), jen.ID("createdItem")).Op(":=").Range().ID("expected")).Body(
+						jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Op(":=").Range().ID("expected")).Body(
 							jen.Qual(constants.AssertionLibrary, "NoError").Call(
 								jen.ID("t"),
-								jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+								jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 									jen.ID("ctx"),
-									jen.ID("createdItem").Dot("ID"),
+									jen.IDf("created%s", sn).Dot("ID"),
 								),
 							)),
 					)),
@@ -333,9 +339,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_ExistenceChecking_ReturnsFalseForNonexistentItem").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_ExistenceChecking_ReturnsFalseForNonexistent%s", pn, sn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("should not return an error for nonexistent item"),
+				jen.Litf("should not return an error for nonexistent %s", scn),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -346,7 +352,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("ItemExists").Call(
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("%sExists", sn).Call(
 							jen.ID("ctx"),
 							jen.ID("nonexistentID"),
 						),
@@ -364,9 +370,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_ExistenceChecking_ReturnsTrueForValidItem").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_ExistenceChecking_ReturnsTrueForValid%s", pn, sn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("should not return an error for existent item"),
+				jen.Litf("should not return an error for existent %s", scn),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -377,23 +383,23 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create item"),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-						jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-						jen.List(jen.ID("createdItem"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+						jen.Commentf("create %s", scn),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+						jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+						jen.List(jen.IDf("created%s", sn), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItemInput"),
+							jen.IDf("example%sInput", sn),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
-							jen.ID("createdItem"),
+							jen.IDf("created%s", sn),
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("retrieve item"),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("ItemExists").Call(
+						jen.Commentf("retrieve %s", scn),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("%sExists", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("createdItem").Dot("ID"),
+							jen.IDf("created%s", sn).Dot("ID"),
 						),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
@@ -404,12 +410,12 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 							jen.ID("actual"),
 						),
 						jen.Newline(),
-						jen.Comment("clean up item"),
+						jen.Commentf("clean up %s", scn),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("createdItem").Dot("ID"),
+								jen.IDf("created%s", sn).Dot("ID"),
 							),
 						),
 					)),
@@ -418,9 +424,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Reading_Returns404ForNonexistentItem").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Reading_Returns404ForNonexistent%s", pn, sn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("it should return an error when trying to read an item that does not exist"),
+				jen.Litf("it should return an error when trying to read %s that does not exist", scnwp),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -431,7 +437,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("GetItem").Call(
+						jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
 							jen.ID("ctx"),
 							jen.ID("nonexistentID"),
 						),
@@ -445,7 +451,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Reading").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Reading", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Lit("it should be readable"),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
@@ -458,23 +464,23 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create item"),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-						jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-						jen.List(jen.ID("createdItem"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+						jen.Commentf("create %s", scn),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+						jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+						jen.List(jen.IDf("created%s", sn), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItemInput"),
+							jen.IDf("example%sInput", sn),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
-							jen.ID("createdItem"),
+							jen.IDf("created%s", sn),
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("retrieve item"),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("GetItem").Call(
+						jen.Commentf("retrieve %s", scn),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("createdItem").Dot("ID"),
+							jen.IDf("created%s", sn).Dot("ID"),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
@@ -482,19 +488,19 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("assert item equality"),
-						jen.ID("checkItemEquality").Call(
+						jen.Commentf("assert %s equality", scn),
+						jen.IDf("check%sEquality", sn).Call(
 							jen.ID("t"),
-							jen.ID("exampleItem"),
+							jen.IDf("example%s", sn),
 							jen.ID("actual"),
 						),
 						jen.Newline(),
-						jen.Comment("clean up item"),
+						jen.Commentf("clean up %s", scn),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("createdItem").Dot("ID"),
+								jen.IDf("created%s", sn).Dot("ID"),
 							),
 						),
 					)),
@@ -503,7 +509,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Updating_Returns404ForNonexistentItem").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Updating_Returns404ForNonexistent%s", pn, sn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Lit("it should return an error when trying to update something that does not exist"),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
@@ -516,14 +522,14 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-						jen.ID("exampleItem").Dot("ID").Op("=").ID("nonexistentID"),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+						jen.IDf("example%s", sn).Dot("ID").Op("=").ID("nonexistentID"),
 						jen.Newline(),
 						jen.Qual(constants.AssertionLibrary, "Error").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("UpdateItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Update%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("exampleItem"),
+								jen.IDf("example%s", sn),
 							),
 						),
 					)),
@@ -532,17 +538,20 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Comment("convertItemToItemUpdateInput creates an ItemUpdateInput struct from an item."),
+		jen.Commentf("convert%sTo%sUpdateInput creates an %sUpdateInput struct from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().ID("convertItemToItemUpdateInput").Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Op("*").Qual(proj.TypesPackage(), "ItemUpdateInput")).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), "ItemUpdateInput").Valuesln(jen.ID("Name").Op(":").ID("x").Dot("Name"), jen.ID("Details").Op(":").ID("x").Dot("Details"))),
+		jen.Func().IDf("convert%sTo%sUpdateInput", sn, sn).Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
+			jen.Return().Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(
+				jen.ID("Name").Op(":").ID("x").Dot("Name"),
+				jen.ID("Details").Op(":").ID("x").Dot("Details"),
+			)),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Updating").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Updating", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("it should be possible to update an item"),
+				jen.Litf("it should be possible to update %s", scnwp),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -553,33 +562,33 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create item"),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-						jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-						jen.List(jen.ID("createdItem"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+						jen.Commentf("create %s", scn),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+						jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+						jen.List(jen.IDf("created%s", sn), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItemInput"),
+							jen.IDf("example%sInput", sn),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
-							jen.ID("createdItem"),
+							jen.IDf("created%s", sn),
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("change item"),
-						jen.ID("createdItem").Dot("Update").Call(jen.ID("convertItemToItemUpdateInput").Call(jen.ID("exampleItem"))),
+						jen.Commentf("change %s", scn),
+						jen.IDf("created%s", sn).Dot("Update").Call(jen.IDf("convert%sTo%sUpdateInput", sn, sn).Call(jen.IDf("example%s", sn))),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("UpdateItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Update%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("createdItem"),
+								jen.IDf("created%s", sn),
 							),
 						),
 						jen.Newline(),
-						jen.Comment("retrieve changed item"),
-						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("GetItem").Call(
+						jen.Commentf("retrieve changed %s", scn),
+						jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("createdItem").Dot("ID"),
+							jen.IDf("created%s", sn).Dot("ID"),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
@@ -587,10 +596,10 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("assert item equality"),
-						jen.ID("checkItemEquality").Call(
+						jen.Commentf("assert %s equality", scn),
+						jen.IDf("check%sEquality", sn).Call(
 							jen.ID("t"),
-							jen.ID("exampleItem"),
+							jen.IDf("example%s", sn),
 							jen.ID("actual"),
 						),
 						jen.Qual(constants.AssertionLibrary, "NotNil").Call(
@@ -598,9 +607,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 							jen.ID("actual").Dot("LastUpdatedOn"),
 						),
 						jen.Newline(),
-						jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dot("GetAuditLogForItem").Call(
+						jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("createdItem").Dot("ID"),
+							jen.IDf("created%s", sn).Dot("ID"),
 						),
 						jen.Qual(constants.MustAssertPkg, "NoError").Call(
 							jen.ID("t"),
@@ -608,23 +617,23 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Newline(),
 						jen.ID("expectedAuditLogEntries").Op(":=").Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), "ItemCreationEvent")),
-							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), "ItemUpdateEvent")),
+							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
+							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sUpdateEvent", sn))),
 						),
 						jen.ID("validateAuditLogEntries").Call(
 							jen.ID("t"),
 							jen.ID("expectedAuditLogEntries"),
 							jen.ID("auditLogEntries"),
-							jen.ID("createdItem").Dot("ID"),
-							jen.Qual(proj.InternalAuditPackage(), "ItemAssignmentKey"),
+							jen.IDf("created%s", sn).Dot("ID"),
+							jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
 						),
 						jen.Newline(),
-						jen.Comment("clean up item"),
+						jen.Commentf("clean up %s", scn),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("createdItem").Dot("ID"),
+								jen.IDf("created%s", sn).Dot("ID"),
 							),
 						),
 					)),
@@ -633,7 +642,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Archiving_Returns404ForNonexistentItem").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Archiving_Returns404ForNonexistent%s", pn, sn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Lit("it should return an error when trying to delete something that does not exist"),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
@@ -648,7 +657,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.Newline(),
 						jen.Qual(constants.AssertionLibrary, "Error").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 								jen.ID("ctx"),
 								jen.ID("nonexistentID"),
 							),
@@ -659,9 +668,9 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Archiving").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Archiving", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("it should be possible to delete an item"),
+				jen.Litf("it should be possible to delete %s", scnwp),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
 					jen.Return().Func().Params().Body(
 						jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
@@ -672,31 +681,31 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.Comment("create item"),
-						jen.ID("exampleItem").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItem").Call(),
-						jen.ID("exampleItemInput").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeItemCreationInputFromItem").Call(jen.ID("exampleItem")),
-						jen.List(jen.ID("createdItem"), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dot("CreateItem").Call(
+						jen.Commentf("create %s", scn),
+						jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+						jen.IDf("example%sInput", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+						jen.List(jen.IDf("created%s", sn), jen.ID("err")).Op(":=").ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("exampleItemInput"),
+							jen.IDf("example%sInput", sn),
 						),
 						jen.ID("requireNotNilAndNoProblems").Call(
 							jen.ID("t"),
-							jen.ID("createdItem"),
+							jen.IDf("created%s", sn),
 							jen.ID("err"),
 						),
 						jen.Newline(),
-						jen.Comment("clean up item"),
+						jen.Commentf("clean up %s", scn),
 						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
-							jen.ID("testClients").Dot("main").Dot("ArchiveItem").Call(
+							jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
 								jen.ID("ctx"),
-								jen.ID("createdItem").Dot("ID"),
+								jen.IDf("created%s", sn).Dot("ID"),
 							),
 						),
 						jen.Newline(),
-						jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dot("GetAuditLogForItem").Call(
+						jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
 							jen.ID("ctx"),
-							jen.ID("createdItem").Dot("ID"),
+							jen.IDf("created%s", sn).Dot("ID"),
 						),
 						jen.Qual(constants.MustAssertPkg, "NoError").Call(
 							jen.ID("t"),
@@ -704,15 +713,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Newline(),
 						jen.ID("expectedAuditLogEntries").Op(":=").Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), "ItemCreationEvent")),
-							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), "ItemArchiveEvent")),
+							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
+							jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sArchiveEvent", sn))),
 						),
 						jen.ID("validateAuditLogEntries").Call(
 							jen.ID("t"),
 							jen.ID("expectedAuditLogEntries"),
 							jen.ID("auditLogEntries"),
-							jen.ID("createdItem").Dot("ID"),
-							jen.Qual(proj.InternalAuditPackage(), "ItemAssignmentKey"),
+							jen.IDf("created%s", sn).Dot("ID"),
+							jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
 						),
 					)),
 			)),
@@ -720,7 +729,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).ID("TestItems_Auditing_Returns404ForNonexistentItem").Params().Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("TestSuite")).IDf("Test%s_Auditing_Returns404ForNonexistent%s", pn, sn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Lit("it should return an error when trying to audit something that does not exist"),
 				jen.Func().Params(jen.ID("testClients").Op("*").ID("testClientWrapper")).Params(jen.Func().Params()).Body(
@@ -733,7 +742,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						),
 						jen.Defer().ID("span").Dot("End").Call(),
 						jen.Newline(),
-						jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dot("GetAuditLogForItem").Call(
+						jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
 							jen.ID("ctx"),
 							jen.ID("nonexistentID"),
 						),
