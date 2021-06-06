@@ -27,7 +27,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("debugCookieSecret").Equals().Lit("HEREISA32CHARSECRETWHICHISMADEUP"),
 			jen.ID("devPostgresDBConnDetails").Equals().Lit("postgres://dbuser:hunter2@database:5432/todo?sslmode=disable"),
 			jen.ID("devSqliteConnDetails").Equals().Lit("/tmp/db"),
-			jen.ID("devMariaDBConnDetails").Equals().Lit("dbuser:hunter2@tcp(database:3306)/todo"),
+			jen.ID("devMariaDBConnDetails").Equals().Litf("dbuser:hunter2@tcp(database:3306)/%s", proj.Name.RouteName()),
 			jen.ID("defaultCookieName").Equals().Qual(proj.AuthServicePackage(), "DefaultCookieName"),
 			jen.Newline(),
 			jen.Comment("run modes."),
@@ -87,7 +87,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("SpanCollectionProbability").MapAssign().Lit(1),
 				jen.ID("Jaeger").MapAssign().Op("&").Qual(proj.InternalTracingPackage(), "JaegerConfig").Valuesln(
 					jen.ID("CollectorEndpoint").MapAssign().Lit("http://tracing-server:14268/api/traces"),
-					jen.ID("ServiceName").MapAssign().Lit("todo_service"),
+					jen.ID("ServiceName").MapAssign().Litf("%s_service", proj.Name.RouteName()),
 				),
 			),
 		),
@@ -289,7 +289,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
-								jen.ID("Issuer").MapAssign().Lit("todo_service"),
+								jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
 								jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
 								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
 							),
@@ -366,7 +366,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
-								jen.ID("Issuer").MapAssign().Lit("todo_service"),
+								jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
 								jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
 								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
 							),
@@ -459,7 +459,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 							),
 							jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 								jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
-									jen.ID("Issuer").MapAssign().Lit("todo_service"),
+									jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
 									jen.ID("Lifetime").MapAssign().ID("defaultPASETOLifetime"),
 									jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
 								),

@@ -20,36 +20,38 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 
+	comparisonLines := []jen.Code{
+		jen.ID("t").Dot("Helper").Call(),
+		jen.Newline(),
+		jen.Qual(constants.AssertionLibrary, "NotZero").Call(
+			jen.ID("t"),
+			jen.ID("actual").Dot("ID"),
+		),
+	}
+	for _, field := range typ.Fields {
+		if field.ValidForUpdateInput {
+			fsn := field.Name.Singular()
+			comparisonLines = append(comparisonLines, jen.Qual(constants.AssertionLibrary, "Equal").Call(
+				jen.ID("t"),
+				jen.ID("expected").Dot(fsn),
+				jen.ID("actual").Dot(fsn),
+				jen.Lit("expected "+fsn+" for "+scn+" #%d to be %v, but it was %v "),
+				jen.ID("expected").Dot("ID"),
+				jen.ID("expected").Dot(fsn),
+				jen.ID("actual").Dot(fsn),
+			))
+		}
+	}
+	comparisonLines = append(comparisonLines,
+		jen.Qual(constants.AssertionLibrary, "NotZero").Call(
+			jen.ID("t"),
+			jen.ID("actual").Dot("CreatedOn"),
+		),
+	)
+
 	code.Add(
 		jen.Func().IDf("check%sEquality", sn).Params(jen.ID("t").Op("*").Qual("testing", "T"), jen.List(jen.ID("expected"), jen.ID("actual")).Op("*").Qual(proj.TypesPackage(), sn)).Body(
-			jen.ID("t").Dot("Helper").Call(),
-			jen.Newline(),
-			jen.Qual(constants.AssertionLibrary, "NotZero").Call(
-				jen.ID("t"),
-				jen.ID("actual").Dot("ID"),
-			),
-			jen.Qual(constants.AssertionLibrary, "Equal").Call(
-				jen.ID("t"),
-				jen.ID("expected").Dot("Name"),
-				jen.ID("actual").Dot("Name"),
-				jen.Lit("expected BucketName for "+scn+" #%d to be %v, but it was %v "),
-				jen.ID("expected").Dot("ID"),
-				jen.ID("expected").Dot("Name"),
-				jen.ID("actual").Dot("Name"),
-			),
-			jen.Qual(constants.AssertionLibrary, "Equal").Call(
-				jen.ID("t"),
-				jen.ID("expected").Dot("Details"),
-				jen.ID("actual").Dot("Details"),
-				jen.Lit("expected Details for "+scn+" #%d to be %v, but it was %v "),
-				jen.ID("expected").Dot("ID"),
-				jen.ID("expected").Dot("Details"),
-				jen.ID("actual").Dot("Details"),
-			),
-			jen.Qual(constants.AssertionLibrary, "NotZero").Call(
-				jen.ID("t"),
-				jen.ID("actual").Dot("CreatedOn"),
-			),
+			comparisonLines...,
 		),
 		jen.Newline(),
 	)
@@ -537,13 +539,20 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
+	updateInputLines := []jen.Code{}
+	for _, field := range typ.Fields {
+		if field.ValidForUpdateInput {
+			fsn := field.Name.Singular()
+			updateInputLines = append(updateInputLines, jen.ID(fsn).Op(":").ID("x").Dot(fsn))
+		}
+	}
+
 	code.Add(
 		jen.Commentf("convert%sTo%sUpdateInput creates an %sUpdateInput struct from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
 		jen.Func().IDf("convert%sTo%sUpdateInput", sn, sn).Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
 			jen.Return().Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(
-				jen.ID("Name").Op(":").ID("x").Dot("Name"),
-				jen.ID("Details").Op(":").ID("x").Dot("Details"),
+				updateInputLines...,
 			)),
 		jen.Newline(),
 	)

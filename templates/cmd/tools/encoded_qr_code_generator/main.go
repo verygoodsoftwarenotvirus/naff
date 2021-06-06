@@ -14,7 +14,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			jen.ID("base64ImagePrefix").Op("=").Lit("data:image/png;base64,"),
-			jen.ID("otpAuthURL").Op("=").Lit(`otpauth://totp/todo:username?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=&issuer=todo`),
+			jen.ID("otpAuthURL").Op("=").Litf(`otpauth://totp/%s:username?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=&issuer=%s`, proj.Name.RouteName(), proj.Name.RouteName()),
 		),
 		jen.Newline(),
 	)

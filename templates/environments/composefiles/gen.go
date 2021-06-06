@@ -89,7 +89,7 @@ services:
             driver: none
         ports:
             - 2345:5432
-    todo-server:
+    %s-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
             JAEGER_DISABLED: 'false'
@@ -153,7 +153,7 @@ services:
 #        - source: '../../environments/local/grafana/dashboards'
 #          target: '/etc/grafana/provisioning/dashboards/dashboards'
 #          type: 'bind'
-`, project.Name.RouteName(), project.OutputPath)
+`, project.Name.RouteName(), project.Name.KebabName(), project.OutputPath)
 }
 
 func integrationTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {

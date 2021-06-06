@@ -485,7 +485,11 @@ func buildTestSqlite_BuildCreateSomethingQuery(proj *models.Project, typ models.
 					jen.Newline(),
 					jen.ID("expectedQuery").Op(":=").Lit(query),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
-						jen.IDf("example%s", sn).Dot("ExternalID"), jen.IDf("example%s", sn).Dot("Name"), jen.IDf("example%s", sn).Dot("Details"), jen.IDf("example%s", sn).Dot("BelongsToAccount")),
+						jen.IDf("example%s", sn).Dot("ExternalID"),
+						jen.IDf("example%s", sn).Dot("Name"),
+						jen.IDf("example%s", sn).Dot("Details"),
+						jen.IDf("example%s", sn).Dot("BelongsToAccount"),
+					),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildCreate%sQuery", sn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),

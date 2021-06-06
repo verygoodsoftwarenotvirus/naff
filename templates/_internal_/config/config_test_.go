@@ -18,7 +18,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 		),
 		jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 			jen.ID("Cookies").MapAssign().Qual(proj.AuthServicePackage(), "CookieConfig").Valuesln(
-				jen.ID("Name").MapAssign().Lit("todocookie"),
+				jen.ID("Name").MapAssign().Litf("%s_cookie", proj.Name.RouteName()),
 				jen.ID("Domain").MapAssign().Lit("https://verygoodsoftwarenotvirus.ru"),
 				jen.ID("Lifetime").MapAssign().Qual("time", "Second"),
 			),
