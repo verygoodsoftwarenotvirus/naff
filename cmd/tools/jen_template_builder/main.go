@@ -62,7 +62,7 @@ func runTojenForFile(filename, pkg string) (string, error) {
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/server",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/frontend",
 	}
 
 	for _, pkg := range allPackages {

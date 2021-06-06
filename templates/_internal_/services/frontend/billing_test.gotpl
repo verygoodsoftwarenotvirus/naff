@@ -12,7 +12,7 @@ import (
 
 	{{ projectImport "internal/capitalism" }}
 	{{ projectImport "internal/panicking" }}
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 )
 
 func Test_renderPrice(T *testing.T) {
@@ -59,7 +59,7 @@ func Test_service_handleCheckoutSessionStart(T *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/whatever?plan=%s", examplePlanID), nil)
 
 		mpm := &capitalism.MockPaymentManager{}
-		mpm.On("CreateCheckoutSession", testutil.ContextMatcher, examplePlanID).Return(exampleSessionID, nil)
+		mpm.On("CreateCheckoutSession", testutils.ContextMatcher, examplePlanID).Return(exampleSessionID, nil)
 		s.paymentManager = mpm
 
 		s.handleCheckoutSessionStart(res, req)
@@ -91,7 +91,7 @@ func Test_service_handleCheckoutSessionStart(T *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/whatever?plan=%s", examplePlanID), nil)
 
 		mpm := &capitalism.MockPaymentManager{}
-		mpm.On("CreateCheckoutSession", testutil.ContextMatcher, examplePlanID).Return("", errors.New("blah"))
+		mpm.On("CreateCheckoutSession", testutils.ContextMatcher, examplePlanID).Return("", errors.New("blah"))
 		s.paymentManager = mpm
 
 		s.handleCheckoutSessionStart(res, req)

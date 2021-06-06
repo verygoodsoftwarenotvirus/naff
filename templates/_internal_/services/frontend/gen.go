@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"os"
@@ -133,7 +134,108 @@ func configTestDotGo(proj *models.Project) string {
 var httpRoutesTemplate string
 
 func httpRoutesDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, httpRoutesTemplate, nil)
+	routes := []jen.Code{}
+	for _, typ := range proj.DataTypes {
+		sn := typ.Name.Singular()
+		pn := typ.Name.Plural()
+		prn := typ.Name.PluralRouteName()
+		uvn := typ.Name.UnexportedVarName()
+
+		routes = append(routes,
+			jen.Newline(),
+			jen.Newline(),
+			jen.IDf("single%sPattern", sn).Op(":=").Qual("fmt", "Sprintf").Call(
+				jen.ID("numericIDPattern"),
+				jen.IDf("%sIDURLParamKey", uvn),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Read%sPermission", pn))).
+				Dotln("Get").Call(
+				jen.Litf("/%s", prn),
+				jen.ID("s").Dotf("build%sTableView", pn).Call(jen.ID("true")),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Read%sPermission", pn))).
+				Dotln("Get").Call(
+				jen.Litf("/dashboard_pages/%s", prn),
+				jen.ID("s").Dotf("build%sTableView", pn).Call(jen.ID("false")),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Create%sPermission", pn))).
+				Dotln("Get").Call(
+				jen.Lit(fmt.Sprintf("/%s/", prn)+"new"),
+				jen.ID("s").Dotf("build%sCreatorView", sn).Call(jen.ID("true")),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Create%sPermission", pn))).
+				Dotln("Post").Call(
+				jen.Litf("/%s/new/submit", prn),
+				jen.ID("s").Dotf("handle%sCreationRequest", sn),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Archive%sPermission", pn))).
+				Dotln("Delete").Call(
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
+					jen.IDf("single%sPattern", sn),
+				),
+				jen.ID("s").Dotf("handle%sDeletionRequest", sn),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Archive%sPermission", pn))).
+				Dotln("Get").Call(
+				jen.Litf("/dashboard_pages/%s/new", prn),
+				jen.ID("s").Dotf("build%sCreatorView", sn).Call(jen.ID("false")),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Update%sPermission", pn))).
+				Dotln("Get").Call(
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit(fmt.Sprintf("/%s/", prn)+"%s"),
+					jen.IDf("single%sPattern", sn),
+				),
+				jen.ID("s").Dotf("build%sEditorView", sn).Call(jen.ID("true")),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Update%sPermission", pn))).
+				Dotln("Put").Call(
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
+					jen.IDf("single%sPattern", sn),
+				),
+				jen.ID("s").Dotf("handle%sUpdateRequest", sn),
+			),
+			jen.Newline(),
+			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
+				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Update%sPermission", pn))).
+				Dotln("Get").Call(
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
+					jen.IDf("single%sPattern", sn),
+				),
+				jen.ID("s").Dotf("build%sEditorView", sn).Call(jen.ID("false")),
+			),
+		)
+	}
+
+	var b bytes.Buffer
+	if err := jen.Null().Add(routes...).RenderWithoutFormatting(&b); err != nil {
+		panic(err)
+	}
+
+	generated := map[string]string{
+		"typeRoutes": b.String(),
+	}
+
+	return models.RenderCodeFile(proj, httpRoutesTemplate, generated)
 }
 
 //go:embed webhooks.gotpl

@@ -23,7 +23,7 @@ import (
 	{{ projectImport "internal/services/audit" }}
 	authservice {{ projectImport "internal/services/authentication" }}
 	{{ projectImport "internal/services/frontend" }}
-	{{ projectImport "internal/services/items" }}
+	{{ generated "typeServiceImports" }}
 	{{ projectImport "internal/services/webhooks" }}
 	{{ projectImport "internal/storage" }}
 	{{ projectImport "internal/uploads" }}
@@ -51,8 +51,7 @@ const (
 	// test user stuff.
 	defaultPassword = "password"
 
-	// search index paths.
-	defaultItemsSearchIndexPath = "items.bleve"
+	{{ generated "searchPaths" }}
 
 	pasetoSecretSize      = 32
 	maxAttempts           = 50
@@ -230,7 +229,7 @@ func localDevelopmentConfig(ctx context.Context, filePath string) error {
 				Debug:   true,
 				Enabled: false,
 			},
-			Items: items.Config{SearchIndexPath: "/search_indices/items.bleve"},
+			{{ generated "typeServiceConfigs" }}
 		},
 		AuditLog: audit.Config{
 			Debug:   true,
@@ -296,14 +295,7 @@ func frontendTestsConfig(ctx context.Context, filePath string) error {
 				Debug:   true,
 				Enabled: false,
 			},
-			Items: items.Config{
-				SearchIndexPath: defaultItemsSearchIndexPath,
-				Logger: logging.Config{
-					Name:     "items",
-					Level:    logging.InfoLevel,
-					Provider: logging.ProviderZerolog,
-				},
-			},
+			{{ generated "typeServiceConfigs" }}
 		},
 		AuditLog: audit.Config{
 			Debug:   true,
@@ -394,14 +386,7 @@ func buildIntegrationTestForDBImplementation(dbVendor, dbDetails string) configF
 					Debug:   true,
 					Enabled: false,
 				},
-				Items: items.Config{
-					SearchIndexPath: defaultItemsSearchIndexPath,
-					Logger: logging.Config{
-						Name:     "items",
-						Level:    logging.InfoLevel,
-						Provider: logging.ProviderZerolog,
-					},
-				},
+				{{ generated "typeServiceConfigs" }}
 			},
 			AuditLog: audit.Config{
 				Debug:   false,

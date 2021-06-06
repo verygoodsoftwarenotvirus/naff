@@ -3,6 +3,8 @@ package indexinitializer
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
@@ -15,13 +17,19 @@ var mainTemplate string
 func mainDotGoString(proj *models.Project) string {
 	switchCases := buildSwitchCases(proj)
 
+	validTypeNames := []string{}
+	for _, typ := range proj.DataTypes {
+		validTypeNames = append(validTypeNames, fmt.Sprintf("%q: {},", typ.Name.RouteName()))
+	}
+
 	var b bytes.Buffer
 	if err := jen.Null().Add(switchCases...).RenderWithoutFormatting(&b); err != nil {
 		panic(err)
 	}
 
 	return models.RenderCodeFile(proj, mainTemplate, map[string]string{
-		"switchCases": b.String(),
+		"switchCases":    b.String(),
+		"validTypeNames": strings.Join(validTypeNames, "\n"),
 	})
 }
 

@@ -10,7 +10,7 @@ import (
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "pkg/client/httpclient" }}
 	{{ projectImport "pkg/types" }}
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -109,5 +109,5 @@ func (s *TestSuite) HandleStats(_ string, stats *suite.SuiteInformation) {
 	const totalExpectedTestCount = 69
 
 	s.checkTestRunsForPositiveResultsThatOccurredTooQuickly(stats)
-	testutil.AssertAppropriateNumberOfTestsRan(s.T(), totalExpectedTestCount, stats)
+	testutils.AssertAppropriateNumberOfTestsRan(s.T(), totalExpectedTestCount, stats)
 }

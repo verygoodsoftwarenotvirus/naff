@@ -17,7 +17,7 @@ import (
 	{{ projectImport "internal/capitalism" }}
 	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "pkg/types/fakes" }}
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -209,7 +209,7 @@ func Test_stripePaymentManager_HandleSubscriptionEventWebhook(T *testing.T) {
 		_, err := mac.Write(b.Bytes())
 		require.NoError(t, err)
 
-		mrc := &testutil.MockReadCloser{}
+		mrc := &testutils.MockReadCloser{}
 		mrc.On("Read", mock.IsType([]byte(""))).Return(int(0), errors.New("blah"))
 
 		req := httptest.NewRequest(http.MethodPost, "/webhook_update", mrc)

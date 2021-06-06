@@ -15,7 +15,7 @@ import (
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -139,7 +139,7 @@ func expectAuditLogEntryInTransaction(mockQueryBuilder *database.MockSQLQueryBui
 	fakeAuditLogEntryQuery, fakeAuditLogEntryArgs := fakes.BuildFakeSQLQuery()
 	mockQueryBuilder.AuditLogEntrySQLQueryBuilder.
 		On("BuildCreateAuditLogEntryQuery",
-			testutil.ContextMatcher,
+			testutils.ContextMatcher,
 			mock.IsType(&types.AuditLogEntryCreationInput{})).
 		Return(fakeAuditLogEntryQuery, fakeAuditLogEntryArgs)
 

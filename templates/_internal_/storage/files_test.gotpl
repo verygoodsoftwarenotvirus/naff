@@ -11,7 +11,7 @@ import (
 	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "internal/observability/tracing" }}
 
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -158,7 +158,7 @@ func TestUploader_ServeFiles(T *testing.T) {
 			},
 		}
 
-		res := &testutil.MockHTTPResponseWriter{}
+		res := &testutils.MockHTTPResponseWriter{}
 		res.On("Write", mock.IsType([]byte(nil))).Return(0, errors.New("blah"))
 		res.On("Header").Return(http.Header{})
 		req := httptest.NewRequest(http.MethodGet, "/things", nil)

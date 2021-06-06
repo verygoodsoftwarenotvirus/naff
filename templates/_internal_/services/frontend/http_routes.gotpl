@@ -84,23 +84,5 @@ func (s *service) SetupRoutes(router routing.Router) {
 	router.WithMiddleware(s.authService.ServiceAdminMiddleware).
 		Get("/dashboard_pages/admin/settings", s.buildAdminSettingsView(false))
 
-	singleItemPattern := fmt.Sprintf(numericIDPattern, itemIDURLParamKey)
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.ReadItemsPermission)).
-		Get("/items", s.buildItemsTableView(true))
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.ReadItemsPermission)).
-		Get("/dashboard_pages/items", s.buildItemsTableView(false))
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.CreateItemsPermission)).
-		Get("/items/new", s.buildItemCreatorView(true))
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.CreateItemsPermission)).
-		Post("/items/new/submit", s.handleItemCreationRequest)
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.ArchiveItemsPermission)).
-		Delete(fmt.Sprintf("/dashboard_pages/items/%s", singleItemPattern), s.handleItemDeletionRequest)
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.ArchiveItemsPermission)).
-		Get("/dashboard_pages/items/new", s.buildItemCreatorView(false))
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.UpdateItemsPermission)).
-		Get(fmt.Sprintf("/items/%s", singleItemPattern), s.buildItemEditorView(true))
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.UpdateItemsPermission)).
-		Put(fmt.Sprintf("/dashboard_pages/items/%s", singleItemPattern), s.handleItemUpdateRequest)
-	router.WithMiddleware(s.authService.PermissionFilterMiddleware(authorization.UpdateItemsPermission)).
-		Get(fmt.Sprintf("/dashboard_pages/items/%s", singleItemPattern), s.buildItemEditorView(false))
+	{{ generated "typeRoutes" }}
 }

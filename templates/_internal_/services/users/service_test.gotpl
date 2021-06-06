@@ -16,7 +16,7 @@ import (
 	{{ projectImport "internal/uploads/images" }}
 	mockuploads {{ projectImport "internal/uploads/mock" }}
 	mocktypes {{ projectImport "pkg/types/mock" }}
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -31,7 +31,7 @@ func buildTestService(t *testing.T) *service {
 	mockDB := database.BuildMockDatabase()
 	mockDB.UserDataManager.On(
 		"GetAllUsersCount",
-		testutil.ContextMatcher,
+		testutils.ContextMatcher,
 	).Return(expectedUserCount, nil)
 
 	s := ProvideUsersService(

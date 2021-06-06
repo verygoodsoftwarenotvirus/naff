@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -10,67 +11,85 @@ import (
 func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
-	sn := typ.Name.Singular()
-
 	utils.AddImports(proj, code, true)
 
-	code.Add(
-		jen.Var().IDf("itemIDURLParamKey").Equals().Lit("item"),
-		jen.Newline(),
-	)
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	uvn := typ.Name.UnexportedVarName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	rn := typ.Name.RouteName()
+	prn := typ.Name.PluralRouteName()
+	scn := typ.Name.SingularCommonName()
+	pcn := typ.Name.PluralCommonName()
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("fetchItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("sessionCtxData").Op("*").ID("types").Dot("SessionContextData"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("item").Op("*").ID("types").Dot(sn), jen.Err().ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			constants.LoggerVar().Assign().ID("s").Dot("logger"),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
-				jen.ID("span"),
-				jen.ID("req"),
-			),
-			jen.If(jen.ID("s").Dot("useFakeData")).Body(
-				jen.ID("item").Equals().ID("fakes").Dotf("BuildFakeItem").Call()).Else().Body(
-				jen.IDf("itemID").Assign().ID("s").Dot("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-					constants.LoggerVar(),
-					jen.IDf("itemIDURLParamKey"),
-					jen.Lit("item"),
-				).Call(jen.ID("req")),
-				jen.List(jen.IDf("item"), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("GetItem").Call(
-					jen.ID("ctx"),
-					jen.IDf("itemID"),
-					jen.ID("sessionCtxData").Dot("ActiveAccountID"),
-				),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
-						jen.Err(),
-						constants.LoggerVar(),
-						jen.ID("span"),
-						jen.Litf("fetching item data"),
-					))),
-			),
-			jen.Return().List(jen.ID("item"), jen.ID("nil")),
+		jen.Const().Defs(
+			jen.IDf("%sIDURLParamKey", uvn).Equals().Lit(rn),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Var().IDf("itemCreatorTemplate").String(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("fetch%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID(uvn).Op("*").Qual(proj.TypesPackage(), sn), jen.Err().ID("error")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("s").Dot("logger"),
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
+			),
+			jen.Newline(),
+			jen.If(jen.ID("s").Dot("useFakeData")).Body(
+				jen.IDf(uvn).Equals().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call()).Else().Body(
+				jen.IDf("%sID", uvn).Assign().ID("s").Dot("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
+					constants.LoggerVar(),
+					jen.IDf("%sIDURLParamKey", uvn),
+					jen.Lit(scn),
+				).Call(jen.ID("req")),
+				jen.List(jen.IDf(uvn), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Get%s", sn).Call(
+					jen.ID("ctx"),
+					jen.IDf("%sID", uvn),
+					jen.ID("sessionCtxData").Dot("ActiveAccountID"),
+				),
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+					jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+						jen.Err(),
+						constants.LoggerVar(),
+						jen.ID("span"),
+						jen.Litf("fetching %s data", scn),
+					),
+					),
+				),
+			),
+			jen.Newline(),
+			jen.Return().List(jen.ID(uvn), jen.ID("nil")),
+		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("buildItemCreatorView").Params(jen.ID("includeBaseTemplate").ID("bool")).Params(jen.Qual("net/http", "ResponseWriter"), jen.Op("*").Qual("net/http", "Request")).Body(
+		jen.Commentf("//go:embed templates/partials/generated/creators/%s_creator.gotpl", rn),
+		jen.Newline(),
+		jen.Var().IDf("%sCreatorTemplate", uvn).String(),
+		jen.Newline(),
+	)
+
+	code.Add(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("build%sCreatorView", sn).Params(jen.ID("includeBaseTemplate").ID("bool")).Params(jen.Func().Params(jen.Qual("net/http", "ResponseWriter"), jen.Op("*").Qual("net/http", "Request"))).Body(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 				jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 				jen.Defer().ID("span").Dot("End").Call(),
+				jen.Newline(),
 				constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-				jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 					jen.ID("span"),
 					jen.ID("req"),
 				),
+				jen.Newline(),
 				jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
 						jen.ID("span"),
@@ -84,16 +103,21 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 					jen.Return(),
 				),
-				jen.ID("item").Assign().Op("&").ID("types").Dot(sn).Values(),
+				jen.Newline(),
+				jen.ID(uvn).Assign().Op("&").Qual(proj.TypesPackage(), sn).Values(),
 				jen.If(jen.ID("includeBaseTemplate")).Body(
 					jen.ID("view").Assign().ID("s").Dot("renderTemplateIntoBaseTemplate").Call(
-						jen.IDf("itemCreatorTemplate"),
+						jen.IDf("%sCreatorTemplate", uvn),
 						jen.ID("nil"),
 					),
+					jen.Newline(),
 					jen.ID("page").Assign().Op("&").ID("pageData").Valuesln(
-						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Litf("New Item"), jen.ID("ContentData").Op(":").ID("item")),
+						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Litf("New %s", sn), jen.ID("ContentData").Op(":").ID(uvn),
+					),
 					jen.If(jen.ID("sessionCtxData").DoesNotEqual().ID("nil")).Body(
-						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call()),
+						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
+					),
+					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
 						jen.ID("ctx"),
 						jen.ID("view"),
@@ -104,85 +128,124 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("tmpl").Assign().ID("s").Dot("parseTemplate").Call(
 						jen.ID("ctx"),
 						jen.Lit(""),
-						jen.IDf("itemCreatorTemplate"),
+						jen.IDf("%sCreatorTemplate", uvn),
 						jen.ID("nil"),
 					),
+					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
 						jen.ID("ctx"),
 						jen.ID("tmpl"),
-						jen.ID("item"),
+						jen.ID(uvn),
 						jen.ID("res"),
 					),
 				),
-			)),
-		jen.Newline(),
-	)
-
-	code.Add(
-		jen.Var().Defs(
-			jen.IDf("itemCreationInputNameFormKey").Equals().Lit("name"),
-			jen.IDf("itemCreationInputDetailsFormKey").Equals().Lit("details"),
+			),
 		),
 		jen.Newline(),
 	)
 
+	allFieldsKeys := []jen.Code{}
+	creationKeys := []jen.Code{}
+	updateKeys := []jen.Code{}
+
+	for _, field := range typ.Fields {
+		fuvn := field.Name.UnexportedVarName()
+		fsn := field.Name.Singular()
+
+		allFieldsKeys = append(allFieldsKeys, jen.IDf("%sFormKey", fuvn).Equals().Lit(fuvn))
+
+		if field.ValidForCreationInput {
+			creationKeys = append(creationKeys, jen.IDf("%sCreationInput%sFormKey", uvn, fsn).Equals().IDf("%sFormKey", fuvn))
+		}
+		if field.ValidForUpdateInput {
+			updateKeys = append(updateKeys, jen.IDf("%sUpdateInput%sFormKey", uvn, fsn).Equals().IDf("%sFormKey", fuvn))
+		}
+	}
+
+	allKeys := append(allFieldsKeys, jen.Newline())
+	allKeys = append(allKeys, creationKeys...)
+	allKeys = append(allKeys, jen.Newline())
+	allKeys = append(allKeys, updateKeys...)
+	allKeys = append(allKeys, jen.Newline())
+
 	code.Add(
-		jen.Commentf("parseFormEncodedItemCreationInput checks a request for an ItemCreationInput."),
+		jen.Const().Defs(allKeys...),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("parseFormEncodedItemCreationInput").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request"), jen.ID("sessionCtxData").Op("*").ID("types").Dot("SessionContextData")).Params(jen.ID("creationInput").Op("*").ID("types").Dot("ItemCreationInput")).Body(
+	)
+
+	creationInputFields := []jen.Code{}
+	for _, field := range typ.Fields {
+		fsn := field.Name.Singular()
+		creationInputFields = append(creationInputFields, jen.ID(fsn).Op(":").ID("form").Dot("Get").Call(jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
+	}
+	creationInputFields = append(creationInputFields, jen.ID("BelongsToAccount").Op(":").ID("sessionCtxData").Dot("ActiveAccountID"))
+
+	code.Add(
+		jen.Commentf("parseFormEncoded%sCreationInput checks a request for an %sCreationInput.", sn, sn),
+		jen.Newline(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("parseFormEncoded%sCreationInput", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request"), jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")).Params(jen.ID("creationInput").Op("*").ID("types").Dotf("%sCreationInput", sn)).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
+			jen.Newline(),
 			jen.List(jen.ID("form"), jen.Err()).Assign().ID("s").Dot("extractFormFromRequest").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("parsing item creation input"),
+					jen.Litf("parsing %s creation input", scn),
 				),
 				jen.Return().ID("nil"),
 			),
-			jen.ID("creationInput").Equals().Op("&").ID("types").Dotf("ItemCreationInput").Valuesln(
-				jen.ID("Name").Op(":").ID("form").Dot("Get").Call(jen.IDf("itemCreationInputNameFormKey")), jen.ID("Details").Op(":").ID("form").Dot("Get").Call(jen.ID("itemCreationInputDetailsFormKey")), jen.ID("BelongsToAccount").Op(":").ID("sessionCtxData").Dot("ActiveAccountID")),
+			jen.Newline(),
+			jen.ID("creationInput").Equals().Op("&").ID("types").Dotf("%sCreationInput", sn).Valuesln(
+				creationInputFields...,
+			),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("creationInput").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				constants.LoggerVar().Equals().ID("logger").Dot("WithValue").Call(
 					jen.Lit("input"),
 					jen.ID("creationInput"),
 				),
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("invalid item creation input"),
+					jen.Litf("invalid %s creation input", scn),
 				),
 				jen.Return().ID("nil"),
 			),
+			jen.Newline(),
 			jen.Return().ID("creationInput"),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("handleItemCreationRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("handle%sCreationRequest", sn).Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
-			constants.LoggerVar().Dot("Debug").Call(jen.Litf("item Creation route called")),
+			jen.Newline(),
+			constants.LoggerVar().Dot("Debug").Call(jen.Litf("%s creation route called", scn)),
+			jen.Newline(),
 			jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -196,41 +259,47 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 				jen.Return(),
 			),
-			constants.LoggerVar().Dot("Debug").Call(jen.Litf("session context data retrieved for item Creation route")),
-			jen.ID("creationInput").Assign().ID("s").Dotf("parseFormEncodedItemCreationInput").Call(
+			jen.Newline(),
+			constants.LoggerVar().Dot("Debug").Call(jen.Litf("session context data retrieved for %s creation route", scn)),
+			jen.Newline(),
+			jen.ID("creationInput").Assign().ID("s").Dotf("parseFormEncoded%sCreationInput", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
 				jen.ID("sessionCtxData"),
 			),
 			jen.If(jen.ID("creationInput").Op("==").ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("parsing item creation input"),
+					jen.Litf("parsing %s creation input", scn),
 				),
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 				jen.Return(),
 			),
-			constants.LoggerVar().Dot("Debug").Call(jen.Litf("item Creation input parsed successfully")),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("CreateItem").Call(
+			jen.Newline(),
+			constants.LoggerVar().Dot("Debug").Call(jen.Litf("%s creation input parsed successfully", scn)),
+			jen.Newline(),
+			jen.If(jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Create%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("creationInput"),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("writing item to datastore"),
+					jen.Litf("writing %s to datastore", scn),
 				),
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 				jen.Return(),
 			),
-			constants.LoggerVar().Dot("Debug").Call(jen.Litf("item Created")),
+			jen.Newline(),
+			constants.LoggerVar().Dot("Debug").Call(jen.Litf("%s created", scn)),
+			jen.Newline(),
 			jen.ID("htmxRedirectTo").Call(
 				jen.ID("res"),
-				jen.Litf("/items"),
+				jen.Litf("/%s", prn),
 			),
 			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusCreated")),
 		),
@@ -238,23 +307,27 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().IDf("itemEditorTemplate").String(),
+		jen.Commentf("//go:embed templates/partials/generated/editors/%s_editor.gotpl", rn),
+		jen.Newline(),
+		jen.Var().IDf("%sEditorTemplate", uvn).String(),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("buildItemEditorView").Params(jen.ID("includeBaseTemplate").ID("bool")).Params(jen.Qual("net/http", "ResponseWriter"), jen.Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("build%sEditorView", sn).Params(jen.ID("includeBaseTemplate").ID("bool")).Params(jen.Func().Params(jen.Qual("net/http", "ResponseWriter"), jen.Op("*").Qual("net/http", "Request"))).Body(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 				jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 				jen.Defer().ID("span").Dot("End").Call(),
+				jen.Newline(),
 				constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-				jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 					jen.ID("span"),
 					jen.ID("req"),
 				),
+				jen.Newline(),
 				jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
 						jen.ID("span"),
@@ -268,39 +341,48 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 					jen.Return(),
 				),
-				jen.List(jen.ID("item"), jen.Err()).Assign().ID("s").Dotf("fetchItem").Call(
+				jen.Newline(),
+				jen.List(jen.ID(uvn), jen.Err()).Assign().ID("s").Dotf("fetch%s", sn).Call(
 					jen.ID("ctx"),
 					jen.ID("sessionCtxData"),
 					jen.ID("req"),
 				),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
 						jen.ID("span"),
-						jen.Litf("fetching item from datastore"),
+						jen.Litf("fetching %s from datastore", scn),
 					),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
+				jen.Newline(),
 				jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-					jen.Lit("componentTitle").Op(":").Func().Params(jen.ID("x").Op("*").ID("types").Dot(sn)).Params(jen.String()).Body(
+					jen.Lit("componentTitle").Op(":").Func().Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.String()).Body(
 						jen.Return().Qual("fmt", "Sprintf").Call(
-							jen.Litf("Item #%d"),
+							jen.Lit(sn+" #%d"),
 							jen.ID("x").Dot("ID"),
-						))),
+						),
+					),
+				),
+				jen.Newline(),
 				jen.If(jen.ID("includeBaseTemplate")).Body(
 					jen.ID("view").Assign().ID("s").Dot("renderTemplateIntoBaseTemplate").Call(
-						jen.ID("itemEditorTemplate"),
+						jen.IDf("%sEditorTemplate", uvn),
 						jen.ID("tmplFuncMap"),
 					),
+					jen.Newline(),
 					jen.ID("page").Assign().Op("&").ID("pageData").Valuesln(
 						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Qual("fmt", "Sprintf").Call(
-							jen.Litf("Item #%d"),
-							jen.ID("item").Dot("ID"),
-						), jen.ID("ContentData").Op(":").ID("item")),
+							jen.Lit(fmt.Sprintf("%s ", sn)+"#%d"),
+							jen.ID(uvn).Dot("ID"),
+						), jen.ID("ContentData").Op(":").ID(uvn),
+					),
 					jen.If(jen.ID("sessionCtxData").DoesNotEqual().ID("nil")).Body(
-						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call()),
+						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
+					),
+					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
 						jen.ID("ctx"),
 						jen.ID("view"),
@@ -311,68 +393,79 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("tmpl").Assign().ID("s").Dot("parseTemplate").Call(
 						jen.ID("ctx"),
 						jen.Lit(""),
-						jen.IDf("itemEditorTemplate"),
+						jen.IDf("%sEditorTemplate", uvn),
 						jen.ID("tmplFuncMap"),
 					),
+					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
 						jen.ID("ctx"),
 						jen.ID("tmpl"),
-						jen.ID("item"),
+						jen.ID(uvn),
 						jen.ID("res"),
 					),
 				),
-			)),
-		jen.Newline(),
-	)
-
-	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("fetchItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("sessionCtxData").Op("*").ID("types").Dot("SessionContextData"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("items").Op("*").ID("types").Dot("ItemList"), jen.Err().ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			constants.LoggerVar().Assign().ID("s").Dot("logger"),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
-				jen.ID("span"),
-				jen.ID("req"),
 			),
-			jen.If(jen.ID("s").Dot("useFakeData")).Body(
-				jen.ID("items").Equals().ID("fakes").Dotf("BuildFakeItemList").Call()).Else().Body(
-				jen.ID("filter").Assign().ID("types").Dot("ExtractQueryFilter").Call(jen.ID("req")),
-				jen.List(jen.ID("items"), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("GetItems").Call(
-					jen.ID("ctx"),
-					jen.ID("sessionCtxData").Dot("ActiveAccountID"),
-					jen.ID("filter"),
-				),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
-						jen.Err(),
-						constants.LoggerVar(),
-						jen.ID("span"),
-						jen.Litf("fetching item data"),
-					))),
-			),
-			jen.Return().List(jen.ID("items"), jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Var().IDf("itemsTableTemplate").String(),
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("fetch%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID(puvn).Op("*").ID("types").Dotf("%sList", sn), jen.Err().ID("error")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			constants.LoggerVar().Assign().ID("s").Dot("logger"),
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
+				jen.ID("span"),
+				jen.ID("req"),
+			),
+			jen.Newline(),
+			jen.If(jen.ID("s").Dot("useFakeData")).Body(
+				jen.ID(puvn).Equals().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call()).Else().Body(
+				jen.ID("filter").Assign().Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID("req")),
+				jen.List(jen.ID(puvn), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Get%s", pn).Call(
+					jen.ID("ctx"),
+					jen.ID("sessionCtxData").Dot("ActiveAccountID"),
+					jen.ID("filter"),
+				),
+				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+					jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+						jen.Err(),
+						constants.LoggerVar(),
+						jen.ID("span"),
+						jen.Litf("fetching %s data", scn),
+					),
+					),
+				),
+			),
+			jen.Newline(),
+			jen.Return().List(jen.ID(puvn), jen.ID("nil")),
+		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("buildItemsTableView").Params(jen.ID("includeBaseTemplate").ID("bool")).Params(jen.Qual("net/http", "ResponseWriter"), jen.Op("*").Qual("net/http", "Request")).Body(
+		jen.Commentf("//go:embed templates/partials/generated/tables/%s_table.gotpl", prn),
+		jen.Newline(),
+		jen.Var().IDf("%sTableTemplate", puvn).String(),
+		jen.Newline(),
+	)
+
+	code.Add(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("build%sTableView", pn).Params(jen.ID("includeBaseTemplate").ID("bool")).Params(jen.Func().Params(jen.Qual("net/http", "ResponseWriter"), jen.Op("*").Qual("net/http", "Request"))).Body(
 			jen.Return().Func().Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 				jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 				jen.Defer().ID("span").Dot("End").Call(),
+				jen.Newline(),
 				constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-				jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+				jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 					jen.ID("span"),
 					jen.ID("req"),
 				),
+				jen.Newline(),
 				jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
 						jen.ID("span"),
@@ -386,40 +479,52 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 					jen.Return(),
 				),
-				jen.List(jen.ID("items"), jen.Err()).Assign().ID("s").Dotf("fetchItems").Call(
+				jen.Newline(),
+				jen.List(jen.ID(puvn), jen.Err()).Assign().ID("s").Dotf("fetch%s", pn).Call(
 					jen.ID("ctx"),
 					jen.ID("sessionCtxData"),
 					jen.ID("req"),
 				),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-					jen.ID("observability").Dot("AcknowledgeError").Call(
+					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
 						jen.ID("span"),
-						jen.Lit("fetching items from datastore"),
+						jen.Litf("fetching %s from datastore", pcn),
 					),
 					jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 					jen.Return(),
 				),
+				jen.Newline(),
 				jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-					jen.Lit("individualURL").Op(":").Func().Params(jen.ID("x").Op("*").ID("types").Dot(sn)).Params(jen.Qual("html/template", "URL")).Body(
+					jen.Lit("individualURL").Op(":").Func().Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+						jen.Comment("#nosec G203"),
 						jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-							jen.Litf("/dashboard_pages/items/%d"),
+							jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%d"),
 							jen.ID("x").Dot("ID"),
-						))), jen.Lit("pushURL").Op(":").Func().Params(jen.ID("x").Op("*").ID("types").Dot(sn)).Params(jen.Qual("html/template", "URL")).Body(
+						)),
+					), jen.Lit("pushURL").Op(":").Func().Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+						jen.Comment("#nosec G203"),
 						jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-							jen.Litf("/items/%d"),
+							jen.Lit(fmt.Sprintf("/%s/", prn)+"%d"),
 							jen.ID("x").Dot("ID"),
-						)))),
+						)),
+					),
+				),
+				jen.Newline(),
 				jen.If(jen.ID("includeBaseTemplate")).Body(
 					jen.ID("tmpl").Assign().ID("s").Dot("renderTemplateIntoBaseTemplate").Call(
-						jen.IDf("itemsTableTemplate"),
+						jen.IDf("%sTableTemplate", puvn),
 						jen.ID("tmplFuncMap"),
 					),
+					jen.Newline(),
 					jen.ID("page").Assign().Op("&").ID("pageData").Valuesln(
-						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Lit("Items"), jen.ID("ContentData").Op(":").ID("items")),
+						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Lit(pn), jen.ID("ContentData").Op(":").ID(puvn),
+					),
 					jen.If(jen.ID("sessionCtxData").DoesNotEqual().ID("nil")).Body(
-						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call()),
+						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
+					),
+					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
 						jen.ID("ctx"),
 						jen.ID("tmpl"),
@@ -430,76 +535,93 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("tmpl").Assign().ID("s").Dot("parseTemplate").Call(
 						jen.ID("ctx"),
 						jen.Lit("dashboard"),
-						jen.IDf("itemsTableTemplate"),
+						jen.IDf("%sTableTemplate", puvn),
 						jen.ID("tmplFuncMap"),
 					),
+					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
 						jen.ID("ctx"),
 						jen.ID("tmpl"),
-						jen.ID("items"),
+						jen.ID(puvn),
 						jen.ID("res"),
 					),
 				),
-			)),
+			),
+		),
 		jen.Newline(),
 	)
 
+	updateInputFields := []jen.Code{}
+	for _, field := range typ.Fields {
+		fsn := field.Name.Singular()
+		updateInputFields = append(updateInputFields, jen.ID(fsn).Op(":").ID("form").Dot("Get").Call(jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
+	}
+	updateInputFields = append(updateInputFields, jen.ID("BelongsToAccount").Op(":").ID("sessionCtxData").Dot("ActiveAccountID"))
+
 	code.Add(
-		jen.Commentf("parseFormEncodedItemUpdateInput checks a request for an ItemUpdateInput."),
+		jen.Commentf("parseFormEncoded%sUpdateInput checks a request for an %sUpdateInput.", sn, sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("parseFormEncodedItemUpdateInput").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request"), jen.ID("sessionCtxData").Op("*").ID("types").Dot("SessionContextData")).Params(jen.ID("updateInput").Op("*").ID("types").Dot("ItemUpdateInput")).Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("parseFormEncoded%sUpdateInput", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("req").Op("*").Qual("net/http", "Request"), jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")).Params(jen.ID("updateInput").Op("*").ID("types").Dotf("%sUpdateInput", sn)).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
+			jen.Newline(),
 			jen.List(jen.ID("form"), jen.Err()).Assign().ID("s").Dot("extractFormFromRequest").Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("parsing item creation input"),
+					jen.Litf("parsing %s creation input", scn),
 				),
 				jen.Return().ID("nil"),
 			),
-			jen.ID("updateInput").Equals().Op("&").ID("types").Dotf("ItemUpdateInput").Valuesln(
-				jen.ID("Name").Op(":").ID("form").Dot("Get").Call(jen.IDf("itemCreationInputNameFormKey")), jen.ID("Details").Op(":").ID("form").Dot("Get").Call(jen.ID("itemCreationInputDetailsFormKey")), jen.ID("BelongsToAccount").Op(":").ID("sessionCtxData").Dot("ActiveAccountID")),
+			jen.Newline(),
+			jen.ID("updateInput").Equals().Op("&").ID("types").Dotf("%sUpdateInput", sn).Valuesln(
+				updateInputFields...,
+			),
+			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("updateInput").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.Err().DoesNotEqual().ID("nil")).Body(
 				constants.LoggerVar().Equals().ID("logger").Dot("WithValue").Call(
 					jen.Lit("input"),
 					jen.ID("updateInput"),
 				),
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("invalid item creation input"),
+					jen.Litf("invalid %s creation input", scn),
 				),
 				jen.Return().ID("nil"),
 			),
+			jen.Newline(),
 			jen.Return().ID("updateInput"),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("handleItemUpdateRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("handle%sUpdateRequest", sn).Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
+			jen.Newline(),
 			jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -513,13 +635,14 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 				jen.Return(),
 			),
-			jen.ID("updateInput").Assign().ID("s").Dotf("parseFormEncodedItemUpdateInput").Call(
+			jen.Newline(),
+			jen.ID("updateInput").Assign().ID("s").Dotf("parseFormEncoded%sUpdateInput", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
 				jen.ID("sessionCtxData"),
 			),
 			jen.If(jen.ID("updateInput").Op("==").ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -528,53 +651,61 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusBadRequest")),
 				jen.Return(),
 			),
-			jen.List(jen.ID("item"), jen.Err()).Assign().ID("s").Dotf("fetchItem").Call(
+			jen.Newline(),
+			jen.List(jen.ID(uvn), jen.Err()).Assign().ID("s").Dotf("fetch%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("sessionCtxData"),
 				jen.ID("req"),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("fetching item from datastore"),
+					jen.Litf("fetching %s from datastore", scn),
 				),
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 				jen.Return(),
 			),
-			jen.ID("changes").Assign().ID("item").Dot("Update").Call(jen.ID("updateInput")),
-			jen.If(jen.Err().Equals().ID("s").Dot("dataStore").Dotf("UpdateItem").Call(
+			jen.Newline(),
+			jen.ID("changes").Assign().ID(uvn).Dot("Update").Call(jen.ID("updateInput")),
+			jen.Newline(),
+			jen.If(jen.Err().Equals().ID("s").Dot("dataStore").Dotf("Update%s", sn).Call(
 				jen.ID("ctx"),
-				jen.ID("item"),
+				jen.ID(uvn),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 				jen.ID("changes"),
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("fetching item from datastore"),
+					jen.Litf("fetching %s from datastore", scn),
 				),
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 				jen.Return(),
 			),
+			jen.Newline(),
 			jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-				jen.Lit("componentTitle").Op(":").Func().Params(jen.ID("x").Op("*").ID("types").Dot(sn)).Params(jen.String()).Body(
+				jen.Lit("componentTitle").Op(":").Func().Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.String()).Body(
 					jen.Return().Qual("fmt", "Sprintf").Call(
-						jen.Lit("Item #%d"),
+						jen.Lit(sn+" #%d"),
 						jen.ID("x").Dot("ID"),
-					))),
+					),
+				),
+			),
+			jen.Newline(),
 			jen.ID("tmpl").Assign().ID("s").Dot("parseTemplate").Call(
 				jen.ID("ctx"),
 				jen.Lit(""),
-				jen.IDf("itemEditorTemplate"),
+				jen.IDf("%sEditorTemplate", uvn),
 				jen.ID("tmplFuncMap"),
 			),
+			jen.Newline(),
 			jen.ID("s").Dot("renderTemplateToResponse").Call(
 				jen.ID("ctx"),
 				jen.ID("tmpl"),
-				jen.ID("item"),
+				jen.ID(uvn),
 				jen.ID("res"),
 			),
 		),
@@ -582,17 +713,19 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("handleItemDeletionRequest").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("handle%sDeletionRequest", sn).Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			constants.LoggerVar().Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
-			jen.ID("tracing").Dot("AttachRequestToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
+			jen.Newline(),
 			jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -606,61 +739,73 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				),
 				jen.Return(),
 			),
-			jen.IDf("itemID").Assign().ID("s").Dot("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
+			jen.Newline(),
+			jen.IDf("%sID", uvn).Assign().ID("s").Dot("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
 				constants.LoggerVar(),
-				jen.IDf("itemIDURLParamKey"),
-				jen.Lit("item"),
+				jen.IDf("%sIDURLParamKey", uvn),
+				jen.Lit(scn),
 			).Call(jen.ID("req")),
-			jen.If(jen.Err().Equals().ID("s").Dot("dataStore").Dotf("ArchiveItem").Call(
+			jen.If(jen.Err().Equals().ID("s").Dot("dataStore").Dotf("Archive%s", sn).Call(
 				jen.ID("ctx"),
-				jen.IDf("itemID"),
+				jen.IDf("%sID", uvn),
 				jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("archiving items in datastore"),
+					jen.Litf("archiving %s in datastore", pcn),
 				),
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 				jen.Return(),
 			),
-			jen.List(jen.ID("items"), jen.Err()).Assign().ID("s").Dotf("fetchItems").Call(
+			jen.Newline(),
+			jen.List(jen.ID(puvn), jen.Err()).Assign().ID("s").Dotf("fetch%s", pn).Call(
 				jen.ID("ctx"),
 				jen.ID("sessionCtxData"),
 				jen.ID("req"),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.ID("observability").Dot("AcknowledgeError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
-					jen.Litf("fetching items from datastore"),
+					jen.Litf("fetching %s from datastore", pcn),
 				),
 				jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusInternalServerError")),
 				jen.Return(),
 			),
+			jen.Newline(),
 			jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-				jen.Lit("individualURL").Op(":").Func().Params(jen.ID("x").Op("*").ID("types").Dot(sn)).Params(jen.Qual("html/template", "URL")).Body(
+				jen.Lit("individualURL").Op(":").Func().Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+					jen.Comment("#nosec G203"),
 					jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-						jen.Litf("/dashboard_pages/items/%d"),
+						jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%d"),
 						jen.ID("x").Dot("ID"),
-					))), jen.Lit("pushURL").Op(":").Func().Params(jen.ID("x").Op("*").ID("types").Dot(sn)).Params(jen.Qual("html/template", "URL")).Body(
+					),
+					),
+				), jen.Lit("pushURL").Op(":").Func().Params(jen.ID("x").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+					jen.Comment("#nosec G203"),
 					jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-						jen.Litf("/items/%d"),
+						jen.Lit(fmt.Sprintf("/%s/", prn)+"%d"),
 						jen.ID("x").Dot("ID"),
-					)))),
+					),
+					),
+				),
+			),
+			jen.Newline(),
 			jen.ID("tmpl").Assign().ID("s").Dot("parseTemplate").Call(
 				jen.ID("ctx"),
 				jen.Lit("dashboard"),
-				jen.IDf("itemsTableTemplate"),
+				jen.IDf("%sTableTemplate", puvn),
 				jen.ID("tmplFuncMap"),
 			),
+			jen.Newline(),
 			jen.ID("s").Dot("renderTemplateToResponse").Call(
 				jen.ID("ctx"),
 				jen.ID("tmpl"),
-				jen.IDf("items"),
+				jen.ID(puvn),
 				jen.ID("res"),
 			),
 		),

@@ -11,7 +11,7 @@ import (
 	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
-	testutil {{ projectImport "tests/utils" }}
+	testutils {{ projectImport "tests/utils" }}
 )
 
 type webhooksServiceHTTPRoutesTestHelper struct {
@@ -63,7 +63,7 @@ func newTestHelper(t *testing.T) *webhooksServiceHTTPRoutesTestHelper {
 		return sessionCtxData, nil
 	}
 
-	req := testutil.BuildTestRequest(t)
+	req := testutils.BuildTestRequest(t)
 
 	helper.req = req.WithContext(context.WithValue(req.Context(), types.SessionContextDataKey, sessionCtxData))
 	helper.res = httptest.NewRecorder()
