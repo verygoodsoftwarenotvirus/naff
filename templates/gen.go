@@ -47,6 +47,7 @@ import (
 	auditservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/audit"
 	authenticationservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/authentication"
 	frontendservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/frontend"
+	iterablesservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/iterables"
 	usersservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/users"
 	webhooksservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/webhooks"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/storage"
@@ -129,7 +130,8 @@ func RenderProject(proj *naffmodels.Project) {
 		"apiclientsservice":         apiclientsservice.RenderPackage,
 		"auditservice":              auditservice.RenderPackage,
 		"authenticationservice":     authenticationservice.RenderPackage,
-		"frontendservice":           frontendservice.RenderPackage, // iterable service would go on next line
+		"frontendservice":           frontendservice.RenderPackage,  // iterable service would go on next line
+		"iterablesservice":          iterablesservice.RenderPackage, // iterable service would go on next line
 		"usersservice":              usersservice.RenderPackage,
 		"webhooksservice":           webhooksservice.RenderPackage,
 		"storage":                   storage.RenderPackage,

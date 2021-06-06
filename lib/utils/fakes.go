@@ -97,7 +97,7 @@ func FakeFuncForType(typ string, isPointer bool) func() jen.Code {
 
 func ValuePointerWrapper(typ string, c jen.Code) func() jen.Code {
 	return func() jen.Code {
-		return jen.Func().Params(jen.ID("x").ID(typ)).Params(jen.PointerTo().ID(typ)).SingleLineBlock(jen.Return(jen.AddressOf().ID("x"))).Call(c)
+		return jen.Func().Params(jen.ID("x").ID(typ)).Params(jen.PointerTo().ID(typ)).SingleLineBody(jen.Return(jen.AddressOf().ID("x"))).Call(c)
 	}
 }
 
