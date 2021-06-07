@@ -270,36 +270,6 @@ func (x *YetAnotherThing) ToSearchHelper(thingID uint64, anotherThingID uint64) 
 	})
 }
 
-func Test_buildUpdateSomething(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		proj := testprojects.BuildTodoApp()
-		typ := proj.DataTypes[0]
-		x := buildUpdateSomething(typ)
-
-		expected := `
-package example
-
-import ()
-
-// Update merges an ItemInput with an item.
-func (x *Item) Update(input *ItemUpdateInput) {
-	if input.Name != "" && input.Name != x.Name {
-		x.Name = input.Name
-	}
-
-	if input.Details != "" && input.Details != x.Details {
-		x.Details = input.Details
-	}
-}
-`
-		actual := testutils.RenderOuterStatementToString(t, x...)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
 func Test_buildSomethingConstantDefinitions(T *testing.T) {
 	T.Parallel()
 

@@ -28,19 +28,6 @@ func TestRenderPackage(T *testing.T) {
 	})
 }
 
-func Test_dockerIgnore(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		expected := `**/node_modules
-**/dist
-`
-		actual := dockerIgnore(nil)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
 func Test_gitIgnore(T *testing.T) {
 	T.Parallel()
 
