@@ -18,11 +18,6 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildSomethingConstantDefinitions(proj, typ)...)
 	code.Add(buildSomethingTypeDefinitions(proj, typ)...)
 	code.Add(buildSomethingToUpdateInput(typ)...)
-
-	if typ.SearchEnabled && len(proj.FindOwnerTypeChain(typ)) > 0 {
-		code.Add(buildSomethingToSearchHelper(proj, typ)...)
-	}
-
 	code.Add(buildSomethingCreationInputValidateWithContext(typ)...)
 	code.Add(buildSomethingUpdateInputValidateWithContext(typ)...)
 
@@ -67,19 +62,6 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 			jen.ID("Pagination"),
 			jen.ID(pn).Index().PointerTo().ID(sn).Tag(jsonTag(puvn)),
 		),
-	}
-
-	if typ.SearchEnabled && len(proj.FindOwnerTypeChain(typ)) > 0 {
-		fields := buildBaseModelStructFields(typ)
-		for _, o := range proj.FindOwnerTypeChain(typ) {
-			fields = append(fields, jen.IDf("BelongsTo%s", o.Name.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongsTo%s", o.Name.Singular()))))
-		}
-
-		lines = append(lines,
-			jen.Commentf("%sSearchHelper contains all the owner IDs for search purposes.", sn),
-			jen.IDf("%sSearchHelper", sn).Struct(fields...),
-			jen.Newline(),
-		)
 	}
 
 	lines = append(lines,
@@ -176,45 +158,6 @@ func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
 		jen.Newline(),
 		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("Update").Params(jen.ID("input").Op("*").IDf("%sUpdateInput", sn)).Params(jen.Index().Op("*").ID("FieldChangeSummary")).Body(
 			updateLines...,
-		),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
-func buildSomethingToSearchHelper(proj *models.Project, typ models.DataType) []jen.Code {
-	n := typ.Name
-	sn := n.Singular()
-	cnwp := n.SingularCommonNameWithPrefix()
-
-	owners := proj.FindOwnerTypeChain(typ)
-
-	params := []jen.Code{}
-	for _, o := range owners {
-		params = append(params, jen.IDf("%sID", o.Name.UnexportedVarName()).Uint64())
-	}
-
-	lines := []jen.Code{
-		jen.Commentf("ToSearchHelper creates a %sSearchHelper struct for %s.", sn, cnwp),
-		jen.Newline(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("ToSearchHelper").Params(params...).ReturnParams(
-			jen.PointerTo().IDf("%sSearchHelper", sn),
-		).Body(
-			func() jen.Code {
-				lines := []jen.Code{}
-
-				for _, field := range typ.Fields {
-					fsn := field.Name.Singular()
-					lines = append(lines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
-				}
-
-				for _, o := range owners {
-					lines = append(lines, jen.IDf("BelongsTo%s", o.Name.Singular()).MapAssign().IDf("%sID", o.Name.UnexportedVarName()))
-				}
-
-				return jen.Return(jen.AddressOf().IDf("%sSearchHelper", sn).Valuesln(lines...))
-			}(),
 		),
 		jen.Newline(),
 	}
@@ -394,6 +337,19 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
+	validationFields := []jen.Code{
+		jen.ID("ctx"),
+		jen.ID("x"),
+	}
+	for _, field := range typ.Fields {
+		validationFields = append(validationFields,
+			jen.Qual(constants.ValidationLibrary, "Field").Call(
+				jen.Op("&").ID("x").Dot(field.Name.Singular()),
+				jen.Qual(constants.ValidationLibrary, "Required"),
+			),
+		)
+	}
+
 	lines := []jen.Code{
 		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Op("=").Parens(jen.Op("*").IDf("%sCreationInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
@@ -402,12 +358,7 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 		jen.Newline(),
 		jen.Func().Params(jen.ID("x").Op("*").IDf("%sCreationInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
-				jen.ID("ctx"),
-				jen.ID("x"),
-				jen.Qual(constants.ValidationLibrary, "Field").Call(
-					jen.Op("&").ID("x").Dot("Name"),
-					jen.Qual(constants.ValidationLibrary, "Required"),
-				),
+				validationFields...,
 			)),
 		jen.Newline(),
 	}
@@ -418,6 +369,19 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
+	validationFields := []jen.Code{
+		jen.ID("ctx"),
+		jen.ID("x"),
+	}
+	for _, field := range typ.Fields {
+		validationFields = append(validationFields,
+			jen.Qual(constants.ValidationLibrary, "Field").Call(
+				jen.Op("&").ID("x").Dot(field.Name.Singular()),
+				jen.Qual(constants.ValidationLibrary, "Required"),
+			),
+		)
+	}
+
 	lines := []jen.Code{
 		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Op("=").Parens(jen.Op("*").IDf("%sUpdateInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
@@ -426,12 +390,7 @@ func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Cod
 		jen.Newline(),
 		jen.Func().Params(jen.ID("x").Op("*").IDf("%sUpdateInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
-				jen.ID("ctx"),
-				jen.ID("x"),
-				jen.Qual(constants.ValidationLibrary, "Field").Call(
-					jen.Op("&").ID("x").Dot("Name"),
-					jen.Qual(constants.ValidationLibrary, "Required"),
-				),
+				validationFields...,
 			)),
 		jen.Newline(),
 	}

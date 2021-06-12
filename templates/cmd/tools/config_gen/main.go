@@ -140,6 +140,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
+			jen.If(jen.Err().Equals().Qual("os", "MkdirAll").Call(jen.Qual("path/filepath", "Dir").Call(jen.ID("outputPath")), jen.Octal(777)), jen.Err().DoesNotEqual().Nil()).Body(
+				jen.Comment("that's okay"),
+			),
+			jen.Newline(),
 			jen.Return().Qual("os", "WriteFile").Call(
 				jen.ID("outputPath"),
 				jen.Index().ID("byte").Call(jen.ID("output")),

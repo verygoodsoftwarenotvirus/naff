@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -103,131 +104,143 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 	)
 
+	validateLines := []jen.Code{
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Search").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Search portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Uploads").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Uploads portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Routing").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Routing portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Meta").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Meta portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Capitalism").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Capitalism portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Encoding portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Encoding portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Observability").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Observability portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Database").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Database portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Server").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating HTTPServer portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("AuditLog").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating AuditLog portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Auth").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Auth service portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Frontend").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Frontend service portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Webhooks").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().Qual("fmt", "Errorf").Call(
+				jen.Lit("error validating Webhooks service portion of config: %w"),
+				jen.ID("err"),
+			),
+		),
+		jen.Newline(),
+	}
+
+	for _, typ := range proj.DataTypes {
+		pn := typ.Name.Plural()
+
+		validateLines = append(validateLines,
+			jen.If(jen.Err().Op(":=").ID("cfg").Dot("Services").Dot(pn).Dot("ValidateWithContext").Call(jen.ID("ctx")),
+				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().Qual("fmt", "Errorf").Call(
+					jen.Lit(fmt.Sprintf("error validating %s service portion of config: ", pn)+"%w"),
+					jen.ID("err"),
+				),
+			),
+			jen.Newline(),
+		)
+	}
+
+	validateLines = append(validateLines, jen.Return().Nil())
+
 	code.Add(
 		jen.Comment("ValidateWithContext validates a InstanceConfig struct."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("cfg").Op("*").ID("InstanceConfig")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Search").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Search portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Uploads").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Uploads portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Routing").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Routing portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Meta").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Meta portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Capitalism").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Capitalism portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Encoding portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Encoding portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Observability").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Observability portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Database").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Database portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Server").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating HTTPServer portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("AuditLog").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating AuditLog portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Auth").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Auth service portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Frontend").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Frontend service portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Webhooks").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Webhooks service portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("cfg").Dot("Services").Dot("Items").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().Qual("fmt", "Errorf").Call(
-					jen.Lit("error validating Items service portion of config: %w"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-			jen.Return().ID("nil"),
+			validateLines...,
 		),
 		jen.Newline(),
 	)

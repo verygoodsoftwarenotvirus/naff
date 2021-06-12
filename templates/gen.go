@@ -130,8 +130,8 @@ func RenderProject(proj *naffmodels.Project) {
 		"apiclientsservice":         apiclientsservice.RenderPackage,
 		"auditservice":              auditservice.RenderPackage,
 		"authenticationservice":     authenticationservice.RenderPackage,
-		"frontendservice":           frontendservice.RenderPackage,  // iterable service would go on next line
-		"iterablesservice":          iterablesservice.RenderPackage, // iterable service would go on next line
+		"frontendservice":           frontendservice.RenderPackage,
+		"iterablesservice":          iterablesservice.RenderPackage,
 		"usersservice":              usersservice.RenderPackage,
 		"webhooksservice":           webhooksservice.RenderPackage,
 		"storage":                   storage.RenderPackage,

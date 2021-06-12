@@ -56,14 +56,16 @@ func bleveDotGo(proj *models.Project) *jen.File {
 		),
 	}
 	for _, typ := range proj.DataTypes {
-		typeCases = append(typeCases,
-			jen.Case(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Body(
-				jen.List(jen.ID("index"), jen.ID("err")).Op("=").Qual(constants.SearchLibrary, "New").Call(
-					jen.ID("string").Call(jen.ID("path")),
-					jen.IDf("build%sMapping", typ.Name.Singular()).Call(),
+		if typ.SearchEnabled {
+			typeCases = append(typeCases,
+				jen.Case(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Body(
+					jen.List(jen.ID("index"), jen.ID("err")).Op("=").Qual(constants.SearchLibrary, "New").Call(
+						jen.ID("string").Call(jen.ID("path")),
+						jen.IDf("build%sMapping", typ.Name.Singular()).Call(),
+					),
 				),
-			),
-		)
+			)
+		}
 	}
 	typeCases = append(typeCases,
 		jen.Default().Body(

@@ -40,13 +40,6 @@ func RenderPackage(proj *models.Project) error {
 	return nil
 }
 
-//go:embed main.gotpl
-var mainTemplate string
-
-func mainDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mainTemplate, nil)
-}
-
 //go:embed doc.gotpl
 var docTemplate string
 

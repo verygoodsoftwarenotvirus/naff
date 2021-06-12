@@ -18,7 +18,12 @@ func configDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 		jen.Type().ID("Config").Struct(
 			jen.ID("Logging").Qual(proj.InternalLoggingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Logging"), false)),
-			jen.ID("SearchIndexPath").ID("string").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("SearchIndexPath"), false)),
+			func() jen.Code {
+				if typ.SearchEnabled {
+					return jen.ID("SearchIndexPath").ID("string").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("SearchIndexPath"), false))
+				}
+				return jen.Null()
+			}(),
 		),
 		jen.Newline(),
 	)
@@ -36,9 +41,18 @@ func configDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 				jen.Qual(constants.ValidationLibrary, "Field").Call(
-					jen.Op("&").ID("cfg").Dot("SearchIndexPath"),
+					jen.Op("&").ID("cfg").Dot("Logging"),
 					jen.Qual(constants.ValidationLibrary, "Required"),
 				),
+				func() jen.Code {
+					if typ.SearchEnabled {
+						return jen.Qual(constants.ValidationLibrary, "Field").Call(
+							jen.Op("&").ID("cfg").Dot("SearchIndexPath"),
+							jen.Qual(constants.ValidationLibrary, "Required"),
+						)
+					}
+					return jen.Null()
+				}(),
 			)),
 		jen.Newline(),
 	)

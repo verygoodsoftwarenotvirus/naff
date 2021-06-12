@@ -69,6 +69,14 @@ $(EXAMPLE_OUTPUT_DIR):
 clean_todo: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 	PROJECT=todo OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
 
+.PHONY: clean_gamut
+clean_gamut: clean_example_output $(EXAMPLE_OUTPUT_DIR)
+	PROJECT=forums OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
+
+.PHONY: compare_gamut
+compare_gamut: clean_gamut
+	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/gamut &
+
 .PHONY: compare_todo
 compare_todo: clean_todo
 	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/todo &
@@ -80,10 +88,6 @@ clean_every_type: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 .PHONY: clean_forums
 clean_forums: clean_example_output $(EXAMPLE_OUTPUT_DIR)
 	PROJECT=forums OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
-
-.PHONY: compare_gamut
-compare_gamut: clean_gamut
-	meld $(EXAMPLE_OUTPUT_DIR) ~/src/gitlab.com/verygoodsoftwarenotvirus/gamut &
 
 ## CI output tests
 

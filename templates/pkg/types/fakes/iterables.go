@@ -24,13 +24,24 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.ID("ID").MapAssign().Uint64().Call(jen.Qual(constants.FakeLibrary, "Uint32").Call()),
 		jen.ID("ExternalID").MapAssign().Qual(constants.FakeLibrary, "UUID").Call(),
 	}
+
 	for _, field := range typ.Fields {
 		fakeFields = append(fakeFields, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.IsPointer)()))
 	}
 
+	fakeFields = append(fakeFields, jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.ID("uint32").Call(jen.Qual(constants.FakeLibrary, "Date").Call().Dot("Unix").Call())))
+
+	if typ.BelongsToStruct != nil {
+		fakeFields = append(fakeFields, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Qual(constants.FakeLibrary, "Uint64").Call())
+	}
+
 	fakeFields = append(fakeFields,
-		jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.ID("uint32").Call(jen.Qual(constants.FakeLibrary, "Date").Call().Dot("Unix").Call())),
-		jen.ID("BelongsToAccount").MapAssign().Qual(constants.FakeLibrary, "Uint64").Call(),
+		func() jen.Code {
+			if typ.BelongsToAccount {
+				return jen.ID("BelongsToAccount").MapAssign().Qual(constants.FakeLibrary, "Uint64").Call()
+			}
+			return jen.Null()
+		}(),
 	)
 
 	code.Add(
@@ -72,7 +83,14 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			updateVals = append(updateVals, jen.ID(field.Name.Singular()).MapAssign().ID(uvn).Dot(field.Name.Singular()))
 		}
 	}
-	updateVals = append(updateVals, jen.ID("BelongsToAccount").MapAssign().ID(uvn).Dot("BelongsToAccount"))
+
+	if typ.BelongsToStruct != nil {
+		updateVals = append(updateVals, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(uvn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+
+	if typ.BelongsToAccount {
+		updateVals = append(updateVals, jen.ID("BelongsToAccount").MapAssign().ID(uvn).Dot("BelongsToAccount"))
+	}
 
 	code.Add(
 		jen.Commentf("BuildFake%sUpdateInput builds a faked %sUpdateInput from %s.", sn, sn, scnwp),
@@ -108,7 +126,14 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			creationVals = append(creationVals, jen.ID(field.Name.Singular()).MapAssign().ID(uvn).Dot(field.Name.Singular()))
 		}
 	}
-	creationVals = append(creationVals, jen.ID("BelongsToAccount").MapAssign().ID(uvn).Dot("BelongsToAccount"))
+
+	if typ.BelongsToStruct != nil {
+		creationVals = append(creationVals, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().ID(uvn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+
+	if typ.BelongsToAccount {
+		creationVals = append(creationVals, jen.ID("BelongsToAccount").MapAssign().ID(uvn).Dot("BelongsToAccount"))
+	}
 
 	code.Add(
 		jen.Commentf("BuildFake%sCreationInputFrom%s builds a faked %sCreationInput from %s.", sn, sn, sn, scnwp),

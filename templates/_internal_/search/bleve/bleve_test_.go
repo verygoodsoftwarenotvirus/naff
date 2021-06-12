@@ -132,28 +132,30 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	for _, typ := range proj.DataTypes {
-		code.Add(
-			jen.Newline(),
-			jen.Func().Params(jen.ID("s").Op("*").ID("bleveIndexManagerTestSuite")).IDf("TestNewBleveIndexManagerWith%sIndex", typ.Name.Plural()).Params().Body(
-				jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
+		if typ.SearchEnabled {
+			code.Add(
 				jen.Newline(),
-				jen.ID("exampleIndexPath").Op(":=").ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
-					jen.ID("s").Dot("indexPath"),
-					jen.Litf("constructor_test_happy_path_%s.bleve", typ.Name.PluralRouteName()),
-				)),
+				jen.Func().Params(jen.ID("s").Op("*").ID("bleveIndexManagerTestSuite")).IDf("TestNewBleveIndexManagerWith%sIndex", typ.Name.Plural()).Params().Body(
+					jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
+					jen.Newline(),
+					jen.ID("exampleIndexPath").Op(":=").ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+						jen.ID("s").Dot("indexPath"),
+						jen.Litf("constructor_test_happy_path_%s.bleve", typ.Name.PluralRouteName()),
+					)),
+					jen.Newline(),
+					jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("NewBleveIndexManager").Call(
+						jen.ID("exampleIndexPath"),
+						jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural())),
+						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					),
+					jen.ID("assert").Dot("NoError").Call(
+						jen.ID("t"),
+						jen.ID("err"),
+					),
+				),
 				jen.Newline(),
-				jen.List(jen.ID("_"), jen.ID("err")).Op(":=").ID("NewBleveIndexManager").Call(
-					jen.ID("exampleIndexPath"),
-					jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural())),
-					jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-				),
-				jen.ID("assert").Dot("NoError").Call(
-					jen.ID("t"),
-					jen.ID("err"),
-				),
-			),
-			jen.Newline(),
-		)
+			)
+		}
 	}
 
 	code.Add(

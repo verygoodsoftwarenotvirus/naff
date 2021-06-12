@@ -37,10 +37,15 @@ func buildIterableRoutes(proj *models.Project) []jen.Code {
 						Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
 						Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Read%sPermission", pn)))).
 						Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ListHandler")),
-					jen.IDf("%sRouter", puvn).
-						Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
-						Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Read%sPermission", pn)))).
-						Dotln("Get").Call(jen.ID("searchRoot"), jen.ID("s").Dotf("%sService", puvn).Dot("SearchHandler")),
+					func() jen.Code {
+						if typ.SearchEnabled {
+							return jen.IDf("%sRouter", puvn).
+								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
+								Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Read%sPermission", pn)))).
+								Dotln("Get").Call(jen.ID("searchRoot"), jen.ID("s").Dotf("%sService", puvn).Dot("SearchHandler"))
+						}
+						return jen.Null()
+					}(),
 					jen.Newline(),
 					jen.IDf("%sRouter", puvn).Dot("Route").Call(
 						jen.IDf("%sIDRouteParam", uvn),

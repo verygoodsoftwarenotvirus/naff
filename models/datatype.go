@@ -485,8 +485,10 @@ func (typ DataType) buildArchiveSomethingArgs() []jen.Code {
 	params = append(params, jen.IDf("%sID", uvn))
 
 	if typ.BelongsToAccount {
-		params = append(params, jen.ID("accountID"), jen.ID("archivedBy"))
+		params = append(params, jen.ID("accountID"))
 	}
+
+	params = append(params, jen.ID("archivedBy"))
 
 	return params
 }

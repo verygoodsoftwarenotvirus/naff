@@ -33,6 +33,28 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
+	structLines := []jen.Code{
+		jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
+		jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)),
+	}
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		structLines = append(structLines, jen.IDf("%sIDFetcher", dep.Name.UnexportedVarName()).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")))
+	}
+	structLines = append(structLines,
+		jen.IDf("%sIDFetcher", uvn).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.ID("sessionContextDataFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.TypesPackage(), "SessionContextData"),
+			jen.ID("error")),
+		jen.IDf("%sCounter", uvn).Qual(proj.MetricsPackage(), "UnitCounter"),
+		jen.ID("encoderDecoder").Qual(proj.EncodingPackage(), "ServerEncoderDecoder"),
+		jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
+		func() jen.Code {
+			if typ.SearchEnabled {
+				return jen.ID("search").ID("SearchIndex")
+			}
+			return jen.Null()
+		}(),
+	)
+
 	code.Add(
 		jen.Type().Defs(
 			jen.Comment("SearchIndex is a type alias for dependency injection's sake."),
@@ -40,20 +62,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Newline(),
 			jen.Commentf("service handles %s.", pcn),
 			jen.ID("service").Struct(
-				jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
-				jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)),
-				jen.IDf("%sIDFetcher", uvn).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
-				jen.ID("sessionContextDataFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.TypesPackage(), "SessionContextData"),
-					jen.ID("error")),
-				jen.IDf("%sCounter", uvn).Qual(proj.MetricsPackage(), "UnitCounter"),
-				jen.ID("encoderDecoder").Qual(proj.EncodingPackage(), "ServerEncoderDecoder"),
-				jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
-				func() jen.Code {
-					if typ.SearchEnabled {
-						return jen.ID("search").ID("SearchIndex")
-					}
-					return jen.Null()
-				}(),
+				structLines...,
 			),
 		),
 		jen.Newline(),

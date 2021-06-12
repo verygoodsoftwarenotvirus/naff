@@ -188,7 +188,7 @@ func (s *service) ReadHandler(res http.ResponseWriter, req *http.Request) {
 
 	// determine API client ID.
 	apiClientID := s.urlClientIDExtractor(req)
-	tracing.AttachAPIClientIDToSpan(span, apiClientID)
+	tracing.AttachAPIClientDatabaseIDToSpan(span, apiClientID)
 	logger = logger.WithValue(keys.APIClientDatabaseIDKey, apiClientID)
 
 	// fetch API client from database.
@@ -229,7 +229,7 @@ func (s *service) ArchiveHandler(res http.ResponseWriter, req *http.Request) {
 	// determine API client ID.
 	apiClientID := s.urlClientIDExtractor(req)
 	logger = logger.WithValue(keys.APIClientDatabaseIDKey, apiClientID)
-	tracing.AttachAPIClientIDToSpan(span, apiClientID)
+	tracing.AttachAPIClientDatabaseIDToSpan(span, apiClientID)
 
 	// archive the API client in the database.
 	err = s.apiClientDataManager.ArchiveAPIClient(ctx, apiClientID, sessionCtxData.ActiveAccountID, requester)

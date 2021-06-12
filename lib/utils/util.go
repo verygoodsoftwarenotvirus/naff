@@ -389,7 +389,7 @@ func RenderStringFile(proj *models.Project, path, file string) error {
 		}
 
 		if gfe := RunGoFormatForFile(fp); gfe != nil {
-			return fmt.Errorf("error rendering file %q: %w", path, gfe)
+			return fmt.Errorf("error formatting file %q: %w", path, gfe)
 		}
 	} else {
 		return err
