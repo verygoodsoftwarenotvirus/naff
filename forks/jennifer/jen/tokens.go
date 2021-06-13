@@ -986,6 +986,61 @@ func (s *Statement) Qual(path, name string) *Statement {
 	return s
 }
 
+// Qualf renders a qualified identifier. Imports are automatically added when
+// used with a File. If the path matches the local path, the package name is
+// omitted. If package names conflict they are automatically renamed. Note that
+// it is not possible to reliably determine the package name given an arbitrary
+// package path, so a sensible name is guessed from the path and added as an
+// alias. The names of all standard library packages are known so these do not
+// need to be aliased. If more control is needed of the aliases, see
+// [File.ImportName](#importname) or [File.ImportAlias](#importalias).
+func Qualf(path, fmtStr string, args ...interface{}) *Statement {
+	return newStatement().Qualf(path, fmt.Sprintf(fmtStr, args...))
+}
+
+// Qualf renders a qualified identifier. Imports are automatically added when
+// used with a File. If the path matches the local path, the package name is
+// omitted. If package names conflict they are automatically renamed. Note that
+// it is not possible to reliably determine the package name given an arbitrary
+// package path, so a sensible name is guessed from the path and added as an
+// alias. The names of all standard library packages are known so these do not
+// need to be aliased. If more control is needed of the aliases, see
+// [File.ImportName](#importname) or [File.ImportAlias](#importalias).
+func (g *Group) Qualf(path, fmtStr string, args ...interface{}) *Statement {
+	s := Qualf(path, fmt.Sprintf(fmtStr, args...))
+	g.items = append(g.items, s)
+	return s
+}
+
+// Qualf renders a qualified identifier. Imports are automatically added when
+// used with a File. If the path matches the local path, the package name is
+// omitted. If package names conflict they are automatically renamed. Note that
+// it is not possible to reliably determine the package name given an arbitrary
+// package path, so a sensible name is guessed from the path and added as an
+// alias. The names of all standard library packages are known so these do not
+// need to be aliased. If more control is needed of the aliases, see
+// [File.ImportName](#importname) or [File.ImportAlias](#importalias).
+func (s *Statement) Qualf(path, fmtStr string, args ...interface{}) *Statement {
+	g := &Group{
+		close: " ",
+		items: []Code{
+			token{
+				typ:     packageToken,
+				content: path,
+			},
+			token{
+				typ:     identifierToken,
+				content: fmt.Sprintf(fmtStr, args...),
+			},
+		},
+		name:      "qual",
+		open:      " ",
+		separator: ".",
+	}
+	*s = append(*s, g)
+	return s
+}
+
 // Newline inserts a blank line.
 func Newline() *Statement {
 	return newStatement().Newline()
