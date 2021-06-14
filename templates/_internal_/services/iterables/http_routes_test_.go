@@ -105,14 +105,29 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 					jen.ID("unitCounter").Dot("On").Call(jen.Lit("Increment"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
 					jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Op("=").ID("unitCounter"),
 					jen.Newline(),
-					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.ID("indexManager").Dot("On").Callln(
-						jen.Lit("Index"),
-						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-						jen.ID("helper").Dotf("example%s", sn).Dot("ID"),
-						jen.ID("helper").Dotf("example%s", sn),
-					).Dot("Return").Call(jen.ID("nil")),
-					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+					func() jen.Code {
+						if typ.SearchEnabled {
+							return jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
+						}
+						return jen.Null()
+					}(),
+					func() jen.Code {
+						if typ.SearchEnabled {
+							return jen.ID("indexManager").Dot("On").Callln(
+								jen.Lit("Index"),
+								jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+								jen.ID("helper").Dotf("example%s", sn).Dot("ID"),
+								jen.ID("helper").Dotf("example%s", sn),
+							).Dot("Return").Call(jen.ID("nil"))
+						}
+						return jen.Null()
+					}(),
+					func() jen.Code {
+						if typ.SearchEnabled {
+							return jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager")
+						}
+						return jen.Null()
+					}(),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("CreateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -129,7 +144,12 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("t"),
 						jen.IDf("%sDataManager", uvn),
 						jen.ID("unitCounter"),
-						jen.ID("indexManager"),
+						func() jen.Code {
+							if typ.SearchEnabled {
+								return jen.ID("indexManager")
+							}
+							return jen.Null()
+						}(),
 					),
 				),
 			),
