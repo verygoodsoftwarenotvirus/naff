@@ -68,6 +68,46 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
+	serviceInitLines := []jen.Code{
+		jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
+	}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		tuvn := dep.Name.UnexportedVarName()
+		tsn := dep.Name.Singular()
+		trn := dep.Name.RouteName()
+
+		serviceInitLines = append(serviceInitLines,
+			jen.IDf("%sIDFetcher", tuvn).Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
+				jen.ID("logger"), jen.Qual(proj.ServicePackage(dep.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", tsn)), jen.Lit(trn),
+			),
+		)
+	}
+
+	serviceInitLines = append(serviceInitLines,
+		jen.IDf("%sIDFetcher", uvn).Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
+			jen.ID("logger"),
+			jen.IDf("%sIDURIParamKey", sn),
+			jen.Lit(rn),
+		),
+		jen.ID("sessionContextDataFetcher").Op(":").Qual(proj.AuthServicePackage(), "FetchContextFromRequest"),
+		jen.IDf("%sDataManager", uvn).Op(":").IDf("%sDataManager", uvn),
+		jen.ID("encoderDecoder").Op(":").ID("encoder"),
+		jen.IDf("%sCounter", uvn).Op(":").Qual(proj.MetricsPackage(), "EnsureUnitCounter").Call(
+			jen.ID("counterProvider"),
+			jen.ID("logger"),
+			jen.ID("counterName"),
+			jen.ID("counterDescription"),
+		),
+		func() jen.Code {
+			if typ.SearchEnabled {
+				return jen.ID("search").Op(":").ID("searchIndexManager")
+			}
+			return jen.Null()
+		}(),
+		jen.ID("tracer").Op(":").Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
+	)
+
 	code.Add(
 		jen.Commentf("ProvideService builds a new %sService.", pn),
 		jen.Newline(),
@@ -79,19 +119,17 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("counterProvider").Qual(proj.MetricsPackage(), "UnitCounterProvider"),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("indexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider")
+					return jen.ID("searchIndexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider")
 				}
 				return jen.Null()
 			}(),
 			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
 		).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)), jen.ID("error")).Body(
-
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.List(jen.ID("searchIndexManager"),
-						jen.ID("indexInitErr")).Op(":=").ID("indexProvider").Call(
+					return jen.List(jen.ID("searchIndexManager"), jen.ID("err")).Op(":=").ID("searchIndexProvider").Call(
 						jen.Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("cfg").Dot("SearchIndexPath")),
-						jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", pn)),
+						jen.Lit(prn),
 						jen.ID("logger"),
 					)
 				}
@@ -99,41 +137,16 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			}(),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.If(jen.ID("indexInitErr").Op("!=").ID("nil")).Body(
-						jen.ID("logger").Dot("Error").Call(
-							jen.ID("indexInitErr"),
-							jen.Litf("setting up %s search index", pcn),
-						),
-						jen.Return().List(jen.ID("nil"),
-							jen.ID("indexInitErr")),
+					return jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up search index: %w"), jen.Err())),
 					)
 				}
 				return jen.Null()
 			}(),
-
 			jen.Newline(),
-			jen.ID("svc").Op(":=").Op("&").ID("service").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
-				jen.IDf("%sIDFetcher", uvn).Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-					jen.ID("logger"),
-					jen.IDf("%sIDURIParamKey", sn),
-					jen.Lit(rn),
-				),
-				jen.ID("sessionContextDataFetcher").Op(":").Qual(proj.AuthServicePackage(), "FetchContextFromRequest"),
-				jen.IDf("%sDataManager", uvn).Op(":").IDf("%sDataManager", uvn),
-				jen.ID("encoderDecoder").Op(":").ID("encoder"),
-				jen.IDf("%sCounter", uvn).Op(":").Qual(proj.MetricsPackage(), "EnsureUnitCounter").Call(
-					jen.ID("counterProvider"),
-					jen.ID("logger"),
-					jen.ID("counterName"),
-					jen.ID("counterDescription"),
-				),
-				func() jen.Code {
-					if typ.SearchEnabled {
-						return jen.ID("search").Op(":").ID("searchIndexManager")
-					}
-					return jen.Null()
-				}(),
-				jen.ID("tracer").Op(":").Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName"))),
+			jen.ID("svc").Op(":=").Op("&").ID("service").Valuesln(
+				serviceInitLines...,
+			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("svc"), jen.ID("nil")),
 		),

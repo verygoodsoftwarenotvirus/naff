@@ -165,6 +165,20 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
+		jen.Comment("AttachActiveAccountIDToSpan provides a consistent way to attach an account's ID to a span."),
+		jen.Newline(),
+		jen.Func().ID("AttachActiveAccountIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
+			jen.ID("accountID").ID("uint64")).Body(
+			jen.ID("attachUint64ToSpan").Call(
+				jen.ID("span"),
+				jen.ID("keys").Dot("ActiveAccountIDKey"),
+				jen.ID("accountID"),
+			),
+		),
+		jen.Newline(),
+	)
+
+	code.Add(
 		jen.Comment("AttachRequestingUserIDToSpan provides a consistent way to attach a user's ID to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachRequestingUserIDToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
@@ -205,20 +219,20 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("AttachSessionContextDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")).Body(
 			jen.If(jen.ID("sessionCtxData").Op("!=").ID("nil")).Body(
-				jen.ID("attachUint64ToSpan").Call(
+				jen.ID("AttachRequestingUserIDToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("RequesterIDKey"),
 					jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 				),
-				jen.ID("attachUint64ToSpan").Call(
+				jen.ID("AttachActiveAccountIDToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("ActiveAccountIDKey"),
 					jen.ID("sessionCtxData").Dot("ActiveAccountID"),
 				),
-				jen.ID("attachBooleanToSpan").Call(
-					jen.ID("span"),
-					jen.ID("keys").Dot("ServiceRoleKey"),
-					jen.ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
+				jen.If(jen.ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").DoesNotEqual().Nil()).Body(
+					jen.ID("attachBooleanToSpan").Call(
+						jen.ID("span"),
+						jen.ID("keys").Dot("UserIsServiceAdminKey"),
+						jen.ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
+					),
 				),
 			),
 		),

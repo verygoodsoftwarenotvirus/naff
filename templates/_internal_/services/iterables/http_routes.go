@@ -621,6 +621,21 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	return lines
 }
 
+func buildDBClientSearchMethodCallArgs(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToUserAtSomeLevel(p) {
+		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
+	}
+	params = append(params, jen.ID("filter").Dot("Limit"), jen.ID("relevantIDs"))
+
+	return params
+}
+
 func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -705,12 +720,16 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Return(),
 		),
 		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDFetchers(proj, typ, false)...)
+
+	dbCallArgs := buildDBClientSearchMethodCallArgs(proj, typ)
+
+	bodyLines = append(bodyLines,
 		jen.Commentf("fetch %s from database.", pcn),
 		jen.List(jen.ID(puvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%sWithIDs", pn).Call(
-			jen.ID("ctx"),
-			jen.ID("sessionCtxData").Dot("ActiveAccountID"),
-			jen.ID("filter").Dot("Limit"),
-			jen.ID("relevantIDs"),
+			dbCallArgs...,
 		),
 		jen.If(jen.Qual("errors", "Is").Call(
 			jen.ID("err"),
@@ -737,7 +756,7 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("res"),
 			jen.ID(puvn),
 		),
-	}
+	)
 
 	lines := []jen.Code{
 		jen.Comment("SearchHandler is our search route."),

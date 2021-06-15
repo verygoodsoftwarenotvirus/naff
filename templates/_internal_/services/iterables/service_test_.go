@@ -35,6 +35,90 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
+	bodyLines := []jen.Code{
+		jen.ID("t").Dot("Parallel").Call(),
+		jen.Newline(),
+		jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
+			jen.ID("description")).ID("string"),
+		).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter")).Body(
+			jen.Return().Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+		),
+		jen.Newline(),
+		jen.ID("rpm").Op(":=").Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
+	}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		tsn := dep.Name.Singular()
+		trn := dep.Name.RouteName()
+
+		bodyLines = append(bodyLines,
+			jen.ID("rpm").Dot("On").Callln(
+				jen.Lit("BuildRouteParamIDFetcher"),
+				jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
+				jen.Qual(proj.ServicePackage(dep.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", tsn)),
+				jen.Lit(trn),
+			).Dot("Return").Call(jen.Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
+		)
+	}
+
+	bodyLines = append(bodyLines,
+		jen.ID("rpm").Dot("On").Callln(
+			jen.Lit("BuildRouteParamIDFetcher"),
+			jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
+			jen.IDf("%sIDURIParamKey", sn),
+			jen.Lit(rn),
+		).Dot("Return").Call(jen.Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
+	)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.List(jen.ID("s"),
+			jen.ID("err")).Op(":=").ID("ProvideService").Callln(
+			jen.ID("logging").Dot("NewNoopLogger").Call(),
+			jen.ID("Config").Values(
+				func() jen.Code {
+					if typ.SearchEnabled {
+						return jen.ID("SearchIndexPath").Op(":").Lit("example/path")
+					}
+					return jen.Null()
+				}(),
+			),
+			jen.Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+			jen.Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+			jen.ID("ucp"),
+			func() jen.Code {
+				if typ.SearchEnabled {
+					return jen.Func().Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
+						jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"),
+						jen.ID("logger").ID("logging").Dot("Logger"),
+					).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+						jen.Return().List(
+							jen.Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+							jen.ID("nil"),
+						),
+					)
+				}
+				return jen.Null()
+			}(),
+
+			jen.ID("rpm"),
+		),
+		jen.Newline(),
+		jen.ID("assert").Dot("NotNil").Call(
+			jen.ID("t"),
+			jen.ID("s"),
+		),
+		jen.ID("assert").Dot("NoError").Call(
+			jen.ID("t"),
+			jen.ID("err"),
+		),
+		jen.Newline(),
+		jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
+			jen.ID("t"),
+			jen.ID("rpm"),
+		),
+	)
+
 	code.Add(
 		jen.Func().IDf("TestProvide%sService", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -42,67 +126,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
-						jen.ID("description")).ID("string"),
-					).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter")).Body(
-						jen.Return().Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
-					),
-					jen.Newline(),
-					jen.ID("rpm").Op(":=").Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
-					jen.ID("rpm").Dot("On").Callln(
-						jen.Lit("BuildRouteParamIDFetcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
-						jen.IDf("%sIDURIParamKey", sn),
-						jen.Lit(rn),
-					).Dot("Return").Call(jen.Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
-					jen.Newline(),
-					jen.List(jen.ID("s"),
-						jen.ID("err")).Op(":=").ID("ProvideService").Callln(
-						jen.ID("logging").Dot("NewNoopLogger").Call(),
-						jen.ID("Config").Values(
-							func() jen.Code {
-								if typ.SearchEnabled {
-									return jen.ID("SearchIndexPath").Op(":").Lit("example/path")
-								}
-								return jen.Null()
-							}(),
-						),
-						jen.Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-						jen.Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
-						jen.ID("ucp"),
-						func() jen.Code {
-							if typ.SearchEnabled {
-								return jen.Func().Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
-									jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"),
-									jen.ID("logger").ID("logging").Dot("Logger"),
-								).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
-									jen.Return().List(
-										jen.Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-										jen.ID("nil"),
-									),
-								)
-							}
-							return jen.Null()
-						}(),
-
-						jen.ID("rpm"),
-					),
-					jen.Newline(),
-					jen.ID("assert").Dot("NotNil").Call(
-						jen.ID("t"),
-						jen.ID("s"),
-					),
-					jen.ID("assert").Dot("NoError").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.Newline(),
-					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
-						jen.ID("t"),
-						jen.ID("rpm"),
-					),
+					bodyLines...,
 				),
 			),
 			func() jen.Code {

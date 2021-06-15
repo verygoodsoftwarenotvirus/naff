@@ -178,7 +178,7 @@ func (s *service) PermissionFilterMiddleware(permissions ...authorization.Permis
 				return
 			}
 
-			logger = sessionCtxData.AttachToLogger(logger)
+			logger = sessionContextData.AttachToLogger(logger)
 
 			isServiceAdmin := sessionContextData.Requester.ServicePermissions.IsServiceAdmin()
 
