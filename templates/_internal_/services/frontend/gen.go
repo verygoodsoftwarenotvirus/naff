@@ -46,7 +46,6 @@ func RenderPackage(proj *models.Project) error {
 		"billing_test.go":       billingTestDotGo(proj),
 		"i18n.go":               i18NDotGo(proj),
 		"static_assets_test.go": staticAssetsTestDotGo(proj),
-		"service.go":            serviceDotGo(proj),
 		"http_routes_test.go":   httpRoutesTestDotGo(proj),
 		"i18n_test.go":          i18NTestDotGo(proj),
 		"languages.go":          languagesDotGo(proj),
@@ -55,7 +54,6 @@ func RenderPackage(proj *models.Project) error {
 		"api_clients.go":        apiClientsDotGo(proj),
 		"config.go":             configDotGo(proj),
 		"helpers.go":            helpersDotGo(proj),
-		"service_test.go":       serviceTestDotGo(proj),
 		"settings.go":           settingsDotGo(proj),
 	}
 
@@ -71,7 +69,10 @@ func RenderPackage(proj *models.Project) error {
 		"translations/en.toml":                               englishTranslationsToml(),
 	}
 
-	jenFiles := map[string]*jen.File{}
+	jenFiles := map[string]*jen.File{
+		"service.go":      serviceDotGo(proj),
+		"service_test.go": serviceTestDotGo(proj),
+	}
 
 	for _, typ := range proj.DataTypes {
 		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ)
@@ -380,13 +381,6 @@ func staticAssetsTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, staticAssetsTestTemplate, nil)
 }
 
-//go:embed service.gotpl
-var serviceTemplate string
-
-func serviceDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, serviceTemplate, nil)
-}
-
 //go:embed http_routes_test.gotpl
 var httpRoutesTestTemplate string
 
@@ -443,16 +437,24 @@ func helpersDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, helpersTemplate, nil)
 }
 
-//go:embed service_test.gotpl
-var serviceTestTemplate string
-
-func serviceTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, serviceTestTemplate, nil)
-}
-
 //go:embed settings.gotpl
 var settingsTemplate string
 
 func settingsDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, settingsTemplate, nil)
 }
+
+//
+////go:embed service.gotpl
+//var serviceTemplate string
+//
+//func serviceDotGo(proj *models.Project) string {
+//	return models.RenderCodeFile(proj, serviceTemplate, nil)
+//}
+//
+////go:embed service_test.gotpl
+//var serviceTestTemplate string
+//
+//func serviceTestDotGo(proj *models.Project) string {
+//	return models.RenderCodeFile(proj, serviceTestTemplate, nil)
+//}

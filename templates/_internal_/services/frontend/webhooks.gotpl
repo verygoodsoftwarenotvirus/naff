@@ -32,6 +32,7 @@ func (s *service) fetchWebhook(ctx context.Context, sessionCtxData *types.Sessio
 		webhookID := s.webhookIDFetcher(req)
 		tracing.AttachWebhookIDToSpan(span, webhookID)
 		logger = logger.WithValue(keys.WebhookIDKey, webhookID)
+
 		webhook, err = s.dataStore.GetWebhook(ctx, webhookID, sessionCtxData.ActiveAccountID)
 		if err != nil {
 			return nil, observability.PrepareError(err, logger, span, "fetching webhook data")

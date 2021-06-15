@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	{{ projectImport "internal/observability" }}
+	{{ projectImport "internal/observability/keys" }}
 	{{ projectImport "internal/observability/tracing" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
@@ -28,7 +29,10 @@ func (s *service) fetchAPIClient(ctx context.Context, sessionCtxData *types.Sess
 	if s.useFakeData {
 		apiClient = fakes.BuildFakeAPIClient()
 	} else {
-		apiClientID := s.routeParamManager.BuildRouteParamIDFetcher(logger, apiClientIDURLParamKey, "API client")(req)
+		apiClientID := s.apiClientIDFetcher(req)
+		tracing.AttachAPIClientDatabaseIDToSpan(span, apiClientID)
+		logger = logger.WithValue(keys.APIClientDatabaseIDKey, apiClientID)
+
 		apiClient, err = s.dataStore.GetAPIClientByDatabaseID(ctx, apiClientID, sessionCtxData.Requester.UserID)
 		if err != nil {
 			return nil, observability.PrepareError(err, logger, span, "fetching API client data")
