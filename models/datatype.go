@@ -63,7 +63,7 @@ func (typ DataType) OwnedByAUserAtSomeLevel(p *Project) bool {
 	return typ.BelongsToAccount
 }
 
-func (typ DataType) RestrictedToUserAtSomeLevel(p *Project) bool {
+func (typ DataType) RestrictedToAccountAtSomeLevel(p *Project) bool {
 	for _, o := range p.FindOwnerTypeChain(typ) {
 		if o.BelongsToAccount && o.RestrictedToAccountMembers {
 			return true
@@ -99,7 +99,7 @@ func (typ DataType) buildGetSomethingParams(p *Project, includeAccountParam bool
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.RestrictedToUserAtSomeLevel(p) && includeAccountParam {
+	if typ.RestrictedToAccountAtSomeLevel(p) && includeAccountParam {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -468,7 +468,7 @@ func (typ DataType) buildGetSomethingArgs(p *Project) []jen.Code {
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("accountID"))
 	}
 
@@ -596,7 +596,7 @@ func (typ DataType) buildArgsForMethodThatHandlesAnInstanceWithStructsAndUser(p 
 		args = append(args, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		args = append(args, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -634,7 +634,7 @@ func (typ DataType) BuildArgsForServiceRouteExistenceCheck(p *Project) []jen.Cod
 		args = append(args, jen.IDf("%sID", uvn))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		args = append(args, jen.ID("accountID"))
 	}
 
@@ -653,7 +653,7 @@ func (typ DataType) buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p *Proje
 	}
 	params = append(params, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -680,7 +680,7 @@ func (typ DataType) BuildDBQuerierGetListOfSomethingQueryBuilderTestPreQueryLine
 	lines := []jen.Code{}
 
 	owners := p.FindOwnerTypeChain(typ)
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
 
@@ -730,7 +730,7 @@ func (typ DataType) BuildGetSomethingLogValues(p *Project) jen.Code {
 	}
 	params = append(params, jen.Litf("%s_id", typ.Name.RouteName()).Op(":").IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.Lit("user_id").Op(":").ID("accountID"))
 	}
 
@@ -745,7 +745,7 @@ func (typ DataType) BuildGetListOfSomethingLogValues(p *Project) *jen.Statement 
 		params = append(params, jen.Litf("%s_id", pt.Name.RouteName()).Op(":").IDf("%sID", pt.Name.UnexportedVarName()))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.Lit("user_id").Op(":").ID("accountID"))
 	}
 
@@ -764,7 +764,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	for _, pt := range owners {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -788,7 +788,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsQueryBuilderParams(p *Project)
 	for _, pt := range owners {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -812,7 +812,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsArgs(p *Project) []jen.Code {
 	for _, pt := range owners {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("accountID"))
 	}
 
@@ -831,7 +831,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsArgsForTest(p *Project) []jen.
 	for _, pt := range owners {
 		params = append(params, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("exampleUser").Dot("ID"))
 	}
 
@@ -851,7 +851,7 @@ func (typ DataType) buildGetListOfSomethingParams(p *Project, isModelsPackage bo
 	for _, pt := range owners {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -892,7 +892,7 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryBuildingMethodParams(p *Proj
 	for _, pt := range owners {
 		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -976,7 +976,7 @@ func (typ DataType) BuildArgsForDBQuerierTestOfListRetrievalQueryBuilder(p *Proj
 		lp = append(lp, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lp = append(lp, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 	lp = append(lp, jen.ID(constants.FilterVarName))
@@ -1124,7 +1124,7 @@ func (typ DataType) buildGetListOfSomethingArgs(p *Project) []jen.Code {
 	for _, pt := range owners {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("accountID"))
 	}
 	params = append(params, jen.ID("filter"))
@@ -2116,7 +2116,7 @@ func (typ DataType) BuildRequisiteFakeVarDecsForDBQuerierRetrievalMethodTest(p *
 func (typ DataType) buildRequisiteFakeVarDecsForListFunction(p *Project) []jen.Code {
 	lines := []jen.Code{}
 
-	if !(typ.BelongsToAccount && typ.RestrictedToAccountMembers) && typ.RestrictedToUserAtSomeLevel(p) {
+	if !(typ.BelongsToAccount && typ.RestrictedToAccountMembers) && typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call())
 	}
 
@@ -2137,7 +2137,7 @@ func (typ DataType) BuildRequisiteFakeVarsForDBQuerierListRetrievalMethodTest(p 
 
 	owners := p.FindOwnerTypeChain(typ)
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines,
 			jen.ID(buildFakeVarName("User")).Assign().Qual(p.FakeTypesPackage(), "BuildFakeUser").Call(),
 		)
@@ -2192,7 +2192,7 @@ func (typ DataType) buildRequisiteFakeVarCallArgs(p *Project) []jen.Code {
 
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
 		lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("BelongsToAccount"))
-	} else if typ.RestrictedToUserAtSomeLevel(p) {
+	} else if typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -2210,7 +2210,7 @@ func (typ DataType) buildRequisiteFakeVarCallArgsForServicesThatUseExampleUser(p
 	}
 	lines = append(lines, jen.ID(buildFakeVarName(sn)).Dot("ID"))
 
-	if (typ.BelongsToAccount && typ.RestrictedToAccountMembers) || typ.RestrictedToUserAtSomeLevel(p) {
+	if (typ.BelongsToAccount && typ.RestrictedToAccountMembers) || typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -2296,7 +2296,7 @@ func (typ DataType) BuildRequisiteFakeVarCallArgsForDBQueriersListRetrievalMetho
 		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 
@@ -2343,7 +2343,7 @@ func (typ DataType) BuildCallArgsForDBClientListRetrievalMethodTest(p *Project) 
 		lines = append(lines, jen.ID(buildFakeVarName(pt.Name.Singular())).Dot("ID"))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		lines = append(lines, jen.ID(buildFakeVarName("User")).Dot("ID"))
 	}
 

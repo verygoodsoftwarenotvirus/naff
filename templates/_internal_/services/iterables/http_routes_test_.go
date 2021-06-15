@@ -451,7 +451,7 @@ func buildReadMockArgs(proj *models.Project, typ models.DataType) []jen.Code {
 	}
 	lines = append(lines, jen.ID("helper").Dotf("example%s", sn).Dot("ID"))
 
-	if (typ.BelongsToAccount && typ.RestrictedToAccountMembers) || typ.RestrictedToUserAtSomeLevel(proj) {
+	if (typ.BelongsToAccount && typ.RestrictedToAccountMembers) || typ.RestrictedToAccountAtSomeLevel(proj) {
 		lines = append(lines, jen.ID("helper").Dot("exampleAccount").Dot("ID"))
 	}
 
@@ -656,7 +656,7 @@ func buildMockCallArgsForExistence(proj *models.Project, typ models.DataType) []
 	}
 	lines = append(lines, jen.ID("helper").Dotf("example%s", sn).Dot("ID"))
 
-	if (typ.BelongsToAccount && typ.RestrictedToAccountMembers) || typ.RestrictedToUserAtSomeLevel(proj) {
+	if (typ.BelongsToAccount && typ.RestrictedToAccountMembers) || typ.RestrictedToAccountAtSomeLevel(proj) {
 		lines = append(lines, jen.ID("helper").Dot("exampleAccount").Dot("ID"))
 	}
 
@@ -851,7 +851,7 @@ func buildMockCallArgsForListHandler(proj *models.Project, typ models.DataType) 
 		lines = append(lines, jen.ID("helper").Dotf("example%s", pt.Name.Singular()).Dot("ID"))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.RestrictedToAccountAtSomeLevel(proj) {
 		lines = append(lines, jen.ID("helper").Dot("exampleAccount").Dot("ID"))
 	}
 
@@ -1066,7 +1066,7 @@ func buildMockSearchArgs(proj *models.Project, typ models.DataType) []jen.Code {
 		lines = append(lines, jen.ID("helper").Dotf("example%s", pt.Name.Singular()).Dot("ID"))
 	}
 
-	if typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.RestrictedToAccountAtSomeLevel(proj) {
 		lines = append(lines, jen.ID("helper").Dot("exampleAccount").Dot("ID"))
 	}
 

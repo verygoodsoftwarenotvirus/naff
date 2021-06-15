@@ -1,0 +1,245 @@
+package frontend
+
+import (
+	"fmt"
+	"net/url"
+	"strconv"
+)
+
+func anyToString(x interface{}) string {
+	return fmt.Sprintf("%v", x)
+}
+
+func stringToPointerToString(form url.Values, key string) *string {
+	raw := form.Get(key)
+
+	return &raw
+}
+
+func stringToBool(form url.Values, key string) bool {
+	raw := form.Get(key)
+
+	x, _ := strconv.ParseBool(raw)
+
+	return x
+}
+
+func stringToPointerToBool(form url.Values, key string) *bool {
+	raw := form.Get(key)
+
+	x, _ := strconv.ParseBool(raw)
+
+	return &x
+}
+
+func stringToInt(form url.Values, key string) int {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int(i)
+
+	return x
+}
+
+func stringToPointerToInt(form url.Values, key string) *int {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int(i)
+
+	return &x
+}
+
+func stringToInt8(form url.Values, key string) int8 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int8(i)
+
+	return x
+}
+
+func stringToPointerToInt8(form url.Values, key string) *int8 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int8(i)
+
+	return &x
+}
+
+func stringToInt16(form url.Values, key string) int16 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int16(i)
+
+	return x
+}
+
+func stringToPointerToInt16(form url.Values, key string) *int16 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int16(i)
+
+	return &x
+}
+
+func stringToInt32(form url.Values, key string) int32 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int32(i)
+
+	return x
+}
+
+func stringToPointerToInt32(form url.Values, key string) *int32 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := int32(i)
+
+	return &x
+}
+
+func stringToInt64(form url.Values, key string) int64 {
+	raw := form.Get(key)
+
+	x, _ := strconv.ParseInt(raw, 10, 64)
+
+	return x
+}
+
+func stringToPointerToInt64(form url.Values, key string) *int64 {
+	raw := form.Get(key)
+
+	x, _ := strconv.ParseInt(raw, 10, 64)
+
+	return &x
+}
+
+func stringToUint(form url.Values, key string) uint {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint(i)
+
+	return x
+}
+
+func stringToPointerToUint(form url.Values, key string) *uint {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint(i)
+
+	return &x
+}
+
+func stringToUint8(form url.Values, key string) uint8 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint8(i)
+
+	return x
+}
+
+func stringToPointerToUint8(form url.Values, key string) *uint8 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint8(i)
+
+	return &x
+}
+
+func stringToUint16(form url.Values, key string) uint16 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint16(i)
+
+	return x
+}
+
+func stringToPointerToUint16(form url.Values, key string) *uint16 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint16(i)
+
+	return &x
+}
+
+func stringToUint32(form url.Values, key string) uint32 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint32(i)
+
+	return x
+}
+
+func stringToPointerToUint32(form url.Values, key string) *uint32 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint32(i)
+
+	return &x
+}
+
+func stringToUint64(form url.Values, key string) uint64 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint64(i)
+
+	return x
+}
+
+func stringToPointerToUint64(form url.Values, key string) *uint64 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseInt(raw, 10, 64)
+	x := uint64(i)
+
+	return &x
+}
+
+func stringToFloat32(form url.Values, key string) float32 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseFloat(raw, 64)
+	x := float32(i)
+
+	return x
+}
+
+func stringToPointerToFloat32(form url.Values, key string) *float32 {
+	raw := form.Get(key)
+
+	i, _ := strconv.ParseFloat(raw, 64)
+	x := float32(i)
+
+	return &x
+}
+
+func stringToFloat64(form url.Values, key string) float64 {
+	raw := form.Get(key)
+
+	x, _ := strconv.ParseFloat(raw, 64)
+
+	return x
+}
+
+func stringToPointerToFloat64(form url.Values, key string) *float64 {
+	raw := form.Get(key)
+
+	x, _ := strconv.ParseFloat(raw, 64)
+
+	return &x
+}

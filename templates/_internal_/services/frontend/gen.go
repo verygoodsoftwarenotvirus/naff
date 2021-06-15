@@ -28,6 +28,8 @@ func RenderPackage(proj *models.Project) error {
 		"http_routes.go":        httpRoutesDotGo(proj),
 		"webhooks.go":           webhooksDotGo(proj),
 		"time_test.go":          timeTestDotGo(proj),
+		"form_parsers.go":       formParsersDotGo(proj),
+		"helper_test.go":        helperTestDotGo(proj),
 		"wire_test.go":          wireTestDotGo(proj),
 		"accounts.go":           accountsDotGo(proj),
 		"api_clients_test.go":   apiClientsTestDotGo(proj),
@@ -100,6 +102,20 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	return nil
+}
+
+//go:embed helper_test.gotpl
+var helperTestTemplate string
+
+func helperTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, helperTestTemplate, nil)
+}
+
+//go:embed form_parsers.gotpl
+var formParsersTemplate string
+
+func formParsersDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, formParsersTemplate, nil)
 }
 
 //go:embed webhooks_test.gotpl

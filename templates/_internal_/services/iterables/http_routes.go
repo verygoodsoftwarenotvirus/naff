@@ -102,7 +102,7 @@ func buildDBClientRetrievalMethodCallArgs(proj *models.Project, typ models.DataT
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.RestrictedToAccountAtSomeLevel(proj) {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 
@@ -213,7 +213,7 @@ func buildDBClientExistenceMethodCallArgs(proj *models.Project, typ models.DataT
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.RestrictedToUserAtSomeLevel(proj) {
+	if typ.RestrictedToAccountAtSomeLevel(proj) {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 
@@ -306,7 +306,7 @@ func buildDBClientListRetrievalMethodCallArgs(p *models.Project, typ models.Data
 	for _, pt := range owners {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 	params = append(params, jen.ID("filter"))
@@ -431,7 +431,7 @@ func buildUpdateSomethingDBCallArgs(p *models.Project, typ models.DataType) []je
 	}
 	params = append(params, jen.IDf("%sID", uvn))
 
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 
@@ -628,7 +628,7 @@ func buildDBClientSearchMethodCallArgs(p *models.Project, typ models.DataType) [
 	for _, pt := range owners {
 		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 	}
-	if typ.RestrictedToUserAtSomeLevel(p) {
+	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 	params = append(params, jen.ID("filter").Dot("Limit"), jen.ID("relevantIDs"))

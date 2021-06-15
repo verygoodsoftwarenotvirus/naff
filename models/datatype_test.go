@@ -136,7 +136,7 @@ func TestDataType_RestrictedToUserAtSomeLevel(T *testing.T) {
 			},
 		}
 
-		assert.True(t, dt.RestrictedToUserAtSomeLevel(p))
+		assert.True(t, dt.RestrictedToAccountAtSomeLevel(p))
 	})
 
 	T.Run("with multi-level ownership", func(t *testing.T) {
@@ -163,7 +163,7 @@ func TestDataType_RestrictedToUserAtSomeLevel(T *testing.T) {
 			},
 		}
 
-		assert.True(t, dtC.RestrictedToUserAtSomeLevel(p))
+		assert.True(t, dtC.RestrictedToAccountAtSomeLevel(p))
 	})
 }
 

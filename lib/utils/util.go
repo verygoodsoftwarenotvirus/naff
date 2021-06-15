@@ -24,6 +24,14 @@ const (
 	T = "T"
 )
 
+// ConditionalCode returns conditional code
+func ConditionalCode(condition bool, code jen.Code) jen.Code {
+	if condition {
+		return code
+	}
+	return jen.Null()
+}
+
 // WriteHeader calls res.WriteHeader for a given status
 func WriteHeader(status string) jen.Code {
 	return WriteXHeader("res", status)
