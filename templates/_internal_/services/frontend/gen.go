@@ -201,7 +201,7 @@ func httpRoutesDotGo(proj *models.Project) string {
 					jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
 					jen.IDf("single%sPattern", sn),
 				),
-				jen.ID("s").Dotf("handle%sDeletionRequest", sn),
+				jen.ID("s").Dotf("handle%sArchiveRequest", sn),
 			),
 			jen.Newline(),
 			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").

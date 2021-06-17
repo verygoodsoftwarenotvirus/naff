@@ -149,7 +149,7 @@ func buildFetchSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("s").Op("*").ID("service")).IDf("fetch%s", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("req").Op("*").Qual("net/http", "Request"),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")),
+			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")),
 		).Params(jen.ID(uvn).Op("*").Qual(proj.TypesPackage(), sn), jen.Err().ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -596,7 +596,7 @@ func buildBuildSomethingEditorView(proj *models.Project, typ models.DataType) []
 				jen.List(jen.ID(uvn), jen.Err()).Assign().ID("s").Dotf("fetch%s", sn).Call(
 					jen.ID("ctx"),
 					jen.ID("req"),
-					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("sessionCtxData")),
+					utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("sessionCtxData")),
 				),
 				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
@@ -971,7 +971,7 @@ func buildHandleSomethingUpdateRequest(proj *models.Project, typ models.DataType
 			jen.List(jen.ID(uvn), jen.Err()).Assign().ID("s").Dotf("fetch%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("req"),
-				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("sessionCtxData")),
+				utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("sessionCtxData")),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(

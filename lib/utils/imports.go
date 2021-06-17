@@ -115,6 +115,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		"github.com/GuiaBolso/darwin":                      "darwin",
 		"github.com/Masterminds/squirrel":                  "squirrel",
 		"github.com/boombuler/barcode":                     "barcode",
+		"github.com/nicksnyder/go-i18n/v2/i18n":            "i18n",
 		"github.com/emicklei/hazana":                       "hazana",
 		"github.com/go-chi/chi":                            "chi",
 		"github.com/blevesearch/bleve/v2/analysis/lang/en": "en",

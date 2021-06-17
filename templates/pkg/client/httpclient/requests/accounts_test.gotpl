@@ -22,11 +22,11 @@ func TestBuilder_BuildSwitchActiveAccountRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
 		spec := newRequestSpec(false, http.MethodPost, "", expectedPathFormat)
 
-		actual, err := helper.builder.BuildSwitchActiveAccountRequest(helper.ctx, exampleAccount.ID)
+		actual, err := helper.builder.BuildSwitchActiveAccountRequest(helper.ctx, exampleAccountID)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -52,11 +52,11 @@ func TestBuilder_BuildGetAccountRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		spec := newRequestSpec(true, http.MethodGet, "", expectedPathFormat, exampleAccount.ID)
+		spec := newRequestSpec(true, http.MethodGet, "", expectedPathFormat, exampleAccountID)
 
-		actual, err := helper.builder.BuildGetAccountRequest(helper.ctx, exampleAccount.ID)
+		actual, err := helper.builder.BuildGetAccountRequest(helper.ctx, exampleAccountID)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -173,11 +173,11 @@ func TestBuilder_BuildArchiveAccountRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		spec := newRequestSpec(true, http.MethodDelete, "", expectedPathFormat, exampleAccount.ID)
+		spec := newRequestSpec(true, http.MethodDelete, "", expectedPathFormat, exampleAccountID)
 
-		actual, err := helper.builder.BuildArchiveAccountRequest(helper.ctx, exampleAccount.ID)
+		actual, err := helper.builder.BuildArchiveAccountRequest(helper.ctx, exampleAccountID)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -243,11 +243,11 @@ func TestBuilder_BuildMarkAsDefaultRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		spec := newRequestSpec(true, http.MethodPost, "", expectedPathFormat, exampleAccount.ID)
+		spec := newRequestSpec(true, http.MethodPost, "", expectedPathFormat, exampleAccountID)
 
-		actual, err := helper.builder.BuildMarkAsDefaultRequest(helper.ctx, exampleAccount.ID)
+		actual, err := helper.builder.BuildMarkAsDefaultRequest(helper.ctx, exampleAccountID)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -273,13 +273,13 @@ func TestBuilder_BuildRemoveUserRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
 		reason := t.Name()
 		expectedReason := url.QueryEscape(reason)
-		spec := newRequestSpec(false, http.MethodDelete, fmt.Sprintf("reason=%s", expectedReason), expectedPathFormat, exampleAccount.ID, helper.exampleUser.ID)
+		spec := newRequestSpec(false, http.MethodDelete, fmt.Sprintf("reason=%s", expectedReason), expectedPathFormat, exampleAccountID, helper.exampleUser.ID)
 
-		actual, err := helper.builder.BuildRemoveUserRequest(helper.ctx, exampleAccount.ID, helper.exampleUser.ID, reason)
+		actual, err := helper.builder.BuildRemoveUserRequest(helper.ctx, exampleAccountID, helper.exampleUser.ID, reason)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -301,11 +301,11 @@ func TestBuilder_BuildRemoveUserRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
 		reason := t.Name()
 
-		actual, err := helper.builder.BuildRemoveUserRequest(helper.ctx, exampleAccount.ID, 0, reason)
+		actual, err := helper.builder.BuildRemoveUserRequest(helper.ctx, exampleAccountID, 0, reason)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 	})
@@ -320,12 +320,12 @@ func TestBuilder_BuildModifyMemberPermissionsRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		spec := newRequestSpec(false, http.MethodPatch, "", expectedPathFormat, exampleAccount.ID, helper.exampleUser.ID)
+		spec := newRequestSpec(false, http.MethodPatch, "", expectedPathFormat, exampleAccountID, helper.exampleUser.ID)
 		exampleInput := fakes.BuildFakeUserPermissionModificationInput()
 
-		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccount.ID, helper.exampleUser.ID, exampleInput)
+		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccountID, helper.exampleUser.ID, exampleInput)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -347,11 +347,11 @@ func TestBuilder_BuildModifyMemberPermissionsRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
 		exampleInput := fakes.BuildFakeUserPermissionModificationInput()
 
-		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccount.ID, 0, exampleInput)
+		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccountID, 0, exampleInput)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 	})
@@ -360,9 +360,9 @@ func TestBuilder_BuildModifyMemberPermissionsRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccount.ID, helper.exampleUser.ID, nil)
+		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccountID, helper.exampleUser.ID, nil)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 	})
@@ -371,9 +371,9 @@ func TestBuilder_BuildModifyMemberPermissionsRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccount.ID, helper.exampleUser.ID, &types.ModifyUserPermissionsInput{})
+		actual, err := helper.builder.BuildModifyMemberPermissionsRequest(helper.ctx, exampleAccountID, helper.exampleUser.ID, &types.ModifyUserPermissionsInput{})
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 	})
@@ -388,12 +388,12 @@ func TestBuilder_BuildTransferAccountOwnershipRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		spec := newRequestSpec(false, http.MethodPost, "", expectedPathFormat, exampleAccount.ID)
+		spec := newRequestSpec(false, http.MethodPost, "", expectedPathFormat, exampleAccountID)
 		exampleInput := fakes.BuildFakeTransferAccountOwnershipInput()
 
-		actual, err := helper.builder.BuildTransferAccountOwnershipRequest(helper.ctx, exampleAccount.ID, exampleInput)
+		actual, err := helper.builder.BuildTransferAccountOwnershipRequest(helper.ctx, exampleAccountID, exampleInput)
 		assert.NoError(t, err)
 
 		assertRequestQuality(t, actual, spec)
@@ -415,9 +415,9 @@ func TestBuilder_BuildTransferAccountOwnershipRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		actual, err := helper.builder.BuildTransferAccountOwnershipRequest(helper.ctx, exampleAccount.ID, nil)
+		actual, err := helper.builder.BuildTransferAccountOwnershipRequest(helper.ctx, exampleAccountID, nil)
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 	})
@@ -426,9 +426,9 @@ func TestBuilder_BuildTransferAccountOwnershipRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		actual, err := helper.builder.BuildTransferAccountOwnershipRequest(helper.ctx, exampleAccount.ID, &types.AccountOwnershipTransferInput{})
+		actual, err := helper.builder.BuildTransferAccountOwnershipRequest(helper.ctx, exampleAccountID, &types.AccountOwnershipTransferInput{})
 		assert.Error(t, err)
 		assert.Nil(t, actual)
 	})
@@ -443,13 +443,13 @@ func TestBuilder_BuildGetAuditLogForAccountRequest(T *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper()
-		exampleAccount := fakes.BuildFakeAccount()
+		exampleAccountID := fakes.BuildFakeID()
 
-		actual, err := helper.builder.BuildGetAuditLogForAccountRequest(helper.ctx, exampleAccount.ID)
+		actual, err := helper.builder.BuildGetAuditLogForAccountRequest(helper.ctx, exampleAccountID)
 		require.NotNil(t, actual)
 		assert.NoError(t, err)
 
-		spec := newRequestSpec(true, http.MethodGet, "", expectedPath, exampleAccount.ID)
+		spec := newRequestSpec(true, http.MethodGet, "", expectedPath, exampleAccountID)
 		assertRequestQuality(t, actual, spec)
 	})
 
