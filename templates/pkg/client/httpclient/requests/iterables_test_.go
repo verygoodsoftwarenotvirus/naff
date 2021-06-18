@@ -30,11 +30,15 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return code
 }
 
-func buildPrerequisiteIDs(proj *models.Project, typ models.DataType) []jen.Code {
+func buildPrerequisiteIDs(proj *models.Project, typ models.DataType, includeSelf bool) []jen.Code {
 	lines := []jen.Code{}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
 		lines = append(lines, jen.IDf("example%sID", dep.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+	}
+
+	if includeSelf {
+		lines = append(lines, jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
 	}
 
 	return lines
@@ -49,7 +53,9 @@ func buildPrerequisiteIDsWithoutIndex(proj *models.Project, typ models.DataType,
 		}
 	}
 
-	lines = append(lines, jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	if index != -1 {
+		lines = append(lines, jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+	}
 
 	return lines
 }
@@ -65,7 +71,11 @@ func buildSomethingGeneralArgsWithoutIndex(proj *models.Project, typ models.Data
 		}
 	}
 
-	parts = append(parts, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
+	if index != -1 {
+		parts = append(parts, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
+	} else {
+		parts = append(parts, jen.Zero())
+	}
 
 	return parts
 }
@@ -100,6 +110,7 @@ func buildSomethingGeneralArgs(proj *models.Project, typ models.DataType, includ
 
 func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
 
 	firstSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
@@ -108,10 +119,9 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 		jen.Newline(),
 	}
 
-	firstSubtest = append(firstSubtest, buildPrerequisiteIDs(proj, typ)...)
+	firstSubtest = append(firstSubtest, buildPrerequisiteIDs(proj, typ, true)...)
 
 	firstSubtest = append(firstSubtest,
-		jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
 			buildSomethingGeneralArgs(proj, typ, true)...,
@@ -154,7 +164,7 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 		),
 	}
 
-	for i, parent := range append(proj.FindOwnerTypeChain(typ), typ) {
+	for i, parent := range proj.FindOwnerTypeChain(typ) {
 		pscn := parent.Name.SingularCommonName()
 
 		buildArgs := buildSomethingGeneralArgsWithoutIndex(proj, typ, i)
@@ -194,6 +204,42 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 		)
 	}
 
+	subtestLines := []jen.Code{
+		jen.ID("t").Dot("Parallel").Call(),
+		jen.Newline(),
+		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+		jen.Newline(),
+	}
+
+	buildArgs := buildSomethingGeneralArgsWithoutIndex(proj, typ, -1)
+
+	subtestLines = append(subtestLines, buildPrerequisiteIDsWithoutIndex(proj, typ, -1)...)
+
+	subtestLines = append(subtestLines,
+		jen.Newline(),
+		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
+			buildArgs...,
+		),
+		jen.ID("assert").Dot("Nil").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+		),
+		jen.ID("assert").Dot("Error").Call(
+			jen.ID("t"),
+			jen.ID("err"),
+		),
+	)
+
+	lines = append(lines,
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Litf("with invalid %s ID", scn),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				subtestLines...,
+			),
+		),
+	)
+
 	return []jen.Code{
 		jen.Func().IDf("TestBuilder_Build%sExistsRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(lines...),
 		jen.Newline(),
@@ -202,20 +248,28 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 
 func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	prn := typ.Name.PluralRouteName()
 
-	firstSubtest := []jen.Code{
+	happyPathSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-		jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+		jen.Newline(),
+	}
+
+	happyPathSubtest = append(happyPathSubtest, buildPrerequisiteIDs(proj, typ, true)...)
+
+	happyPathSubtest = append(happyPathSubtest,
 		jen.Newline(),
 		jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
-			jen.ID("true"),
-			jen.Qual("net/http", "MethodGet"),
-			jen.Lit(""),
-			jen.ID("expectedPathFormat"),
-			jen.IDf("example%s", sn).Dot("ID"),
+			append(
+				[]jen.Code{
+					jen.ID("true"),
+					jen.Qual("net/http", "MethodGet"),
+					jen.Lit(""),
+					jen.ID("expectedPathFormat"),
+				},
+				buildSomethingGeneralArgs(proj, typ, false)...,
+			)...,
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
@@ -231,15 +285,68 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 			jen.ID("actual"),
 			jen.ID("spec"),
 		),
+	)
+
+	lines := []jen.Code{
+		jen.ID("T").Dot("Run").Call(
+			jen.Lit("standard"),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				happyPathSubtest...,
+			),
+		),
 	}
-	secondSubtest := []jen.Code{
+
+	for i, parent := range proj.FindOwnerTypeChain(typ) {
+		pscn := parent.Name.SingularCommonName()
+
+		subtestLines := []jen.Code{
+			jen.ID("t").Dot("Parallel").Call(),
+			jen.Newline(),
+			jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+			jen.Newline(),
+		}
+
+		subtestLines = append(subtestLines, buildPrerequisiteIDsWithoutIndex(proj, typ, i)...)
+
+		subtestLines = append(subtestLines,
+			jen.Newline(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
+				buildSomethingGeneralArgsWithoutIndex(proj, typ, i)...,
+			),
+			jen.ID("assert").Dot("Nil").Call(
+				jen.ID("t"),
+				jen.ID("actual"),
+			),
+			jen.ID("assert").Dot("Error").Call(
+				jen.ID("t"),
+				jen.ID("err"),
+			),
+		)
+
+		lines = append(lines,
+			jen.Newline(),
+			jen.ID("T").Dot("Run").Call(
+				jen.Litf("with invalid %s ID", pscn),
+				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+					subtestLines...,
+				),
+			),
+		)
+	}
+
+	subtestLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
 		jen.Newline(),
+	}
+
+	subtestLines = append(subtestLines, buildPrerequisiteIDsWithoutIndex(proj, typ, -1)...)
+
+	subtestLines = append(subtestLines,
+		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
-			jen.ID("helper").Dot("ctx"),
-			jen.Lit(0),
+			buildSomethingGeneralArgsWithoutIndex(proj, typ, -1)...,
 		),
 		jen.ID("assert").Dot("Nil").Call(
 			jen.ID("t"),
@@ -249,81 +356,191 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 			jen.ID("t"),
 			jen.ID("err"),
 		),
-	}
+	)
 
-	lines := []jen.Code{
-		jen.Func().IDf("TestBuilder_BuildGet%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					firstSubtest...,
-				),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with invalid ID"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					secondSubtest...,
-				),
+	lines = append(lines,
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Litf("with invalid %s ID", typ.Name.SingularCommonName()),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				subtestLines...,
 			),
 		),
+	)
+
+	expectedPathFormat := buildSomethingSpecificFormatString(proj, typ)
+
+	return []jen.Code{
+		jen.Func().IDf("TestBuilder_BuildGet%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+			append([]jen.Code{
+				jen.ID("T").Dot("Parallel").Call(),
+				jen.Newline(),
+				jen.Const().ID("expectedPathFormat").Op("=").Lit(expectedPathFormat),
+				jen.Newline(),
+			},
+				lines...,
+			)...,
+		),
 		jen.Newline(),
+	}
+}
+func buildListOfSomethingFormatString(proj *models.Project, typ models.DataType) string {
+	parts := []string{"api", "v1"}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+	}
+
+	parts = append(parts, typ.Name.PluralRouteName())
+
+	return fmt.Sprintf("/%s", path.Join(parts...))
+}
+
+func buildPrerequisiteIDsWithoutIndexForList(proj *models.Project, typ models.DataType, index int) []jen.Code {
+	lines := []jen.Code{}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if i != index {
+			lines = append(lines, jen.IDf("example%sID", dep.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+		}
 	}
 
 	return lines
 }
 
+func buildGetListOfSomethingFormatArgs(proj *models.Project, typ models.DataType, includeCtx bool) (parts []jen.Code) {
+	if includeCtx {
+		parts = []jen.Code{jen.ID("helper").Dot("ctx")}
+	} else {
+		parts = []jen.Code{}
+	}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
+	}
+
+	return parts
+}
+
+func buildListOfSomethingArgsWithoutIndex(proj *models.Project, typ models.DataType, index int) []jen.Code {
+	parts := []jen.Code{jen.ID("helper").Dot("ctx")}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if i == index {
+			parts = append(parts, jen.Zero())
+		} else {
+			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
+		}
+	}
+
+	parts = append(parts, jen.ID("filter"))
+
+	return parts
+}
+
 func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	pn := typ.Name.Plural()
-	prn := typ.Name.PluralRouteName()
 
-	lines := []jen.Code{
-		jen.Func().IDf("TestBuilder_BuildGet%sRequest", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.Newline(),
-			jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s", prn),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
-					jen.Newline(),
-					jen.ID("filter").Op(":=").Parens(jen.Op("*").ID("types").Dot("QueryFilter")).Call(jen.ID("nil")),
-					jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
-						jen.ID("true"),
-						jen.Qual("net/http", "MethodGet"),
-						jen.Lit("includeArchived=false&limit=20&page=1&sortBy=asc"),
-						jen.ID("expectedPath"),
-					),
-					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
-						jen.ID("helper").Dot("ctx"),
-						jen.ID("filter"),
-					),
-					jen.ID("assert").Dot("NoError").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.Newline(),
-					jen.ID("assertRequestQuality").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-						jen.ID("spec"),
-					),
-				),
-			),
-		),
+	expectedPathFormat := buildListOfSomethingFormatString(proj, typ)
+
+	firstSubtestLines := []jen.Code{
+		jen.ID("t").Dot("Parallel").Call(),
+		jen.Newline(),
+		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
 		jen.Newline(),
 	}
 
-	return lines
+	firstSubtestLines = append(firstSubtestLines, buildPrerequisiteIDsWithoutIndex(proj, typ, -1)...)
+
+	firstSubtestLines = append(firstSubtestLines,
+		jen.Newline(),
+		jen.ID("filter").Op(":=").Parens(jen.Op("*").ID("types").Dot("QueryFilter")).Call(jen.ID("nil")),
+		jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
+			append(
+				[]jen.Code{
+					jen.ID("true"),
+					jen.Qual("net/http", "MethodGet"),
+					jen.Lit("includeArchived=false&limit=20&page=1&sortBy=asc"),
+					jen.ID("expectedPathFormat"),
+				},
+				buildGetListOfSomethingFormatArgs(proj, typ, false)...,
+			)...,
+		),
+		jen.Newline(),
+		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
+			buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
+		),
+		jen.ID("assert").Dot("NoError").Call(
+			jen.ID("t"),
+			jen.ID("err"),
+		),
+		jen.Newline(),
+		jen.ID("assertRequestQuality").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+			jen.ID("spec"),
+		),
+	)
+
+	lines := []jen.Code{
+		jen.ID("T").Dot("Parallel").Call(),
+		jen.Newline(),
+		jen.Const().ID("expectedPathFormat").Op("=").Lit(expectedPathFormat),
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Lit("standard"),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				firstSubtestLines...,
+			),
+		),
+	}
+
+	for i, parent := range proj.FindOwnerTypeChain(typ) {
+		pscn := parent.Name.SingularCommonName()
+
+		subtestLines := []jen.Code{
+			jen.ID("t").Dot("Parallel").Call(),
+			jen.Newline(),
+			jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+			jen.Newline(),
+		}
+
+		subtestLines = append(subtestLines, buildPrerequisiteIDsWithoutIndexForList(proj, typ, i)...)
+
+		subtestLines = append(subtestLines,
+			jen.Newline(),
+			jen.ID("filter").Op(":=").Parens(jen.Op("*").ID("types").Dot("QueryFilter")).Call(jen.ID("nil")),
+			jen.Newline(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
+				buildListOfSomethingArgsWithoutIndex(proj, typ, i)...,
+			),
+			jen.ID("assert").Dot("Nil").Call(
+				jen.ID("t"),
+				jen.ID("actual"),
+			),
+			jen.ID("assert").Dot("Error").Call(
+				jen.ID("t"),
+				jen.ID("err"),
+			),
+		)
+
+		lines = append(lines,
+			jen.Newline(),
+			jen.ID("T").Dot("Run").Call(
+				jen.Litf("with invalid %s ID", pscn),
+				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+					subtestLines...,
+				),
+			),
+		)
+	}
+
+	return []jen.Code{
+		jen.Func().IDf("TestBuilder_BuildGet%sRequest", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+			lines...,
+		),
+		jen.Newline(),
+	}
 }
 
 func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
@@ -384,6 +601,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+		jen.Newline(),
 		jen.ID("exampleInput").Op(":=").ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
@@ -486,6 +704,7 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+		jen.Newline(),
 		jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
 		jen.Newline(),
 		jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
@@ -558,12 +777,12 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 
 func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	prn := typ.Name.PluralRouteName()
 
 	firstSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+		jen.Newline(),
 		jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
 		jen.Newline(),
 		jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
@@ -588,6 +807,7 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 			jen.ID("spec"),
 		),
 	}
+
 	secondSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
@@ -607,11 +827,13 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 		),
 	}
 
+	expectedPathFormat := buildSomethingSpecificFormatString(proj, typ)
+
 	lines := []jen.Code{
 		jen.Func().IDf("TestBuilder_BuildArchive%sRequest", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
+			jen.Const().ID("expectedPathFormat").Op("=").Lit(expectedPathFormat),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
@@ -641,6 +863,7 @@ func buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj *models.Project, 
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("helper").Op(":=").ID("buildTestHelper").Call(),
+		jen.Newline(),
 		jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
