@@ -274,8 +274,7 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 				jen.ID("logger"),
 				jen.ID("span"),
 				jen.Lit("building user status request"),
-			),
-			),
+			)),
 		),
 		jen.Newline(),
 		jen.Return().List(jen.ID("req"), jen.ID("nil")),
@@ -482,14 +481,6 @@ func buildBuildCreateSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.If(jen.ID("input").Op("==").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided")),
 		),
-		func() jen.Code {
-			if typ.BelongsToStruct != nil {
-				return jen.If(jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).IsEqualTo().Zero()).Body(
-					jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
-				)
-			}
-			return jen.Null()
-		}(),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
@@ -630,15 +621,8 @@ func buildBuildUpdateSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.If(jen.ID(uvn).Op("==").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided")),
 		),
-		func() jen.Code {
-			if typ.BelongsToStruct != nil {
-				return jen.If(jen.ID(uvn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).IsEqualTo().Zero()).Body(
-					jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
-				)
-			}
-			return jen.Null()
-		}(),
 		jen.Newline(),
+		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", sn)), jen.ID(uvn).Dot("ID")),
 		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
 			jen.ID("span"),
 			jen.ID(uvn).Dot("ID"),
