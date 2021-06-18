@@ -100,7 +100,7 @@ func buildSomethingSpecificFormatString(proj *models.Project, typ models.DataTyp
 	return fmt.Sprintf("/%s", path.Join(parts...))
 }
 
-func buildSomethingArgs(proj *models.Project, typ models.DataType, includeCtx, includeSelf bool, skipIndex int) (parts []jen.Code) {
+func buildGetSomethingArgs(proj *models.Project, typ models.DataType, includeCtx, includeSelf bool, skipIndex int) (parts []jen.Code) {
 	if includeCtx {
 		parts = []jen.Code{jen.ID("s").Dot("ctx")}
 	} else {
@@ -142,7 +142,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
 					},
-						buildSomethingArgs(proj, typ, false, true, -1)...,
+						buildGetSomethingArgs(proj, typ, false, true, -1)...,
 					)...,
 				),
 				jen.Newline(),
@@ -152,7 +152,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 					jen.Qual("net/http", "StatusOK"),
 				),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
-					buildSomethingArgs(proj, typ, true, true, -1)...,
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("NoError").Call(
@@ -177,7 +177,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 					jen.Newline(),
 					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildSimpleTestClient").Call(jen.ID("t")),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
-						buildSomethingArgs(proj, typ, true, true, i)...,
+						buildGetSomethingArgs(proj, typ, true, true, i)...,
 					),
 					jen.Newline(),
 					jen.ID("assert").Dot("Error").Call(
@@ -202,7 +202,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildSimpleTestClient").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
-					append(buildSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
+					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("Error").Call(
@@ -226,7 +226,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.ID("c").Op(":=").ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
-					buildSomethingArgs(proj, typ, true, true, -1)...,
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("Error").Call(
@@ -247,7 +247,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClientThatWaitsTooLong").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
-					buildSomethingArgs(proj, typ, true, true, -1)...,
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("Error").Call(
@@ -272,7 +272,6 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 
 func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	scn := typ.Name.SingularCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	lines := []jen.Code{
@@ -284,11 +283,14 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 				jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
 				jen.Newline(),
 				jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.Qual("net/http", "MethodGet"),
-					jen.Lit(""),
-					jen.ID("expectedPathFormat"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					append([]jen.Code{
+						jen.ID("true"),
+						jen.Qual("net/http", "MethodGet"),
+						jen.Lit(""),
+						jen.ID("expectedPathFormat"),
+					},
+						buildGetSomethingArgs(proj, typ, false, true, -1)...,
+					)...,
 				),
 				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClientWithJSONResponse").Call(
 					jen.ID("t"),
@@ -296,8 +298,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 					jen.ID("s").Dotf("example%s", sn),
 				),
 				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
 				jen.ID("require").Dot("NotNil").Call(
@@ -315,39 +316,35 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 				),
 			),
 		),
-		jen.Newline(),
-		jen.ID("s").Dot("Run").Call(
-			jen.Litf("with invalid %s ID", scn),
-			jen.Func().Params().Body(
-				jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
-				jen.Newline(),
-				jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.Qual("net/http", "MethodGet"),
-					jen.Lit(""),
-					jen.ID("expectedPathFormat"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
-				),
-				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClientWithJSONResponse").Call(
-					jen.ID("t"),
-					jen.ID("spec"),
-					jen.ID("s").Dotf("example%s", sn),
-				),
-				jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.Lit(0),
-				),
-				jen.Newline(),
-				jen.ID("require").Dot("Nil").Call(
-					jen.ID("t"),
-					jen.ID("actual"),
-				),
-				jen.ID("assert").Dot("Error").Call(
-					jen.ID("t"),
-					jen.ID("err"),
+	}
+
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
+		lines = append(lines,
+			jen.Newline(),
+			jen.ID("s").Dot("Run").Call(
+				jen.Litf("with invalid %s ID", owner.Name.SingularCommonName()),
+				jen.Func().Params().Body(
+					jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
+					jen.Newline(),
+					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildSimpleTestClient").Call(jen.ID("t")),
+					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
+						buildGetSomethingArgs(proj, typ, true, true, i)...,
+					),
+					jen.Newline(),
+					jen.ID("require").Dot("Nil").Call(
+						jen.ID("t"),
+						jen.ID("actual"),
+					),
+					jen.ID("assert").Dot("Error").Call(
+						jen.ID("t"),
+						jen.ID("err"),
+					),
 				),
 			),
-		),
+		)
+	}
+
+	lines = append(lines,
 		jen.Newline(),
 		jen.ID("s").Dot("Run").Call(
 			jen.Lit("with error building request"),
@@ -402,7 +399,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 				),
 			),
 		),
-	}
+	)
 
 	return []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Get%s", sn).Params().Body(
