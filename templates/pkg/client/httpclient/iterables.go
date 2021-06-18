@@ -57,6 +57,42 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return code
 }
 
+func buildParamsForHTTPClientExistenceMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxParam()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		params = append(params, jen.List(listParams...).Uint64())
+	} else {
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
+	}
+
+	return params
+}
+
+func buildArgsForHTTPClientExistenceRequestBuildingMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+		params = append(params, listParams...)
+	} else {
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+	}
+
+	return params
+}
 func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -75,10 +111,8 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("Build%sExistsRequest", sn).Call(
-			jen.ID("ctx"),
-			jen.IDf("%sID", uvn),
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("Build%sExistsRequest", sn).Call(
+			buildArgsForHTTPClientExistenceRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
@@ -116,15 +150,66 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	return []jen.Code{
 		jen.Commentf("%sExists retrieves whether %s exists.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("%sExists", sn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.IDf("%sID", uvn).ID("uint64"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("%sExists", sn).Params(
+			buildParamsForHTTPClientExistenceMethod(proj, typ)...,
 		).Params(jen.ID("bool"), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
 	}
+}
+
+func buildArgsForHTTPClientRetrievalRequestBuildingMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+
+		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		params = append(params, listParams...)
+	} else {
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+	}
+
+	return params
+}
+
+func buildParamsForHTTPClientRetrievalMethod(p *models.Project, typ models.DataType, call bool) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{
+		func() jen.Code {
+			if call {
+				return constants.CtxVar()
+			} else {
+				return constants.CtxParam()
+			}
+		}(),
+	}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		if !call {
+			params = append(params, jen.List(listParams...).Uint64())
+		} else {
+			params = append(params, listParams...)
+		}
+	} else {
+		if !call {
+			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
+		} else {
+			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		}
+	}
+
+	return params
 }
 
 func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
@@ -145,10 +230,8 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", sn).Call(
-			jen.ID("ctx"),
-			jen.IDf("%sID", uvn),
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", sn).Call(
+			buildArgsForHTTPClientRetrievalRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
@@ -186,10 +269,8 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Commentf("Get%s gets %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.IDf("%sID", uvn).ID("uint64"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(
+			buildParamsForHTTPClientRetrievalMethod(proj, typ, false)...,
 		).Params(jen.Op("*").Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			lines...,
 		),
@@ -226,8 +307,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("limit"),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildSearch%sRequest", pn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildSearch%sRequest", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("query"),
 			jen.ID("limit"),
@@ -280,6 +360,40 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	}
 }
 
+func buildArgsForHTTPClientListRequestMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		params = append(params, listParams...)
+	}
+
+	params = append(params, jen.ID(constants.FilterVarName))
+
+	return params
+}
+
+func buildParamsForHTTPClientMethodThatFetchesAList(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxParam()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		params = append(params, jen.List(listParams...).Uint64())
+	}
+
+	params = append(params, jen.ID(constants.FilterVarName).PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
+
+	return params
+}
+
 func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -302,10 +416,8 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", pn).Call(
-			jen.ID("ctx"),
-			jen.ID("filter"),
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", pn).Call(
+			buildArgsForHTTPClientListRequestMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
@@ -341,10 +453,8 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	return []jen.Code{
 		jen.Commentf("Get%s retrieves a list of %s.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("Get%s", pn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", pn).Params(
+			buildParamsForHTTPClientMethodThatFetchesAList(proj, typ)...,
 		).Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)), jen.ID("error")).Body(
 			lines...,
 		),
@@ -395,6 +505,49 @@ func buildIDBoilerplateForCreation(proj *models.Project, typ models.DataType, in
 	return lines
 }
 
+func buildParamsForHTTPClientCreateMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxParam()}
+
+	if len(parents) > 0 {
+		for i, pt := range parents {
+			if i > len(parents)-2 {
+				continue
+			}
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		if len(listParams) > 0 {
+			params = append(params, jen.List(listParams...).Uint64())
+		}
+	}
+
+	params = append(params, jen.ID("input").PointerTo().Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+
+	return params
+}
+
+func buildArgsForHTTPClientCreateRequestBuildingMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for i, pt := range parents {
+			if i == len(parents)-1 {
+				continue
+			} else {
+				listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+			}
+		}
+		params = append(params, listParams...)
+	}
+
+	params = append(params, jen.ID("input"))
+
+	return params
+}
+
 func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -433,8 +586,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.Newline(),
 		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildCreate%sRequest", sn).Call(
-			jen.ID("ctx"),
-			jen.ID("input"),
+			buildArgsForHTTPClientCreateRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
@@ -472,15 +624,55 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("input").Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(
+			buildParamsForHTTPClientCreateMethod(proj, typ)...,
 		).Params(jen.Op("*").Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
 	}
+}
+
+func buildParamsForHTTPClientUpdateMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxParam()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = listParams[:len(listParams)-1]
+
+		if len(listParams) > 0 {
+			params = append(params, jen.List(listParams...).Uint64())
+		}
+	}
+
+	params = append(params, jen.ID(typ.Name.UnexportedVarName()).PointerTo().Qual(p.TypesPackage(), typ.Name.Singular()))
+
+	return params
+}
+
+func buildArgsForHTTPClientUpdateRequestBuildingMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = listParams[:len(listParams)-1]
+
+		if len(listParams) > 0 {
+			params = append(params, listParams...)
+		}
+	}
+
+	params = append(params, jen.ID(typ.Name.UnexportedVarName()))
+
+	return params
 }
 
 func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
@@ -510,10 +702,8 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%s", typ.Name.UnexportedVarName()).Dot("ID")),
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildUpdate%sRequest", sn).Call(
-			jen.ID("ctx"),
-			jen.ID(uvn),
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildUpdate%sRequest", sn).Call(
+			buildArgsForHTTPClientUpdateRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().ID("observability").Dot("PrepareError").Call(
@@ -543,15 +733,49 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	return []jen.Code{
 		jen.Commentf("Update%s updates %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID(uvn).Op("*").Qual(proj.TypesPackage(), sn),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(
+			buildParamsForHTTPClientUpdateMethod(proj, typ)...,
 		).Params(jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
 	}
+}
+
+func buildParamsForHTTPClientArchiveMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxParam()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		params = append(params, jen.List(listParams...).Uint64())
+	} else {
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
+	}
+
+	return params
+}
+
+func buildArgsForHTTPClientArchiveRequestBuildingMethod(p *models.Project, typ models.DataType) []jen.Code {
+	parents := p.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		}
+		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+		params = append(params, listParams...)
+	} else {
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+	}
+
+	return params
 }
 
 func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code {
@@ -572,10 +796,8 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildArchive%sRequest", sn).Call(
-			jen.ID("ctx"),
-			jen.IDf("%sID", uvn),
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildArchive%sRequest", sn).Call(
+			buildArgsForHTTPClientArchiveRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().ID("observability").Dot("PrepareError").Call(
@@ -605,10 +827,8 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	return []jen.Code{
 		jen.Commentf("Archive%s archives %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("Archive%s", sn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.IDf("%sID", uvn).ID("uint64"),
+		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Archive%s", sn).Params(
+			buildParamsForHTTPClientArchiveMethod(proj, typ)...,
 		).Params(jen.ID("error")).Body(
 			lines...,
 		),
@@ -633,14 +853,13 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 			jen.Return().List(jen.ID("nil"),
 				jen.ID("ErrInvalidIDProvided")),
 		),
-		jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%s", typ.Name.UnexportedVarName()).Dot("ID")),
+		jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 		jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
 			jen.IDf("%sID", uvn),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("req"),
-			jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 			jen.ID("ctx"),
 			jen.IDf("%sID", uvn),
 		),
