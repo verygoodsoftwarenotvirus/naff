@@ -1193,11 +1193,15 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
 				jen.Newline(),
 				jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.Qual("net/http", "MethodDelete"),
-					jen.Lit(""),
-					jen.ID("expectedPathFormat"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					append(
+						[]jen.Code{
+							jen.ID("true"),
+							jen.Qual("net/http", "MethodDelete"),
+							jen.Lit(""),
+							jen.ID("expectedPathFormat"),
+						},
+						buildGetSomethingArgs(proj, typ, false, true, -1)...,
+					)...,
 				),
 				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClientWithStatusCodeResponse").Call(
 					jen.ID("t"),
@@ -1206,8 +1210,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				),
 				jen.Newline(),
 				jen.ID("err").Op(":=").ID("c").Dotf("Archive%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.ID("assert").Dot("NoError").Call(
 					jen.ID("t"),
@@ -1217,7 +1220,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 		),
 	}
 
-	for _, owner := range proj.FindOwnerTypeChain(typ) {
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
 		lines = append(lines,
 			jen.Newline(),
 			jen.ID("s").Dot("Run").Call(
@@ -1228,8 +1231,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildSimpleTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("err").Op(":=").ID("c").Dotf("Archive%s", sn).Call(
-						jen.ID("s").Dot("ctx"),
-						jen.Lit(0),
+						buildGetSomethingArgs(proj, typ, true, true, i)...,
 					),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
@@ -1250,8 +1252,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildSimpleTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.ID("err").Op(":=").ID("c").Dotf("Archive%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.Lit(0),
+					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
 				),
 				jen.ID("assert").Dot("Error").Call(
 					jen.ID("t"),
@@ -1271,8 +1272,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("c").Op(":=").ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.ID("err").Op(":=").ID("c").Dotf("Archive%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.ID("assert").Dot("Error").Call(
 					jen.ID("t"),
@@ -1289,8 +1289,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClientThatWaitsTooLong").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.ID("err").Op(":=").ID("c").Dotf("Archive%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.ID("assert").Dot("Error").Call(
 					jen.ID("t"),

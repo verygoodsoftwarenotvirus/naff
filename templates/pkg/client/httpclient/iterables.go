@@ -299,7 +299,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID("limit").Op("==").Lit(0)).Body(
 			jen.ID("limit").Op("=").Lit(20)),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("c").Dot("logger").Dot("WithValue").Call(
+		jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "SearchQueryKey"),
 			jen.ID("query"),
 		).Dot("WithValue").Call(
