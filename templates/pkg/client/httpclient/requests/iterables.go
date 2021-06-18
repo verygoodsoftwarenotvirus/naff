@@ -53,7 +53,6 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 	}
 
 	if includeType {
-
 		lines = append(lines,
 			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).Op("==").Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),

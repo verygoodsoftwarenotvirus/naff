@@ -13,9 +13,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	sn := typ.Name.Singular()
-	scn := typ.Name.SingularCommonName()
 	pn := typ.Name.Plural()
-	prn := typ.Name.PluralRouteName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	code.Add(
@@ -28,9 +26,6 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
-
-	code.Add(
 		jen.Type().IDf("%sBaseSuite", puvn).Struct(
 			jen.ID("suite").Dot("Suite"),
 			jen.Newline(),
@@ -39,23 +34,14 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.IDf("example%sList", sn).Op("*").ID("types").Dotf("%sList", sn),
 		),
 		jen.Newline(),
-	)
-
-	code.Add(
 		jen.Var().ID("_").ID("suite").Dot("SetupTestSuite").Op("=").Parens(jen.Op("*").IDf("%sBaseSuite", puvn)).Call(jen.ID("nil")),
 		jen.Newline(),
-	)
-
-	code.Add(
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sBaseSuite", puvn)).ID("SetupTest").Params().Body(
 			jen.ID("s").Dot("ctx").Op("=").Qual("context", "Background").Call(),
 			jen.ID("s").Dotf("example%s", sn).Op("=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
 			jen.ID("s").Dotf("example%sList", sn).Op("=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 		),
 		jen.Newline(),
-	)
-
-	code.Add(
 		jen.Type().IDf("%sTestSuite", puvn).Struct(
 			jen.ID("suite").Dot("Suite"),
 			jen.Newline(),
@@ -64,7 +50,29 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
-	code.Add(
+	code.Add(buildTestClientSomethingExists(proj, typ)...)
+	code.Add(buildTestClientGetSomething(proj, typ)...)
+	code.Add(buildTestClientGetListOfSomething(proj, typ)...)
+
+	if typ.SearchEnabled {
+		code.Add(buildTestClientSearchSomething(proj, typ)...)
+	}
+
+	code.Add(buildTestClientCreateSomething(proj, typ)...)
+	code.Add(buildTestClientUpdateSomething(proj, typ)...)
+	code.Add(buildTestClientArchiveSomething(proj, typ)...)
+	code.Add(buildTestClientGetAuditLogForSomething(proj, typ)...)
+
+	return code
+}
+
+func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_%sExists", sn).Params().Body(
 			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
 			jen.Newline(),
@@ -181,9 +189,18 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Get%s", sn).Params().Body(
 			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
 			jen.Newline(),
@@ -313,9 +330,18 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Get%s", pn).Params().Body(
 			jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s", prn),
 			jen.Newline(),
@@ -416,9 +442,18 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Search%s", pn).Params().Body(
 			jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s/search", prn),
 			jen.Newline(),
@@ -554,9 +589,17 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Create%s", sn).Params().Body(
 			jen.Const().ID("expectedPath").Op("=").Litf("/api/v1/%s", prn),
 			jen.Newline(),
@@ -697,9 +740,17 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Update%s", sn).Params().Body(
 			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
 			jen.Newline(),
@@ -787,9 +838,18 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_Archive%s", sn).Params().Body(
 			jen.Const().ID("expectedPathFormat").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d"),
 			jen.Newline(),
@@ -877,9 +937,18 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scn := typ.Name.SingularCommonName()
+	prn := typ.Name.PluralRouteName()
+	puvn := typ.Name.PluralUnexportedVarName()
+
+	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").Op("*").IDf("%sTestSuite", puvn)).IDf("TestClient_GetAuditLogFor%s", sn).Params().Body(
 			jen.Const().Defs(
 				jen.ID("expectedPath").Op("=").Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d/audit"),
@@ -993,7 +1062,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	return code
+	return lines
 }
