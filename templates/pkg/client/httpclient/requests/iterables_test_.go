@@ -917,27 +917,6 @@ func buildUpdateSomethingSpecArgs(proj *models.Project, typ models.DataType) (pa
 	return parts
 }
 
-func buildUpdateSomethingArgs(proj *models.Project, typ models.DataType, includeCtx bool) (parts []jen.Code) {
-	if includeCtx {
-		parts = []jen.Code{jen.ID("helper").Dot("ctx")}
-	} else {
-		parts = []jen.Code{}
-	}
-
-	owners := proj.FindOwnerTypeChain(typ)
-	for i, dep := range owners {
-		if i != len(owners)-1 {
-			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
-		} else {
-			parts = append(parts, jen.IDf("example%s", typ.Name.Singular()).Dotf("BelongsTo%s", dep.Name.Singular()))
-		}
-	}
-
-	parts = append(parts, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
-
-	return parts
-}
-
 func buildUpdateSomethingArgsWithoutIndex(proj *models.Project, typ models.DataType, index int, includeSelf bool) (parts []jen.Code) {
 	parts = []jen.Code{jen.ID("helper").Dot("ctx")}
 

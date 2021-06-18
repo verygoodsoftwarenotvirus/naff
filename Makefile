@@ -17,6 +17,13 @@ EXAMPLE_APP        := cmd/example_proj/main.go
 $(ARTIFACTS_DIR):
 	@mkdir -p $(ARTIFACTS_DIR)
 
+.PHONY: line_count
+lineCount: line_count
+	echo "" | /dev/null
+
+line_count:
+	scc --include-ext go --exclude-dir vendor
+
 ## Project prerequisites
 
 ensure-goimports:
@@ -120,10 +127,6 @@ format:
 .PHONY: docker_image
 docker_image:
 	docker build --tag naff:latest --file Dockerfile .
-
-.PHONY: line_count
-line_count:
-	scc --include-ext go --exclude-dir vendor
 
 # example commands
 
