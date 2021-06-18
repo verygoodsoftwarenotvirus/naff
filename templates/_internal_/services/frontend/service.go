@@ -43,7 +43,7 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("AuthService is a subset of the larger types.AuthService interface."),
 			jen.ID("AuthService").Interface(
 				jen.ID("UserAttributionMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
-				jen.ID("PermissionFilterMiddleware").Params(jen.ID("permissions").Op("...").ID("authorization").Dot("Permission")).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))),
+				jen.ID("PermissionFilterMiddleware").Params(jen.ID("permissions").Op("...").Qual(proj.InternalAuthorizationPackage(), "Permission")).Params(jen.Func().Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler"))),
 				jen.ID("ServiceAdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.Newline(),
 				jen.ID("AuthenticateUser").Params(jen.ID("ctx").Qual("context", "Context"),
@@ -132,9 +132,9 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 			jen.ID("authService").ID("AuthService"),
 			jen.ID("usersService").ID("UsersService"),
-			jen.ID("dataStore").ID("database").Dot("DataManager"),
-			jen.ID("routeParamManager").ID("routing").Dot("RouteParamManager"),
-			jen.ID("paymentManager").ID("capitalism").Dot("PaymentManager"),
+			jen.ID("dataStore").Qual(proj.DatabasePackage(), "DataManager"),
+			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
+			jen.ID("paymentManager").Qual(proj.CapitalismPackage(), "PaymentManager"),
 		).Params(jen.ID("Service")).Body(
 			jen.ID("svc").Op(":=").Op("&").ID("service").Valuesln(serviceInitFields...),
 			jen.Newline(),

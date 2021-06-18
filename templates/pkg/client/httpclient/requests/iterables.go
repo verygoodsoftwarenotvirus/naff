@@ -230,7 +230,13 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName),
+		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName).Dot("WithValue").Call(
+			jen.ID("types").Dot("SearchQueryKey"),
+			jen.ID("query"),
+		).Dot("WithValue").Call(
+			jen.ID("types").Dot("LimitQueryKey"),
+			jen.ID("limit"),
+		),
 		jen.Newline(),
 		jen.ID("params").Assign().Qual("net/url", "Values").Values(),
 		jen.ID("params").Dot("Set").Call(
@@ -243,15 +249,6 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 				jen.ID("uint64").Call(jen.ID("limit")),
 				jen.Lit(10),
 			),
-		),
-		jen.Newline(),
-		jen.ID("logger").Assign().ID("b").Dot("logger").Dot("WithValue").Call(
-			jen.ID("types").Dot("SearchQueryKey"),
-			jen.ID("query"),
-		).
-			Dotln("WithValue").Call(
-			jen.ID("types").Dot("LimitQueryKey"),
-			jen.ID("limit"),
 		),
 		jen.Newline(),
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
