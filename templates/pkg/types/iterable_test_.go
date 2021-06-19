@@ -2,6 +2,7 @@ package types
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -22,7 +23,15 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 
-		updateCols = append(updateCols, jen.ID(fsn).MapAssign().Add(utils.FakeFuncForType(field.Type, field.IsPointer)()))
+		if field.Type == "bool" {
+			if field.IsPointer {
+				updateCols = append(updateCols, jen.ID(fsn).MapAssign().Func().Params(jen.ID("x").Bool()).Params(jen.PointerTo().Bool()).SingleLineBody(jen.Return(jen.AddressOf().ID("x"))).Call(jen.True()))
+			} else {
+				updateCols = append(updateCols, jen.ID(fsn).MapAssign().True())
+			}
+		} else {
+			updateCols = append(updateCols, jen.ID(fsn).MapAssign().Add(utils.FakeFuncForType(field.Type, field.IsPointer)()))
+		}
 
 		fieldChangeSummaries = append(fieldChangeSummaries,
 			jen.Valuesln(
@@ -58,11 +67,19 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 							fieldChangeSummaries...,
 						),
 						jen.ID("actual").Assign().ID("x").Dot("Update").Call(jen.ID("updated")),
+						jen.Newline(),
+						jen.List(jen.ID("expectedJSONBytes"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("expected")),
+						jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.Err()),
+						jen.Newline(),
+						jen.List(jen.ID("actualJSONBytes"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("actual")),
+						jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.Err()),
+						jen.Newline(),
+						jen.List(jen.ID("expectedJSON"), jen.ID("actualJSON")).Assign().List(jen.String().Call(jen.ID("expectedJSONBytes")), jen.String().Call(jen.ID("actualJSONBytes"))),
+						jen.Newline(),
 						jen.ID("assert").Dot("Equal").Call(
 							jen.ID("t"),
-							jen.ID("expected"),
-							jen.ID("actual"),
-							jen.Lit("expected and actual diff reports vary"),
+							jen.ID("expectedJSON"),
+							jen.ID("actualJSON"),
 						),
 						jen.Newline(),
 					},

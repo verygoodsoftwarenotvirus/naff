@@ -470,7 +470,7 @@ func Test_buildSomethingToUpdateInput(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		proj := testprojects.BuildTodoApp()
 		typ := proj.DataTypes[0]
-		x := buildSomethingToUpdateInput(typ)
+		x := buildSomethingUpdate(typ)
 
 		expected := `
 package example

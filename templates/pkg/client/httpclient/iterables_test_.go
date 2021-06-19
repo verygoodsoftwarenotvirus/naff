@@ -640,6 +640,8 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 			jen.Func().Params().Body(
 				jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
 				jen.Newline(),
+				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
+				jen.Newline(),
 				jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 					jen.ID("true"),
 					jen.Qual("net/http", "MethodGet"),
@@ -677,6 +679,8 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 			jen.Lit("with empty query"),
 			jen.Func().Params().Body(
 				jen.ID("t").Op(":=").ID("s").Dot("T").Call(),
+				jen.Newline(),
+				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 				jen.Newline(),
 				jen.ID("spec").Op(":=").ID("newRequestSpec").Call(
 					jen.ID("true"),

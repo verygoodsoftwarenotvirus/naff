@@ -17,7 +17,7 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(buildSomethingConstantDefinitions(proj, typ)...)
 	code.Add(buildSomethingTypeDefinitions(proj, typ)...)
-	code.Add(buildSomethingToUpdateInput(typ)...)
+	code.Add(buildSomethingUpdate(typ)...)
 	code.Add(buildSomethingCreationInputValidateWithContext(typ)...)
 	code.Add(buildSomethingUpdateInputValidateWithContext(typ)...)
 
@@ -123,8 +123,20 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 		),
 	}
 }
+func fakeEmptyValue(field models.DataField) jen.Code {
+	switch field.Type {
+	case "string":
+		return jen.EmptyString()
+	case "bool":
+		return jen.False()
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
+		return jen.Zero()
+	default:
+		panic(fmt.Sprintf("unknown type! %q", field.Type))
+	}
+}
 
-func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
+func buildSomethingUpdate(typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 	scnwp := n.SingularCommonNameWithPrefix()
@@ -136,17 +148,69 @@ func buildSomethingToUpdateInput(typ models.DataType) []jen.Code {
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 
-		updateLines = append(updateLines,
-			jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
-				jen.ID("out").Op("=").ID("append").Call(
-					jen.ID("out"),
-					jen.Op("&").ID("FieldChangeSummary").Valuesln(jen.ID("FieldName").Op(":").Lit(fsn), jen.ID("OldValue").Op(":").ID("x").Dot(fsn), jen.ID("NewValue").Op(":").ID("input").Dot(fsn)),
-				),
-				jen.Newline(),
-				jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+		conditionBodyLines := []jen.Code{
+			jen.ID("out").Op("=").ID("append").Call(
+				jen.ID("out"),
+				jen.Op("&").ID("FieldChangeSummary").Valuesln(jen.ID("FieldName").Op(":").Lit(fsn), jen.ID("OldValue").Op(":").ID("x").Dot(fsn), jen.ID("NewValue").Op(":").ID("input").Dot(fsn)),
 			),
 			jen.Newline(),
-		)
+			jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+		}
+
+		switch field.Type {
+		case "string":
+			if field.IsPointer {
+				updateLines = append(updateLines,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
+						conditionBodyLines...,
+					),
+					jen.Newline(),
+				)
+			} else {
+				updateLines = append(updateLines,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
+						conditionBodyLines...,
+					),
+					jen.Newline(),
+				)
+			}
+		case "bool":
+			if field.IsPointer {
+				updateLines = append(updateLines,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
+						conditionBodyLines...,
+					),
+					jen.Newline(),
+				)
+			} else {
+				updateLines = append(updateLines,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
+						conditionBodyLines...,
+					),
+					jen.Newline(),
+				)
+			}
+		case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
+			if field.IsPointer {
+				updateLines = append(
+					updateLines,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().Zero().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
+						conditionBodyLines...,
+					),
+					jen.Newline(),
+				)
+			} else {
+				updateLines = append(
+					updateLines,
+					jen.If(jen.ID("input").Dot(fsn).Op("!=").Zero().Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
+						conditionBodyLines...,
+					),
+					jen.Newline(),
+				)
+			}
+		default:
+			panic(fmt.Sprintf("unknown type! %q", field.Type))
+		}
 	}
 	updateLines = append(updateLines,
 		jen.Newline(),
@@ -342,6 +406,9 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 		jen.ID("x"),
 	}
 	for _, field := range typ.Fields {
+		if field.Type == "bool" {
+			continue
+		}
 		validationFields = append(validationFields,
 			jen.Qual(constants.ValidationLibrary, "Field").Call(
 				jen.Op("&").ID("x").Dot(field.Name.Singular()),
@@ -374,6 +441,9 @@ func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Cod
 		jen.ID("x"),
 	}
 	for _, field := range typ.Fields {
+		if field.Type == "bool" {
+			continue
+		}
 		validationFields = append(validationFields,
 			jen.Qual(constants.ValidationLibrary, "Field").Call(
 				jen.Op("&").ID("x").Dot(field.Name.Singular()),
