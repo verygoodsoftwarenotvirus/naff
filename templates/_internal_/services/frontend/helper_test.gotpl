@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type postsServiceHTTPRoutesTestHelper struct {
+type serviceHTTPRoutesTestHelper struct {
 	ctx            context.Context
 	req            *http.Request
 	res            *httptest.ResponseRecorder
@@ -29,10 +29,10 @@ type postsServiceHTTPRoutesTestHelper struct {
 	exampleAccount *types.Account
 }
 
-func buildTestHelper(t *testing.T) *postsServiceHTTPRoutesTestHelper {
+func buildTestHelper(t *testing.T) *serviceHTTPRoutesTestHelper {
 	t.Helper()
 
-	helper := &postsServiceHTTPRoutesTestHelper{}
+	helper := &serviceHTTPRoutesTestHelper{}
 
 	helper.ctx = context.Background()
 	helper.exampleUser = fakes.BuildFakeUser()
@@ -54,7 +54,8 @@ func buildTestHelper(t *testing.T) *postsServiceHTTPRoutesTestHelper {
 		mock.AnythingOfType("string"),
 	).Return(func(*http.Request) uint64 { return 0 })
 
-	helper.service = ProvideService(
+	var ok bool
+	helper.service, ok = ProvideService(
 		cfg,
 		logger,
 		authService,
@@ -63,6 +64,7 @@ func buildTestHelper(t *testing.T) *postsServiceHTTPRoutesTestHelper {
 		rpm,
 		capitalism.NewMockPaymentManager(),
 	).(*service)
+	require.True(t, ok)
 
 	helper.sessionCtxData = &types.SessionContextData{
 		Requester: types.RequesterInfo{

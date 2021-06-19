@@ -29,7 +29,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 				jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sCreationEventEntry", n.Singular())).Call(
 					jen.Op("&").Qual(proj.TypesPackage(), n.Singular()).Values(),
-					jen.ID("exampleUserID"),
+					jen.ID("exampleAccountID"),
 				),
 			),
 		),

@@ -88,32 +88,14 @@ func httpServerDotGo(proj *models.Project) string {
 		puvn := typ.Name.PluralUnexportedVarName()
 
 		typeServiceDeclarationFields = append(typeServiceDeclarationFields, fmt.Sprintf("%sService      types.%sDataService", puvn, sn))
-		typeServiceParams = append(typeServiceParams, fmt.Sprintf("%sService types.%sDataService", puvn, sn))
-		typeServiceConstructorFields = append(typeServiceConstructorFields, fmt.Sprintf("%sService:      %sService", puvn, puvn))
-	}
-
-	var (
-		actualTypeServiceParams string
-	)
-	if len(typeServiceParams) > 1 {
-		actualTypeServiceParams = strings.Join(typeServiceParams, ",\n\t") + ","
-	} else {
-		actualTypeServiceParams = strings.Join(typeServiceParams, ",\n\t")
-	}
-
-	var (
-		actualTypeServiceConstructorFields string
-	)
-	if len(typeServiceDeclarationFields) > 1 {
-		actualTypeServiceConstructorFields = strings.Join(typeServiceConstructorFields, ",\n\t") + ","
-	} else {
-		actualTypeServiceConstructorFields = strings.Join(typeServiceConstructorFields, ",\n\t")
+		typeServiceParams = append(typeServiceParams, fmt.Sprintf("%sService types.%sDataService,", puvn, sn))
+		typeServiceConstructorFields = append(typeServiceConstructorFields, fmt.Sprintf("%sService:      %sService,", puvn, puvn))
 	}
 
 	generated := map[string]string{
 		"typeServiceDeclarationFields": strings.Join(typeServiceDeclarationFields, "\n\t"),
-		"typeServiceParams":            actualTypeServiceParams,
-		"typeServiceConstructorFields": actualTypeServiceConstructorFields,
+		"typeServiceParams":            strings.Join(typeServiceParams, "\n\t"),
+		"typeServiceConstructorFields": strings.Join(typeServiceConstructorFields, "\n\t"),
 	}
 
 	return models.RenderCodeFile(proj, httpServerTemplate, generated)

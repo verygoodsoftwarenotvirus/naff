@@ -176,7 +176,6 @@ func TestBuilder_BuildArchiveAPIClientRequest(T *testing.T) {
 		assert.Nil(t, actual)
 		assert.Error(t, err)
 	})
-
 }
 
 func TestBuilder_BuildGetAuditLogForAPIClientRequest(T *testing.T) {

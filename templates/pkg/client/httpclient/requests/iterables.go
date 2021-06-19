@@ -368,8 +368,7 @@ func buildBuildGetListOfSomethingsRequest(proj *models.Project, typ models.DataT
 				jen.ID("logger"),
 				jen.ID("span"),
 				jen.Lit("building user status request"),
-			),
-			),
+			)),
 		),
 		jen.Newline(),
 		jen.Return().List(jen.ID("req"), jen.ID("nil")),
@@ -499,12 +498,22 @@ func buildBuildCreateSomethingRequest(proj *models.Project, typ models.DataType)
 			jen.ID("uri"),
 		),
 		jen.Newline(),
-		jen.Return().ID("b").Dot("buildDataRequest").Call(
+		jen.List(jen.ID("req"), jen.Err()).Assign().ID("b").Dot("buildDataRequest").Call(
 			jen.ID("ctx"),
 			jen.Qual("net/http", "MethodPost"),
 			jen.ID("uri"),
 			jen.ID("input"),
 		),
+		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Lit("building request"),
+			)),
+		),
+		jen.Newline(),
+		jen.Return(jen.ID("req"), jen.Nil()),
 	)
 
 	lines := []jen.Code{
@@ -635,12 +644,22 @@ func buildBuildUpdateSomethingRequest(proj *models.Project, typ models.DataType)
 			jen.ID("uri"),
 		),
 		jen.Newline(),
-		jen.Return().ID("b").Dot("buildDataRequest").Call(
+		jen.List(jen.ID("req"), jen.Err()).Assign().ID("b").Dot("buildDataRequest").Call(
 			jen.ID("ctx"),
 			jen.Qual("net/http", "MethodPut"),
 			jen.ID("uri"),
 			jen.ID(uvn),
 		),
+		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Lit("building request"),
+			)),
+		),
+		jen.Newline(),
+		jen.Return(jen.ID("req"), jen.Nil()),
 	)
 
 	lines := []jen.Code{

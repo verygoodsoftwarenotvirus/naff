@@ -19,8 +19,10 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	bodyLines := []jen.Code{
+		jen.ID("t").Dot("Parallel").Call(),
+		jen.Newline(),
 		jen.ID("cfg").Op(":=").Op("&").ID("Config").Values(),
-		jen.ID("logger").Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+		jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 		jen.ID("authService").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "AuthService").Values(),
 		jen.ID("usersService").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "UsersService").Values(),
 		jen.ID("dataManager").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
@@ -66,7 +68,7 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("usersService"),
 			jen.ID("dataManager"),
 			jen.ID("rpm"),
-			jen.ID("capitalism").Dot("NewMockPaymentManager").Call(),
+			jen.Qual(proj.CapitalismPackage(), "NewMockPaymentManager").Call(),
 		),
 		jen.Newline(),
 		jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
