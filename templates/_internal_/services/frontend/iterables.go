@@ -377,7 +377,7 @@ func buildParseFormEncodedSomethingCreationInput(proj *models.Project, typ model
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 		if field.Type != "string" || (field.Type == "string" && field.IsPointer) {
-			creationInputFields = append(creationInputFields, jen.ID(fsn).Op(":").ID(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
+			creationInputFields = append(creationInputFields, jen.ID(fsn).Op(":").ID("s").Dot(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
 		} else {
 			creationInputFields = append(creationInputFields, jen.ID(fsn).Op(":").ID("form").Dot("Get").Call(jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
 		}
@@ -852,7 +852,7 @@ func buildParseFormEncodedSomethingUpdateInput(proj *models.Project, typ models.
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 		if field.Type != "string" || (field.Type == "string" && field.IsPointer) {
-			updateInputFields = append(updateInputFields, jen.ID(fsn).Op(":").ID(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
+			updateInputFields = append(updateInputFields, jen.ID(fsn).Op(":").ID("s").Dot(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
 		} else {
 			updateInputFields = append(updateInputFields, jen.ID(fsn).Op(":").ID("form").Dot("Get").Call(jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
 		}

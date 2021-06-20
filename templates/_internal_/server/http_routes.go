@@ -106,7 +106,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("HTTPServer")).ID("setupRouter").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("router").ID("routing").Dot("Router"), jen.ID("metricsHandler").ID("metrics").Dot("Handler")).Body(
+		jen.Func().Params(jen.ID("s").Op("*").ID("HTTPServer")).ID("setupRouter").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("router").ID("routing").Dot("Router"), jen.ID("metricsHandler").Qual(proj.MetricsPackage(), "Handler")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
