@@ -484,7 +484,7 @@ func buildTestPostgres_BuildCreateSomethingQuery(proj *models.Project, typ model
 					jen.IDf("example%s", sn).Dot("BelongsToAccount").Op("=").ID("exampleAccount").Dot("ID"),
 					jen.ID("exampleInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
-					jen.ID("exIDGen").Op(":=").Op("&").Qual(proj.QuerybuildersPackage(), "MockExternalIDGenerator").Values(),
+					jen.ID("exIDGen").Op(":=").Op("&").Qual(proj.QuerybuildingPackage(), "MockExternalIDGenerator").Values(),
 					jen.ID("exIDGen").Dot("On").Call(jen.Lit("NewExternalID")).Dot("Return").Call(jen.IDf("example%s", sn).Dot("ExternalID")),
 					jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
 					jen.Newline(),

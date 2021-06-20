@@ -49,15 +49,15 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					Dot("Select").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				)).
-					Dotln("Prefix").Call(jen.Qual(proj.QuerybuildersPackage(), "ExistencePrefix")).
+					Dotln("Prefix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistencePrefix")).
 					Dotln("From").Call(jen.ID("querybuilding").Dotf("%sTableName", pn)).
-					Dotln("Suffix").Call(jen.Qual(proj.QuerybuildersPackage(), "ExistenceSuffix")).
+					Dotln("Suffix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistenceSuffix")).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).MapAssign().IDf("%sID", uvn),
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
@@ -67,7 +67,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.ID("querybuilding").Dotf("%sTableName", pn),
-						jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					).MapAssign().ID("nil"),
 				),
 				),
@@ -104,7 +104,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).MapAssign().IDf("%sID", uvn),
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
@@ -114,7 +114,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.ID("querybuilding").Dotf("%sTableName", pn),
-						jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					).MapAssign().ID("nil"),
 				),
 				),
@@ -145,7 +145,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).MapAssign().ID("nil"),
 				),
 				),
@@ -173,12 +173,12 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).MapAssign().ID("beginID"))).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).MapAssign().ID("endID"),
 				),
 				),
@@ -257,12 +257,12 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("where").Op(":=").ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s.%s"),
 				jen.ID("querybuilding").Dotf("%sTableName", pn),
-				jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 			).MapAssign().ID("ids"),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).MapAssign().ID("nil"),
 			),
 			jen.Newline(),
@@ -283,7 +283,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("CASE %s.%s %s"),
 					jen.ID("querybuilding").Dotf("%sTableName", pn),
-					jen.Qual(proj.QuerybuildersPackage(), "IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 					jen.ID("whenThenStatement"),
 				)).
 					Dotln("Limit").Call(jen.ID("uint64").Call(jen.ID("limit"))),
@@ -307,7 +307,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.ID("querybuilding").Dotf("%sTableName", pn)).
 					Dotln("Columns").Callln(
-					jen.Qual(proj.QuerybuildersPackage(), "ExternalIDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "ExternalIDColumn"),
 					jen.ID("querybuilding").Dotf("%sTableNameColumn", pn),
 					jen.ID("querybuilding").Dotf("%sTableDetailsColumn", pn),
 					jen.ID("querybuilding").Dotf("%sTableAccountOwnershipColumn", pn),
@@ -354,11 +354,11 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("input").Dot("Details"),
 				).
 					Dotln("Set").Call(
-					jen.Qual(proj.QuerybuildersPackage(), "LastUpdatedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildersPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
-					jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
 					jen.ID("querybuilding").Dotf("%sTableAccountOwnershipColumn", pn).MapAssign().ID("input").Dot("BelongsToAccount"),
 				),
 				),
@@ -391,15 +391,15 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.ID("querybuilding").Dotf("%sTableName", pn)).
 					Dotln("Set").Call(
-					jen.Qual(proj.QuerybuildersPackage(), "LastUpdatedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
 					Dotln("Set").Call(
-					jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildersPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
-					jen.Qual(proj.QuerybuildersPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
 					jen.ID("querybuilding").Dotf("%sTableAccountOwnershipColumn", pn).MapAssign().ID("accountID"),
 				),
 				),
@@ -425,8 +425,8 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Newline(),
 			jen.IDf("%sIDKey", typ.Name.UnexportedVarName()).Assign().Qual("fmt", "Sprintf").Call(
 				jen.ID("jsonPluckQuery"),
-				jen.Qual(proj.QuerybuildersPackage(), "AuditLogEntriesTableName"),
-				jen.Qual(proj.QuerybuildersPackage(), "AuditLogEntriesTableContextColumn"),
+				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
 				jen.IDf("%sID", uvn),
 				jen.ID("audit").Dotf("%sAssignmentKey", sn),
 			),
@@ -434,13 +434,13 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").
-					Dot("Select").Call(jen.Qual(proj.QuerybuildersPackage(), "AuditLogEntriesTableColumns").Op("...")).
-					Dotln("From").Call(jen.Qual(proj.QuerybuildersPackage(), "AuditLogEntriesTableName")).
+					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Expr").Call(jen.IDf("%sIDKey", typ.Name.UnexportedVarName()))).
 					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildersPackage(), "AuditLogEntriesTableName"),
-					jen.Qual(proj.QuerybuildersPackage(), "CreatedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "CreatedOnColumn"),
 				),
 				),
 			),

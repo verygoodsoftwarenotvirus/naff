@@ -38,7 +38,7 @@ func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType)
 
 	return []jen.Code{
 		jen.Func().IDf("buildMockRowsFrom%s", pn).Params(jen.ID("includeCounts").ID("bool"), jen.ID("filteredCount").Uint64(), jen.ID(puvn).Spread().PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual("github.com/DATA-DOG/go-sqlmock", "Rows")).Body(
-			jen.ID("columns").Assign().Qual(proj.QuerybuildersPackage(), fmt.Sprintf("%sTableColumns", pn)),
+			jen.ID("columns").Assign().Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)),
 			jen.Newline(),
 			jen.If(jen.ID("includeCounts")).Body(
 				jen.ID("columns").Equals().ID("append").Call(

@@ -240,7 +240,7 @@ func migrationsDotGo(proj *models.Project) string {
 			jen.Valuesln(
 				jen.ID("Version").MapAssign().Lit(0.16+float64(i)*.01),
 				jen.ID("Description").MapAssign().Litf("create %s table creation trigger", prn),
-				jen.ID("Script").MapAssign().ID("buildCreationTriggerScript").Call(jen.Qual(proj.QuerybuildersPackage(), fmt.Sprintf("%sTableName", pn))),
+				jen.ID("Script").MapAssign().ID("buildCreationTriggerScript").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))),
 			),
 		)
 	}

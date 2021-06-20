@@ -26,7 +26,7 @@ func (p *Project) DatabasePackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"database"}, parts...)...)
 }
 
-func (p *Project) QuerybuildersPackage(parts ...string) string {
+func (p *Project) QuerybuildingPackage(parts ...string) string {
 	return p.DatabasePackage(append([]string{"querybuilding"}, parts...)...)
 }
 
