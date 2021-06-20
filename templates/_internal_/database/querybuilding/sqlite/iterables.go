@@ -3,6 +3,7 @@ package sqlite
 import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -33,17 +34,39 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return code
 }
 
+func buildDBQuerierExistenceQueryMethodParams(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	return params
+}
+
 func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	uvn := typ.Name.UnexportedVarName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
+	params := buildDBQuerierExistenceQueryMethodParams(proj, typ)
+
 	lines := []jen.Code{
 		jen.Commentf("Build%sExistsQuery constructs a SQL query for checking if %s with a given ID belong to a user with a given ID exists.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("Build%sExistsQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("Build%sExistsQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -88,17 +111,39 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 	return lines
 }
 
+func buildDBQuerierRetrievalQueryMethodParams(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	return params
+}
+
 func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	uvn := typ.Name.UnexportedVarName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
+	params := buildDBQuerierRetrievalQueryMethodParams(proj, typ)
+
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -211,19 +256,39 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 	return lines
 }
 
+func buildDBQuerierListRetrievalQueryBuildingMethodParams(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	params = append(params, jen.ID("forAdmin").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
+
+	return params
+}
+
 func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
+
+	params := buildDBQuerierListRetrievalQueryBuildingMethodParams(proj, typ)
 
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given account,", pn, pcn),
 		jen.Newline(),
 		jen.Comment("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("accountID").ID("uint64"),
-			jen.ID("forAdmin").ID("bool"),
-			jen.ID("filter").Op("*").ID("types").Dot("QueryFilter")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sQuery", pn).Params(params...).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -265,11 +330,13 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 		jen.Comment("slice of uint64s instead of a slice of strings in order to ensure all the provided strings").Newline(),
 		jen.Comment("are valid database IDs, because there's no way in squirrel to escape them in the unnest join,").Newline(),
 		jen.Comment("and if we accept strings we could leave ourselves vulnerable to SQL injection attacks.").Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sWithIDsQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("accountID").ID("uint64"),
+		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sWithIDsQuery", pn).Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("accountID").ID("uint64")),
 			jen.ID("limit").ID("uint8"),
 			jen.ID("ids").Index().ID("uint64"),
-			jen.ID("forAdmin").ID("bool")).Params(jen.ID("query").ID("string"),
+			jen.ID("includeArchived").ID("bool"),
+		).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -289,7 +356,7 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 				).MapAssign().ID("nil"),
 			),
 			jen.Newline(),
-			jen.If(jen.Op("!").ID("forAdmin")).Body(
+			jen.If(jen.Op("!").ID("includeArchived")).Body(
 				jen.ID("where").Index(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
@@ -404,17 +471,36 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 	return lines
 }
 
+func buildDBQuerierArchiveQueryMethodParams(typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountMembers {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	params = append(params, jen.List(lp...).ID("uint64"))
+
+	return params
+}
+
 func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	uvn := typ.Name.UnexportedVarName()
 	scn := typ.Name.SingularCommonName()
 
+	params := buildDBQuerierArchiveQueryMethodParams(typ)
+
 	lines := []jen.Code{
 		jen.Commentf("BuildArchive%sQuery returns a SQL query which marks a given %s belonging to a given account as archived.", sn, scn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildArchive%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildArchive%sQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
