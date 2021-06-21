@@ -597,7 +597,7 @@ func buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 				if typ.BelongsToAccount {
 					return jen.True()
 				}
-				return jen.False()
+				return jen.Null()
 			}(),
 		),
 		jen.Newline(),
