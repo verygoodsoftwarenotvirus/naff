@@ -15,6 +15,7 @@ const (
 	DependencyInjectionPkg    = "github.com/google/wire"
 	FakeLibrary               = "github.com/brianvoe/gofakeit/v5"
 	TracingLibrary            = "go.opentelemetry.io/otel/trace"
+	SQLGenerationLibrary      = "github.com/Masterminds/squirrel"
 	FlagParsingLibrary        = "github.com/spf13/pflag"
 	SessionManagerLibrary     = "github.com/alexedwards/scs/v2"
 	SearchLibrary             = "github.com/blevesearch/bleve/v2"

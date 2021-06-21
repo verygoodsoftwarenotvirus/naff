@@ -18,10 +18,8 @@ import (
 	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querier"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mariadb"
 	mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/postgres"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/sqlite"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/querybuilders"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
 	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
@@ -100,9 +98,7 @@ func RenderProject(proj *naffmodels.Project) {
 		"dbconfig":                  dbconfig.RenderPackage,
 		"querier":                   querier.RenderPackage,
 		"querybuilding":             querybuilding.RenderPackage,
-		"mariadb":                   mariadb.RenderPackage,
-		"postgres":                  postgres.RenderPackage,
-		"sqlite":                    sqlite.RenderPackage,
+		"querybuilders":             querybuilders.RenderPackage,
 		"dbmock":                    mockquerybuilding.RenderPackage,
 		"capitalism":                capitalism.RenderPackage,
 		"stripe":                    stripe.RenderPackage,

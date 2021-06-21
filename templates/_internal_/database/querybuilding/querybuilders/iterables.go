@@ -1,4 +1,4 @@
-package sqlite
+package querybuilders
 
 import (
 	"fmt"
@@ -34,6 +34,92 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	return code
 }
 
+func buildDBQueryMethodConditionalClauses(p *models.Project, typ models.DataType, includeSelf bool) []jen.Code {
+	n := typ.Name
+	pn := n.Plural()
+	uvn := n.UnexportedVarName()
+
+	whereValues := []jen.Code{}
+	for _, pt := range p.FindOwnerTypeChain(typ) {
+		whereValues = append(
+			whereValues,
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s.%s"),
+				jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pt.Name.Plural())),
+				jen.Qual(p.QuerybuildingPackage(), "IDColumn"),
+			).MapAssign().IDf("%sID", pt.Name.UnexportedVarName()),
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s.%s"),
+				jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pt.Name.Plural())),
+				jen.Qual(p.QuerybuildingPackage(), "ArchivedOnColumn"),
+			).MapAssign().Nil(),
+		)
+
+		if pt.BelongsToAccount && pt.RestrictedToAccountMembers {
+			whereValues = append(
+				whereValues,
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s.%s"),
+					jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pt.Name.Plural())),
+					jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pt.Name.Plural())),
+				).MapAssign().ID("accountID"),
+			)
+		}
+
+		if pt.BelongsToStruct != nil {
+			whereValues = append(
+				whereValues,
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s.%s"),
+					jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pt.Name.Plural())),
+					jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pt.Name.Plural(), pt.BelongsToStruct.Singular())),
+				).MapAssign().IDf("%sID", pt.BelongsToStruct.UnexportedVarName()),
+			)
+		}
+	}
+
+	if includeSelf {
+		whereValues = append(whereValues,
+			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)), jen.Qual(p.QuerybuildingPackage(), "IDColumn")).MapAssign().IDf("%sID", uvn),
+			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)), jen.Qual(p.QuerybuildingPackage(), "ArchivedOnColumn")).MapAssign().Nil(),
+		)
+
+		if typ.BelongsToStruct != nil {
+			whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular()))).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		}
+		if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+			whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn))).MapAssign().ID("accountID"))
+		}
+	} else {
+		whereValues = append(whereValues,
+			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)), jen.Qual(p.QuerybuildingPackage(), "ArchivedOnColumn")).MapAssign().Nil(),
+		)
+	}
+
+	return whereValues
+}
+
+func modifyQueryBuildingStatementWithJoinClauses(p *models.Project, typ models.DataType, qbStmt *jen.Statement) *jen.Statement {
+	if typ.BelongsToStruct != nil {
+		qbStmt = qbStmt.Dotln("Join").Call(
+			jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sOn%sJoinClause", typ.BelongsToStruct.Plural(), typ.Name.Plural())),
+		)
+	}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for i := len(owners) - 1; i >= 0; i-- {
+		pt := owners[i]
+
+		if pt.BelongsToStruct != nil {
+			qbStmt = qbStmt.Dotln("Join").Call(
+				jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sOn%sJoinClause", pt.BelongsToStruct.Plural(), pt.Name.Plural())),
+			)
+		}
+	}
+
+	return qbStmt
+}
+
 func buildDBQuerierExistenceQueryMethodParams(p *models.Project, typ models.DataType) []jen.Code {
 	params := []jen.Code{constants.CtxParam()}
 
@@ -62,6 +148,21 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	params := buildDBQuerierExistenceQueryMethodParams(proj, typ)
+	whereValues := buildDBQueryMethodConditionalClauses(proj, typ, true)
+
+	queryBuilderDecl := jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual("fmt", "Sprintf").Call(
+		jen.Lit("%s.%s"),
+		jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+		jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+	)).
+		Dotln("Prefix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistencePrefix")).
+		Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)))
+
+	queryBuilderDecl = modifyQueryBuildingStatementWithJoinClauses(proj, typ, queryBuilderDecl)
+
+	queryBuilderDecl = queryBuilderDecl.
+		Dotln("Suffix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistenceSuffix")).
+		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
 
 	lines := []jen.Code{
 		jen.Commentf("Build%sExistsQuery constructs a SQL query for checking if %s with a given ID belong to a user with a given ID exists.", sn, scnwp),
@@ -77,33 +178,10 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 			),
 			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
 			jen.Newline(),
-			jen.Return().ID("b").Dot("buildQuery").Callln(
+			jen.Return(jen.ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				)).
-					Dotln("Prefix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistencePrefix")).
-					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Suffix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistenceSuffix")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().IDf("%sID", uvn),
-					jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s.%s"),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
-					).MapAssign().ID("accountID"),
-					jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s.%s"),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-					).MapAssign().ID("nil"),
-				)),
-			),
+				queryBuilderDecl,
+			)),
 		),
 		jen.Newline(),
 	}
@@ -139,6 +217,15 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []je
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	params := buildDBQuerierRetrievalQueryMethodParams(proj, typ)
+	whereValues := buildDBQueryMethodConditionalClauses(proj, typ, true)
+
+	queryBuilderDecl := jen.ID("b").Dot("sqlBuilder").
+		Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
+		Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)))
+
+	queryBuilderDecl = modifyQueryBuildingStatementWithJoinClauses(proj, typ, queryBuilderDecl)
+
+	queryBuilderDecl = queryBuilderDecl.Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
 
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp),
@@ -156,25 +243,7 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []je
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").
-					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
-					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().IDf("%sID", uvn),
-					jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s.%s"),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
-					).MapAssign().ID("accountID"),
-					jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s.%s"),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-					).MapAssign().ID("nil"),
-				)),
+				queryBuilderDecl,
 			),
 		),
 		jen.Newline(),
@@ -205,7 +274,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
@@ -237,12 +306,12 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 				jen.ID("b").Dot("sqlBuilder").
 					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).MapAssign().ID("beginID"))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -272,9 +341,32 @@ func buildDBQuerierListRetrievalQueryBuildingMethodParams(p *models.Project, typ
 		params = append(params, jen.List(lp...).ID("uint64"))
 	}
 
-	params = append(params, jen.ID("forAdmin").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
+	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
 
 	return params
+}
+
+func buildJoinsListForListQuery(p *models.Project, typ models.DataType) []jen.Code {
+	out := []jen.Code{}
+
+	if typ.BelongsToStruct != nil {
+		out = append(out,
+			jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sOn%sJoinClause", typ.BelongsToStruct.Plural(), typ.Name.Plural())),
+		)
+	}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for i := len(owners) - 1; i >= 0; i-- {
+		pt := owners[i]
+
+		if pt.BelongsToStruct != nil {
+			out = append(out,
+				jen.Qual(p.QuerybuildingPackage(), fmt.Sprintf("%sOn%sJoinClause", pt.BelongsToStruct.Plural(), pt.Name.Plural())),
+			)
+		}
+	}
+
+	return out
 }
 
 func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
@@ -282,6 +374,7 @@ func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType
 	pcn := typ.Name.PluralCommonName()
 
 	params := buildDBQuerierListRetrievalQueryBuildingMethodParams(proj, typ)
+	whereValues := buildDBQueryMethodConditionalClauses(proj, typ, false)
 
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given account,", pn, pcn),
@@ -300,15 +393,46 @@ func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType
 				),
 			),
 			jen.Newline(),
+			utils.ConditionalCode(len(proj.FindOwnerTypeChain(typ)) > 0, jen.ID("joins").Assign().Index().String().Valuesln(
+				buildJoinsListForListQuery(proj, typ)...,
+			)),
+			utils.ConditionalCode(len(whereValues) > 0, jen.ID("where").Assign().Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+				whereValues...,
+			)),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildListQuery").Callln(
 				jen.ID("ctx"),
 				jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-				jen.Nil(),
-				jen.Nil(),
-				jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
+				func() jen.Code {
+					if len(proj.FindOwnerTypeChain(typ)) > 0 {
+						return jen.ID("joins")
+					}
+					return jen.Nil()
+				}(),
+				func() jen.Code {
+					if len(whereValues) > 0 {
+						return jen.ID("where")
+					}
+					return jen.Nil()
+				}(),
+				func() jen.Code {
+					if typ.RestrictedToAccountMembers {
+						return jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn))
+					} else if typ.BelongsToStruct != nil {
+						return jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular()))
+					}
+					return jen.EmptyString()
+				}(),
 				jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)),
-				jen.ID("accountID"),
-				jen.ID("forAdmin"),
+				func() jen.Code {
+					if typ.RestrictedToAccountMembers {
+						return jen.ID("accountID")
+					} else if typ.BelongsToStruct != nil {
+						return jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+					}
+					return jen.Zero()
+				}(),
+				jen.ID("includeArchived"),
 				jen.ID("filter"),
 			),
 		),
@@ -322,6 +446,15 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 
+	prerequisiteIDs := []jen.Code{}
+
+	if typ.BelongsToStruct != nil {
+		prerequisiteIDs = append(prerequisiteIDs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	if typ.BelongsToAccount {
+		prerequisiteIDs = append(prerequisiteIDs, jen.ID("accountID"))
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sWithIDsQuery builds a SQL query selecting %s that belong to a given account,", pn, pcn).Newline(),
 		jen.Comment("and have IDs that exist within a given set of IDs. Returns both the query and the relevant").Newline(),
@@ -332,37 +465,54 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 		jen.Comment("and if we accept strings we could leave ourselves vulnerable to SQL injection attacks.").Newline(),
 		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sWithIDsQuery", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("accountID").ID("uint64")),
+			func() jen.Code {
+				if len(prerequisiteIDs) > 0 {
+					return jen.List(prerequisiteIDs...).Uint64()
+				}
+				return jen.Null()
+			}(),
 			jen.ID("limit").ID("uint8"),
 			jen.ID("ids").Index().ID("uint64"),
-			jen.ID("includeArchived").ID("bool"),
-		).Params(jen.ID("query").ID("string"),
-			jen.ID("args").Index().Interface()).Body(
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("restrictToAccount").ID("bool")),
+		).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
 			jen.Newline(),
 			jen.ID("whenThenStatement").Op(":=").ID("buildWhenThenStatement").Call(jen.ID("ids")),
-			jen.ID("where").Op(":=").ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s.%s"),
-				jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-			).MapAssign().ID("ids"),
+			jen.ID("where").Op(":=").Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s.%s"),
+					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+				).MapAssign().ID("ids"),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().ID("nil"),
+				).MapAssign().Nil(),
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.Qual("fmt", "Sprintf").Call(
+							jen.Lit("%s.%s"),
+							jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+							jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())),
+						).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+					}
+					return jen.Null()
+				}(),
 			),
 			jen.Newline(),
-			jen.If(jen.Op("!").ID("includeArchived")).Body(
-				jen.ID("where").Index(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
-				)).Op("=").ID("accountID"),
-			),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("restrictToAccount")).Body(
+				jen.ID("where").Index(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
+					),
+				).Op("=").ID("accountID"),
+			)),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
@@ -385,11 +535,54 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 	return lines
 }
 
+func determineCreationColumns(proj *models.Project, typ models.DataType) []jen.Code {
+	pn := typ.Name.Plural()
+
+	creationColumns := []jen.Code{
+		jen.Qual(proj.QuerybuildingPackage(), "ExternalIDColumn"),
+	}
+
+	for _, field := range typ.Fields {
+		creationColumns = append(creationColumns, jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTable%sColumn", pn, field.Name.Singular())))
+	}
+
+	if typ.BelongsToStruct != nil {
+		creationColumns = append(creationColumns, jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())))
+	}
+	if typ.BelongsToAccount {
+		creationColumns = append(creationColumns, jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)))
+	}
+
+	return creationColumns
+}
+
+func determineCreationQueryValues(inputVarName string, typ models.DataType) []jen.Code {
+	valuesColumns := []jen.Code{
+		jen.ID("b").Dot("externalIDGenerator").Dot("NewExternalID").Call(),
+	}
+
+	for _, field := range typ.Fields {
+		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dot(field.Name.Singular()))
+	}
+
+	if typ.BelongsToStruct != nil {
+		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToAccount {
+		valuesColumns = append(valuesColumns, jen.ID(inputVarName).Dot(constants.AccountOwnershipFieldName))
+	}
+
+	return valuesColumns
+}
+
 func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
+
+	columns := determineCreationColumns(proj, typ)
+	values := determineCreationQueryValues("input", typ)
 
 	lines := []jen.Code{
 		jen.Commentf("BuildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments.", sn, scnwp, scn),
@@ -400,22 +593,9 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) [
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Columns").Callln(
-					jen.Qual(proj.QuerybuildingPackage(), "ExternalIDColumn"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableNameColumn", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableDetailsColumn", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
-				).
-					Dotln("Values").Callln(
-					jen.ID("b").Dot("externalIDGenerator").Dot("NewExternalID").Call(),
-					jen.ID("input").Dot("Name"),
-					jen.ID("input").Dot("Details"),
-					jen.ID("input").Dot("BelongsToAccount"),
-				),
+				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).Dotln("Columns").Callln(columns...).Dotln("Values").Callln(values...),
 			),
 		),
 		jen.Newline(),
@@ -428,6 +608,28 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
+
+	queryBuilderDecl := jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)))
+
+	for _, field := range typ.Fields {
+		queryBuilderDecl = queryBuilderDecl.Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTable%sColumn", pn, field.Name.Singular())), jen.ID("input").Dot(field.Name.Singular()))
+	}
+
+	queryBuilderDecl = queryBuilderDecl.
+		Dotln("Set").Call(
+		jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
+		jen.ID("currentUnixTimeQuery"),
+	).
+		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
+		jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())).MapAssign().ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular())
+			}
+			return jen.Null()
+		}(),
+		utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)).MapAssign().ID("input").Dot("BelongsToAccount")),
+	))
 
 	lines := []jen.Code{
 		jen.Commentf("BuildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters.", sn, scnwp),
@@ -442,27 +644,11 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 				jen.ID("span"),
 				jen.ID("input").Dot("ID"),
 			),
-			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("BelongsToAccount")),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("BelongsToAccount"))),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Set").Call(
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableNameColumn", pn)),
-					jen.ID("input").Dot("Name"),
-				).
-					Dotln("Set").Call(
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableDetailsColumn", pn)),
-					jen.ID("input").Dot("Details"),
-				).
-					Dotln("Set").Call(
-					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
-					jen.ID("currentUnixTimeQuery"),
-				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)).MapAssign().ID("input").Dot("BelongsToAccount"),
-				)),
+				queryBuilderDecl,
 			),
 		),
 		jen.Newline(),
@@ -505,10 +691,7 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) 
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
+			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
 			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
@@ -522,9 +705,15 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) 
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)).MapAssign().ID("accountID"),
+					func() jen.Code {
+						if typ.BelongsToStruct != nil {
+							return jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+						}
+						return jen.Null()
+					}(),
+					utils.ConditionalCode(typ.RestrictedToAccountMembers, jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)).MapAssign().ID("accountID")),
 				)),
 			),
 		),
@@ -565,7 +754,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 				jen.ID("b").Dot("sqlBuilder").
 					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))).
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))).
 					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),

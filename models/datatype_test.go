@@ -624,7 +624,7 @@ func TestDataType_buildDBQuerierSingleInstanceQueryMethodConditionalClauses(T *t
 		}
 		p := buildExampleTodoListProject()
 
-		result := dt.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+		result := dt.BuildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
 
 		expected := `
 package main
@@ -654,7 +654,7 @@ func main() {
 			p.DataTypes[i].RestrictedToAccountMembers = true
 		}
 
-		result := p.LastDataType().buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+		result := p.LastDataType().BuildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
 
 		expected := `
 package main

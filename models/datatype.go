@@ -247,7 +247,7 @@ func (typ DataType) ModifyQueryBuilderWithJoinClauses(p *Project, qb squirrel.Se
 	return qb
 }
 
-func (typ DataType) buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p *Project) []jen.Code {
+func (typ DataType) BuildDBQuerierSingleInstanceQueryMethodConditionalClauses(p *Project) []jen.Code {
 	n := typ.Name
 	uvn := n.UnexportedVarName()
 	puvn := n.PluralUnexportedVarName()
@@ -299,7 +299,7 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p 
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryMethodConditionalClauses(p *Project) []jen.Code {
-	return typ.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+	return typ.BuildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
 }
 
 type Coder interface {
@@ -400,7 +400,7 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClau
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryMethodConditionalClauses(p *Project) []jen.Code {
-	return typ.buildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
+	return typ.BuildDBQuerierSingleInstanceQueryMethodConditionalClauses(p)
 }
 
 func (typ DataType) BuildDBQuerierListRetrievalQueryMethodConditionalClauses(p *Project) []jen.Code {
