@@ -63,11 +63,11 @@ func buildPrefixedStringColumns(typ models.DataType) []string {
 	}
 
 	out = append(out, fmt.Sprintf("%s.created_on", tableName), fmt.Sprintf("%s.last_updated_on", tableName), fmt.Sprintf("%s.archived_on", tableName))
-	if typ.BelongsToAccount {
-		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
-	}
 	if typ.BelongsToStruct != nil {
 		out = append(out, fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName()))
+	}
+	if typ.BelongsToAccount {
+		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
 	}
 
 	return out
