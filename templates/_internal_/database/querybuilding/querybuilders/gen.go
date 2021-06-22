@@ -51,6 +51,8 @@ func RenderPackage(proj *models.Project) error {
 		files := map[string]string{
 			"generic.go":      genericDotGo(proj),
 			"generic_test.go": genericTestDotGo(proj),
+			fmt.Sprintf("%s.go", dbvendor.RouteName()):      mainDotGo(proj, dbvendor),
+			fmt.Sprintf("%s_test.go", dbvendor.RouteName()): mainTestDotGo(proj, dbvendor),
 		}
 
 		for path, file := range files {
@@ -117,14 +119,14 @@ var (
 
 func mainDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) string {
 	switch dbvendor.SingularPackageName() {
-	case "m":
+	case "mariadb":
 		return models.RenderCodeFile(proj, mariadbMainTemplate, nil)
-	case "p":
+	case "postgres":
 		return models.RenderCodeFile(proj, postgresMainTemplate, nil)
-	case "s":
+	case "sqlite":
 		return models.RenderCodeFile(proj, sqliteMainTemplate, nil)
 	default:
-		panic(fmt.Sprintf("invalid database type! %q", dbvendor.LowercaseAbbreviation()))
+		panic(fmt.Sprintf("invalid database type! %q", dbvendor.SingularPackageName()))
 	}
 }
 
@@ -139,11 +141,11 @@ var (
 
 func mainTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) string {
 	switch dbvendor.SingularPackageName() {
-	case "m":
+	case "mariadb":
 		return models.RenderCodeFile(proj, mariadbMainTestTemplate, nil)
-	case "p":
+	case "postgres":
 		return models.RenderCodeFile(proj, postgresMainTestTemplate, nil)
-	case "s":
+	case "sqlite":
 		return models.RenderCodeFile(proj, sqliteMainTestTemplate, nil)
 	default:
 		panic(fmt.Sprintf("invalid database type! %q", dbvendor.LowercaseAbbreviation()))

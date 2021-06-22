@@ -38,7 +38,7 @@ func buildBuildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Return().ID("b").Dot("buildQuery").Call(
+			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("WebhooksTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("WebhooksTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
@@ -93,7 +93,7 @@ func buildBuildGetBatchOfWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetBatchOfWebhooksQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Return().ID("b").Dot("buildQuery").Call(
+			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("WebhooksTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("WebhooksTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
@@ -151,7 +151,7 @@ func buildBuildCreateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildCreateWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("x").Op("*").ID("types").Dot("WebhookCreationInput")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Return().ID("b").Dot("buildQuery").Call(
+			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.ID("querybuilding").Dot("WebhooksTableName")).Dot("Columns").Call(
 					jen.ID("querybuilding").Dot("ExternalIDColumn"),
@@ -198,7 +198,7 @@ func buildBuildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildUpdateWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("types").Dot("Webhook")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Return().ID("b").Dot("buildQuery").Call(
+			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.ID("querybuilding").Dot("WebhooksTableName")).Dot("Set").Call(
 					jen.ID("querybuilding").Dot("WebhooksTableNameColumn"),
@@ -249,7 +249,7 @@ func buildBuildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.Supe
 		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildArchiveWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Return().ID("b").Dot("buildQuery").Call(
+			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.ID("querybuilding").Dot("WebhooksTableName")).Dot("Set").Call(
 					jen.ID("querybuilding").Dot("LastUpdatedOnColumn"),
@@ -279,7 +279,7 @@ func buildBuildGetAuditLogEntriesForWebhookQuery(proj *models.Project, dbvendor 
 				jen.ID("querybuilding").Dot("AuditLogEntriesTableContextColumn"),
 				jen.ID("audit").Dot("WebhookAssignmentKey"),
 			),
-			jen.Return().ID("b").Dot("buildQuery").Call(
+			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.ID("webhookIDKey").Op(":").ID("webhookID"))).Dot("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),

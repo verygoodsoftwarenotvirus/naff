@@ -693,7 +693,7 @@ func buildTestVendor_BuildCreateSomethingQuery(proj *models.Project, typ models.
 		jen.Qual(constants.AssertionLibrary, "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
 		jen.Qual(constants.AssertionLibrary, "Equal").Call(jen.ID("t"), jen.ID("expectedArgs"), jen.ID("actualArgs")),
 		jen.Newline(),
-		jen.ID("mock").Dot("AssertExpectationsForObjects").Call(
+		jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
 			jen.ID("t"),
 			jen.ID("exIDGen"),
 		),
