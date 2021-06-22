@@ -2,11 +2,11 @@ package querybuilders
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	"github.com/Masterminds/squirrel"
@@ -22,10 +22,6 @@ func convertArgsToCode(args []interface{}) (code []jen.Code) {
 }
 
 func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
-	if db == nil {
-		return "(strftime('%s','now'))"
-	}
-
 	switch db.LowercaseAbbreviation() {
 	case "m":
 		return "UNIX_TIMESTAMP()"
@@ -39,15 +35,15 @@ func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
 }
 
 func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
-	if db == nil {
-		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
-	}
-
 	switch db.LowercaseAbbreviation() {
+	case "m":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
 	case "p":
 		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-	default:
+	case "s":
 		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	default:
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
 	}
 }
 
@@ -73,21 +69,21 @@ func buildPrefixedStringColumns(typ models.DataType) []string {
 	return out
 }
 
-func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	code := jen.NewFile(packageName)
+func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) *jen.File {
+	code := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTestSqlite_BuildSomethingExistsQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildGetSomethingQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildGetAllSomethingsCountQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildGetBatchOfSomethingsQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildGetSomethingsQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildCreateSomethingQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildUpdateSomethingQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildArchiveSomethingQuery(proj, typ)...)
-	code.Add(buildTestSqlite_BuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
+	code.Add(buildTestVendor_BuildSomethingExistsQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildGetSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildGetAllSomethingsCountQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildGetBatchOfSomethingsQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildGetSomethingsQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildGetSomethingsWithIDsQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildCreateSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildUpdateSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildArchiveSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj, typ, dbvendor)...)
 
 	return code
 }
@@ -166,13 +162,13 @@ func buildDBQuerierSingleInstanceQueryMethodWhereClauses(p *models.Project, typ 
 	return whereValues
 }
 
-func buildTestSqlite_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildSomethingExistsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
 	whereValues := buildDBQuerierSingleInstanceQueryMethodWhereClauses(proj, typ)
 
-	qb := queryBuilderForDatabase(nil).Select(fmt.Sprintf("%s.id", tableName)).
+	qb := queryBuilderForDatabase(dbvendor).Select(fmt.Sprintf("%s.id", tableName)).
 		Prefix(existencePrefix).
 		From(tableName)
 
@@ -211,7 +207,7 @@ func buildTestSqlite_BuildSomethingExistsQuery(proj *models.Project, typ models.
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_Build%sExistsQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_Build%sExistsQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -224,14 +220,14 @@ func buildTestSqlite_BuildSomethingExistsQuery(proj *models.Project, typ models.
 	}
 }
 
-func buildTestSqlite_BuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildGetSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	sn := typ.Name.Singular()
 
 	whereValues := buildDBQuerierSingleInstanceQueryMethodWhereClauses(proj, typ)
 	cols := buildPrefixedStringColumns(typ)
 
-	qb := queryBuilderForDatabase(nil).
+	qb := queryBuilderForDatabase(dbvendor).
 		Select(cols...).
 		From(tableName)
 	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb).
@@ -268,7 +264,7 @@ func buildTestSqlite_BuildGetSomethingQuery(proj *models.Project, typ models.Dat
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildGet%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGet%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -281,11 +277,11 @@ func buildTestSqlite_BuildGetSomethingQuery(proj *models.Project, typ models.Dat
 	}
 }
 
-func buildTestSqlite_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildGetAllSomethingsCountQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
-	qb := queryBuilderForDatabase(nil).
+	qb := queryBuilderForDatabase(dbvendor).
 		Select(fmt.Sprintf(countQuery, tableName)).
 		From(tableName).
 		Where(squirrel.Eq{
@@ -316,7 +312,7 @@ func buildTestSqlite_BuildGetAllSomethingsCountQuery(proj *models.Project, typ m
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildGetAll%sCountQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGetAll%sCountQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -329,13 +325,13 @@ func buildTestSqlite_BuildGetAllSomethingsCountQuery(proj *models.Project, typ m
 	}
 }
 
-func buildTestSqlite_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
 	cols := buildPrefixedStringColumns(typ)
 
-	qb := queryBuilderForDatabase(nil).
+	qb := queryBuilderForDatabase(dbvendor).
 		Select(cols...).
 		From(tableName).
 		Where(squirrel.Gt{
@@ -373,7 +369,7 @@ func buildTestSqlite_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ mo
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildGetBatchOf%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGetBatchOf%sQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -464,7 +460,7 @@ func buildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p *models.Pr
 	return whereValues
 }
 
-func buildTestSqlite_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildGetSomethingsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 
@@ -472,7 +468,7 @@ func buildTestSqlite_BuildGetSomethingsQuery(proj *models.Project, typ models.Da
 	joins := buildJoinsListForRealListQuery(proj, typ)
 	where := buildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(proj, typ)
 
-	query, queryArgs := buildListQuery(queryBuilderForDatabase(nil), tableName, joins, where, "", cols, 0, false)
+	query, queryArgs := buildListQuery(queryBuilderForDatabase(dbvendor), tableName, joins, where, "", cols, 0, false)
 	expectedArgs := convertArgsToCode(queryArgs)
 
 	bodyLines := []jen.Code{
@@ -501,7 +497,7 @@ func buildTestSqlite_BuildGetSomethingsQuery(proj *models.Project, typ models.Da
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildGet%sQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGet%sQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -514,7 +510,7 @@ func buildTestSqlite_BuildGetSomethingsQuery(proj *models.Project, typ models.Da
 	}
 }
 
-func buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	tableName := typ.Name.PluralRouteName()
 	pn := typ.Name.Plural()
 	cols := buildPrefixedStringColumns(typ)
@@ -541,7 +537,7 @@ func buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 	}
 	whenThenStatement += " END"
 
-	qb = queryBuilderForDatabase(nil).
+	qb = queryBuilderForDatabase(dbvendor).
 		Select(cols...).
 		From(tableName).
 		Where(whereValues).
@@ -607,7 +603,7 @@ func buildTestSqlite_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildGet%sWithIDsQuery", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGet%sWithIDsQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -643,7 +639,7 @@ func buildCreationStringColumnsAndArgs(typ models.DataType) (cols []string, args
 	return
 }
 
-func buildTestSqlite_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildCreateSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -653,7 +649,7 @@ func buildTestSqlite_BuildCreateSomethingQuery(proj *models.Project, typ models.
 		valueArgs = append(valueArgs, whateverValue)
 	}
 
-	qb := queryBuilderForDatabase(nil).
+	qb := queryBuilderForDatabase(dbvendor).
 		Insert(tableName).
 		Columns(fieldCols...).
 		Values(valueArgs...)
@@ -704,7 +700,7 @@ func buildTestSqlite_BuildCreateSomethingQuery(proj *models.Project, typ models.
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildCreate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildCreate%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -727,7 +723,7 @@ func buildUpdateQueryParts(typ models.DataType) []string {
 	return out
 }
 
-func buildTestSqlite_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildUpdateSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -740,7 +736,7 @@ func buildTestSqlite_BuildUpdateSomethingQuery(proj *models.Project, typ models.
 	}
 
 	where := squirrel.Eq{"id": whateverValue, "archived_on": nil}
-	qb := queryBuilderForDatabase(nil).Update(tableName)
+	qb := queryBuilderForDatabase(dbvendor).Update(tableName)
 
 	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
@@ -761,7 +757,7 @@ func buildTestSqlite_BuildUpdateSomethingQuery(proj *models.Project, typ models.
 
 	expectedArgs = append(expectedArgs, jen.ID(utils.BuildFakeVarName(sn)).Dot("ID"))
 
-	qb = qb.Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(nil))).Where(where)
+	qb = qb.Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).Where(where)
 
 	query, _, _ := qb.ToSql()
 
@@ -799,7 +795,7 @@ func buildTestSqlite_BuildUpdateSomethingQuery(proj *models.Project, typ models.
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildUpdate%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildUpdate%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -812,7 +808,7 @@ func buildTestSqlite_BuildUpdateSomethingQuery(proj *models.Project, typ models.
 	}
 }
 
-func buildTestBuildArchiveSomethingQueryBuilder(typ models.DataType) (qb squirrel.UpdateBuilder, expectedArgs []jen.Code, callArgs []jen.Code) {
+func buildTestBuildArchiveSomethingQueryBuilder(typ models.DataType, dbvendor wordsmith.SuperPalabra) (qb squirrel.UpdateBuilder, expectedArgs []jen.Code, callArgs []jen.Code) {
 	sn := typ.Name.Singular()
 	tableName := typ.Name.PluralRouteName()
 
@@ -840,19 +836,19 @@ func buildTestBuildArchiveSomethingQueryBuilder(typ models.DataType) (qb squirre
 
 	expectedArgs = append(expectedArgs, jen.IDf("example%sID", sn))
 
-	qb = queryBuilderForDatabase(nil).
+	qb = queryBuilderForDatabase(dbvendor).
 		Update(tableName).
-		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(nil))).
-		Set("archived_on", squirrel.Expr(unixTimeForDatabase(nil))).
+		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(where)
 
 	return qb, expectedArgs, callArgs
 }
 
-func buildTestSqlite_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildArchiveSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 
-	qb, _, _ := buildTestBuildArchiveSomethingQueryBuilder(typ)
+	qb, _, _ := buildTestBuildArchiveSomethingQueryBuilder(typ, dbvendor)
 	query, _, _ := qb.ToSql()
 
 	bodyLines := []jen.Code{
@@ -910,7 +906,7 @@ func buildTestSqlite_BuildArchiveSomethingQuery(proj *models.Project, typ models
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildArchive%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildArchive%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
@@ -923,10 +919,10 @@ func buildTestSqlite_BuildArchiveSomethingQuery(proj *models.Project, typ models
 	}
 }
 
-func buildTestSqlite_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 
-	qb := queryBuilderForDatabase(nil).Select(
+	qb := queryBuilderForDatabase(dbvendor).Select(
 		"audit_log.id",
 		"audit_log.external_id",
 		"audit_log.event_type",
@@ -967,7 +963,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("TestSqlite_BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGetAuditLogEntriesFor%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),

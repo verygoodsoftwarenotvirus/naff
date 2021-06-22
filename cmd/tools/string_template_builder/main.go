@@ -12,7 +12,8 @@ import (
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/services/items",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mariadb",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/postgres",
 	}
 
 	for _, pkg := range allPackages {
@@ -25,7 +26,7 @@ func main() {
 
 func doTheThingForPackage(pkgPath string) error {
 	sourcePath := filepath.Join(os.Getenv("GOPATH"), "src", pkgPath)
-	outputPath := strings.Replace(strings.Replace(sourcePath, "verygoodsoftwarenotvirus/todo", "verygoodsoftwarenotvirus/naff/templates", 1), "_test.go", "test_.go", 1)
+	outputPath := strings.Replace(strings.Replace(sourcePath, "verygoodsoftwarenotvirus/todo", "verygoodsoftwarenotvirus/naff/templates/experimental", 1), "_test.go", "test_.go", 1)
 
 	files, err := ioutil.ReadDir(sourcePath)
 	if err != nil {

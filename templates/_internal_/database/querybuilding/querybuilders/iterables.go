@@ -2,34 +2,36 @@ package querybuilders
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	code := jen.NewFile(packageName)
+func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) *jen.File {
+	code := jen.NewFile(dbvendor.SingularPackageName())
 
 	utils.AddImports(proj, code, false)
 
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().ID("_").Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Op("=").Parens(jen.Op("*").ID("Sqlite")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Op("=").Parens(jen.Op("*").ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
-	code.Add(buildBuildSomethingExistsQuery(proj, typ)...)
-	code.Add(buildBuildGetSomethingQuery(proj, typ)...)
-	code.Add(buildBuildGetAllSomethingCountQuery(proj, typ)...)
-	code.Add(buildBuildGetBatchOfSomethingQuery(proj, typ)...)
-	code.Add(buildBuildGetListOfSomethingQuery(proj, typ)...)
-	code.Add(buildBuildGetSomethingWithIDsQuery(proj, typ)...)
-	code.Add(buildBuildCreateSomethingQuery(proj, typ)...)
-	code.Add(buildBuildUpdateSomethingQuery(proj, typ)...)
-	code.Add(buildBuildArchiveSomethingQuery(proj, typ)...)
-	code.Add(buildBuildGetAuditLogEntriesForSomethingQuery(proj, typ)...)
+	code.Add(buildBuildSomethingExistsQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildGetSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildGetAllSomethingCountQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildGetBatchOfSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildGetListOfSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildGetSomethingWithIDsQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildCreateSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildUpdateSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildArchiveSomethingQuery(proj, typ, dbvendor)...)
+	code.Add(buildBuildGetAuditLogEntriesForSomethingQuery(proj, typ, dbvendor)...)
 
 	return code
 }
@@ -141,7 +143,7 @@ func buildDBQuerierExistenceQueryMethodParams(p *models.Project, typ models.Data
 	return params
 }
 
-func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	uvn := typ.Name.UnexportedVarName()
@@ -164,24 +166,41 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 		Dotln("Suffix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistenceSuffix")).
 		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+	}
+
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		bodyLines = append(bodyLines,
+			jen.ID("tracing").Dotf("Attach%sIDToSpan", owner.Name.Singular()).Call(
+				jen.ID("span"),
+				jen.IDf("%sID", owner.Name.UnexportedVarName()),
+			),
+		)
+	}
+	bodyLines = append(bodyLines,
+		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
+			jen.ID("span"),
+			jen.IDf("%sID", uvn),
+		),
+	)
+
+	bodyLines = append(bodyLines,
+		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
+		jen.Newline(),
+		jen.Return(jen.ID("b").Dot("buildQuery").Callln(
+			jen.ID("span"),
+			queryBuilderDecl,
+		)),
+	)
+
 	lines := []jen.Code{
 		jen.Commentf("Build%sExistsQuery constructs a SQL query for checking if %s with a given ID belong to a user with a given ID exists.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("Build%sExistsQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
-			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
-			jen.Newline(),
-			jen.Return(jen.ID("b").Dot("buildQuery").Callln(
-				jen.ID("span"),
-				queryBuilderDecl,
-			)),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("Build%sExistsQuery", sn).Params(params...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -210,7 +229,7 @@ func buildDBQuerierRetrievalQueryMethodParams(p *models.Project, typ models.Data
 	return params
 }
 
-func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	uvn := typ.Name.UnexportedVarName()
@@ -227,24 +246,41 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []je
 
 	queryBuilderDecl = queryBuilderDecl.Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+	}
+
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		bodyLines = append(bodyLines,
+			jen.ID("tracing").Dotf("Attach%sIDToSpan", owner.Name.Singular()).Call(
+				jen.ID("span"),
+				jen.IDf("%sID", owner.Name.UnexportedVarName()),
+			),
+		)
+	}
+	bodyLines = append(bodyLines,
+		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
+			jen.ID("span"),
+			jen.IDf("%sID", uvn),
+		),
+	)
+
+	bodyLines = append(bodyLines,
+		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
+		jen.Newline(),
+		jen.Return().ID("b").Dot("buildQuery").Callln(
+			jen.ID("span"),
+			queryBuilderDecl,
+		),
+	)
+
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery constructs a SQL query for fetching %s with a given ID belong to a user with a given ID.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
-			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
-			jen.Newline(),
-			jen.Return().ID("b").Dot("buildQuery").Callln(
-				jen.ID("span"),
-				queryBuilderDecl,
-			),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildGet%sQuery", sn).Params(params...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -252,7 +288,7 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []je
 	return lines
 }
 
-func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 
@@ -261,7 +297,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 		jen.Newline(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -288,14 +324,14 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 	return lines
 }
 
-func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
 		jen.Commentf("BuildGetBatchOf%sQuery returns a query that fetches every %s in the database within a bucketed range.", pn, scn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -369,7 +405,7 @@ func buildJoinsListForListQuery(p *models.Project, typ models.DataType) []jen.Co
 	return out
 }
 
-func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 
@@ -381,7 +417,7 @@ func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType
 		jen.Newline(),
 		jen.Comment("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sQuery", pn).Params(params...).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildGet%sQuery", pn).Params(params...).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -442,7 +478,7 @@ func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType
 	return lines
 }
 
-func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 
@@ -463,7 +499,7 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 		jen.Comment("slice of uint64s instead of a slice of strings in order to ensure all the provided strings").Newline(),
 		jen.Comment("are valid database IDs, because there's no way in squirrel to escape them in the unnest join,").Newline(),
 		jen.Comment("and if we accept strings we could leave ourselves vulnerable to SQL injection attacks.").Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGet%sWithIDsQuery", pn).Params(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildGet%sWithIDsQuery", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			func() jen.Code {
 				if len(prerequisiteIDs) > 0 {
@@ -575,7 +611,7 @@ func determineCreationQueryValues(inputVarName string, typ models.DataType) []je
 	return valuesColumns
 }
 
-func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scn := typ.Name.SingularCommonName()
@@ -587,7 +623,7 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) [
 	lines := []jen.Code{
 		jen.Commentf("BuildCreate%sQuery takes %s and returns a creation query for that %s and the relevant arguments.", sn, scnwp, scn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildCreate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildCreate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("input").Op("*").ID("types").Dotf("%sCreationInput", sn)).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -604,7 +640,7 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) [
 	return lines
 }
 
-func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
@@ -634,12 +670,21 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 	lines := []jen.Code{
 		jen.Commentf("BuildUpdate%sQuery takes %s and returns an update SQL query, with the relevant query parameters.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildUpdate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildUpdate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("input").Op("*").ID("types").Dot(sn)).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID("tracing").Dotf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(
+						jen.ID("span"),
+						jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()),
+					)
+				}
+				return jen.Null()
+			}(),
 			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("ID"),
@@ -675,7 +720,7 @@ func buildDBQuerierArchiveQueryMethodParams(typ models.DataType) []jen.Code {
 	return params
 }
 
-func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	uvn := typ.Name.UnexportedVarName()
@@ -686,11 +731,20 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) 
 	lines := []jen.Code{
 		jen.Commentf("BuildArchive%sQuery returns a SQL query which marks a given %s belonging to a given account as archived.", sn, scn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildArchive%sQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildArchive%sQuery", sn).Params(params...).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID("tracing").Dotf("Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(
+						jen.ID("span"),
+						jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()),
+					)
+				}
+				return jen.Null()
+			}(),
 			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(jen.ID("span"), jen.IDf("%sID", uvn)),
 			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
 			jen.Newline(),
@@ -723,15 +777,34 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) 
 	return lines
 }
 
-func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
+func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	uvn := typ.Name.UnexportedVarName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
+	keyDecl := jen.IDf("%sIDKey", typ.Name.UnexportedVarName()).Assign().Qual("fmt", "Sprintf").Callln(
+		jen.ID("jsonPluckQuery"),
+		jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+		jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
+		utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.IDf("%sID", uvn)),
+		jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
+	)
+
+	keyUsage := jen.Null()
+
+	switch dbvendor.SingularPackageName() {
+	case string(models.MariaDB):
+		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
+	case string(models.Postgres):
+		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
+	case string(models.Sqlite):
+		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("BuildGetAuditLogEntriesFor%sQuery constructs a SQL query for fetching audit log entries relating to %s with a given ID.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").ID("string"),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -742,19 +815,14 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.IDf("%sIDKey", typ.Name.UnexportedVarName()).Assign().Qual("fmt", "Sprintf").Call(
-				jen.ID("jsonPluckQuery"),
-				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
-				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
-			),
+			keyDecl,
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").
 					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))).
+					Dotln("Where").Call(keyUsage).
 					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
