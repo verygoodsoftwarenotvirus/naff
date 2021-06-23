@@ -14,7 +14,7 @@ func apiClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("querybuilding").Dot("APIClientSQLQueryBuilder").Op("=").Parens(jen.Op("*").ID("Sqlite")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(proj.QuerybuildingPackage(), "APIClientSQLQueryBuilder").Op("=").Parens(jen.Op("*").ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
@@ -36,19 +36,23 @@ func buildBuildGetBatchOfAPIClientsQuery(proj *models.Project, dbvendor wordsmit
 	lines := []jen.Code{
 		jen.Comment("BuildGetBatchOfAPIClientsQuery returns a query that fetches every API client in the database within a bucketed range."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetBatchOfAPIClientsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetBatchOfAPIClientsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("APIClientsTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("IDColumn"),
-				).Op(":").ID("beginID"))).Dot("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+				).Op(":").ID("beginID"))).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).Op(":").ID("endID"))),
 			),
 		),
@@ -62,19 +66,27 @@ func buildBuildGetAPIClientByClientIDQuery(proj *models.Project, dbvendor wordsm
 	lines := []jen.Code{
 		jen.Comment("BuildGetAPIClientByClientIDQuery returns a SQL query which requests a given API client by its database ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAPIClientByClientIDQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAPIClientByClientIDQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachAPIClientClientIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("clientID"),
+			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("APIClientsTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("APIClientsTableClientIDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableClientIDColumn"),
 				).Op(":").ID("clientID"), jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("ArchivedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).Op(":").ID("nil"))),
 			),
 		),
@@ -88,20 +100,23 @@ func buildBuildGetAllAPIClientsCountQuery(proj *models.Project, dbvendor wordsmi
 	lines := []jen.Code{
 		jen.Comment("BuildGetAllAPIClientsCountQuery returns a SQL query for the number of API clients"),
 		jen.Newline(),
-		jen.Comment("returns the database, regardless of ownership."),
+		jen.Comment("in the database, regardless of ownership."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAllAPIClientsCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAllAPIClientsCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQueryOnly").Call(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.ID("columnCountQueryTemplate"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-				)).Dot("From").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+				)).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("ArchivedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).Op(":").ID("nil"))),
 			),
 		),
@@ -115,25 +130,33 @@ func buildBuildGetAPIClientsQuery(proj *models.Project, dbvendor wordsmith.Super
 	lines := []jen.Code{
 		jen.Comment("BuildGetAPIClientsQuery returns a SQL query (and arguments) that will retrieve a list of API clients that"),
 		jen.Newline(),
-		jen.Comment("returns the given filter's criteria (if relevant) and belong to a given account."),
+		jen.Comment("meet the given filter's criteria (if relevant) and belong to a given account."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAPIClientsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.ID("filter").Op("*").ID("types").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAPIClientsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("userID"),
+			),
+			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
 				jen.ID("tracing").Dot("AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
 					jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
-				)),
-			jen.Return().ID("b").Dot("buildListQuery").Call(
+				),
+			),
+			jen.Newline(),
+			jen.Return().ID("b").Dot("buildListQuery").Callln(
 				jen.ID("ctx"),
-				jen.ID("querybuilding").Dot("APIClientsTableName"),
+				jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 				jen.ID("nil"),
 				jen.ID("nil"),
-				jen.ID("querybuilding").Dot("APIClientsTableOwnershipColumn"),
-				jen.ID("querybuilding").Dot("APIClientsTableColumns"),
+				jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
+				jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns"),
 				jen.ID("userID"),
 				jen.ID("false"),
 				jen.ID("filter"),
@@ -149,23 +172,35 @@ func buildBuildGetAPIClientByDatabaseIDQuery(proj *models.Project, dbvendor word
 	lines := []jen.Code{
 		jen.Comment("BuildGetAPIClientByDatabaseIDQuery returns a SQL query which requests a given API client by its database ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAPIClientByDatabaseIDQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAPIClientByDatabaseIDQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("userID"),
+			),
+			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("clientID"),
+			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("APIClientsTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("APIClientsTableOwnershipColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
 				).Op(":").ID("userID"), jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).Op(":").ID("clientID"), jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("APIClientsTableName"),
-					jen.ID("querybuilding").Dot("ArchivedOnColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).Op(":").ID("nil"))),
 			),
 		),
@@ -179,18 +214,21 @@ func buildBuildCreateAPIClientQuery(proj *models.Project, dbvendor wordsmith.Sup
 	lines := []jen.Code{
 		jen.Comment("BuildCreateAPIClientQuery returns a SQL query (and args) that will create the given APIClient in the database."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildCreateAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("types").Dot("APIClientCreationInput")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildCreateAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), "APIClientCreationInput")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Columns").Call(
-					jen.ID("querybuilding").Dot("ExternalIDColumn"),
-					jen.ID("querybuilding").Dot("APIClientsTableNameColumn"),
-					jen.ID("querybuilding").Dot("APIClientsTableClientIDColumn"),
-					jen.ID("querybuilding").Dot("APIClientsTableSecretKeyColumn"),
-					jen.ID("querybuilding").Dot("APIClientsTableOwnershipColumn"),
-				).Dot("Values").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Columns").Callln(
+					jen.Qual(proj.QuerybuildingPackage(), "ExternalIDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableNameColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableClientIDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableSecretKeyColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
+				).
+					Dotln("Values").Callln(
 					jen.ID("b").Dot("externalIDGenerator").Dot("NewExternalID").Call(),
 					jen.ID("input").Dot("Name"),
 					jen.ID("input").Dot("ClientID"),
@@ -209,18 +247,35 @@ func buildBuildUpdateAPIClientQuery(proj *models.Project, dbvendor wordsmith.Sup
 	lines := []jen.Code{
 		jen.Comment("BuildUpdateAPIClientQuery returns a SQL query (and args) that will update a given API client in the database."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildUpdateAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("types").Dot("APIClient")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildUpdateAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), "APIClient")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("input").Dot("BelongsToUser"),
+			),
+			jen.ID("tracing").Dot("AttachAPIClientClientIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("input").Dot("ClientID"),
+			),
+			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("input").Dot("ID"),
+			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Set").Call(
-					jen.ID("querybuilding").Dot("APIClientsTableClientIDColumn"),
+				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Set").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableClientIDColumn"),
 					jen.ID("input").Dot("ClientID"),
-				).Dot("Set").Call(
-					jen.ID("querybuilding").Dot("LastUpdatedOnColumn"),
+				).
+					Dotln("Set").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
-				).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.ID("querybuilding").Dot("IDColumn").Op(":").ID("input").Dot("ID"), jen.ID("querybuilding").Dot("APIClientsTableOwnershipColumn").Op(":").ID("input").Dot("BelongsToUser"), jen.ID("querybuilding").Dot("ArchivedOnColumn").Op(":").ID("nil"))),
+				).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").Op(":").ID("input").Dot("BelongsToUser"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -233,18 +288,31 @@ func buildBuildArchiveAPIClientQuery(proj *models.Project, dbvendor wordsmith.Su
 	lines := []jen.Code{
 		jen.Comment("BuildArchiveAPIClientQuery returns a SQL query (and arguments) that will mark an API client as archived."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildArchiveAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildArchiveAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("clientID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("userID"),
+			),
+			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("clientID"),
+			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.ID("querybuilding").Dot("APIClientsTableName")).Dot("Set").Call(
-					jen.ID("querybuilding").Dot("LastUpdatedOnColumn"),
+				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
+					Dotln("Set").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
-				).Dot("Set").Call(
-					jen.ID("querybuilding").Dot("ArchivedOnColumn"),
+				).
+					Dotln("Set").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
-				).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.ID("querybuilding").Dot("IDColumn").Op(":").ID("clientID"), jen.ID("querybuilding").Dot("ArchivedOnColumn").Op(":").ID("nil"), jen.ID("querybuilding").Dot("APIClientsTableOwnershipColumn").Op(":").ID("userID"))),
+				).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("clientID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").Op(":").ID("userID"))),
 			),
 		),
 		jen.Newline(),
@@ -257,22 +325,45 @@ func buildBuildGetAuditLogEntriesForAPIClientQuery(proj *models.Project, dbvendo
 	lines := []jen.Code{
 		jen.Comment("BuildGetAuditLogEntriesForAPIClientQuery constructs a SQL query for fetching audit log entries belong to a user with a given ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAuditLogEntriesForAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesForAPIClientQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.ID("apiClientIDKey").Op(":=").Qual("fmt", "Sprintf").Call(
-				jen.ID("jsonPluckQuery"),
-				jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-				jen.ID("querybuilding").Dot("AuditLogEntriesTableContextColumn"),
-				jen.ID("audit").Dot("APIClientAssignmentKey"),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("clientID"),
 			),
+			jen.Newline(),
+			jen.ID("apiClientIDKey").Op(":=").Qual("fmt", "Sprintf").Callln(
+				jen.ID("jsonPluckQuery"),
+				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
+				utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.ID("clientID")),
+				jen.Qual(proj.InternalAuditPackage(), "APIClientAssignmentKey"),
+			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.ID("apiClientIDKey").Op(":").ID("clientID"))).Dot("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-					jen.ID("querybuilding").Dot("CreatedOnColumn"),
-				)),
+				func() jen.Code {
+					if dbvendor.SingularPackageName() == "mariadb" {
+						return jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
+							Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
+							Dotln("Where").Call(jen.ID("squirrel").Dot("Expr").Call(jen.ID("apiClientIDKey"))).
+							Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
+							jen.Lit("%s.%s"),
+							jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+							jen.Qual(proj.QuerybuildingPackage(), "CreatedOnColumn"),
+						))
+					}
+					return jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
+						Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
+						Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.ID("apiClientIDKey").Op(":").ID("clientID"))).
+						Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "CreatedOnColumn"),
+					))
+				}(),
 			),
 		),
 		jen.Newline(),

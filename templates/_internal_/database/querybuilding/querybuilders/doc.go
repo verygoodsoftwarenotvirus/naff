@@ -8,7 +8,10 @@ import (
 )
 
 func docDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
-	code := jen.NewFile(dbvendor.SingularPackageName())
+	spn := dbvendor.SingularPackageName()
+
+	code := jen.NewFile(spn)
+	code.PackageCommentf("Package %s provides a querybuilder implementation that is compatible with %s.\n", spn, spn)
 
 	utils.AddImports(proj, code, false)
 

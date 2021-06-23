@@ -1,4 +1,4 @@
-package sqlite
+package {{ generated "packageName" }}
 
 import (
 	"context"
@@ -27,22 +27,24 @@ func buildWhenThenStatement(ids []uint64) string {
 }
 
 // BuildQueryOnly builds a given query, handles whatever errs and returns just the query and args.
-func (b *Sqlite) buildQueryOnly(span tracing.Span, builder squirrel.Sqlizer) string {
+func (b *{{ generated "structName" }}) buildQueryOnly(span tracing.Span, builder squirrel.Sqlizer) string {
 	query, _, err := builder.ToSql()
+
 	b.logQueryBuildingError(span, err)
 
 	return query
 }
 
 // BuildQuery builds a given query, handles whatever errs and returns just the query and args.
-func (b *Sqlite) buildQuery(span tracing.Span, builder squirrel.Sqlizer) (query string, args []interface{}) {
+func (b *{{ generated "structName" }}) buildQuery(span tracing.Span, builder squirrel.Sqlizer) (query string, args []interface{}) {
 	query, args, err := builder.ToSql()
+
 	b.logQueryBuildingError(span, err)
 
 	return query, args
 }
 
-func (b *Sqlite) buildTotalCountQuery(ctx context.Context, tableName string, joins []string, where squirrel.Eq, ownershipColumn string, userID uint64, forAdmin, includeArchived bool) (query string, args []interface{}) {
+func (b *{{ generated "structName" }}) buildTotalCountQuery(ctx context.Context, tableName string, joins []string, where squirrel.Eq, ownershipColumn string, userID uint64, forAdmin, includeArchived bool) (query string, args []interface{}) {
 	_, span := b.tracer.StartSpan(ctx)
 	defer span.End()
 
@@ -75,7 +77,7 @@ func (b *Sqlite) buildTotalCountQuery(ctx context.Context, tableName string, joi
 	return b.buildQuery(span, totalCountQueryBuilder)
 }
 
-func (b *Sqlite) buildFilteredCountQuery(ctx context.Context, tableName string, joins []string, where squirrel.Eq, ownershipColumn string, userID uint64, forAdmin, includeArchived bool, filter *types.QueryFilter) (query string, args []interface{}) {
+func (b *{{ generated "structName" }}) buildFilteredCountQuery(ctx context.Context, tableName string, joins []string, where squirrel.Eq, ownershipColumn string, userID uint64, forAdmin, includeArchived bool, filter *types.QueryFilter) (query string, args []interface{}) {
 	_, span := b.tracer.StartSpan(ctx)
 	defer span.End()
 
@@ -118,7 +120,7 @@ func (b *Sqlite) buildFilteredCountQuery(ctx context.Context, tableName string, 
 
 // BuildListQuery builds a SQL query selecting rows that adhere to a given QueryFilter and belong to a given account,
 // and returns both the query and the relevant args to pass to the query executor.
-func (b *Sqlite) buildListQuery(ctx context.Context, tableName string, joins []string, where squirrel.Eq, ownershipColumn string, columns []string, ownerID uint64, forAdmin bool, filter *types.QueryFilter) (query string, args []interface{}) {
+func (b *{{ generated "structName" }}) buildListQuery(ctx context.Context, tableName string, joins []string, where squirrel.Eq, ownershipColumn string, columns []string, ownerID uint64, forAdmin bool, filter *types.QueryFilter) (query string, args []interface{}) {
 	_, span := b.tracer.StartSpan(ctx)
 	defer span.End()
 
@@ -158,6 +160,7 @@ func (b *Sqlite) buildListQuery(ctx context.Context, tableName string, joins []s
 
 		builder = builder.Where(where)
 	}
+
 	builder = builder.GroupBy(fmt.Sprintf("%s.%s", tableName, querybuilding.IDColumn))
 
 	if filter != nil {

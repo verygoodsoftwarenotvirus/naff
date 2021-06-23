@@ -119,7 +119,7 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 		jen.Newline(),
 		jen.Comment("migrate a sqlite database."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Body(
 			jen.Return().Func().Params().Body(
 				jen.ID("d").Op(":=").ID("darwin").Dot("NewGenericDriver").Call(
 					jen.ID("db"),

@@ -14,7 +14,7 @@ func auditLogEntriesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("querybuilding").Dot("AuditLogEntrySQLQueryBuilder").Op("=").Parens(jen.Op("*").ID("Sqlite")).Call(jen.ID("nil")),
+			jen.ID("_").Qual(proj.QuerybuildingPackage(), "AuditLogEntrySQLQueryBuilder").Op("=").Parens(jen.Op("*").ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
@@ -32,15 +32,23 @@ func buildBuildGetAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.Su
 	lines := []jen.Code{
 		jen.Comment("BuildGetAuditLogEntryQuery constructs a SQL query for fetching an audit log entry with a given ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAuditLogEntryQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("entryID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAuditLogEntryQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("entryID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID("tracing").Dot("AttachAuditLogEntryIDToSpan").Call(
+				jen.ID("span"),
+				jen.ID("entryID"),
+			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-					jen.ID("querybuilding").Dot("IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).Op(":").ID("entryID"))),
 			),
 		),
@@ -56,15 +64,18 @@ func buildBuildGetAllAuditLogEntriesCountQuery(proj *models.Project, dbvendor wo
 		jen.Newline(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAllAuditLogEntriesCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAllAuditLogEntriesCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQueryOnly").Call(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("b").Dot("sqlBuilder").
+					Dotln("Select").Call(jen.Qual("fmt", "Sprintf").Call(
 					jen.ID("columnCountQueryTemplate"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-				)).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+				)).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")),
 			),
 		),
 		jen.Newline(),
@@ -77,19 +88,23 @@ func buildBuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, dbvendor wor
 	lines := []jen.Code{
 		jen.Comment("BuildGetBatchOfAuditLogEntriesQuery returns a query that fetches every audit log entry in the database within a bucketed range."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetBatchOfAuditLogEntriesQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetBatchOfAuditLogEntriesQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableColumns").Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")).Dot("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
+					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-					jen.ID("querybuilding").Dot("IDColumn"),
-				).Op(":").ID("beginID"))).Dot("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+				).Op(":").ID("beginID"))).
+					Dotln("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-					jen.ID("querybuilding").Dot("IDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).Op(":").ID("endID"))),
 			),
 		),
@@ -105,44 +120,56 @@ func buildBuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor wordsmith.
 		jen.Newline(),
 		jen.Comment("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildGetAuditLogEntriesQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").ID("types").Dot("QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
 				jen.ID("tracing").Dot("AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
 					jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
-				)),
-			jen.ID("countQueryBuilder").Op(":=").ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("allCountQuery")).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")),
+				),
+			),
+			jen.Newline(),
+			jen.ID("countQueryBuilder").Op(":=").ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("allCountQuery")).
+				Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")),
+			jen.Newline(),
 			jen.List(jen.ID("countQuery"), jen.ID("countQueryArgs"), jen.ID("err")).Op(":=").ID("countQueryBuilder").Dot("ToSql").Call(),
 			jen.ID("b").Dot("logQueryBuildingError").Call(
 				jen.ID("span"),
 				jen.ID("err"),
 			),
+			jen.Newline(),
 			jen.ID("builder").Op(":=").ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("append").Call(
-				jen.ID("querybuilding").Dot("AuditLogEntriesTableColumns"),
+				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns"),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("(%s)"),
 					jen.ID("countQuery"),
 				),
-			).Op("...")).Dot("From").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")).Dot("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
+			).Op("...")).
+				Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
+				Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s.%s"),
-				jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
-				jen.ID("querybuilding").Dot("CreatedOnColumn"),
+				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+				jen.Qual(proj.QuerybuildingPackage(), "CreatedOnColumn"),
 			)),
+			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.ID("builder").Op("=").ID("querybuilding").Dot("ApplyFilterToQueryBuilder").Call(
+				jen.ID("builder").Op("=").Qual(proj.QuerybuildingPackage(), "ApplyFilterToQueryBuilder").Call(
 					jen.ID("filter"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableName"),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.ID("builder"),
-				)),
+				),
+			),
+			jen.Newline(),
 			jen.List(jen.ID("query"), jen.ID("selectArgs"), jen.ID("err")).Op(":=").ID("builder").Dot("ToSql").Call(),
 			jen.ID("b").Dot("logQueryBuildingError").Call(
 				jen.ID("span"),
 				jen.ID("err"),
 			),
+			jen.Newline(),
 			jen.Return().List(jen.ID("query"), jen.ID("append").Call(
 				jen.ID("countQueryArgs"),
 				jen.ID("selectArgs").Op("..."),
@@ -158,20 +185,24 @@ func buildBuildCreateAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith
 	lines := []jen.Code{
 		jen.Comment("BuildCreateAuditLogEntryQuery takes an audit log entry and returns a creation query for that audit log entry and the relevant arguments."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID("Sqlite")).ID("BuildCreateAuditLogEntryQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("types").Dot("AuditLogEntryCreationInput")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildCreateAuditLogEntryQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
 			jen.ID("tracing").Dot("AttachAuditLogEntryEventTypeToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("EventType"),
 			),
+			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.ID("querybuilding").Dot("AuditLogEntriesTableName")).Dot("Columns").Call(
-					jen.ID("querybuilding").Dot("ExternalIDColumn"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableEventTypeColumn"),
-					jen.ID("querybuilding").Dot("AuditLogEntriesTableContextColumn"),
-				).Dot("Values").Call(
+				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
+					Dotln("Columns").Callln(
+					jen.Qual(proj.QuerybuildingPackage(), "ExternalIDColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableEventTypeColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
+				).
+					Dotln("Values").Callln(
 					jen.ID("b").Dot("externalIDGenerator").Dot("NewExternalID").Call(),
 					jen.ID("input").Dot("EventType"),
 					jen.ID("input").Dot("Context"),

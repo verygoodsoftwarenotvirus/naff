@@ -49,8 +49,8 @@ func RenderPackage(proj *models.Project) error {
 		}
 
 		files := map[string]string{
-			"generic.go":      genericDotGo(proj),
-			"generic_test.go": genericTestDotGo(proj),
+			"generic.go":      genericDotGo(proj, dbvendor),
+			"generic_test.go": genericTestDotGo(proj, dbvendor),
 			fmt.Sprintf("%s.go", dbvendor.RouteName()):      mainDotGo(proj, dbvendor),
 			fmt.Sprintf("%s_test.go", dbvendor.RouteName()): mainTestDotGo(proj, dbvendor),
 		}
@@ -97,15 +97,23 @@ func RenderPackage(proj *models.Project) error {
 //go:embed templates/generic.gotpl
 var genericTemplate string
 
-func genericDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, genericTemplate, nil)
+func genericDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) string {
+	generated := map[string]string{
+		"packageName": dbvendor.SingularPackageName(),
+		"structName":  dbvendor.Singular(),
+	}
+	return models.RenderCodeFile(proj, genericTemplate, generated)
 }
 
 //go:embed templates/generic_test.gotpl
 var genericTestTemplate string
 
-func genericTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, genericTestTemplate, nil)
+func genericTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) string {
+	generated := map[string]string{
+		"packageName": dbvendor.SingularPackageName(),
+		"structName":  dbvendor.Singular(),
+	}
+	return models.RenderCodeFile(proj, genericTestTemplate, generated)
 }
 
 var (

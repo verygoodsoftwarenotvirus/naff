@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -12,11 +13,17 @@ func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File 
 
 	utils.AddImports(proj, code, false)
 
+	suffix := "DB"
+	if dbvendor.SingularPackageName() == "mariadb" {
+		suffix = "Connection"
+	}
+
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("Providers").Op("=").ID("wire").Dot("NewSet").Call(
-				jen.ID("ProvideSqliteDB"),
-				jen.ID("ProvideSqlite"),
+			jen.Comment("Providers is what we provide for dependency injection."),
+			jen.ID("Providers").Op("=").Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
+				jen.IDf("Provide%s%s", dbvendor.Singular(), suffix),
+				jen.IDf("Provide%s", dbvendor.Singular()),
 			),
 		),
 		jen.Newline(),

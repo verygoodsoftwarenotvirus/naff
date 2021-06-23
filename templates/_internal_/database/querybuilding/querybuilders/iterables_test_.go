@@ -948,10 +948,20 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
-			jen.IDf("example%s", sn).Dot("ID"),
-		),
+		func() jen.Code {
+			if dbvendor.SingularPackageName() == "mariadb" {
+				return jen.ID("expectedQuery").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit(query), jen.IDf("example%s", sn).Dot("ID"))
+			}
+			return jen.ID("expectedQuery").Op(":=").Lit(query)
+		}(),
+		func() jen.Code {
+			if dbvendor.SingularPackageName() == "mariadb" {
+				return jen.ID("expectedArgs").Op(":=").Index().Interface().Call(jen.Nil())
+			}
+			return jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+				jen.IDf("example%s", sn).Dot("ID"),
+			)
+		}(),
 		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGetAuditLogEntriesFor%sQuery", sn).Call(
 			jen.ID("ctx"),
 			jen.IDf("example%s", sn).Dot("ID"),
