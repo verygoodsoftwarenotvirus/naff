@@ -5,6 +5,8 @@ import (
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+
+	"github.com/Masterminds/squirrel"
 )
 
 func accountUserMembershipsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -28,6 +30,16 @@ func accountUserMembershipsTestDotGo(proj *models.Project, dbvendor wordsmith.Su
 }
 
 func buildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	query, _ := buildQuery(queryBuilderForDatabase(dbvendor).
+		Select("accounts.id").
+		From("accounts").
+		Join("account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id").
+		Where(squirrel.Eq{
+			"account_user_memberships.belongs_to_user": whateverValue,
+			"account_user_memberships.default_account": true,
+		}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetDefaultAccountIDForUserQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -42,7 +54,7 @@ func buildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Project, 
 					jen.Newline(),
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT accounts.id FROM accounts JOIN account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id WHERE account_user_memberships.belongs_to_user = ? AND account_user_memberships.default_account = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(query),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("true")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetDefaultAccountIDForUserQuery").Call(
 						jen.ID("ctx"),
@@ -62,6 +74,18 @@ func buildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Project, 
 }
 
 func buildTestSqlite_BuildUserIsMemberOfAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Select("account_user_memberships.id").
+			Prefix(existencePrefix).
+			From("account_user_memberships").
+			Where(squirrel.Eq{
+				"account_user_memberships.belongs_to_account": whateverValue,
+				"account_user_memberships.belongs_to_user":    whateverValue,
+				"account_user_memberships.archived_on":        nil,
+			}).
+			Suffix(")"),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildUserIsMemberOfAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -77,8 +101,11 @@ func buildTestSqlite_BuildUserIsMemberOfAccountQuery(proj *models.Project, dbven
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT EXISTS ( SELECT account_user_memberships.id FROM account_user_memberships WHERE account_user_memberships.archived_on IS NULL AND account_user_memberships.belongs_to_user = ? )"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
+					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccount").Dot("ID"),
+						jen.ID("exampleUser").Dot("ID"),
+					),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildUserIsMemberOfAccountQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -98,6 +125,20 @@ func buildTestSqlite_BuildUserIsMemberOfAccountQuery(proj *models.Project, dbven
 }
 
 func buildTestSqlite_BuildAddUserToAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Insert("account_user_memberships").
+			Columns(
+				"belongs_to_user",
+				"belongs_to_account",
+				"account_roles",
+			).
+			Values(
+				whateverValue,
+				whateverValue,
+				whateverValue,
+			),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildAddUserToAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -114,7 +155,7 @@ func buildTestSqlite_BuildAddUserToAccountQuery(proj *models.Project, dbvendor w
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.ID("exampleInput").Op(":=").Op("&").Qual(proj.TypesPackage(), "AddUserToAccountInput").Valuesln(jen.ID("UserID").Op(":").ID("exampleUser").Dot("ID"), jen.ID("AccountID").Op(":").ID("exampleAccount").Dot("ID"), jen.ID("Reason").Op(":").ID("t").Dot("Name").Call(), jen.ID("AccountRoles").Op(":").Index().ID("string").Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call())),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO account_user_memberships (belongs_to_user,belongs_to_account,account_roles) VALUES (?,?,?)"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleInput").Dot("UserID"), jen.ID("exampleAccount").Dot("ID"), jen.Qual("strings", "Join").Call(
 						jen.ID("exampleInput").Dot("AccountRoles"),
 						jen.ID("accountMemberRolesSeparator"),
@@ -137,6 +178,15 @@ func buildTestSqlite_BuildAddUserToAccountQuery(proj *models.Project, dbvendor w
 }
 
 func buildTestSqlite_BuildRemoveUserFromAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Delete("account_user_memberships").
+			Where(squirrel.Eq{
+				"account_user_memberships.belongs_to_account": whateverValue,
+				"account_user_memberships.belongs_to_user":    whateverValue,
+				"account_user_memberships.archived_on":        nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildRemoveUserFromAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -152,7 +202,7 @@ func buildTestSqlite_BuildRemoveUserFromAccountQuery(proj *models.Project, dbven
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("DELETE FROM account_user_memberships WHERE account_user_memberships.archived_on IS NULL AND account_user_memberships.belongs_to_account = ? AND account_user_memberships.belongs_to_user = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ID"), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildRemoveUserFromAccountQuery").Call(
 						jen.ID("ctx"),
@@ -173,6 +223,15 @@ func buildTestSqlite_BuildRemoveUserFromAccountQuery(proj *models.Project, dbven
 }
 
 func buildTestSqlite_BuildArchiveAccountMembershipsForUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("account_user_memberships").
+			Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Where(squirrel.Eq{
+				"belongs_to_user": whateverValue,
+				"archived_on":     nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildArchiveAccountMembershipsForUserQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -187,7 +246,7 @@ func buildTestSqlite_BuildArchiveAccountMembershipsForUserQuery(proj *models.Pro
 					jen.Newline(),
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE account_user_memberships SET archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to_user = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildArchiveAccountMembershipsForUserQuery").Call(
 						jen.ID("ctx"),
@@ -207,6 +266,22 @@ func buildTestSqlite_BuildArchiveAccountMembershipsForUserQuery(proj *models.Pro
 }
 
 func buildTestSqlite_BuildCreateMembershipForNewUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	exampleQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Insert("account_user_memberships").
+			Columns(
+				"belongs_to_user",
+				"belongs_to_account",
+				"default_account",
+				"account_roles",
+			).
+			Values(
+				whateverValue,
+				whateverValue,
+				true,
+				whateverValue,
+			),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildCreateMembershipForNewUserQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -222,7 +297,7 @@ func buildTestSqlite_BuildCreateMembershipForNewUserQuery(proj *models.Project, 
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO account_user_memberships (belongs_to_user,belongs_to_account,default_account,account_roles) VALUES (?,?,?,?)"),
+					jen.ID("expectedQuery").Op(":=").Lit(exampleQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID"), jen.ID("true"), jen.Qual(proj.InternalAuthorizationPackage(), "AccountAdminRole").Dot("String").Call()),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildCreateMembershipForNewUserQuery").Call(
 						jen.ID("ctx"),
@@ -243,6 +318,25 @@ func buildTestSqlite_BuildCreateMembershipForNewUserQuery(proj *models.Project, 
 }
 
 func buildTestSqlite_BuildGetAccountMembershipsForUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Select(
+			"account_user_memberships.id",
+			"account_user_memberships.belongs_to_user",
+			"account_user_memberships.belongs_to_account",
+			"account_user_memberships.account_roles",
+			"account_user_memberships.default_account",
+			"account_user_memberships.created_on",
+			"account_user_memberships.last_updated_on",
+			"account_user_memberships.archived_on",
+		).
+			Join("accounts ON accounts.id = account_user_memberships.belongs_to_account").
+			From("account_user_memberships").
+			Where(squirrel.Eq{
+				"account_user_memberships.archived_on":     nil,
+				"account_user_memberships.belongs_to_user": whateverValue,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetAccountMembershipsForUserQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -257,7 +351,7 @@ func buildTestSqlite_BuildGetAccountMembershipsForUserQuery(proj *models.Project
 					jen.Newline(),
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT account_user_memberships.id, account_user_memberships.belongs_to_user, account_user_memberships.belongs_to_account, account_user_memberships.account_roles, account_user_memberships.default_account, account_user_memberships.created_on, account_user_memberships.last_updated_on, account_user_memberships.archived_on FROM account_user_memberships JOIN accounts ON accounts.id = account_user_memberships.belongs_to_account WHERE account_user_memberships.archived_on IS NULL AND account_user_memberships.belongs_to_user = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAccountMembershipsForUserQuery").Call(
 						jen.ID("ctx"),
@@ -277,6 +371,18 @@ func buildTestSqlite_BuildGetAccountMembershipsForUserQuery(proj *models.Project
 }
 
 func buildTestSqlite_BuildMarkAccountAsUserDefaultQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("account_user_memberships").
+			Set("default_account", squirrel.And{
+				squirrel.Eq{"belongs_to_user": whateverValue},
+				squirrel.Eq{"belongs_to_account": whateverValue},
+			}).
+			Where(squirrel.Eq{
+				"belongs_to_user": whateverValue,
+				"archived_on":     nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildMarkAccountAsUserDefaultQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -292,7 +398,7 @@ func buildTestSqlite_BuildMarkAccountAsUserDefaultQuery(proj *models.Project, db
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE account_user_memberships SET default_account = (belongs_to_user = ? AND belongs_to_account = ?) WHERE archived_on IS NULL AND belongs_to_user = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID"), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildMarkAccountAsUserDefaultQuery").Call(
 						jen.ID("ctx"),
@@ -313,6 +419,15 @@ func buildTestSqlite_BuildMarkAccountAsUserDefaultQuery(proj *models.Project, db
 }
 
 func buildTestSqlite_BuildModifyUserPermissionsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("account_user_memberships").
+			Set("account_roles", whateverValue).
+			Where(squirrel.Eq{
+				"belongs_to_user":    whateverValue,
+				"belongs_to_account": whateverValue,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildModifyUserPermissionsQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -329,7 +444,7 @@ func buildTestSqlite_BuildModifyUserPermissionsQuery(proj *models.Project, dbven
 					jen.ID("exampleRoles").Op(":=").Index().ID("string").Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call()),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE account_user_memberships SET account_roles = ? WHERE belongs_to_account = ? AND belongs_to_user = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.Qual("strings", "Join").Call(
 						jen.ID("exampleRoles"),
 						jen.ID("accountMemberRolesSeparator"),
@@ -354,6 +469,16 @@ func buildTestSqlite_BuildModifyUserPermissionsQuery(proj *models.Project, dbven
 }
 
 func buildTestSqlite_BuildTransferAccountOwnershipQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("accounts").
+			Set("belongs_to_user", whateverValue).
+			Where(squirrel.Eq{
+				"id":              whateverValue,
+				"belongs_to_user": whateverValue,
+				"archived_on":     nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildTransferAccountOwnershipQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -370,7 +495,7 @@ func buildTestSqlite_BuildTransferAccountOwnershipQuery(proj *models.Project, db
 					jen.ID("exampleNewOwner").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE accounts SET belongs_to_user = ? WHERE archived_on IS NULL AND belongs_to_user = ? AND id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleNewOwner").Dot("ID"), jen.ID("exampleOldOwner").Dot("ID"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildTransferAccountOwnershipQuery").Call(
 						jen.ID("ctx"),
@@ -392,6 +517,16 @@ func buildTestSqlite_BuildTransferAccountOwnershipQuery(proj *models.Project, db
 }
 
 func buildTestSqlite_BuildTransferAccountMembershipsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	exampleQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("account_user_memberships").
+			Set("belongs_to_user", whateverValue).
+			Where(squirrel.Eq{
+				"belongs_to_account": whateverValue,
+				"belongs_to_user":    whateverValue,
+				"archived_on":        nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildTransferAccountMembershipsQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -408,7 +543,7 @@ func buildTestSqlite_BuildTransferAccountMembershipsQuery(proj *models.Project, 
 					jen.ID("exampleNewOwner").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE account_user_memberships SET belongs_to_user = ? WHERE archived_on IS NULL AND belongs_to_account = ? AND belongs_to_user = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(exampleQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleNewOwner").Dot("ID"), jen.ID("exampleAccount").Dot("ID"), jen.ID("exampleOldOwner").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildTransferAccountMembershipsQuery").Call(
 						jen.ID("ctx"),

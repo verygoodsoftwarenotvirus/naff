@@ -206,7 +206,7 @@ func buildBuildCreateAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith
 					jen.ID("b").Dot("externalIDGenerator").Dot("NewExternalID").Call(),
 					jen.ID("input").Dot("EventType"),
 					jen.ID("input").Dot("Context"),
-				),
+				).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),

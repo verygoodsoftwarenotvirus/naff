@@ -1,11 +1,15 @@
 package querybuilders
 
 import (
+	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+
+	"github.com/Masterminds/squirrel"
 )
 
 func accountsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -26,6 +30,38 @@ func accountsTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 }
 
 func buildTestSqlite_BuildGetAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Select(
+			"accounts.id",
+			"accounts.external_id",
+			"accounts.name",
+			"accounts.billing_status",
+			"accounts.contact_email",
+			"accounts.contact_phone",
+			"accounts.payment_processor_customer_id",
+			"accounts.subscription_plan_id",
+			"accounts.created_on",
+			"accounts.last_updated_on",
+			"accounts.archived_on",
+			"accounts.belongs_to_user",
+			"account_user_memberships.id",
+			"account_user_memberships.belongs_to_user",
+			"account_user_memberships.belongs_to_account",
+			"account_user_memberships.account_roles",
+			"account_user_memberships.default_account",
+			"account_user_memberships.created_on",
+			"account_user_memberships.last_updated_on",
+			"account_user_memberships.archived_on",
+		).
+			From("accounts").
+			Join("account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id").
+			Where(squirrel.Eq{
+				"accounts.id":              whateverValue,
+				"accounts.belongs_to_user": whateverValue,
+				"accounts.archived_on":     nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -42,7 +78,7 @@ func buildTestSqlite_BuildGetAccountQuery(proj *models.Project, dbvendor wordsmi
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.ID("exampleAccount").Dot("BelongsToUser").Op("=").ID("exampleUser").Dot("ID"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT accounts.id, accounts.external_id, accounts.name, accounts.billing_status, accounts.contact_email, accounts.contact_phone, accounts.payment_processor_customer_id, accounts.subscription_plan_id, accounts.created_on, accounts.last_updated_on, accounts.archived_on, accounts.belongs_to_user, account_user_memberships.id, account_user_memberships.belongs_to_user, account_user_memberships.belongs_to_account, account_user_memberships.account_roles, account_user_memberships.default_account, account_user_memberships.created_on, account_user_memberships.last_updated_on, account_user_memberships.archived_on FROM accounts JOIN account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = ? AND accounts.id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("BelongsToUser"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAccountQuery").Call(
 						jen.ID("ctx"),
@@ -75,6 +111,13 @@ func buildTestSqlite_BuildGetAccountQuery(proj *models.Project, dbvendor wordsmi
 }
 
 func buildTestSqlite_BuildGetAllAccountsCountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(queryBuilderForDatabase(dbvendor).
+		Select(fmt.Sprintf(columnCountQueryTemplate, "accounts")).
+		From("accounts").
+		Where(squirrel.Eq{
+			"accounts.archived_on": nil,
+		}))
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetAllAccountsCountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -88,7 +131,7 @@ func buildTestSqlite_BuildGetAllAccountsCountQuery(proj *models.Project, dbvendo
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.Newline(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("actualQuery").Op(":=").ID("q").Dot("BuildGetAllAccountsCountQuery").Call(jen.ID("ctx")),
 					jen.Newline(),
 					jen.ID("assertArgCountMatchesQuery").Call(
@@ -111,6 +154,30 @@ func buildTestSqlite_BuildGetAllAccountsCountQuery(proj *models.Project, dbvendo
 }
 
 func buildTestSqlite_BuildGetBatchOfAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Select(
+			"accounts.id",
+			"accounts.external_id",
+			"accounts.name",
+			"accounts.billing_status",
+			"accounts.contact_email",
+			"accounts.contact_phone",
+			"accounts.payment_processor_customer_id",
+			"accounts.subscription_plan_id",
+			"accounts.created_on",
+			"accounts.last_updated_on",
+			"accounts.archived_on",
+			"accounts.belongs_to_user",
+		).
+			From("accounts").
+			Where(squirrel.Gt{
+				"accounts.id": whateverValue,
+			}).
+			Where(squirrel.Lt{
+				"accounts.id": whateverValue,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetBatchOfAccountsQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -125,7 +192,7 @@ func buildTestSqlite_BuildGetBatchOfAccountsQuery(proj *models.Project, dbvendor
 					jen.Newline(),
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Op(":=").List(jen.ID("uint64").Call(jen.Lit(1)), jen.ID("uint64").Call(jen.Lit(1000))),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT accounts.id, accounts.external_id, accounts.name, accounts.billing_status, accounts.contact_email, accounts.contact_phone, accounts.payment_processor_customer_id, accounts.subscription_plan_id, accounts.created_on, accounts.last_updated_on, accounts.archived_on, accounts.belongs_to_user FROM accounts WHERE accounts.id > ? AND accounts.id < ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetBatchOfAccountsQuery").Call(
 						jen.ID("ctx"),
@@ -173,7 +240,7 @@ func buildTestSqlite_BuildGetAccountsQuery(proj *models.Project, dbvendor wordsm
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("filter").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT accounts.id, accounts.external_id, accounts.name, accounts.billing_status, accounts.contact_email, accounts.contact_phone, accounts.payment_processor_customer_id, accounts.subscription_plan_id, accounts.created_on, accounts.last_updated_on, accounts.archived_on, accounts.belongs_to_user, account_user_memberships.id, account_user_memberships.belongs_to_user, account_user_memberships.belongs_to_account, account_user_memberships.account_roles, account_user_memberships.default_account, account_user_memberships.created_on, account_user_memberships.last_updated_on, account_user_memberships.archived_on, (SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = ?) as total_count, (SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = ? AND accounts.created_on > ? AND accounts.created_on < ? AND accounts.last_updated_on > ? AND accounts.last_updated_on < ?) as filtered_count FROM accounts JOIN account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = ? AND accounts.created_on > ? AND accounts.created_on < ? AND accounts.last_updated_on > ? AND accounts.last_updated_on < ? GROUP BY accounts.id LIMIT 20 OFFSET 180"),
+					jen.ID("expectedQuery").Op(":=").Litf("SELECT accounts.id, accounts.external_id, accounts.name, accounts.billing_status, accounts.contact_email, accounts.contact_phone, accounts.payment_processor_customer_id, accounts.subscription_plan_id, accounts.created_on, accounts.last_updated_on, accounts.archived_on, accounts.belongs_to_user, account_user_memberships.id, account_user_memberships.belongs_to_user, account_user_memberships.belongs_to_account, account_user_memberships.account_roles, account_user_memberships.default_account, account_user_memberships.created_on, account_user_memberships.last_updated_on, account_user_memberships.archived_on, (SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = %s) as total_count, (SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = %s AND accounts.created_on > %s AND accounts.created_on < %s AND accounts.last_updated_on > %s AND accounts.last_updated_on < %s) as filtered_count FROM accounts JOIN account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = %s AND accounts.created_on > %s AND accounts.created_on < %s AND accounts.last_updated_on > %s AND accounts.last_updated_on < %s GROUP BY (accounts.id, account_user_memberships.id) LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7), getIncIndex(dbvendor, 8), getIncIndex(dbvendor, 9), getIncIndex(dbvendor, 10)),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAccountsQuery").Call(
 						jen.ID("ctx"),
@@ -207,6 +274,30 @@ func buildTestSqlite_BuildGetAccountsQuery(proj *models.Project, dbvendor wordsm
 }
 
 func buildTestSqlite_BuildCreateAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	qb := queryBuilderForDatabase(dbvendor).Insert("accounts").
+		Columns(
+			"external_id",
+			"name",
+			"billing_status",
+			"contact_email",
+			"contact_phone",
+			"belongs_to_user",
+		).
+		Values(
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+		)
+
+	if dbvendor.SingularPackageName() == "postgres" {
+		qb = qb.Suffix("RETURNING id")
+	}
+
+	expectedQuery, _ := buildQuery(qb)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildCreateAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -228,7 +319,7 @@ func buildTestSqlite_BuildCreateAccountQuery(proj *models.Project, dbvendor word
 					jen.ID("exIDGen").Dot("On").Call(jen.Lit("NewExternalID")).Dot("Return").Call(jen.ID("exampleAccount").Dot("ExternalID")),
 					jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO accounts (external_id,name,billing_status,contact_email,contact_phone,belongs_to_user) VALUES (?,?,?,?,?,?)"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ExternalID"), jen.ID("exampleAccount").Dot("Name"), jen.Qual(proj.TypesPackage(), "UnpaidAccountBillingStatus"), jen.ID("exampleAccount").Dot("ContactEmail"), jen.ID("exampleAccount").Dot("ContactPhone"), jen.ID("exampleAccount").Dot("BelongsToUser")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildAccountCreationQuery").Call(
 						jen.ID("ctx"),
@@ -265,6 +356,19 @@ func buildTestSqlite_BuildCreateAccountQuery(proj *models.Project, dbvendor word
 }
 
 func buildTestSqlite_BuildUpdateAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("accounts").
+			Set("name", whateverValue).
+			Set("contact_email", whateverValue).
+			Set("contact_phone", whateverValue).
+			Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Where(squirrel.Eq{
+				"id":              whateverValue,
+				"archived_on":     nil,
+				"belongs_to_user": whateverValue,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildUpdateAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -281,7 +385,7 @@ func buildTestSqlite_BuildUpdateAccountQuery(proj *models.Project, dbvendor word
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.ID("exampleAccount").Dot("BelongsToUser").Op("=").ID("exampleUser").Dot("ID"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE accounts SET name = ?, contact_email = ?, contact_phone = ?, last_updated_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to_user = ? AND id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("Name"), jen.ID("exampleAccount").Dot("ContactEmail"), jen.ID("exampleAccount").Dot("ContactPhone"), jen.ID("exampleAccount").Dot("BelongsToUser"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildUpdateAccountQuery").Call(
 						jen.ID("ctx"),
@@ -313,6 +417,17 @@ func buildTestSqlite_BuildUpdateAccountQuery(proj *models.Project, dbvendor word
 }
 
 func buildTestSqlite_BuildArchiveAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("accounts").
+			Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Where(squirrel.Eq{
+				"id":              whateverValue,
+				"archived_on":     nil,
+				"belongs_to_user": whateverValue,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildArchiveAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -329,7 +444,7 @@ func buildTestSqlite_BuildArchiveAccountQuery(proj *models.Project, dbvendor wor
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.ID("exampleAccount").Dot("BelongsToUser").Op("=").ID("exampleUser").Dot("ID"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE accounts SET last_updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to_user = ? AND id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildArchiveAccountQuery").Call(
 						jen.ID("ctx"),
@@ -362,6 +477,46 @@ func buildTestSqlite_BuildArchiveAccountQuery(proj *models.Project, dbvendor wor
 }
 
 func buildTestSqlite_BuildGetAuditLogEntriesForAccountQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	var accountIDKey string
+
+	switch dbvendor.LowercaseAbbreviation() {
+	case "m":
+		accountIDKey = fmt.Sprintf(`JSON_CONTAINS(%s.%s, '%s', '$.%s')`, "audit_log", "context", "%d", "account_id")
+	case "p":
+		accountIDKey = fmt.Sprintf(`%s.%s->'%s'`, "audit_log", "context", "account_id")
+	case "s":
+		accountIDKey = fmt.Sprintf(`json_extract(%s.%s, '$.%s')`, "audit_log", "context", "account_id")
+	}
+
+	qb := queryBuilderForDatabase(dbvendor).Select(
+		"audit_log.id",
+		"audit_log.external_id",
+		"audit_log.event_type",
+		"audit_log.context",
+		"audit_log.created_on",
+	).
+		From("audit_log")
+
+	if dbvendor.SingularPackageName() == "mariadb" {
+		qb = qb.Where(squirrel.Expr(accountIDKey))
+	} else {
+		qb = qb.Where(squirrel.Eq{accountIDKey: whateverValue})
+	}
+
+	qb = qb.OrderBy("audit_log.created_on")
+
+	expectedQuery, _ := buildQuery(qb)
+
+	expectedQueryDecl := jen.ID("expectedQuery").Op(":=").Lit(expectedQuery)
+	if dbvendor.SingularPackageName() == "mariadb" {
+		expectedQueryDecl = jen.ID("expectedQuery").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleAccount").Dot("ID"))
+	}
+
+	expectedArgsDecl := jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ID"))
+	if dbvendor.SingularPackageName() == "mariadb" {
+		expectedArgsDecl = jen.ID("expectedArgs").Op(":=").Index().Interface().Call(jen.Nil())
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetAuditLogEntriesForAccountQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -376,8 +531,8 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAccountQuery(proj *models.Project
 					jen.Newline(),
 					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE json_extract(audit_log.context, '$.account_id') = ? ORDER BY audit_log.created_on"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ID")),
+					expectedQueryDecl,
+					expectedArgsDecl,
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAuditLogEntriesForAccountQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccount").Dot("ID"),

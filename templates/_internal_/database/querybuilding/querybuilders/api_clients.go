@@ -234,7 +234,7 @@ func buildBuildCreateAPIClientQuery(proj *models.Project, dbvendor wordsmith.Sup
 					jen.ID("input").Dot("ClientID"),
 					jen.ID("input").Dot("ClientSecret"),
 					jen.ID("input").Dot("BelongsToUser"),
-				),
+				).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),

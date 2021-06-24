@@ -27,16 +27,16 @@ func accountUserMembershipsDotGo(proj *models.Project, dbvendor wordsmith.SuperP
 	)
 
 	code.Add(buildBuildGetDefaultAccountIDForUserQuery(proj, dbvendor)...)
-	code.Add(buildBuildArchiveAccountMembershipsForUserQuery(proj, dbvendor)...)
 	code.Add(buildBuildGetAccountMembershipsForUserQuery(proj, dbvendor)...)
-	code.Add(buildBuildMarkAccountAsUserDefaultQuery(proj, dbvendor)...)
-	code.Add(buildBuildTransferAccountOwnershipQuery(proj, dbvendor)...)
-	code.Add(buildBuildTransferAccountMembershipsQuery(proj, dbvendor)...)
-	code.Add(buildBuildModifyUserPermissionsQuery(proj, dbvendor)...)
-	code.Add(buildBuildCreateMembershipForNewUserQuery(proj, dbvendor)...)
 	code.Add(buildBuildUserIsMemberOfAccountQuery(proj, dbvendor)...)
 	code.Add(buildBuildAddUserToAccountQuery(proj, dbvendor)...)
+	code.Add(buildBuildMarkAccountAsUserDefaultQuery(proj, dbvendor)...)
+	code.Add(buildBuildModifyUserPermissionsQuery(proj, dbvendor)...)
+	code.Add(buildBuildTransferAccountOwnershipQuery(proj, dbvendor)...)
+	code.Add(buildBuildTransferAccountMembershipsQuery(proj, dbvendor)...)
+	code.Add(buildBuildCreateMembershipForNewUserQuery(proj, dbvendor)...)
 	code.Add(buildBuildRemoveUserFromAccountQuery(proj, dbvendor)...)
+	code.Add(buildBuildArchiveAccountMembershipsForUserQuery(proj, dbvendor)...)
 
 	return code
 }
@@ -343,7 +343,7 @@ func buildBuildUserIsMemberOfAccountQuery(proj *models.Project, dbvendor wordsmi
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn"),
+					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
 				).Op(":").ID("accountID"),
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),

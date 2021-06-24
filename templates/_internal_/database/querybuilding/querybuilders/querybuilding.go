@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	"github.com/Masterminds/squirrel"
@@ -21,6 +22,13 @@ const (
 	// allCountQuery is a generic counter query used in a few query builders.
 	allCountQuery = `COUNT(*)`
 )
+
+func getIncIndex(dbv wordsmith.SuperPalabra, index uint) string {
+	if dbv.LowercaseAbbreviation() == "p" {
+		return fmt.Sprintf("$%d", index+1)
+	}
+	return "?"
+}
 
 // BuildQuery builds a given query, handles whatever errs and returns just the query and args.
 func buildQuery(builder squirrel.Sqlizer) (query string, args []interface{}) {

@@ -14,20 +14,34 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("migrations").Op("=").Index().ID("darwin").Dot("Migration").Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(0.00), jen.ID("Description").Op(":").Lit("create sessions table for session manager"), jen.ID("Script").Op(":").Lit(`
+			jen.ID("migrations").Op("=").Index().Qual("github.com/GuiaBolso/darwin", "Migration").Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(0.00),
+				jen.ID("Description").Op(":").Lit("create sessions table for session manager"),
+				jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE sessions (
 				token TEXT PRIMARY KEY,
 				data BLOB NOT NULL,
 				expiry REAL NOT NULL,
 				created_on INTEGER NOT NULL DEFAULT (strftime('%s','now'))
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.01), jen.ID("Description").Op(":").Lit("create sessions table for session manager"), jen.ID("Script").Op(":").Lit(`CREATE INDEX sessions_expiry_idx ON sessions(expiry);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.02), jen.ID("Description").Op(":").Lit("create audit log table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+			),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.01),
+					jen.ID("Description").Op(":").Lit("create sessions table for session manager"),
+					jen.ID("Script").Op(":").RawString(`CREATE INDEX sessions_expiry_idx ON sessions(expiry);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.02),
+					jen.ID("Description").Op(":").Lit("create audit log table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS audit_log (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				external_id TEXT NOT NULL,
 				event_type TEXT NOT NULL,
 				context JSON NOT NULL,
 				created_on BIGINT NOT NULL DEFAULT (strftime('%s','now'))
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.03), jen.ID("Description").Op(":").Lit("create users table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.03),
+					jen.ID("Description").Op(":").Lit("create users table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS users (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				external_id TEXT NOT NULL,
@@ -45,7 +59,11 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 				last_updated_on INTEGER DEFAULT NULL,
 				archived_on INTEGER DEFAULT NULL,
 				CONSTRAINT username_unique UNIQUE (username)
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.04), jen.ID("Description").Op(":").Lit("create accounts table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.04),
+					jen.ID("Description").Op(":").Lit("create accounts table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS accounts (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				external_id TEXT NOT NULL,
@@ -60,7 +78,11 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 				last_updated_on INTEGER DEFAULT NULL,
 				archived_on INTEGER DEFAULT NULL,
 				CONSTRAINT account_name_unique UNIQUE (name, belongs_to_user)
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.05), jen.ID("Description").Op(":").Lit("create account user memberships table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.05),
+					jen.ID("Description").Op(":").Lit("create account user memberships table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS account_user_memberships (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				belongs_to_account INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -71,7 +93,11 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 				last_updated_on INTEGER DEFAULT NULL,
 				archived_on INTEGER DEFAULT NULL,
 				CONSTRAINT plan_name_unique UNIQUE (belongs_to_account, belongs_to_user)
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.06), jen.ID("Description").Op(":").Lit("create API clients table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.06),
+					jen.ID("Description").Op(":").Lit("create API clients table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS api_clients (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				external_id TEXT NOT NULL,
@@ -84,7 +110,11 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 				last_updated_on INTEGER DEFAULT NULL,
 				archived_on INTEGER DEFAULT NULL,
 				belongs_to_user INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.07), jen.ID("Description").Op(":").Lit("create webhooks table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.07),
+					jen.ID("Description").Op(":").Lit("create webhooks table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS webhooks (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				external_id TEXT NOT NULL,
@@ -99,7 +129,11 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 				last_updated_on INTEGER DEFAULT NULL,
 				archived_on INTEGER DEFAULT NULL,
 				belongs_to_account INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE
-			);`)), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.08), jen.ID("Description").Op(":").Lit("create items table"), jen.ID("Script").Op(":").Lit(`
+			);`),
+				),
+				jen.Valuesln(jen.ID("Version").Op(":").Lit(0.08),
+					jen.ID("Description").Op(":").Lit("create items table"),
+					jen.ID("Script").Op(":").RawString(`
 			CREATE TABLE IF NOT EXISTS items (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				external_id TEXT NOT NULL,
@@ -121,15 +155,16 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildMigrationFunc").Params(jen.ID("db").Op("*").Qual("database/sql", "DB")).Params(jen.Func().Params()).Body(
 			jen.Return().Func().Params().Body(
-				jen.ID("d").Op(":=").ID("darwin").Dot("NewGenericDriver").Call(
+				jen.ID("d").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(
 					jen.ID("db"),
-					jen.ID("darwin").Dot("SqliteDialect").Values(),
+					jen.Qual("github.com/GuiaBolso/darwin", "SqliteDialect").Values(),
 				),
-				jen.If(jen.ID("err").Op(":=").ID("darwin").Dot("Migrate").Call(
+				jen.If(jen.ID("err").Op(":=").Qual("github.com/GuiaBolso/darwin", "Migrate").Call(
 					jen.ID("d"),
 					jen.ID("migrations"),
 					jen.ID("nil"),
-				), jen.ID("err").Op("!=").ID("nil")).Body(
+				),
+					jen.ID("err").Op("!=").ID("nil")).Body(
 					jen.ID("panic").Call(jen.Qual("fmt", "Errorf").Call(
 						jen.Lit("migrating database: %w"),
 						jen.ID("err"),

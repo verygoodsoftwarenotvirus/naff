@@ -1,11 +1,14 @@
 package querybuilders
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
+
+	"github.com/Masterminds/squirrel"
 )
 
 func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -25,7 +28,33 @@ func webhooksTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *j
 	return code
 }
 
+var webhooksTableColumns = []string{
+	"webhooks.id",
+	"webhooks.external_id",
+	"webhooks.name",
+	"webhooks.content_type",
+	"webhooks.url",
+	"webhooks.method",
+	"webhooks.events",
+	"webhooks.data_types",
+	"webhooks.topics",
+	"webhooks.created_on",
+	"webhooks.last_updated_on",
+	"webhooks.archived_on",
+	"webhooks.belongs_to_account",
+}
+
 func buildTestSqlite_BuildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Select(webhooksTableColumns...).
+			From("webhooks").
+			Where(squirrel.Eq{
+				"webhooks.id":                 whateverValue,
+				"webhooks.belongs_to_account": whateverValue,
+				"webhooks.archived_on":        nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetWebhookQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -40,7 +69,7 @@ func buildTestSqlite_BuildGetWebhookQuery(proj *models.Project, dbvendor wordsmi
 					jen.Newline(),
 					jen.ID("exampleWebhook").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeWebhook").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT webhooks.id, webhooks.external_id, webhooks.name, webhooks.content_type, webhooks.url, webhooks.method, webhooks.events, webhooks.data_types, webhooks.topics, webhooks.created_on, webhooks.last_updated_on, webhooks.archived_on, webhooks.belongs_to_account FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = ? AND webhooks.id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("BelongsToAccount"), jen.ID("exampleWebhook").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetWebhookQuery").Call(
 						jen.ID("ctx"),
@@ -122,7 +151,7 @@ func buildTestSqlite_BuildGetBatchOfWebhooksQuery(proj *models.Project, dbvendor
 					jen.Newline(),
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Op(":=").List(jen.ID("uint64").Call(jen.Lit(1)), jen.ID("uint64").Call(jen.Lit(1000))),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT webhooks.id, webhooks.external_id, webhooks.name, webhooks.content_type, webhooks.url, webhooks.method, webhooks.events, webhooks.data_types, webhooks.topics, webhooks.created_on, webhooks.last_updated_on, webhooks.archived_on, webhooks.belongs_to_account FROM webhooks WHERE webhooks.id > ? AND webhooks.id < ?"),
+					jen.ID("expectedQuery").Op(":=").Litf("SELECT webhooks.id, webhooks.external_id, webhooks.name, webhooks.content_type, webhooks.url, webhooks.method, webhooks.events, webhooks.data_types, webhooks.topics, webhooks.created_on, webhooks.last_updated_on, webhooks.archived_on, webhooks.belongs_to_account FROM webhooks WHERE webhooks.id > %s AND webhooks.id < %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetBatchOfWebhooksQuery").Call(
 						jen.ID("ctx"),
@@ -170,7 +199,7 @@ func buildTestSqlite_BuildGetWebhooksQuery(proj *models.Project, dbvendor wordsm
 					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("filter").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT webhooks.id, webhooks.external_id, webhooks.name, webhooks.content_type, webhooks.url, webhooks.method, webhooks.events, webhooks.data_types, webhooks.topics, webhooks.created_on, webhooks.last_updated_on, webhooks.archived_on, webhooks.belongs_to_account, (SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = ?) as total_count, (SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = ? AND webhooks.created_on > ? AND webhooks.created_on < ? AND webhooks.last_updated_on > ? AND webhooks.last_updated_on < ?) as filtered_count FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = ? AND webhooks.created_on > ? AND webhooks.created_on < ? AND webhooks.last_updated_on > ? AND webhooks.last_updated_on < ? GROUP BY webhooks.id LIMIT 20 OFFSET 180"),
+					jen.ID("expectedQuery").Op(":=").Litf("SELECT webhooks.id, webhooks.external_id, webhooks.name, webhooks.content_type, webhooks.url, webhooks.method, webhooks.events, webhooks.data_types, webhooks.topics, webhooks.created_on, webhooks.last_updated_on, webhooks.archived_on, webhooks.belongs_to_account, (SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = %s) as total_count, (SELECT COUNT(webhooks.id) FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = %s AND webhooks.created_on > %s AND webhooks.created_on < %s AND webhooks.last_updated_on > %s AND webhooks.last_updated_on < %s) as filtered_count FROM webhooks WHERE webhooks.archived_on IS NULL AND webhooks.belongs_to_account = %s AND webhooks.created_on > %s AND webhooks.created_on < %s AND webhooks.last_updated_on > %s AND webhooks.last_updated_on < %s GROUP BY webhooks.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7), getIncIndex(dbvendor, 8), getIncIndex(dbvendor, 9), getIncIndex(dbvendor, 10)),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetWebhooksQuery").Call(
 						jen.ID("ctx"),
@@ -203,6 +232,11 @@ func buildTestSqlite_BuildGetWebhooksQuery(proj *models.Project, dbvendor wordsm
 }
 
 func buildTestSqlite_BuildCreateWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	var querySuffix string
+	if dbvendor.SingularPackageName() == "postgres" {
+		querySuffix = " RETURNING id"
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildCreateWebhookQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -222,7 +256,7 @@ func buildTestSqlite_BuildCreateWebhookQuery(proj *models.Project, dbvendor word
 					jen.ID("exIDGen").Dot("On").Call(jen.Lit("NewExternalID")).Dot("Return").Call(jen.ID("exampleWebhook").Dot("ExternalID")),
 					jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO webhooks (external_id,name,content_type,url,method,events,data_types,topics,belongs_to_account) VALUES (?,?,?,?,?,?,?,?,?)"),
+					jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO webhooks (external_id,name,content_type,url,method,events,data_types,topics,belongs_to_account) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)%s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7), getIncIndex(dbvendor, 8), querySuffix),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("ExternalID"), jen.ID("exampleWebhook").Dot("Name"), jen.ID("exampleWebhook").Dot("ContentType"), jen.ID("exampleWebhook").Dot("URL"), jen.ID("exampleWebhook").Dot("Method"), jen.Qual("strings", "Join").Call(
 						jen.ID("exampleWebhook").Dot("Events"),
 						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableEventsSeparator"),
@@ -268,6 +302,23 @@ func buildTestSqlite_BuildCreateWebhookQuery(proj *models.Project, dbvendor word
 }
 
 func buildTestSqlite_BuildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("webhooks").
+			Set("name", whateverValue).
+			Set("content_type", whateverValue).
+			Set("url", whateverValue).
+			Set("method", whateverValue).
+			Set("events", whateverValue).
+			Set("data_types", whateverValue).
+			Set("topics", whateverValue).
+			Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Where(squirrel.Eq{
+				"id":                 whateverValue,
+				"belongs_to_account": whateverValue,
+				"archived_on":        nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildUpdateWebhookQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -282,7 +333,7 @@ func buildTestSqlite_BuildUpdateWebhookQuery(proj *models.Project, dbvendor word
 					jen.Newline(),
 					jen.ID("exampleWebhook").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeWebhook").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE webhooks SET name = ?, content_type = ?, url = ?, method = ?, events = ?, data_types = ?, topics = ?, last_updated_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to_account = ? AND id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("Name"), jen.ID("exampleWebhook").Dot("ContentType"), jen.ID("exampleWebhook").Dot("URL"), jen.ID("exampleWebhook").Dot("Method"), jen.Qual("strings", "Join").Call(
 						jen.ID("exampleWebhook").Dot("Events"),
 						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableEventsSeparator"),
@@ -323,6 +374,17 @@ func buildTestSqlite_BuildUpdateWebhookQuery(proj *models.Project, dbvendor word
 }
 
 func buildTestSqlite_BuildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Update("webhooks").
+			Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+			Where(squirrel.Eq{
+				"id":                 whateverValue,
+				"belongs_to_account": whateverValue,
+				"archived_on":        nil,
+			}),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildArchiveWebhookQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -337,7 +399,7 @@ func buildTestSqlite_BuildArchiveWebhookQuery(proj *models.Project, dbvendor wor
 					jen.Newline(),
 					jen.ID("exampleWebhook").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeWebhook").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("UPDATE webhooks SET last_updated_on = (strftime('%s','now')), archived_on = (strftime('%s','now')) WHERE archived_on IS NULL AND belongs_to_account = ? AND id = ?"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("BelongsToAccount"), jen.ID("exampleWebhook").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildArchiveWebhookQuery").Call(
 						jen.ID("ctx"),
@@ -370,6 +432,44 @@ func buildTestSqlite_BuildArchiveWebhookQuery(proj *models.Project, dbvendor wor
 }
 
 func buildTestSqlite_BuildGetAuditLogEntriesForWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	var webhookKey string
+
+	switch dbvendor.LowercaseAbbreviation() {
+	case "m":
+		webhookKey = fmt.Sprintf(`JSON_CONTAINS(%s.%s, '%s', '$.%s')`, "audit_log", "context", "%d", "webhook_id")
+	case "p":
+		webhookKey = fmt.Sprintf(`%s.%s->'%s'`, "audit_log", "context", "webhook_id")
+	case "s":
+		webhookKey = fmt.Sprintf(`json_extract(%s.%s, '$.%s')`, "audit_log", "context", "webhook_id")
+	}
+
+	queryBuilder := queryBuilderForDatabase(dbvendor).Select(
+		"audit_log.id",
+		"audit_log.external_id",
+		"audit_log.event_type",
+		"audit_log.context",
+		"audit_log.created_on",
+	).
+		From("audit_log")
+
+	if dbvendor.SingularPackageName() == "mariadb" {
+		queryBuilder = queryBuilder.Where(squirrel.Expr(webhookKey))
+	} else {
+		queryBuilder = queryBuilder.Where(squirrel.Eq{webhookKey: whateverValue})
+	}
+
+	queryBuilder = queryBuilder.OrderBy("audit_log.created_on")
+
+	expectedQuery, _ := buildQuery(queryBuilder)
+
+	expectedQueryDecl := jen.ID("expectedQuery").Op(":=").Lit(expectedQuery)
+	expectedArgs := jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("ID"))
+
+	if dbvendor.SingularPackageName() == "mariadb" {
+		expectedQueryDecl = jen.ID("expectedQuery").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleWebhook").Dot("ID"))
+		expectedArgs = jen.ID("expectedArgs").Op(":=").Index().Interface().Call(jen.Nil())
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildGetAuditLogEntriesForWebhookQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -384,8 +484,8 @@ func buildTestSqlite_BuildGetAuditLogEntriesForWebhookQuery(proj *models.Project
 					jen.Newline(),
 					jen.ID("exampleWebhook").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeWebhook").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE json_extract(audit_log.context, '$.webhook_id') = ? ORDER BY audit_log.created_on"),
-					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("ID")),
+					expectedQueryDecl,
+					expectedArgs,
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAuditLogEntriesForWebhookQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleWebhook").Dot("ID"),

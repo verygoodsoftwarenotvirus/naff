@@ -37,7 +37,7 @@ func buildTestSqlite_BuildGetAuditLogEntryQuery(proj *models.Project, dbvendor w
 					jen.Newline(),
 					jen.ID("exampleAuditLogEntry").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntry").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE audit_log.id = ?"),
+					jen.ID("expectedQuery").Op(":=").Litf("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE audit_log.id = %s", getIncIndex(dbvendor, 0)),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAuditLogEntry").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAuditLogEntryQuery").Call(
 						jen.ID("ctx"),
@@ -118,7 +118,7 @@ func buildTestSqlite_BuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, d
 					jen.Newline(),
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Op(":=").List(jen.ID("uint64").Call(jen.Lit(1)), jen.ID("uint64").Call(jen.Lit(1000))),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE audit_log.id > ? AND audit_log.id < ?"),
+					jen.ID("expectedQuery").Op(":=").Litf("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE audit_log.id > %s AND audit_log.id < %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetBatchOfAuditLogEntriesQuery").Call(
 						jen.ID("ctx"),
@@ -165,7 +165,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor
 					jen.Newline(),
 					jen.ID("filter").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on, (SELECT COUNT(*) FROM audit_log) FROM audit_log WHERE audit_log.created_on > ? AND audit_log.created_on < ? AND audit_log.last_updated_on > ? AND audit_log.last_updated_on < ? ORDER BY audit_log.created_on LIMIT 20 OFFSET 180"),
+					jen.ID("expectedQuery").Op(":=").Litf("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on, (SELECT COUNT(*) FROM audit_log) FROM audit_log WHERE audit_log.created_on > %s AND audit_log.created_on < %s AND audit_log.last_updated_on > %s AND audit_log.last_updated_on < %s ORDER BY audit_log.created_on LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3)),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildGetAuditLogEntriesQuery").Call(
 						jen.ID("ctx"),
@@ -197,6 +197,11 @@ func buildTestSqlite_BuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor
 }
 
 func buildTestSqlite_BuildCreateAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	var querySuffix string
+	if dbvendor.SingularPackageName() == "postgres" {
+		querySuffix = " RETURNING id"
+	}
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildCreateAuditLogEntryQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -216,7 +221,7 @@ func buildTestSqlite_BuildCreateAuditLogEntryQuery(proj *models.Project, dbvendo
 					jen.ID("exIDGen").Dot("On").Call(jen.Lit("NewExternalID")).Dot("Return").Call(jen.ID("exampleAuditLogEntry").Dot("ExternalID")),
 					jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO audit_log (external_id,event_type,context) VALUES (?,?,?)"),
+					jen.ID("expectedQuery").Op(":=").Litf("INSERT INTO audit_log (external_id,event_type,context) VALUES (%s,%s,%s)%s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), querySuffix),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAuditLogEntry").Dot("ExternalID"), jen.ID("exampleAuditLogEntry").Dot("EventType"), jen.ID("exampleAuditLogEntry").Dot("Context")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildCreateAuditLogEntryQuery").Call(
 						jen.ID("ctx"),

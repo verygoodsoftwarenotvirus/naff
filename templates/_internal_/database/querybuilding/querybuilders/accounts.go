@@ -233,9 +233,11 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 				).Op(":").ID("userID"))),
 			),
 			jen.Newline(),
-			jen.ID("builder").Op("=").ID("builder").Dot("GroupBy").Call(jen.Qual("fmt", "Sprintf").Call(
-				jen.Lit("%s.%s"),
+			jen.ID("builder").Op("=").ID("builder").Dot("GroupBy").Call(jen.Qual("fmt", "Sprintf").Callln(
+				jen.Lit("(%s.%s, %s.%s)"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+				jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 			)),
 			jen.Newline(),
@@ -292,7 +294,7 @@ func buildBuildAccountCreationQuery(proj *models.Project, dbvendor wordsmith.Sup
 					jen.ID("input").Dot("ContactEmail"),
 					jen.ID("input").Dot("ContactPhone"),
 					jen.ID("input").Dot("BelongsToUser"),
-				),
+				).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),

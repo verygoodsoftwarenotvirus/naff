@@ -211,6 +211,11 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 }
 
 func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	searchCmd := "%s.%s LIKE ?"
+	if dbvendor.SingularPackageName() == "postgres" {
+		searchCmd = "%s.%s ILIKE ?"
+	}
+
 	lines := []jen.Code{
 		jen.Comment("BuildSearchForUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username."),
 		jen.Newline(),
@@ -229,7 +234,7 @@ func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor words
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
 					Dotln("Where").Call(jen.ID("squirrel").Dot("Expr").Callln(
 					jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s.%s LIKE ?"),
+						jen.Lit(searchCmd),
 						jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 						jen.Qual(proj.QuerybuildingPackage(), "UsersTableUsernameColumn"),
 					),
@@ -291,7 +296,7 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 	lines := []jen.Code{
 		jen.Comment("BuildGetUsersQuery returns a SQL query (and arguments) for retrieving a slice of users who adhere"),
 		jen.Newline(),
-		jen.Comment("to a given filter's criteria."),
+		jen.Comment("to a given filter's criteria. It is assumed that this is only accessible to site administrators."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetUsersQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -362,7 +367,7 @@ func buildBuildTestUserCreationQuery(proj *models.Project, dbvendor wordsmith.Su
 					jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"),
 					jen.ID("serviceRole").Dot("String").Call(),
 					jen.ID("currentUnixTimeQuery"),
-				),
+				).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),
@@ -410,7 +415,7 @@ func buildBuildCreateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.ID("input").Dot("TwoFactorSecret"),
 					jen.Qual(proj.TypesPackage(), "UnverifiedAccountStatus"),
 					jen.Qual(proj.InternalAuthorizationPackage(), "ServiceUserRole").Dot("String").Call(),
-				),
+				).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),
@@ -666,7 +671,7 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 				jen.ID("jsonPluckQuery"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-				utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.ID("accountID")),
+				utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.ID("userID")),
 				jen.Qual(proj.InternalAuditPackage(), "ActorAssignmentKey"),
 			),
 			jen.Newline(),

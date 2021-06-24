@@ -205,7 +205,7 @@ func buildBuildCreateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableTopicsSeparator"),
 					),
 					jen.ID("x").Dot("BelongsToAccount"),
-				),
+				).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),

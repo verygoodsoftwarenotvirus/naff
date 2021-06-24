@@ -34,6 +34,19 @@ func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
 	}
 }
 
+func jsonPluckQueryForDatabase(db wordsmith.SuperPalabra) string {
+	switch db.LowercaseAbbreviation() {
+	case "m":
+		return `JSON_CONTAINS(%s.%s, '%d', '$.%s')`
+	case "p":
+		return `%s.%s->'%s'`
+	case "s":
+		return `json_extract(%s.%s, '$.%s')`
+	default:
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
+	}
+}
+
 func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
 	switch db.LowercaseAbbreviation() {
 	case "m":
