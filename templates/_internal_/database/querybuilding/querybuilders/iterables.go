@@ -631,7 +631,7 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType, d
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).Dotln("Columns").Callln(columns...).Dotln("Values").Callln(values...),
+				jen.ID("b").Dot("sqlBuilder").Dot("Insert").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).Dotln("Columns").Callln(columns...).Dotln("Values").Callln(values...).Add(utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("RETURNING %s"), jen.Qual(proj.QuerybuildingPackage(), "IDColumn"))))),
 			),
 		),
 		jen.Newline(),
@@ -795,9 +795,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 	switch dbvendor.SingularPackageName() {
 	case string(models.MariaDB):
 		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
-	case string(models.Postgres):
-		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
-	case string(models.Sqlite):
+	case string(models.Postgres), string(models.Sqlite):
 		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))
 	}
 

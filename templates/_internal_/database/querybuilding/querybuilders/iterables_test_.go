@@ -667,7 +667,11 @@ func buildTestVendor_BuildCreateSomethingQuery(proj *models.Project, typ models.
 		Columns(fieldCols...).
 		Values(valueArgs...)
 
-	query, _, _ := qb.ToSql()
+	if dbvendor.SingularPackageName() == "postgres" {
+		qb = qb.Suffix("RETURNING id")
+	}
+
+	expectedQuery, _, _ := qb.ToSql()
 
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
@@ -688,7 +692,7 @@ func buildTestVendor_BuildCreateSomethingQuery(proj *models.Project, typ models.
 		jen.ID("exIDGen").Dot("On").Call(jen.Lit("NewExternalID")).Dot("Return").Call(jen.IDf("example%s", sn).Dot("ExternalID")),
 		jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
+		jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 		func() jen.Code {
 			if len(fieldArgs) == 0 {
 				return jen.ID("expectedArgs").Op(":=").Index().Interface().Values(fieldArgs...)
