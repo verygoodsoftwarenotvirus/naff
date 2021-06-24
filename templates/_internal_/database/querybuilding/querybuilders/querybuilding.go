@@ -46,6 +46,7 @@ func buildTotalCountQuery(sqlBuilder squirrel.StatementBuilderType, tableName st
 	}
 
 	totalCountQueryBuilder := sqlBuilder.
+		PlaceholderFormat(squirrel.Question).
 		Select(fmt.Sprintf(columnCountQueryTemplate, tableName)).
 		From(tableName)
 
@@ -76,6 +77,7 @@ func buildFilteredCountQuery(sqlBuilder squirrel.StatementBuilderType, tableName
 	}
 
 	queryBuilder := sqlBuilder.
+		PlaceholderFormat(squirrel.Question).
 		Select(fmt.Sprintf(columnCountQueryTemplate, tableName)).
 		From(tableName)
 

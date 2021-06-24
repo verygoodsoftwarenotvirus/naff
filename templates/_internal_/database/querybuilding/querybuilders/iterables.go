@@ -491,6 +491,76 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 		prerequisiteIDs = append(prerequisiteIDs, jen.ID("accountID"))
 	}
 
+	qbDecl := jen.ID("b").Dot("sqlBuilder").
+		Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
+		Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
+		Dotln("Where").Call(jen.ID("where")).
+		Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
+		jen.Lit("CASE %s.%s %s"),
+		jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+		jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+		jen.ID("whenThenStatement"),
+	)).Dotln("Limit").Call(jen.ID("uint64").Call(jen.ID("limit")))
+
+	if dbvendor.SingularPackageName() == "postgres" {
+		qbDecl = jen.ID("b").Dot("sqlBuilder").
+			Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
+			Dotln("FromSelect").Call(jen.ID("subqueryBuilder"), jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
+			Dotln("Where").Call(jen.ID("where"))
+	}
+
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
+		jen.Newline(),
+		utils.ConditionalCode(dbvendor.SingularPackageName() != "postgres", jen.ID("whenThenStatement").Op(":=").ID("joinIDs").Call(jen.ID("ids"))),
+		jen.ID("where").Op(":=").Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s.%s"),
+				jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+			).MapAssign().ID("ids"),
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s.%s"),
+				jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+				jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+			).MapAssign().Nil(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())),
+					).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+				}
+				return jen.Null()
+			}(),
+		),
+		jen.Newline(),
+		utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("restrictToAccount")).Body(
+			jen.ID("where").Index(
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s.%s"),
+					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
+				),
+			).Op("=").ID("accountID"),
+		)),
+		jen.Newline(),
+		utils.ConditionalCode(dbvendor.SingularPackageName() == "postgres", jen.ID("subqueryBuilder").Assign().ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Spread()).
+			Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
+			Dotln("Join").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("unnest('{%s}'::int[])"), jen.ID("joinIDs").Call(jen.ID("ids")))).
+			Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d"), jen.ID("limit"))),
+		),
+		jen.Newline(),
+		jen.Return().ID("b").Dot("buildQuery").Callln(
+			jen.ID("span"),
+			qbDecl,
+		),
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sWithIDsQuery builds a SQL query selecting %s that belong to a given account,", pn, pcn).Newline(),
 		jen.Comment("and have IDs that exist within a given set of IDs. Returns both the query and the relevant").Newline(),
@@ -511,59 +581,7 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 			jen.ID("ids").Index().ID("uint64"),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("restrictToAccount").ID("bool")),
 		).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
-			jen.Newline(),
-			jen.ID("whenThenStatement").Op(":=").ID("buildWhenThenStatement").Call(jen.ID("ids")),
-			jen.ID("where").Op(":=").Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("ids"),
-				jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil(),
-				func() jen.Code {
-					if typ.BelongsToStruct != nil {
-						return jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit("%s.%s"),
-							jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-							jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())),
-						).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
-					}
-					return jen.Null()
-				}(),
-			),
-			jen.Newline(),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("restrictToAccount")).Body(
-				jen.ID("where").Index(
-					jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s.%s"),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)),
-					),
-				).Op("=").ID("accountID"),
-			)),
-			jen.Newline(),
-			jen.Return().ID("b").Dot("buildQuery").Callln(
-				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").
-					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
-					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Where").Call(jen.ID("where")).
-					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("CASE %s.%s %s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-					jen.ID("whenThenStatement"),
-				)).
-					Dotln("Limit").Call(jen.ID("uint64").Call(jen.ID("limit"))),
-			),
+			bodyLines...,
 		),
 		jen.Newline(),
 	}

@@ -49,11 +49,9 @@ func jsonPluckQueryForDatabase(db wordsmith.SuperPalabra) string {
 
 func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
 	switch db.LowercaseAbbreviation() {
-	case "m":
-		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
 	case "p":
 		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-	case "s":
+	case "s", "m":
 		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
 	default:
 		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
@@ -528,17 +526,16 @@ func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 	pn := typ.Name.Plural()
 	cols := buildPrefixedStringColumns(typ)
 
-	var qb squirrel.SelectBuilder
-	whereValues := squirrel.Eq{
+	where := squirrel.Eq{
 		fmt.Sprintf("%s.%s", tableName, "id"):          []string{whateverValue, whateverValue, whateverValue},
 		fmt.Sprintf("%s.%s", tableName, "archived_on"): nil,
 	}
 	if typ.BelongsToStruct != nil {
-		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whateverValue
+		where[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whateverValue
 	}
 
 	if typ.BelongsToAccount {
-		whereValues[fmt.Sprintf("%s.%s", tableName, "belongs_to_account")] = whateverValue
+		where[fmt.Sprintf("%s.%s", tableName, "belongs_to_account")] = whateverValue
 	}
 
 	var whenThenStatement string
@@ -550,12 +547,23 @@ func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 	}
 	whenThenStatement += " END"
 
-	qb = queryBuilderForDatabase(dbvendor).
+	qb := queryBuilderForDatabase(dbvendor).
 		Select(cols...).
 		From(tableName).
-		Where(whereValues).
+		Where(where).
 		OrderBy(fmt.Sprintf("CASE %s.%s %s", tableName, "id", whenThenStatement)).
 		Limit(20)
+
+	if dbvendor.SingularPackageName() == "postgres" {
+		subqueryBuilder := queryBuilderForDatabase(dbvendor).Select(cols...).
+			From(tableName).
+			Join("unnest('{789,123,456}'::int[])").
+			Suffix("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT 20")
+
+		qb = queryBuilderForDatabase(dbvendor).Select(cols...).
+			FromSelect(subqueryBuilder, tableName).
+			Where(where)
+	}
 
 	expectedQuery, _, _ := qb.ToSql()
 

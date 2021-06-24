@@ -12,18 +12,7 @@ import (
 )
 
 func joinIDs(ids []uint64) string {
-	statement := ""
-
-	for i, id := range ids {
-		if i != 0 {
-			statement += " "
-		}
-		statement += fmt.Sprintf("WHEN %d THEN %d", id, i)
-	}
-
-	statement += " END"
-
-	return statement
+	{{ generated "joinIDs" }}
 }
 
 // BuildQueryOnly builds a given query, handles whatever errs and returns just the query and args.
@@ -53,6 +42,7 @@ func (b *{{ generated "structName" }}) buildTotalCountQuery(ctx context.Context,
 	}
 
 	totalCountQueryBuilder := b.sqlBuilder.
+		PlaceholderFormat(squirrel.Question).
 		Select(fmt.Sprintf(columnCountQueryTemplate, tableName)).
 		From(tableName)
 
@@ -90,6 +80,7 @@ func (b *{{ generated "structName" }}) buildFilteredCountQuery(ctx context.Conte
 	}
 
 	filteredCountQueryBuilder := b.sqlBuilder.
+		PlaceholderFormat(squirrel.Question).
 		Select(fmt.Sprintf(columnCountQueryTemplate, tableName)).
 		From(tableName)
 

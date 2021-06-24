@@ -98,9 +98,33 @@ func RenderPackage(proj *models.Project) error {
 var genericTemplate string
 
 func genericDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) string {
+	joinIDsDef := `statement := ""
+
+	for i, id := range ids {
+		if i != 0 {
+			statement += " "
+		}
+		statement += fmt.Sprintf("WHEN %d THEN %d", id, i)
+	}
+
+	statement += " END"
+
+	return statement`
+
+	if dbvendor.SingularPackageName() == "postgres" {
+		joinIDsDef = `out := []string{}
+
+	for _, x := range ids {
+		out = append(out, strconv.FormatUint(x, 10))
+	}
+
+	return strings.Join(out, ",")`
+	}
+
 	generated := map[string]string{
 		"packageName": dbvendor.SingularPackageName(),
 		"structName":  dbvendor.Singular(),
+		"joinIDs":     joinIDsDef,
 	}
 	return models.RenderCodeFile(proj, genericTemplate, generated)
 }
@@ -110,8 +134,11 @@ var genericTestTemplate string
 
 func genericTestDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) string {
 	generated := map[string]string{
-		"packageName": dbvendor.SingularPackageName(),
-		"structName":  dbvendor.Singular(),
+		"packageName":         dbvendor.SingularPackageName(),
+		"structName":          dbvendor.Singular(),
+		"firstExpectedQuery":  fmt.Sprintf("SELECT column_one, column_two, column_three, (SELECT COUNT(example_table.id) FROM example_table JOIN things on stuff.thing_id=things.id WHERE example_table.archived_on IS NULL AND example_table.belongs_to_account = %s AND key = %s) as total_count, (SELECT COUNT(example_table.id) FROM example_table JOIN things on stuff.thing_id=things.id WHERE example_table.archived_on IS NULL AND example_table.belongs_to_account = %s AND key = %s AND example_table.created_on > %s AND example_table.created_on < %s AND example_table.last_updated_on > %s AND example_table.last_updated_on < %s) as filtered_count FROM example_table JOIN things on stuff.thing_id=things.id WHERE example_table.archived_on IS NULL AND example_table.belongs_to_account = %s AND key = %s AND example_table.created_on > %s AND example_table.created_on < %s AND example_table.last_updated_on > %s AND example_table.last_updated_on < %s GROUP BY example_table.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7), getIncIndex(dbvendor, 8), getIncIndex(dbvendor, 9), getIncIndex(dbvendor, 10), getIncIndex(dbvendor, 11), getIncIndex(dbvendor, 12), getIncIndex(dbvendor, 13)),
+		"secondExpectedQuery": fmt.Sprintf("SELECT column_one, column_two, column_three, (SELECT COUNT(example_table.id) FROM example_table WHERE example_table.archived_on IS NULL) as total_count, (SELECT COUNT(example_table.id) FROM example_table WHERE example_table.archived_on IS NULL AND example_table.created_on > %s AND example_table.created_on < %s AND example_table.last_updated_on > %s AND example_table.last_updated_on < %s) as filtered_count FROM example_table WHERE example_table.created_on > %s AND example_table.created_on < %s AND example_table.last_updated_on > %s AND example_table.last_updated_on < %s GROUP BY example_table.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7)),
+		"thirdExpectedQuery":  fmt.Sprintf("SELECT column_one, column_two, column_three, (SELECT COUNT(example_table.id) FROM example_table) as total_count, (SELECT COUNT(example_table.id) FROM example_table WHERE example_table.created_on > %s AND example_table.created_on < %s AND example_table.last_updated_on > %s AND example_table.last_updated_on < %s) as filtered_count FROM example_table WHERE example_table.created_on > %s AND example_table.created_on < %s AND example_table.last_updated_on > %s AND example_table.last_updated_on < %s GROUP BY example_table.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7)),
 	}
 	return models.RenderCodeFile(proj, genericTestTemplate, generated)
 }

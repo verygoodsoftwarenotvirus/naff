@@ -227,27 +227,31 @@ func buildTestSqlite_BuildGetUsersQuery(proj *models.Project, dbvendor wordsmith
 }
 
 func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
-	expectedQuery, _ := buildQuery(
-		queryBuilderForDatabase(dbvendor).Insert("users").
-			Columns(
-				"external_id",
-				"username",
-				"hashed_password",
-				"two_factor_secret",
-				"reputation",
-				"service_roles",
-				"two_factor_secret_verified_on",
-			).
-			Values(
-				whateverValue,
-				whateverValue,
-				whateverValue,
-				whateverValue,
-				whateverValue,
-				whateverValue,
-				squirrel.Expr(unixTimeForDatabase(dbvendor)),
-			),
-	)
+	qb := queryBuilderForDatabase(dbvendor).Insert("users").
+		Columns(
+			"external_id",
+			"username",
+			"hashed_password",
+			"two_factor_secret",
+			"reputation",
+			"service_roles",
+			"two_factor_secret_verified_on",
+		).
+		Values(
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			whateverValue,
+			squirrel.Expr(unixTimeForDatabase(dbvendor)),
+		)
+
+	if dbvendor.SingularPackageName() == "postgres" {
+		qb = qb.Suffix("RETURNING id")
+	}
+
+	expectedQuery, _ := buildQuery(qb)
 
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildTestUserCreationQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
