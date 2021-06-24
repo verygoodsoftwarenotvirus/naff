@@ -227,6 +227,28 @@ func buildTestSqlite_BuildGetUsersQuery(proj *models.Project, dbvendor wordsmith
 }
 
 func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	expectedQuery, _ := buildQuery(
+		queryBuilderForDatabase(dbvendor).Insert("users").
+			Columns(
+				"external_id",
+				"username",
+				"hashed_password",
+				"two_factor_secret",
+				"reputation",
+				"service_roles",
+				"two_factor_secret_verified_on",
+			).
+			Values(
+				whateverValue,
+				whateverValue,
+				whateverValue,
+				whateverValue,
+				whateverValue,
+				whateverValue,
+				squirrel.Expr(unixTimeForDatabase(dbvendor)),
+			),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("Test%s_BuildTestUserCreationQuery", dbvendor.Singular()).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
@@ -251,7 +273,7 @@ func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor w
 						jen.ID("IsServiceAdmin").Op(":").ID("true"),
 					),
 					jen.Newline(),
-					jen.ID("expectedQuery").Op(":=").Lit("INSERT INTO users (external_id,username,hashed_password,two_factor_secret,reputation,service_roles,two_factor_secret_verified_on) VALUES (?,?,?,?,?,?,(strftime('%s','now')))"),
+					jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
 					jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("fakeUUID"), jen.ID("exampleInput").Dot("Username"), jen.ID("exampleInput").Dot("HashedPassword"), jen.Qual(proj.QuerybuildingPackage(), "DefaultTestUserTwoFactorSecret"), jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.Qual(proj.InternalAuthorizationPackage(), "ServiceAdminRole").Dot("String").Call()),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dot("BuildTestUserCreationQuery").Call(
 						jen.ID("ctx"),
@@ -839,7 +861,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForUserQuery(proj *models.Project, d
 		From("audit_log")
 
 	if dbvendor.SingularPackageName() == "mariadb" {
-		queryBuilder = queryBuilder.Where(squirrel.Or{squirrel.Expr(performedByIDKey), squirrel.Expr(userIDKey)})
+		queryBuilder = queryBuilder.Where(squirrel.Or{squirrel.Expr(userIDKey), squirrel.Expr(performedByIDKey)})
 	} else {
 		queryBuilder = queryBuilder.Where(squirrel.Or{squirrel.Eq{userIDKey: whateverValue}, squirrel.Eq{performedByIDKey: whateverValue}})
 	}

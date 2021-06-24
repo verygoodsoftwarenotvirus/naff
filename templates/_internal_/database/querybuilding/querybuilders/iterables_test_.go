@@ -938,11 +938,11 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 	var iterableIDKey string
 	switch dbvendor.LowercaseAbbreviation() {
 	case "m":
-		iterableIDKey = fmt.Sprintf(`JSON_CONTAINS(%s.%s, '%s', '$.%s')`, "audit_log", "context", "%d", typ.Name.RouteName())
+		iterableIDKey = fmt.Sprintf(`JSON_CONTAINS(%s.%s, '%s', '$.%s_id')`, "audit_log", "context", "%d", typ.Name.RouteName())
 	case "p":
-		iterableIDKey = fmt.Sprintf(`%s.%s->'%s'`, "audit_log", "context", typ.Name.RouteName())
+		iterableIDKey = fmt.Sprintf(`%s.%s->'%s_id'`, "audit_log", "context", typ.Name.RouteName())
 	case "s":
-		iterableIDKey = fmt.Sprintf(`json_extract(%s.%s, '$.%s')`, "audit_log", "context", typ.Name.RouteName())
+		iterableIDKey = fmt.Sprintf(`json_extract(%s.%s, '$.%s_id')`, "audit_log", "context", typ.Name.RouteName())
 	}
 
 	qb := queryBuilderForDatabase(dbvendor).Select(
@@ -952,9 +952,15 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 		"audit_log.context",
 		"audit_log.created_on",
 	).
-		From("audit_log").
-		Where(squirrel.Eq{iterableIDKey: whateverValue}).
-		OrderBy(fmt.Sprintf("%s.%s", "audit_log", "created_on"))
+		From("audit_log")
+
+	if dbvendor.SingularPackageName() == "mariadb" {
+		qb = qb.Where(squirrel.Expr(iterableIDKey))
+	} else {
+		qb = qb.Where(squirrel.Eq{iterableIDKey: whateverValue})
+	}
+
+	qb = qb.OrderBy(fmt.Sprintf("%s.%s", "audit_log", "created_on"))
 
 	query, _, _ := qb.ToSql()
 
