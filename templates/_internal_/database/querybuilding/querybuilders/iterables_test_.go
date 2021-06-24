@@ -935,6 +935,16 @@ func buildTestVendor_BuildArchiveSomethingQuery(proj *models.Project, typ models
 func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 
+	var iterableIDKey string
+	switch dbvendor.LowercaseAbbreviation() {
+	case "m":
+		iterableIDKey = fmt.Sprintf(`JSON_CONTAINS(%s.%s, '%s', '$.%s')`, "audit_log", "context", "%d", typ.Name.RouteName())
+	case "p":
+		iterableIDKey = fmt.Sprintf(`%s.%s->'%s'`, "audit_log", "context", typ.Name.RouteName())
+	case "s":
+		iterableIDKey = fmt.Sprintf(`json_extract(%s.%s, '$.%s')`, "audit_log", "context", typ.Name.RouteName())
+	}
+
 	qb := queryBuilderForDatabase(dbvendor).Select(
 		"audit_log.id",
 		"audit_log.external_id",
@@ -943,7 +953,7 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 		"audit_log.created_on",
 	).
 		From("audit_log").
-		Where(squirrel.Eq{fmt.Sprintf(`json_extract(audit_log.context, '$.%s_id')`, typ.Name.RouteName()): whateverValue}).
+		Where(squirrel.Eq{iterableIDKey: whateverValue}).
 		OrderBy(fmt.Sprintf("%s.%s", "audit_log", "created_on"))
 
 	query, _, _ := qb.ToSql()
