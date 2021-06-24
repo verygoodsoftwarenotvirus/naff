@@ -588,7 +588,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 			);`),
 		},
 		{
-			description: "create api_clients table",
+			description: "create API clients table",
 			script: jen.RawString(`
 			CREATE TABLE IF NOT EXISTS api_clients (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -633,13 +633,14 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 
 		scriptParts := []string{
 			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
-			fmt.Sprintf(`				"id" %s NOT NULL PRIMARY KEY%s,`, idType, idAddendum),
+			fmt.Sprintf("			id %s NOT NULL PRIMARY KEY%s,", idType, idAddendum),
+			"			external_id TEXT NOT NULL,",
 		}
 
 		for _, field := range typ.Fields {
 			rn := field.Name.RouteName()
 
-			query := fmt.Sprintf("				%q %s", rn, typeToSqliteType(field.Type))
+			query := fmt.Sprintf("				%s %s", rn, typeToSqliteType(field.Type))
 			if !field.IsPointer {
 				query += ` NOT NULL`
 			}
@@ -651,20 +652,19 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 		}
 
 		scriptParts = append(scriptParts,
-			`				"created_on" INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
-			`				"last_updated_on" INTEGER DEFAULT NULL,`,
-			`				"archived_on" INTEGER DEFAULT NULL,`,
+			`				created_on INTEGER NOT NULL DEFAULT (strftime('%s','now')),`,
+			`				last_updated_on INTEGER DEFAULT NULL,`,
+			`				archived_on INTEGER DEFAULT NULL,`,
 		)
 
 		if typ.BelongsToAccount {
 			scriptParts = append(scriptParts,
-				`				"belongs_to_account" INTEGER NOT NULL,`,
-				`				FOREIGN KEY(belongs_to_account) REFERENCES account(id)`,
+				`				belongs_to_account INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,`,
 			)
 		}
 		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
-				fmt.Sprintf(`				"belongs_to_%s" INTEGER NOT NULL,`, typ.BelongsToStruct.RouteName()),
+				fmt.Sprintf(`				belongs_to_%s INTEGER NOT NULL,`, typ.BelongsToStruct.RouteName()),
 				fmt.Sprintf(`				FOREIGN KEY(belongs_to_%s) REFERENCES %s(id)`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
 			)
 		}
@@ -676,7 +676,7 @@ func makeSqliteMigrations(proj *models.Project) []migration {
 		migrations = append(migrations,
 			migration{
 				description: fmt.Sprintf("create %s table", pcn),
-				script:      jen.Lit(strings.Join(scriptParts, "\n")),
+				script:      jen.RawString(strings.Join(scriptParts, "\n")),
 			},
 		)
 	}
