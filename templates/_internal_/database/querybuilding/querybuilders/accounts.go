@@ -234,7 +234,7 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			),
 			jen.Newline(),
 			jen.ID("builder").Op("=").ID("builder").Dot("GroupBy").Call(jen.Qual("fmt", "Sprintf").Callln(
-				jen.Lit("(%s.%s, %s.%s)"),
+				jen.Lit("%s.%s, %s.%s"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),

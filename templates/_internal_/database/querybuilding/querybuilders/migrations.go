@@ -277,7 +277,6 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
 				last_updated_on BIGINT DEFAULT NULL,
 				archived_on BIGINT DEFAULT NULL,
-				belongs_to_user BIGINT NOT NULL,
 				belongs_to_user BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE
 			);`),
 		},
@@ -297,7 +296,6 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
 				last_updated_on BIGINT DEFAULT NULL,
 				archived_on BIGINT DEFAULT NULL,
-				belongs_to_user BIGINT NOT NULL,
 				belongs_to_account BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE
 			);`),
 		},
@@ -343,23 +341,12 @@ func makePostgresMigrations(proj *models.Project) []migration {
 
 		if typ.BelongsToAccount {
 			scriptParts = append(scriptParts,
-				`				belongs_to_account BIGINT NOT NULL`,
+				`				belongs_to_account BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE`,
 			)
 		}
 		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
-				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL`, typ.BelongsToStruct.RouteName()),
-			)
-		}
-
-		if typ.BelongsToAccount {
-			scriptParts = append(scriptParts,
-				`				FOREIGN KEY("belongs_to_account") REFERENCES accounts(id) ON DELETE CASCADE`,
-			)
-		}
-		if typ.BelongsToStruct != nil {
-			scriptParts = append(scriptParts,
-				fmt.Sprintf(`				FOREIGN KEY ("belongs_to_%s") REFERENCES %s(id) ON DELETE CASCADE`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
+				fmt.Sprintf(`				"belongs_to_%s" BIGINT NOT NULL REFERENCES %s(id) ON DELETE CASCADE`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
 			)
 		}
 
