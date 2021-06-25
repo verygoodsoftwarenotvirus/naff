@@ -135,6 +135,15 @@ func queryConstantsDotGo(proj *models.Project) string {
 			)
 		}
 
+		if typ.BelongsToStruct != nil {
+			typeDefinitions = append(typeDefinitions,
+				jen.Commentf("%sTableBelongsTo%sColumn is what the %s table calls the %s ownership column.", pn, typ.BelongsToStruct.Singular(), pcn, typ.BelongsToStruct.SingularCommonName()),
+				jen.Newline(),
+				jen.IDf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular()).Equals().Litf("belongs_to_%s", typ.BelongsToStruct.RouteName()),
+				jen.Newline(),
+			)
+		}
+
 		typeDefinitions = append(typeDefinitions,
 			jen.Commentf("%sTableAccountOwnershipColumn is what the %s table calls the ownership column.", pn, pcn),
 			jen.Newline(),
@@ -143,13 +152,40 @@ func queryConstantsDotGo(proj *models.Project) string {
 		)
 	}
 
-	var b bytes.Buffer
-	if err := jen.Null().Add(typeDefinitions...).RenderWithoutFormatting(&b); err != nil {
+	var queryConstants bytes.Buffer
+	if err := jen.Null().Add(typeDefinitions...).RenderWithoutFormatting(&queryConstants); err != nil {
 		panic(err)
 	}
 
+	rawJoinClauses := []jen.Code{}
+	for _, typ := range proj.DataTypes {
+		if typ.BelongsToStruct != nil {
+			rawJoinClauses = append(rawJoinClauses,
+				jen.Commentf("%sOn%sJoinClause is a join clause that allows the %s table to be joined on the %s table.", typ.BelongsToStruct.Plural(), typ.Name.Plural(), typ.Name.PluralCommonName(), typ.BelongsToStruct.PluralCommonName()),
+				jen.IDf("%sOn%sJoinClause", typ.BelongsToStruct.Plural(), typ.Name.Plural()).Equals().Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s ON %s.%s=%s.id"),
+					jen.IDf("%sTableName", typ.BelongsToStruct.Plural()),
+					jen.IDf("%sTableName", typ.Name.Plural()),
+					jen.IDf("%sTableBelongsTo%sColumn", typ.Name.Plural(), typ.BelongsToStruct.Singular()),
+					jen.IDf("%sTableName", typ.BelongsToStruct.Plural()),
+				),
+			)
+		}
+	}
+
+	joinClauseCode := jen.Var().Defs(rawJoinClauses...)
+
+	var joinClauses bytes.Buffer
+
+	if len(rawJoinClauses) > 0 {
+		if err := jen.Null().Add(joinClauseCode).RenderWithoutFormatting(&joinClauses); err != nil {
+			panic(err)
+		}
+	}
+
 	generated := map[string]string{
-		"queryConstants": b.String(),
+		"queryConstants": queryConstants.String(),
+		"joinClauses":    joinClauses.String(),
 	}
 
 	return models.RenderCodeFile(proj, queryConstantsTemplate, generated)

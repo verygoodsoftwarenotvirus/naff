@@ -148,3 +148,5 @@ const (
 
 	{{ generated "queryConstants" }}
 )
+
+{{ generated "joinClauses" }}

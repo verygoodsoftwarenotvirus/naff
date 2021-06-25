@@ -41,18 +41,52 @@ func mockIterablesSQLQueryBuilderDotGo(proj *models.Project, typ models.DataType
 	return code
 }
 
+func buildDBQuerierSingletonQueryMethodParams(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	return params
+}
+
+func buildDBQuerierSingletonQueryMethodArgs(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		params = append(params, jen.ID("accountID"))
+	}
+
+	return params
+}
+
 func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
 		jen.Commentf("Build%sExistsQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("Build%sExistsQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("Build%sExistsQuery", sn).Params(buildDBQuerierSingletonQueryMethodParams(proj, typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
-				jen.ID("ctx"),
-				jen.IDf("%sID", uvn),
-				jen.ID("accountID"),
+				buildDBQuerierSingletonQueryMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
@@ -65,16 +99,13 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 
 func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", sn).Params(buildDBQuerierSingletonQueryMethodParams(proj, typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
-				jen.ID("ctx"),
-				jen.IDf("%sID", uvn),
-				jen.ID("accountID"),
+				buildDBQuerierSingletonQueryMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
@@ -125,6 +156,48 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 	return lines
 }
 
+func buildDBQuerierListRetrievalQueryBuildingMethodParams(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
+
+	return params
+}
+
+func buildDBQuerierListRetrievalQueryBuildingMethodArgs(p *models.Project, typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	lp := []jen.Code{}
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	}
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...))
+	}
+
+	params = append(params, jen.ID("includeArchived"), jen.ID("filter"))
+
+	return params
+}
+
 func buildBuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
@@ -132,12 +205,9 @@ func buildBuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []j
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").ID("uint64"), jen.ID("forAdmin").ID("bool"), jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", pn).Params(buildDBQuerierListRetrievalQueryBuildingMethodParams(proj, typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
-				jen.ID("ctx"),
-				jen.ID("accountID"),
-				jen.ID("forAdmin"),
-				jen.ID("filter"),
+				buildDBQuerierListRetrievalQueryBuildingMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
@@ -152,16 +222,40 @@ func buildBuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataTy
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 
+	prerequisiteIDs := []jen.Code{}
+
+	if typ.BelongsToStruct != nil {
+		prerequisiteIDs = append(prerequisiteIDs, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	if typ.BelongsToAccount {
+		prerequisiteIDs = append(prerequisiteIDs, jen.ID("accountID"))
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sWithIDsQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sWithIDsQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").ID("uint64"), jen.ID("limit").ID("uint8"), jen.ID("ids").Index().ID("uint64"), jen.ID("forAdmin").ID("bool")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sWithIDsQuery", pn).Params(
+			jen.ID("ctx").Qual("context", "Context"),
+			func() jen.Code {
+				if len(prerequisiteIDs) > 0 {
+					return jen.List(prerequisiteIDs...).Uint64()
+				}
+				return jen.Null()
+			}(),
+			jen.ID("limit").ID("uint8"),
+			jen.ID("ids").Index().ID("uint64"),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("restrictToAccount").ID("bool")),
+		).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
-				jen.ID("ctx"),
-				jen.ID("accountID"),
+				jen.ID("ctx"), func() jen.Code {
+					if len(prerequisiteIDs) > 0 {
+						return jen.List(prerequisiteIDs...)
+					}
+					return jen.Null()
+				}(),
 				jen.ID("limit"),
 				jen.ID("ids"),
-				jen.ID("forAdmin"),
+				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("restrictToAccount")),
 			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
@@ -233,18 +327,51 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 	return lines
 }
 
+func buildDBQuerierArchiveQueryMethodParams(typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountMembers {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	params = append(params, jen.List(lp...).ID("uint64"))
+
+	return params
+}
+
+func buildDBQuerierArchiveQueryMethodArgs(typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
+
+	if typ.RestrictedToAccountMembers {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	params = append(params, jen.List(lp...))
+
+	return params
+}
+
 func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
 		jen.Commentf("BuildArchive%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildArchive%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildArchive%sQuery", sn).Params(buildDBQuerierArchiveQueryMethodParams(typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
-				jen.ID("ctx"),
-				jen.IDf("%sID", uvn),
-				jen.ID("accountID"),
+				buildDBQuerierArchiveQueryMethodArgs(typ)...,
 			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),

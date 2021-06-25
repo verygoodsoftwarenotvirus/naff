@@ -178,7 +178,7 @@ func (typ DataType) BuildDBQuerierArchiveQueryMethodParams() []jen.Code {
 	}
 	lp = append(lp, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	if typ.BelongsToAccount {
+	if typ.RestrictedToAccountMembers {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -780,15 +780,14 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	return params
 }
 
-func (typ DataType) BuildGetListOfSomethingFromIDsQueryBuilderParams(p *Project) []jen.Code {
+func (typ DataType) BuildGetListOfSomethingFromIDsQueryBuilderParams(_ *Project) []jen.Code {
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	owners := p.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
-	if typ.RestrictedToAccountAtSomeLevel(p) {
+	if typ.BelongsToAccount {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
@@ -799,7 +798,12 @@ func (typ DataType) BuildGetListOfSomethingFromIDsQueryBuilderParams(p *Project)
 	params = append(params,
 		jen.ID("limit").Uint8(),
 		jen.ID("ids").Index().Uint64(),
-		jen.ID("forAdmin").Bool(),
+		func() jen.Code {
+			if typ.BelongsToAccount {
+				return jen.ID("restrictToAccount").Bool()
+			}
+			return jen.Null()
+		}(),
 	)
 
 	return params
