@@ -207,8 +207,19 @@ func columnListsDotGo(proj *models.Project) string {
 			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.ID("CreatedOnColumn")),
 			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.ID("LastUpdatedOnColumn")),
 			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.ID("ArchivedOnColumn")),
-			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.IDf("%sTableAccountOwnershipColumn", pn)),
 		)
+
+		if typ.BelongsToStruct != nil {
+			columns = append(columns,
+				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.IDf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())),
+			)
+		}
+
+		if typ.BelongsToAccount {
+			columns = append(columns,
+				jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.IDf("%sTableAccountOwnershipColumn", pn)),
+			)
+		}
 
 		typeDefinitions = append(typeDefinitions,
 			jen.IDf("%sTableColumns", pn).Equals().Index().String().Valuesln(

@@ -57,9 +57,9 @@ func buildMigrationVarDeclarations(proj *models.Project, dbvendor wordsmith.Supe
 
 func typeToPostgresType(t string) string {
 	typeMap := map[string]string{
-		//"[]string": "CHARACTER VARYING",
-		"string":   "CHARACTER VARYING",
-		"*string":  "CHARACTER VARYING",
+		//"[]string": "TEXT",
+		"string":   "TEXT",
+		"*string":  "TEXT",
 		"bool":     "BOOLEAN",
 		"*bool":    "BOOLEAN",
 		"int":      "INTEGER",
@@ -189,63 +189,116 @@ func makePostgresMigrations(proj *models.Project) []migration {
 				token TEXT PRIMARY KEY,
 				data BYTEA NOT NULL,
 				expiry TIMESTAMPTZ NOT NULL,
-				created_on INTEGER NOT NULL DEFAULT (strftime('%s','now'))
-			);
-		`),
-		},
-		{
-			description: "create users table",
-			script: jen.Lit(`
-			CREATE TABLE IF NOT EXISTS users (
-				"id" BIGSERIAL NOT NULL PRIMARY KEY,
-				"username" TEXT NOT NULL,
-				"hashed_password" TEXT NOT NULL,
-				"password_last_changed_on" integer,
-				"requires_password_change" boolean NOT NULL DEFAULT 'false',
-				"two_factor_secret" TEXT NOT NULL,
-				"two_factor_secret_verified_on" BIGINT DEFAULT NULL,
-				"is_admin" boolean NOT NULL DEFAULT 'false',
-				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"last_updated_on" BIGINT DEFAULT NULL,
-				"archived_on" BIGINT DEFAULT NULL,
-				UNIQUE ("username")
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())
 			);`),
 		},
 		{
-			description: "create oauth2_clients table",
-			script: jen.Lit(`
-			CREATE TABLE IF NOT EXISTS oauth2_clients (
-				"id" BIGSERIAL NOT NULL PRIMARY KEY,
-				"name" TEXT DEFAULT '',
-				"client_id" TEXT NOT NULL,
-				"client_secret" TEXT NOT NULL,
-				"redirect_uri" TEXT DEFAULT '',
-				"scopes" TEXT NOT NULL,
-				"implicit_allowed" boolean NOT NULL DEFAULT 'false',
-				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"last_updated_on" BIGINT DEFAULT NULL,
-				"archived_on" BIGINT DEFAULT NULL,
-				"belongs_to_user" BIGINT NOT NULL,
-				FOREIGN KEY("belongs_to_user") REFERENCES users(id)
+			description: "create sessions table for session manager",
+			script:      jen.RawString(`CREATE INDEX sessions_expiry_idx ON sessions (expiry);`),
+		},
+		{
+			description: "create audit log table",
+			script: jen.RawString(`
+			CREATE TABLE IF NOT EXISTS audit_log (
+				id BIGSERIAL NOT NULL PRIMARY KEY,
+				external_id TEXT NOT NULL,
+				event_type TEXT NOT NULL,
+				context JSONB NOT NULL,
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())
+			);`),
+		},
+		{
+			description: "create users table",
+			script: jen.RawString(`
+			CREATE TABLE IF NOT EXISTS users (
+				id BIGSERIAL NOT NULL PRIMARY KEY,
+				external_id TEXT NOT NULL,
+				username TEXT NOT NULL,
+				avatar_src TEXT,
+				hashed_password TEXT NOT NULL,
+				password_last_changed_on INTEGER,
+				requires_password_change BOOLEAN NOT NULL DEFAULT 'false',
+				two_factor_secret TEXT NOT NULL,
+				two_factor_secret_verified_on BIGINT DEFAULT NULL,
+				service_roles TEXT NOT NULL DEFAULT 'service_user',
+				reputation TEXT NOT NULL DEFAULT 'unverified',
+				reputation_explanation TEXT NOT NULL DEFAULT '',
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				last_updated_on BIGINT DEFAULT NULL,
+				archived_on BIGINT DEFAULT NULL,
+				UNIQUE("username")
+			);`),
+		},
+		{
+			description: "create accounts table",
+			script: jen.RawString(`
+			CREATE TABLE IF NOT EXISTS accounts (
+				id BIGSERIAL NOT NULL PRIMARY KEY,
+				external_id TEXT NOT NULL,
+				name TEXT NOT NULL,
+				billing_status TEXT NOT NULL DEFAULT 'unpaid',
+				contact_email TEXT NOT NULL DEFAULT '',
+				contact_phone TEXT NOT NULL DEFAULT '',
+				payment_processor_customer_id TEXT NOT NULL DEFAULT '',
+				subscription_plan_id TEXT,
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				last_updated_on BIGINT DEFAULT NULL,
+				archived_on BIGINT DEFAULT NULL,
+				belongs_to_user BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				UNIQUE("belongs_to_user", "name")
+			);`),
+		},
+		{
+			description: "create account user memberships table",
+			script: jen.RawString(`
+			CREATE TABLE IF NOT EXISTS account_user_memberships (
+				id BIGSERIAL NOT NULL PRIMARY KEY,
+				belongs_to_account BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+				belongs_to_user BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				default_account BOOLEAN NOT NULL DEFAULT 'false',
+				account_roles TEXT NOT NULL DEFAULT 'account_user',
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				last_updated_on BIGINT DEFAULT NULL,
+				archived_on BIGINT DEFAULT NULL,
+				UNIQUE("belongs_to_account", "belongs_to_user")
+			);`),
+		},
+		{
+			description: "create API clients table",
+			script: jen.RawString(`
+			CREATE TABLE IF NOT EXISTS api_clients (
+				id BIGSERIAL NOT NULL PRIMARY KEY,
+				external_id TEXT NOT NULL,
+				name TEXT DEFAULT '',
+				client_id TEXT NOT NULL,
+				secret_key BYTEA NOT NULL,
+				permissions BIGINT NOT NULL DEFAULT 0,
+				admin_permissions BIGINT NOT NULL DEFAULT 0,
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				last_updated_on BIGINT DEFAULT NULL,
+				archived_on BIGINT DEFAULT NULL,
+				belongs_to_user BIGINT NOT NULL,
+				belongs_to_user BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE
 			);`),
 		},
 		{
 			description: "create webhooks table",
-			script: jen.Lit(`
+			script: jen.RawString(`
 			CREATE TABLE IF NOT EXISTS webhooks (
-				"id" BIGSERIAL NOT NULL PRIMARY KEY,
-				"name" TEXT NOT NULL,
-				"content_type" TEXT NOT NULL,
-				"url" TEXT NOT NULL,
-				"method" TEXT NOT NULL,
-				"events" TEXT NOT NULL,
-				"data_types" TEXT NOT NULL,
-				"topics" TEXT NOT NULL,
-				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
-				"last_updated_on" BIGINT DEFAULT NULL,
-				"archived_on" BIGINT DEFAULT NULL,
-				"belongs_to_user" BIGINT NOT NULL,
-				FOREIGN KEY("belongs_to_user") REFERENCES users(id)
+				id BIGSERIAL NOT NULL PRIMARY KEY,
+				external_id TEXT NOT NULL,
+				name TEXT NOT NULL,
+				content_type TEXT NOT NULL,
+				url TEXT NOT NULL,
+				method TEXT NOT NULL,
+				events TEXT NOT NULL,
+				data_types TEXT NOT NULL,
+				topics TEXT NOT NULL,
+				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW()),
+				last_updated_on BIGINT DEFAULT NULL,
+				archived_on BIGINT DEFAULT NULL,
+				belongs_to_user BIGINT NOT NULL,
+				belongs_to_account BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE
 			);`),
 		},
 	}
@@ -255,13 +308,14 @@ func makePostgresMigrations(proj *models.Project) []migration {
 
 		scriptParts := []string{
 			fmt.Sprintf("\n			CREATE TABLE IF NOT EXISTS %s (", typ.Name.PluralRouteName()),
-			`				"id" BIGSERIAL NOT NULL PRIMARY KEY`,
+			`				id BIGSERIAL NOT NULL PRIMARY KEY`,
+			`				external_id TEXT NOT NULL`,
 		}
 
 		for _, field := range typ.Fields {
 			rn := field.Name.RouteName()
 
-			query := fmt.Sprintf("				%q %s", rn, typeToPostgresType(field.Type))
+			query := fmt.Sprintf("				%s %s", rn, typeToPostgresType(field.Type))
 			if !field.IsPointer {
 				query += ` NOT NULL`
 			}
@@ -273,23 +327,23 @@ func makePostgresMigrations(proj *models.Project) []migration {
 		}
 
 		scriptParts = append(scriptParts,
-			`				"created_on" BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())`,
-			`				"last_updated_on" BIGINT DEFAULT NULL`,
+			`				created_on BIGINT NOT NULL DEFAULT extract(epoch FROM NOW())`,
+			`				last_updated_on BIGINT DEFAULT NULL`,
 		)
 
 		if !typ.BelongsToAccount && typ.BelongsToStruct == nil {
 			scriptParts = append(scriptParts,
-				`				"archived_on" BIGINT DEFAULT NULL`,
+				`				archived_on BIGINT DEFAULT NULL`,
 			)
 		} else {
 			scriptParts = append(scriptParts,
-				`				"archived_on" BIGINT DEFAULT NULL`, // note the comma
+				`				archived_on BIGINT DEFAULT NULL`, // note the comma
 			)
 		}
 
 		if typ.BelongsToAccount {
 			scriptParts = append(scriptParts,
-				`				"belongs_to_user" BIGINT NOT NULL`,
+				`				belongs_to_account BIGINT NOT NULL`,
 			)
 		}
 		if typ.BelongsToStruct != nil {
@@ -300,12 +354,12 @@ func makePostgresMigrations(proj *models.Project) []migration {
 
 		if typ.BelongsToAccount {
 			scriptParts = append(scriptParts,
-				`				FOREIGN KEY("belongs_to_user") REFERENCES users(id)`,
+				`				FOREIGN KEY("belongs_to_account") REFERENCES accounts(id) ON DELETE CASCADE`,
 			)
 		}
 		if typ.BelongsToStruct != nil {
 			scriptParts = append(scriptParts,
-				fmt.Sprintf(`				FOREIGN KEY ("belongs_to_%s") REFERENCES "%s"("id")`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
+				fmt.Sprintf(`				FOREIGN KEY ("belongs_to_%s") REFERENCES %s(id) ON DELETE CASCADE`, typ.BelongsToStruct.RouteName(), typ.BelongsToStruct.PluralRouteName()),
 			)
 		}
 
@@ -324,7 +378,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 		migrations = append(migrations,
 			migration{
 				description: fmt.Sprintf("create %s table", pcn),
-				script:      jen.Lit(strings.Join(scriptParts, "\n")),
+				script:      jen.RawString(strings.Join(scriptParts, "\n")),
 			},
 		)
 	}
