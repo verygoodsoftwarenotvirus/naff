@@ -165,6 +165,17 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 		)
 	}
 
+	if typ.RestrictedToAccountAtSomeLevel(proj) {
+		lines = append(lines,
+			jen.If(jen.ID("accountID").Op("==").Lit(0)).Body(
+				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("accountID")),
+			jen.Newline(),
+		)
+	}
+
 	return lines
 }
 
@@ -205,11 +216,6 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.False())...)
 
 	bodyLines = append(bodyLines,
-		jen.Newline(),
-		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
-			jen.ID("span"),
-			jen.ID("accountID"),
-		)),
 		jen.Newline(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("Build%sExistsQuery", sn).Call(
 			buildDBRetrievalQueryBuilderArgs(proj, typ)...,
@@ -468,11 +474,6 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			jen.ID("filter"),
 		),
 		jen.Newline(),
-		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
-			jen.ID("span"),
-			jen.ID("accountID"),
-		)),
-		jen.Newline(),
 		jen.If(jen.ID("filter").DoesNotEqual().ID("nil")).Body(
 			jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Equals().List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit")),
 		),
@@ -570,8 +571,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			jen.ID("limit").Equals().ID("uint8").Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 		),
 		jen.Newline(),
-		constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-			utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("keys").Dot("AccountIDKey").MapAssign().ID("accountID")),
+		constants.LoggerVar().Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 			jen.Lit("limit").MapAssign().ID("limit"),
 			jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")),
 		)),
@@ -584,10 +584,10 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 				}
 				return jen.Null()
 			}(),
-			jen.ID("accountID"),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
 			jen.ID("limit"),
 			jen.ID("ids"),
-			jen.ID("false"),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("false")),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("rows"), jen.Err()).Assign().ID("q").Dot("performReadQuery").Call(
@@ -800,10 +800,10 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID("span"),
 				jen.ID("updated").Dot("ID"),
 			),
-			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
+			utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("updated").Dot("BelongsToAccount"),
-			),
+			)),
 			jen.Qual(proj.InternalTracingPackage(), "AttachRequestingUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("changedByUser"),
@@ -851,7 +851,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sUpdateEventEntry", sn)).Call(
 					jen.ID("changedByUser"),
 					jen.ID("updated").Dot("ID"),
-					jen.ID("updated").Dot("BelongsToAccount"),
+					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("updated").Dot("BelongsToAccount")),
 					jen.ID("changes"),
 				),
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
@@ -902,33 +902,21 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 			jen.Newline(),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
-				jen.Return().ID("ErrInvalidIDProvided"),
-			)),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(jen.Return().ID("ErrInvalidIDProvided"))),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID"))),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("accountID"))),
 			jen.Newline(),
 			jen.If(jen.ID("archivedBy").IsEqualTo().Lit(0)).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
-			jen.Newline(),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("accountID"),
-			)),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "RequesterIDKey"), jen.ID("archivedBy")),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("archivedBy"),
 			),
-			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-				jen.ID("keys").Dotf("%sIDKey", sn).MapAssign().IDf("%sID", uvn),
-				jen.ID("keys").Dot("UserIDKey").MapAssign().ID("archivedBy"),
-				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("keys").Dot("AccountIDKey").MapAssign().ID("accountID")),
-			)),
 			jen.Newline(),
 			jen.List(jen.ID("tx"), jen.Err()).Assign().ID("q").Dot("db").Dot("BeginTx").Call(
 				jen.ID("ctx"),
@@ -952,6 +940,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 					return jen.Null()
 				}(),
 				jen.IDf("%sID", uvn),
+				utils.ConditionalCode(typ.RestrictedToAccountMembers, jen.ID("accountID")),
 			),
 			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("q").Dot("performWriteQueryIgnoringReturn").Call(
