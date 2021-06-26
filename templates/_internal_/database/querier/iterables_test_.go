@@ -8,15 +8,17 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func buildPrerequisiteIDsForTest(proj *models.Project, typ models.DataType, includeSelf bool) []jen.Code {
+func buildPrerequisiteIDsForTest(proj *models.Project, typ models.DataType, includeSelf, skip bool, skipIndex int) []jen.Code {
 	lines := []jen.Code{}
 
 	if typ.RestrictedToAccountMembers {
 		lines = append(lines, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
 	}
 
-	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("example%sID", dep.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if !skip || (skip && i != skipIndex) {
+			lines = append(lines, jen.IDf("example%sID", dep.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+		}
 	}
 
 	if includeSelf {
@@ -26,17 +28,25 @@ func buildPrerequisiteIDsForTest(proj *models.Project, typ models.DataType, incl
 	return lines
 }
 
-func buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p *models.Project, typ models.DataType) []jen.Code {
+func buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p *models.Project, typ models.DataType, skipIndex int, includeSelf bool) []jen.Code {
 	params := []jen.Code{constants.CtxVar()}
 
 	owners := p.FindOwnerTypeChain(typ)
 	sn := typ.Name.Singular()
 
-	for _, pt := range owners {
-		pts := pt.Name.Singular()
-		params = append(params, jen.IDf("example%sID", pts))
+	for i, pt := range owners {
+		if i == skipIndex {
+			params = append(params, jen.Zero())
+		} else {
+			params = append(params, jen.IDf("example%sID", pt.Name.Singular()))
+		}
 	}
-	params = append(params, jen.IDf("example%s", sn).Dot("ID"))
+
+	if includeSelf {
+		params = append(params, jen.IDf("example%s", sn).Dot("ID"))
+	} else {
+		params = append(params, jen.Zero())
+	}
 
 	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("exampleAccountID"))
@@ -181,7 +191,7 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 		jen.Newline(),
 		constants.CreateCtx(),
 		jen.Newline(),
-		jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true))...),
+		jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
 		jen.Newline(),
 		jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 		jen.Newline(),
@@ -193,7 +203,7 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 				jen.Litf("Build%sExistsQuery", sn),
 				jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 			},
-				buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ)[1:]...,
+				buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)[1:]...,
 			)...,
 		).Dot("Return").Call(
 			jen.ID("fakeQuery"),
@@ -206,7 +216,7 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.ID("true"))),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
-			buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ)...,
+			buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)...,
 		),
 		jen.ID("assert").Dot("NoError").Call(
 			jen.ID("t"),
@@ -234,23 +244,48 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 		jen.Newline(),
 	)
 
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
+		subtestLines := []jen.Code{
+			jen.ID("t").Dot("Parallel").Call(),
+			jen.Newline(),
+			constants.CreateCtx(),
+			jen.Newline(),
+			jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, true, i))...),
+			jen.Newline(),
+			jen.List(jen.ID("c"), jen.Underscore()).Assign().ID("buildTestClient").Call(jen.ID("t")),
+			jen.Newline(),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
+				buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, i, true)...,
+			),
+			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.Err()),
+			jen.ID("assert").Dot("False").Call(jen.ID("t"), jen.ID("actual")),
+		}
+
+		bodyLines = append(bodyLines,
+			jen.ID("T").Dot("Run").Call(
+				jen.Litf("with invalid %s ID", owner.Name.SingularCommonName()),
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
+					subtestLines...,
+				),
+			),
+			jen.Newline(),
+		)
+	}
+
 	bodyLines = append(bodyLines,
 		jen.ID("T").Dot("Run").Call(
 			jen.Litf("with invalid %s ID", scn),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
-				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, false, false, -1))...),
+				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
-					jen.ID("ctx"),
-					jen.Lit(0),
-					jen.ID("exampleAccount").Dot("ID"),
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, false)...,
 				),
 				jen.ID("assert").Dot("Error").Call(
 					jen.ID("t"),
@@ -263,22 +298,19 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 			),
 		),
 		jen.Newline(),
-		jen.ID("T").Dot("Run").Call(
+		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("T").Dot("Run").Call(
 			jen.Lit("with invalid account ID"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
-				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
+				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
-					jen.ID("ctx"),
-					jen.IDf("example%s", sn).Dot("ID"),
-					jen.Lit(0),
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)...,
 				),
 				jen.ID("assert").Dot("Error").Call(
 					jen.ID("t"),
@@ -294,28 +326,29 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 					jen.ID("db"),
 				),
 			),
-		),
+		)),
 		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("with sql.ErrNoRows"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
-				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
+				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.ID("mockQueryBuilder").Assign().Qual(proj.DatabasePackage(), "BuildMockSQLQueryBuilder").Call(),
 				jen.Newline(),
 				jen.List(jen.ID("fakeQuery"), jen.ID("fakeArgs")).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeSQLQuery").Call(),
 				jen.ID("mockQueryBuilder").Dotf("%sSQLQueryBuilder", sn).Dot("On").Callln(
-					jen.Litf("Build%sExistsQuery", sn),
-					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-					jen.IDf("example%s", sn).Dot("ID"),
-					jen.ID("exampleAccount").Dot("ID"),
+					append([]jen.Code{
+						jen.Litf("Build%sExistsQuery", sn),
+						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+					},
+						buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)[1:]...,
+					)...,
 				).Dot("Return").Call(
 					jen.ID("fakeQuery"),
 					jen.ID("fakeArgs"),
@@ -327,9 +360,7 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
-					jen.ID("ctx"),
-					jen.IDf("example%s", sn).Dot("ID"),
-					jen.ID("exampleAccount").Dot("ID"),
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)...,
 				),
 				jen.ID("assert").Dot("NoError").Call(
 					jen.ID("t"),
@@ -353,21 +384,22 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
-				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
+				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.ID("mockQueryBuilder").Assign().Qual(proj.DatabasePackage(), "BuildMockSQLQueryBuilder").Call(),
 				jen.Newline(),
 				jen.List(jen.ID("fakeQuery"), jen.ID("fakeArgs")).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeSQLQuery").Call(),
 				jen.ID("mockQueryBuilder").Dotf("%sSQLQueryBuilder", sn).Dot("On").Callln(
-					jen.Litf("Build%sExistsQuery", sn),
-					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-					jen.IDf("example%s", sn).Dot("ID"),
-					jen.ID("exampleAccount").Dot("ID"),
+					append([]jen.Code{
+						jen.Litf("Build%sExistsQuery", sn),
+						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+					},
+						buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)[1:]...,
+					)...,
 				).Dot("Return").Call(
 					jen.ID("fakeQuery"),
 					jen.ID("fakeArgs"),
@@ -379,9 +411,7 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
-					jen.ID("ctx"),
-					jen.IDf("example%s", sn).Dot("ID"),
-					jen.ID("exampleAccount").Dot("ID"),
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true)...,
 				),
 				jen.ID("assert").Dot("Error").Call(
 					jen.ID("t"),
