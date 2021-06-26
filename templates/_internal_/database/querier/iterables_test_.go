@@ -447,9 +447,7 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 	firstSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf(fmt.Sprintf("BuildFake%s", sn))).Call(),
-		jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
+		jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
 		jen.Newline(),
 		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
@@ -507,43 +505,47 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 				firstSubtest...,
 			),
 		),
-		jen.Newline(),
-		jen.ID("T").Dot("Run").Call(
-			jen.Litf("with invalid %s ID", scn),
-			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-				jen.ID("t").Dot("Parallel").Call(),
-				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
-				jen.Newline(),
-				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-				jen.Newline(),
-				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
-					jen.ID("ctx"),
-					jen.Lit(0),
-					jen.IDf("example%s", sn).Dot("BelongsToAccount"),
-				),
-				jen.ID("assert").Dot("Error").Call(
-					jen.ID("t"),
-					jen.Err(),
-				),
-				jen.ID("assert").Dot("Nil").Call(
-					jen.ID("t"),
-					jen.ID("actual"),
+	}
+
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
+		bodyLines = append(bodyLines,
+			jen.Newline(),
+			jen.ID("T").Dot("Run").Call(
+				jen.Litf("with invalid %s ID", owner.Name.SingularCommonName()),
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
+					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
+					jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, true, i))...),
+					jen.Newline(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+					jen.Newline(),
+					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
+						jen.ID("ctx"),
+						jen.Lit(0),
+						jen.IDf("example%s", sn).Dot("BelongsToAccount"),
+					),
+					jen.ID("assert").Dot("Error").Call(
+						jen.ID("t"),
+						jen.Err(),
+					),
+					jen.ID("assert").Dot("Nil").Call(
+						jen.ID("t"),
+						jen.ID("actual"),
+					),
 				),
 			),
-		),
+		)
+	}
+
+	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("with invalid account ID"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
 				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
@@ -563,15 +565,16 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 				),
 			),
 		),
+	)
+
+	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID("T").Dot("Run").Call(
 			jen.Lit("with error executing query"),
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-				jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-				jen.IDf("example%s", sn).Dot("BelongsToAccount").Equals().ID("exampleAccount").Dot("ID"),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, -1))...),
 				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
@@ -615,7 +618,7 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 				),
 			),
 		),
-	}
+	)
 
 	return []jen.Code{
 		jen.Func().IDf("TestQuerier_Get%s", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(bodyLines...),
