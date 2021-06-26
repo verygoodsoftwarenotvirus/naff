@@ -143,7 +143,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					constants.LoggerVar().Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+					constants.LoggerVar().Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.Newline(),
 					jen.For(jen.List(jen.ID("_"), jen.ID("provider")).Op(":=").Range().Index().ID("string").Values(
 						jen.Lit("sqlite"),
@@ -181,7 +181,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					constants.LoggerVar().Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+					constants.LoggerVar().Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Values(),
 					jen.Newline(),
 					jen.List(jen.ID("x"),
@@ -208,7 +208,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					constants.LoggerVar().Op(":=").ID("logging").Dot("NewNoopLogger").Call(),
+					constants.LoggerVar().Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.Newline(),
 					jen.ID("cfg").Op(":=").Op("&").ID("InstanceConfig").Valuesln(
 						jen.ID("Database").MapAssign().ID("config").Dot("Config").Valuesln(

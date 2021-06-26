@@ -760,11 +760,10 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	params := []jen.Code{ctxParam()}
 
 	lp := []jen.Code{}
-	owners := p.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lp = append(lp, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
-	if typ.RestrictedToAccountAtSomeLevel(p) {
+	if typ.BelongsToAccount {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
