@@ -903,7 +903,7 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryBuildingMethodParams(p *Proj
 		params = append(params, jen.List(lp...).ID("uint64"))
 	}
 
-	params = append(params, jen.ID("forAdmin").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
+	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
 
 	return params
 }

@@ -256,7 +256,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("rawDB").Op("*").Qual("database/sql", "DB"),
 			jen.ID("cfg").Op("*").ID("InstanceConfig"),
 		).Params(
-			jen.ID("database").Dot("DataManager"),
+			jen.Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("error"),
 		).Body(
 			jen.If(jen.ID("rawDB").Op("==").ID("nil")).Body(

@@ -587,7 +587,16 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
 			jen.ID("limit"),
 			jen.ID("ids"),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("false")),
+			func() jen.Code {
+				if typ.BelongsToAccount {
+					if typ.RestrictedToAccountAtSomeLevel(proj) {
+						return jen.True()
+					} else {
+						return jen.False()
+					}
+				}
+				return jen.Null()
+			}(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("rows"), jen.Err()).Assign().ID("q").Dot("performReadQuery").Call(

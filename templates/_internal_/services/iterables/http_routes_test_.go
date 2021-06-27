@@ -1061,12 +1061,11 @@ func buildMockSearchArgs(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 	}
 
-	owners := proj.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		lines = append(lines, jen.ID("helper").Dotf("example%s", pt.Name.Singular()).Dot("ID"))
+	if typ.BelongsToStruct != nil {
+		lines = append(lines, jen.ID("helper").Dotf("example%s", typ.BelongsToStruct.Singular()).Dot("ID"))
 	}
 
-	if typ.RestrictedToAccountAtSomeLevel(proj) {
+	if typ.BelongsToAccount {
 		lines = append(lines, jen.ID("helper").Dot("exampleAccount").Dot("ID"))
 	}
 

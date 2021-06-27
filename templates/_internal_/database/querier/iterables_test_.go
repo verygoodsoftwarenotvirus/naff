@@ -1392,7 +1392,16 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
 			jen.ID("defaultLimit"),
 			jen.ID("exampleIDs"),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("false")),
+			func() jen.Code {
+				if typ.BelongsToAccount {
+					if typ.RestrictedToAccountAtSomeLevel(proj) {
+						return jen.True()
+					} else {
+						return jen.False()
+					}
+				}
+				return jen.Null()
+			}(),
 		).Dot("Return").Call(
 			jen.ID("fakeQuery"),
 			jen.ID("fakeArgs"),
@@ -1578,7 +1587,14 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
 					jen.ID("defaultLimit"),
 					jen.ID("exampleIDs"),
-					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("false")),
+					func() jen.Code {
+						if typ.RestrictedToAccountAtSomeLevel(proj) {
+							return jen.True()
+						} else if typ.BelongsToAccount {
+							return jen.False()
+						}
+						return jen.Null()
+					}(),
 				).Dot("Return").Call(
 					jen.ID("fakeQuery"),
 					jen.ID("fakeArgs"),
@@ -1661,7 +1677,14 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
 					jen.ID("defaultLimit"),
 					jen.ID("exampleIDs"),
-					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("false")),
+					func() jen.Code {
+						if typ.RestrictedToAccountAtSomeLevel(proj) {
+							return jen.True()
+						} else if typ.BelongsToAccount {
+							return jen.False()
+						}
+						return jen.Null()
+					}(),
 				).Dot("Return").Call(
 					jen.ID("fakeQuery"),
 					jen.ID("fakeArgs"),
@@ -1739,7 +1762,14 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
 					jen.ID("defaultLimit"),
 					jen.ID("exampleIDs"),
-					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("false")),
+					func() jen.Code {
+						if typ.RestrictedToAccountAtSomeLevel(proj) {
+							return jen.True()
+						} else if typ.BelongsToAccount {
+							return jen.False()
+						}
+						return jen.Null()
+					}(),
 				).Dot("Return").Call(
 					jen.ID("fakeQuery"),
 					jen.ID("fakeArgs"),

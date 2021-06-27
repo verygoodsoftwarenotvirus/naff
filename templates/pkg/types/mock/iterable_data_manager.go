@@ -156,13 +156,59 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	return lines
 }
 
+func buildGetListOfSomethingFromIDsParams(typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxParam()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	if typ.BelongsToAccount {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...).ID("uint64"))
+	}
+
+	params = append(params,
+		jen.ID("limit").Uint8(),
+		jen.ID("ids").Index().Uint64(),
+	)
+
+	return params
+}
+
+func buildGetListOfSomethingFromIDsArgs(typ models.DataType) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	lp := []jen.Code{}
+	if typ.BelongsToStruct != nil {
+		lp = append(lp, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+	}
+	if typ.BelongsToAccount {
+		lp = append(lp, jen.ID("accountID"))
+	}
+
+	if len(lp) > 0 {
+		params = append(params, jen.List(lp...))
+	}
+
+	params = append(params,
+		jen.ID("limit"),
+		jen.ID("ids"),
+	)
+
+	return params
+}
+
 func buildGetSomethingsWithIDs(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 	pn := n.Plural()
 
-	params := typ.BuildGetListOfSomethingFromIDsParams(proj)
-	callArgs := typ.BuildGetListOfSomethingFromIDsArgs(proj)
+	params := buildGetListOfSomethingFromIDsParams(typ)
+	callArgs := buildGetListOfSomethingFromIDsArgs(typ)
 
 	lines := []jen.Code{
 		jen.Commentf("Get%sWithIDs is a mock function.", pn),

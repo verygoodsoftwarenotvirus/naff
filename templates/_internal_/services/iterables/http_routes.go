@@ -624,13 +624,14 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 func buildDBClientSearchMethodCallArgs(p *models.Project, typ models.DataType) []jen.Code {
 	params := []jen.Code{constants.CtxVar()}
 
-	owners := p.FindOwnerTypeChain(typ)
-	for _, pt := range owners {
-		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+	if typ.BelongsToStruct != nil {
+		params = append(params, jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
-	if typ.RestrictedToAccountAtSomeLevel(p) {
+
+	if typ.BelongsToAccount {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
+
 	params = append(params, jen.ID("filter").Dot("Limit"), jen.ID("relevantIDs"))
 
 	return params

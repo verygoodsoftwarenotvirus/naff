@@ -101,7 +101,7 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(jen.IDf("example%s", sn), jen.ID("nil")),
@@ -156,7 +156,7 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
@@ -511,7 +511,7 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 		jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 		jen.ID("req").Op(":=").IDf("attach%sCreationInputToRequest", sn).Call(jen.ID("exampleInput")),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			jen.Litf("Create%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -579,7 +579,7 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 		jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 		jen.ID("req").Op(":=").IDf("attach%sCreationInputToRequest", sn).Call(jen.Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			jen.Litf("Create%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -617,7 +617,7 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 		jen.ID("res").Op(":=").ID("httptest").Dot("NewRecorder").Call(),
 		jen.ID("req").Op(":=").IDf("attach%sCreationInputToRequest", sn).Call(jen.ID("exampleInput")),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			jen.Litf("Create%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -703,7 +703,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(mockCallArgs...).Dot("Return").Call(
 			jen.IDf("example%s", sn),
 			jen.ID("nil"),
@@ -738,7 +738,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 
 	secondSubtestLines = append(secondSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(mockCallArgs...).Dot("Return").Call(
 			jen.IDf("example%s", sn),
 			jen.ID("nil"),
@@ -797,7 +797,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(mockCallArgs...).Dot("Return").Call(
 			jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
@@ -889,7 +889,7 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 	firstSubtestLines = append(firstSubtestLines,
 		jen.IDf("example%sList", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
@@ -956,7 +956,7 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 
 	withErrorFetchingDataLines = append(withErrorFetchingDataLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
@@ -1046,7 +1046,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			return jen.Null()
 		}(),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
@@ -1084,7 +1084,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 	secondSubtestLines = append(secondSubtestLines,
 		jen.IDf("example%sList", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
@@ -1144,7 +1144,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
@@ -1362,7 +1362,7 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	firstSubtestLines = append(firstSubtestLines,
 		jen.ID("exampleInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockGetArgs...,
 		).Dot("Return").Call(
@@ -1450,7 +1450,7 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.ID("exampleInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockGetArgs...,
 		).Dot("Return").Call(
@@ -1484,7 +1484,7 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	fifthSubtestLines = append(fifthSubtestLines,
 		jen.ID("exampleInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockGetArgs...,
 		).Dot("Return").Call(
@@ -1576,7 +1576,7 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 	firstSubtestLines = append(firstSubtestLines,
 		jen.IDf("example%sList", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockArchiveArgs...,
 		).Dot("Return").Call(jen.ID("nil")),
@@ -1641,7 +1641,7 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 
 	thirdSubtestLines = append(thirdSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockArchiveArgs...,
 		).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -1675,7 +1675,7 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 
 	fourthSubtestLines = append(fourthSubtestLines,
 		jen.Newline(),
-		jen.ID("mockDB").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("mockDB").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockArchiveArgs...,
 		).Dot("Return").Call(jen.ID("nil")),
