@@ -44,7 +44,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			func() jen.Code {
 				if len(searchIndices) > defaultSearchIndexCount {
-					return jen.Null().Add(utils.IntersperseWithNewlines(searchIndices)...)
+					return jen.Null().Add(utils.IntersperseWithNewlines(searchIndices, true)...)
 				}
 				return jen.Null()
 			}(),

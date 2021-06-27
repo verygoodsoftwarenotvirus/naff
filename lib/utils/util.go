@@ -99,11 +99,15 @@ func FakeError() jen.Code {
 	return jen.Qual("errors", "New").Call(jen.Lit("blah"))
 }
 
-func IntersperseWithNewlines(input []jen.Code) []jen.Code {
+func IntersperseWithNewlines(input []jen.Code, includeTrailingNewline bool) []jen.Code {
 	output := []jen.Code{}
 
-	for _, code := range input {
-		output = append(output, code, jen.Newline())
+	for i, code := range input {
+		if i == len(input)-1 && !includeTrailingNewline {
+			output = append(output, code)
+		} else {
+			output = append(output, code, jen.Newline())
+		}
 	}
 
 	return output
