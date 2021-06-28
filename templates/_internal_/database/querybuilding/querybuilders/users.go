@@ -14,7 +14,7 @@ func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.QuerybuildingPackage(), "UserSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
+			jen.Underscore().Qual(proj.QuerybuildingPackage(), "UserSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
@@ -44,7 +44,7 @@ func buildBuildUserHasStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 		jen.Comment("BuildUserHasStatusQuery returns a SQL query (and argument) for retrieving a user by their database ID."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUserHasStatusQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("statuses").Op("...").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -53,7 +53,7 @@ func buildBuildUserHasStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 			),
 			jen.Newline(),
 			jen.ID("whereStatuses").Assign().ID("squirrel").Dot("Or").Values(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("status")).Assign().Range().ID("statuses")).Body(
+			jen.For(jen.List(jen.Underscore(), jen.ID("status")).Assign().Range().ID("statuses")).Body(
 				jen.ID("whereStatuses").Equals().ID("append").Call(
 					jen.ID("whereStatuses"),
 					jen.ID("squirrel").Dot("Eq").Values(jen.Qual("fmt", "Sprintf").Call(
@@ -97,7 +97,7 @@ func buildBuildGetUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabr
 		jen.Comment("BuildGetUserQuery returns a SQL query (and argument) for retrieving a user by their database ID."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetUserQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -138,7 +138,7 @@ func buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models.Project, d
 		jen.Comment("by their database ID, who has an unverified two factor secret."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetUserWithUnverifiedTwoFactorSecretQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -176,7 +176,7 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 		jen.Comment("BuildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetUserByUsernameQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
@@ -220,7 +220,7 @@ func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor words
 		jen.Comment("BuildSearchForUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildSearchForUserByUsernameQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("usernameQuery").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachSearchQueryToSpan").Call(
@@ -268,7 +268,7 @@ func buildBuildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.Su
 		jen.Comment("to a given filter's criteria."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllUsersCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("query").ID("string")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQueryOnly").Call(
@@ -299,7 +299,7 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 		jen.Comment("to a given filter's criteria. It is assumed that this is only accessible to site administrators."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetUsersQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filter").PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
@@ -334,7 +334,7 @@ func buildBuildTestUserCreationQuery(proj *models.Project, dbvendor wordsmith.Su
 		jen.Comment("BuildTestUserCreationQuery builds a query and arguments that creates a test user."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildTestUserCreationQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("testUserConfig").PointerTo().Qual(proj.TypesPackage(), "TestUserCreationConfig")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
@@ -389,7 +389,7 @@ func buildBuildCreateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 		jen.Comment("such that they would have admin privileges."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildCreateUserQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "UserDataStoreCreationInput")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
@@ -429,7 +429,7 @@ func buildBuildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 		jen.Comment("BuildUpdateUserQuery returns a SQL query (and arguments) that would update the given user's row."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "User")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -482,7 +482,7 @@ func buildBuildSetUserStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 		jen.Comment("BuildSetUserStatusQuery returns a SQL query (and arguments) that would change a user's account status."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildSetUserStatusQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "UserReputationUpdateInput")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -515,7 +515,7 @@ func buildBuildUpdateUserPasswordQuery(proj *models.Project, dbvendor wordsmith.
 		jen.Comment("BuildUpdateUserPasswordQuery returns a SQL query (and arguments) that would update the given user's passwords."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserPasswordQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("newHash").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -556,7 +556,7 @@ func buildBuildUpdateUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 		jen.Comment("BuildUpdateUserTwoFactorSecretQuery returns a SQL query (and arguments) that would update a given user's two factor secret."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserTwoFactorSecretQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("newSecret").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -589,7 +589,7 @@ func buildBuildVerifyUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 		jen.Comment("BuildVerifyUserTwoFactorSecretQuery returns a SQL query (and arguments) that would update a given user's two factor secret."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildVerifyUserTwoFactorSecretQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -622,7 +622,7 @@ func buildBuildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 		jen.Comment("BuildArchiveUserQuery builds a SQL query that marks a user as archived."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildArchiveUserQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -651,7 +651,7 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 		jen.Comment("BuildGetAuditLogEntriesForUserQuery constructs a SQL query for fetching audit log entries belong to a user with a given ID."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(

@@ -1089,7 +1089,7 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 			jen.ID("exampleLimit").Assign().ID("uint8").Call(jen.Lit(123)),
 			jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 			jen.IDf("example%sIDs", sn).Assign().Index().Uint64().Values(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
+			jen.For(jen.List(jen.Underscore(), jen.ID("x")).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 				jen.IDf("example%sIDs", sn).Equals().ID("append").Call(
 					jen.IDf("example%sIDs", sn),
 					jen.ID("x").Dot("ID"),

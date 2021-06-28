@@ -220,6 +220,20 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType, includ
 	return lines
 }
 
+func buildGetSomethingAuditLogEntriesArgs(proj *models.Project, typ models.DataType) []jen.Code {
+	lines := []jen.Code{
+		jen.ID("ctx"),
+	}
+
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		lines = append(lines, jen.IDf("created%s", owner.Name.Singular()).Dot("ID"))
+	}
+
+	lines = append(lines, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
+
+	return lines
+}
+
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
@@ -316,8 +330,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			jen.ID("ctx"),
-			jen.IDf("created%s", sn).Dot("ID"),
+			buildGetSomethingAuditLogEntriesArgs(proj, typ)...,
 		),
 		jen.Qual(constants.MustAssertPkg, "NoError").Call(
 			jen.ID("t"),
@@ -377,6 +390,12 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
 			jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
 			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 			jen.Newline(),
 			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
@@ -412,7 +431,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.Comment("clean up"),
-		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Body(
+		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Body(
 			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
@@ -452,11 +471,18 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 			break
 		}
 	}
+
 	searchArgs := []jen.Code{
 		constants.CtxVar(),
+	}
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		searchArgs = append(searchArgs, jen.IDf("created%s", owner.Name.Singular()).Dot("ID"))
+	}
+
+	searchArgs = append(searchArgs,
 		jen.ID(utils.BuildFakeVarName(sn)).Dot(firstStringField.Singular()),
 		jen.ID(utils.BuildFakeVarName("Limit")),
-	}
+	)
 
 	bodyLines := []jen.Code{
 		jen.ID("t").Assign().ID("s").Dot("T").Call(),
@@ -474,6 +500,12 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 	bodyLines = append(bodyLines,
 		jen.Commentf("create %s", pcn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
 			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
@@ -518,7 +550,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.Comment("clean up"),
-		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Assign().Range().ID("expected")).Body(
+		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("expected")).Body(
 			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
@@ -567,6 +599,12 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 	bodyLines = append(bodyLines,
 		jen.Commentf("create %s", pcn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
 			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
@@ -618,7 +656,7 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.Comment("clean up"),
-		jen.For(jen.List(jen.ID("_"), jen.IDf("created%s", sn)).Assign().Range().ID("expected")).Body(
+		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("expected")).Body(
 			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
@@ -713,6 +751,12 @@ func buildTestExistenceChecking_ReturnsTrueForValidSomething(proj *models.Projec
 		jen.Newline(),
 		jen.Commentf("create %s", scn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.List(jen.IDf("created%s", sn), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 			append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
@@ -789,7 +833,7 @@ func buildTestReading_Returns404ForNonexistentSomething(proj *models.Project, ty
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.List(jen.ID("_"), jen.ID("err")).Add(op).ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+		jen.List(jen.Underscore(), jen.ID("err")).Add(op).ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
 			buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnlyFor404Tests(proj, typ)...,
 		),
 		jen.Qual(constants.AssertionLibrary, "Error").Call(
@@ -836,6 +880,12 @@ func buildTestReading(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 		jen.Commentf("create %s", scn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.List(jen.IDf("created%s", sn), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 			append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
@@ -985,6 +1035,12 @@ func buildTestUpdating(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 		jen.Commentf("create %s", scn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.List(jen.IDf("created%s", sn), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 			append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
@@ -1026,8 +1082,7 @@ func buildTestUpdating(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			jen.ID("ctx"),
-			jen.IDf("created%s", sn).Dot("ID"),
+			buildGetSomethingAuditLogEntriesArgs(proj, typ)...,
 		),
 		jen.Qual(constants.MustAssertPkg, "NoError").Call(
 			jen.ID("t"),
@@ -1140,6 +1195,12 @@ func buildTestArchiving(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 		jen.Commentf("create %s", scn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
 		jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.List(jen.IDf("created%s", sn), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 			append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
@@ -1159,8 +1220,7 @@ func buildTestArchiving(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			jen.ID("ctx"),
-			jen.IDf("created%s", sn).Dot("ID"),
+			buildGetSomethingAuditLogEntriesArgs(proj, typ)...,
 		),
 		jen.Qual(constants.MustAssertPkg, "NoError").Call(
 			jen.ID("t"),
@@ -1209,10 +1269,22 @@ func buildTestAuditing_Returns404ForNonexistentSomething(proj *models.Project, t
 		),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+
+	callArgs := []jen.Code{
+		constants.CtxVar(),
+	}
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		callArgs = append(callArgs, jen.IDf("created%s", owner.Name.Singular()).Dot("ID"))
+	}
+	callArgs = append(callArgs, jen.ID("nonexistentID"))
+
+	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.List(jen.ID("x"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			jen.ID("ctx"),
-			jen.ID("nonexistentID"),
+			callArgs...,
 		),
 		jen.Newline(),
 		jen.Qual(constants.AssertionLibrary, "NoError").Call(
@@ -1223,7 +1295,9 @@ func buildTestAuditing_Returns404ForNonexistentSomething(proj *models.Project, t
 			jen.ID("t"),
 			jen.ID("x"),
 		),
-	}
+	)
+
+	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
 
 	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Auditing_Returns404ForNonexistent%s", pn, sn).Params().Body(

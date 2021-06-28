@@ -170,7 +170,7 @@ func FakeUint64WhichIsActuallyAUint32Func() jen.Code {
 }
 
 func FakeUint64Func() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "Uint64").Call()
+	return jen.Uint64().Call(jen.Qual(constants.FakeLibrary, "Uint32").Call())
 }
 
 func FakeFloat32Func() jen.Code {

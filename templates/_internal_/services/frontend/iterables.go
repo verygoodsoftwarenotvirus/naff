@@ -530,7 +530,7 @@ func buildHandleSomethingCreationRequest(proj *models.Project, typ models.DataTy
 			}(),
 			constants.LoggerVar().Dot("Debug").Call(jen.Litf("%s creation input parsed successfully", scn)),
 			jen.Newline(),
-			jen.If(jen.List(jen.ID("_"), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Create%s", sn).Call(
+			jen.If(jen.List(jen.Underscore(), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Create%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("creationInput"),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),

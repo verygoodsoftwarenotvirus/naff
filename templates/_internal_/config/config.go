@@ -100,7 +100,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("InstanceConfig")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("InstanceConfig")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 

@@ -145,7 +145,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					constants.LoggerVar().Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.Newline(),
-					jen.For(jen.List(jen.ID("_"), jen.ID("provider")).Assign().Range().Index().String().Values(
+					jen.For(jen.List(jen.Underscore(), jen.ID("provider")).Assign().Range().Index().String().Values(
 						jen.Lit("sqlite"),
 						jen.Lit("postgres"),
 						jen.Lit("mariadb"),

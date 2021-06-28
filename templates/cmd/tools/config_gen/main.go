@@ -209,7 +209,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Index().ID("byte"),
 				jen.ID("pasetoSecretSize"),
 			),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
+			jen.If(jen.List(jen.Underscore(), jen.ID("err")).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
 				jen.ID("err").DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),

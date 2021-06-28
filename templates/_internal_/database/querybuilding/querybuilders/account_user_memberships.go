@@ -14,7 +14,7 @@ func accountUserMembershipsDotGo(proj *models.Project, dbvendor wordsmith.SuperP
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.QuerybuildingPackage(), "AccountUserMembershipSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
+			jen.Underscore().Qual(proj.QuerybuildingPackage(), "AccountUserMembershipSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
@@ -48,7 +48,7 @@ func buildBuildGetDefaultAccountIDForUserQuery(proj *models.Project, dbvendor wo
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetDefaultAccountIDForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -95,7 +95,7 @@ func buildBuildArchiveAccountMembershipsForUserQuery(proj *models.Project, dbven
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildArchiveAccountMembershipsForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -121,7 +121,7 @@ func buildBuildGetAccountMembershipsForUserQuery(proj *models.Project, dbvendor 
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAccountMembershipsForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -167,7 +167,7 @@ func buildBuildMarkAccountAsUserDefaultQuery(proj *models.Project, dbvendor word
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildMarkAccountAsUserDefaultQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -202,7 +202,7 @@ func buildBuildTransferAccountOwnershipQuery(proj *models.Project, dbvendor word
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildTransferAccountOwnershipQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("currentOwnerID"), jen.ID("newOwnerID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("newOwnerID")),
@@ -230,7 +230,7 @@ func buildBuildTransferAccountMembershipsQuery(proj *models.Project, dbvendor wo
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildTransferAccountMembershipsQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("currentOwnerID"), jen.ID("newOwnerID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("newOwnerID")),
@@ -259,7 +259,7 @@ func buildBuildModifyUserPermissionsQuery(proj *models.Project, dbvendor wordsmi
 			jen.List(jen.ID("userID"), jen.ID("accountID")).Uint64(),
 			jen.ID("newRoles").Index().ID("string")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -289,7 +289,7 @@ func buildBuildCreateMembershipForNewUserQuery(proj *models.Project, dbvendor wo
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildCreateMembershipForNewUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -324,7 +324,7 @@ func buildBuildUserIsMemberOfAccountQuery(proj *models.Project, dbvendor wordsmi
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUserIsMemberOfAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -371,7 +371,7 @@ func buildBuildAddUserToAccountQuery(proj *models.Project, dbvendor wordsmith.Su
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildAddUserToAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "AddUserToAccountInput")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("UserID")),
@@ -405,7 +405,7 @@ func buildBuildRemoveUserFromAccountQuery(proj *models.Project, dbvendor wordsmi
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildRemoveUserFromAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),

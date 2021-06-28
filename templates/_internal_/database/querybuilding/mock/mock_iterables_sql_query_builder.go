@@ -16,7 +16,7 @@ func mockIterablesSQLQueryBuilderDotGo(proj *models.Project, typ models.DataType
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().ID("_").ID("querybuilding").Dotf("%sSQLQueryBuilder", sn).Equals().Parens(jen.PointerTo().IDf("%sSQLQueryBuilder", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().ID("querybuilding").Dotf("%sSQLQueryBuilder", sn).Equals().Parens(jen.PointerTo().IDf("%sSQLQueryBuilder", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 

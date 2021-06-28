@@ -29,7 +29,7 @@ func configDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("Config")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("Config")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 

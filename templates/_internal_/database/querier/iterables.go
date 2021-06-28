@@ -42,7 +42,7 @@ func buildScanSomethingRow(proj *models.Project, typ models.DataType) []jen.Code
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct.", sn, scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("scan%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").Qual(proj.DatabasePackage(), "Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.Err().ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
@@ -89,7 +89,7 @@ func buildScanListOfSomethingRows(proj *models.Project, typ models.DataType) []j
 		jen.Commentf("scan%s takes some database rows and turns them into a slice of %s.", pn, pcn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("scan%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").Qual(proj.DatabasePackage(), "ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID(puvn).Index().PointerTo().Qual(proj.TypesPackage(), sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.Err().ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
@@ -279,7 +279,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("args").Spread(),
 		),
 		jen.Newline(),
-		jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.Err()).Assign().ID("q").Dotf("scan%s", sn).Call(
+		jen.List(jen.ID(uvn), jen.Underscore(), jen.Underscore(), jen.Err()).Assign().ID("q").Dotf("scan%s", sn).Call(
 			jen.ID("ctx"),
 			jen.ID("row"),
 			jen.ID("false"),
@@ -395,7 +395,7 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 					jen.Return(),
 				),
 				jen.Newline(),
-				jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("scanErr")).Assign().ID("q").Dotf("scan%s", pn).Call(
+				jen.List(jen.ID(puvn), jen.Underscore(), jen.Underscore(), jen.ID("scanErr")).Assign().ID("q").Dotf("scan%s", pn).Call(
 					jen.ID("ctx"),
 					jen.ID("rows"),
 					jen.ID("false"),
@@ -615,7 +615,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			)),
 		),
 		jen.Newline(),
-		jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.Err()).Assign().ID("q").Dotf("scan%s", pn).Call(
+		jen.List(jen.ID(puvn), jen.Underscore(), jen.Underscore(), jen.Err()).Assign().ID("q").Dotf("scan%s", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("rows"),
 			jen.ID("false"),
@@ -1056,7 +1056,7 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 				)),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("auditLogEntries"), jen.ID("_"), jen.Err()).Assign().ID("q").Dot("scanAuditLogEntries").Call(
+			jen.List(jen.ID("auditLogEntries"), jen.Underscore(), jen.Err()).Assign().ID("q").Dot("scanAuditLogEntries").Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
 				jen.ID("false"),
@@ -1085,7 +1085,7 @@ func newIterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("SQLQuerier")).Call(jen.ID("nil")),
+			jen.Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("SQLQuerier")).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)

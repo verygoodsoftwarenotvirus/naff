@@ -18,7 +18,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmit
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().ID("_").Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
@@ -167,7 +167,7 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType, d
 		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 	}
@@ -247,7 +247,7 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType, dbve
 	queryBuilderDecl = queryBuilderDecl.Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 	}
@@ -298,7 +298,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 
@@ -334,7 +334,7 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
@@ -419,7 +419,7 @@ func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGet%sQuery", pn).Params(params...).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
@@ -510,7 +510,7 @@ func buildBuildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataTyp
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID("span"), jen.ID("accountID"))),
@@ -644,7 +644,7 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType, d
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildCreate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("input").PointerTo().ID("types").Dotf("%sCreationInput", sn)).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
@@ -691,7 +691,7 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType, d
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildUpdate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("input").PointerTo().ID("types").Dot(sn)).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			func() jen.Code {
@@ -751,7 +751,7 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType, 
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildArchive%sQuery", sn).Params(params...).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			func() jen.Code {
@@ -823,7 +823,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(

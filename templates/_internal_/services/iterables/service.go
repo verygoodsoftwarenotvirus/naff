@@ -29,7 +29,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)).Equals().Parens(jen.PointerTo().ID("service")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)).Equals().Parens(jen.PointerTo().ID("service")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 

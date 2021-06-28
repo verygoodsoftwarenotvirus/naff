@@ -71,7 +71,7 @@ func buildSuiteStruct(proj *models.Project, typ models.DataType) []jen.Code {
 			structFields...,
 		),
 		jen.Newline(),
-		jen.Var().ID("_").ID("suite").Dot("SetupTestSuite").Equals().Parens(jen.PointerTo().IDf("%sBaseSuite", puvn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().ID("suite").Dot("SetupTestSuite").Equals().Parens(jen.PointerTo().IDf("%sBaseSuite", puvn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").PointerTo().IDf("%sBaseSuite", puvn)).ID("SetupTest").Params().Body(
 			initFields...,

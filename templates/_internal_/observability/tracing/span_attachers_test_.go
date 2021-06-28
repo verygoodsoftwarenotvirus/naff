@@ -20,7 +20,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("attachUint8ToSpan").Call(
 						jen.ID("span"),
@@ -42,7 +42,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("attachUint64ToSpan").Call(
 						jen.ID("span"),
@@ -64,7 +64,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("attachStringToSpan").Call(
 						jen.ID("span"),
@@ -86,7 +86,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("attachBooleanToSpan").Call(
 						jen.ID("span"),
@@ -108,7 +108,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("attachSliceToSpan").Call(
 						jen.ID("span"),
@@ -130,7 +130,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachToSpan").Call(
 						jen.ID("span"),
@@ -152,7 +152,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachFilterToSpan").Call(
 						jen.ID("span"),
@@ -175,7 +175,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachAuditLogEntryIDToSpan").Call(
 						jen.ID("span"),
@@ -196,7 +196,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachAuditLogEntryEventTypeToSpan").Call(
 						jen.ID("span"),
@@ -217,7 +217,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachAccountIDToSpan").Call(
 						jen.ID("span"),
@@ -238,7 +238,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachRequestingUserIDToSpan").Call(
 						jen.ID("span"),
@@ -259,7 +259,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachChangeSummarySpan").Call(
 						jen.ID("span"),
@@ -281,7 +281,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachSessionContextDataToSpan").Call(
 						jen.ID("span"),
@@ -302,7 +302,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachAPIClientDatabaseIDToSpan").Call(
 						jen.ID("span"),
@@ -323,7 +323,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachAPIClientClientIDToSpan").Call(
 						jen.ID("span"),
@@ -345,7 +345,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachUserToSpan").Call(
 						jen.ID("span"),
@@ -366,7 +366,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachUserIDToSpan").Call(
 						jen.ID("span"),
@@ -387,7 +387,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachUsernameToSpan").Call(
 						jen.ID("span"),
@@ -408,7 +408,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachWebhookIDToSpan").Call(
 						jen.ID("span"),
@@ -429,7 +429,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.List(jen.ID("u"), jen.ID("err")).Assign().Qual("net/url", "ParseRequestURI").Call(jen.Lit("https://todo.verygoodsoftwarenotvirus.ru")),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
@@ -455,7 +455,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachRequestURIToSpan").Call(
 						jen.ID("span"),
@@ -511,7 +511,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(jen.ID("Header").Op(":").Map(jen.ID("string")).Index().String().Values()),
 					jen.ID("res").Dot("Header").Dot("Set").Call(
 						jen.ID("t").Dot("Name").Call(),
@@ -537,7 +537,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachErrorToSpan").Call(
 						jen.ID("span"),
@@ -559,7 +559,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachDatabaseQueryToSpan").Call(
 						jen.ID("span"),
@@ -582,7 +582,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachQueryFilterToSpan").Call(
 						jen.ID("span"),
@@ -596,7 +596,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachQueryFilterToSpan").Call(
 						jen.ID("span"),
@@ -617,7 +617,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachSearchQueryToSpan").Call(
 						jen.ID("span"),
@@ -638,7 +638,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.Newline(),
 					jen.ID("AttachUserAgentDataToSpan").Call(
 						jen.ID("span"),
@@ -660,7 +660,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
-						jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
+						jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 						jen.Newline(),
 						jen.IDf("Attach%sIDToSpan", typ.Name.Singular()).Call(
 							jen.ID("span"),

@@ -91,8 +91,6 @@ func (s *TestSuite) eachClientExcept(exceptions ...string) map[string]*testClien
 	return clients
 }
 
-var _ suite.WithStats = (*TestSuite)(nil)
-
 func (s *TestSuite) checkTestRunsForPositiveResultsThatOccurredTooQuickly(stats *suite.SuiteInformation) {
 	const minimumTestThreshold = 1 * time.Millisecond
 
@@ -105,9 +103,13 @@ func (s *TestSuite) checkTestRunsForPositiveResultsThatOccurredTooQuickly(stats 
 	}
 }
 
+/*
+var _ suite.WithStats = (*TestSuite)(nil)
+
 func (s *TestSuite) HandleStats(_ string, stats *suite.SuiteInformation) {
-	const totalExpectedTestCount = 69
+	const totalExpectedTestCount = 1 // figure this number out if you so wish
 
 	s.checkTestRunsForPositiveResultsThatOccurredTooQuickly(stats)
 	testutils.AssertAppropriateNumberOfTestsRan(s.T(), totalExpectedTestCount, stats)
 }
+*/

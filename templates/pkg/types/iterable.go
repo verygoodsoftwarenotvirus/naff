@@ -418,7 +418,7 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 	}
 
 	lines := []jen.Code{
-		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sCreationInput.", sn),
@@ -453,7 +453,7 @@ func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Cod
 	}
 
 	lines := []jen.Code{
-		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sUpdateInput.", sn),

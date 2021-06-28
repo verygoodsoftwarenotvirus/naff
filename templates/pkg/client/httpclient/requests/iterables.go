@@ -89,7 +89,6 @@ func buildGetSomethingURLParts(proj *models.Project, typ models.DataType) []jen.
 	)
 
 	return urlBuildingParams
-
 }
 
 func buildParamsForHTTPClientExistenceRequestBuildingMethod(p *models.Project, typ models.DataType) []jen.Code {
@@ -220,16 +219,65 @@ func buildBuildGetSomethingRequest(proj *models.Project, typ models.DataType) []
 	return lines
 }
 
+func buildSearchForSomethingURLParts(proj *models.Project, typ models.DataType) []jen.Code {
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+	urlBuildingParams := []jen.Code{
+		jen.ID("ctx"),
+		jen.ID("params"),
+	}
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		urlBuildingParams = append(urlBuildingParams,
+			jen.IDf("%sBasePath", pt.Name.PluralUnexportedVarName()),
+			jen.ID("id").Call(
+				jen.IDf("%sID", pt.Name.UnexportedVarName()),
+			),
+		)
+	}
+	urlBuildingParams = append(urlBuildingParams,
+		jen.ID(basePath),
+		jen.Lit("search"),
+	)
+
+	return urlBuildingParams
+}
+
 func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
-	puvn := typ.Name.PluralUnexportedVarName()
+
+	params := []jen.Code{
+		jen.ID("ctx").Qual("context", "Context"),
+	}
+
+	idParams := []jen.Code{}
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		idParams = append(idParams, jen.IDf("%sID", owner.Name.UnexportedVarName()))
+	}
+
+	if len(idParams) > 0 {
+		params = append(params, jen.List(idParams...).Uint64())
+	}
+
+	params = append(params,
+		jen.ID("query").String(),
+		jen.ID("limit").ID("uint8"),
+	)
 
 	bodyLines := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName).Dot("WithValue").Call(
+		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName),
+		jen.Newline(),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false)...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(
 			jen.ID("types").Dot("SearchQueryKey"),
 			jen.ID("query"),
 		).Dot("WithValue").Call(
@@ -251,10 +299,7 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 		),
 		jen.Newline(),
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
-			jen.ID("ctx"),
-			jen.ID("params"),
-			jen.IDf("%sBasePath", puvn),
-			jen.Lit("search"),
+			buildSearchForSomethingURLParts(proj, typ)...,
 		),
 		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
 			jen.ID("span"),
@@ -277,12 +322,12 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 		),
 		jen.Newline(),
 		jen.Return().List(jen.ID("req"), jen.ID("nil")),
-	}
+	)
 
 	lines := []jen.Code{
 		jen.Commentf("BuildSearch%sRequest builds an HTTP request for querying %s.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("Builder")).IDf("BuildSearch%sRequest", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").String(), jen.ID("limit").ID("uint8")).Params(jen.PointerTo().Qual("net/http", "Request"), jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("Builder")).IDf("BuildSearch%sRequest", pn).Params(params...).Params(jen.PointerTo().Qual("net/http", "Request"), jen.ID("error")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -733,35 +778,61 @@ func buildBuildArchiveSomethingRequest(proj *models.Project, typ models.DataType
 	return lines
 }
 
+func buildGetAuditLogsForSomethingURLParts(proj *models.Project, typ models.DataType) []jen.Code {
+	basePath := fmt.Sprintf("%sBasePath", typ.Name.PluralUnexportedVarName())
+	urlBuildingParams := []jen.Code{
+		jen.ID("ctx"),
+		jen.Nil(),
+	}
+
+	for _, pt := range proj.FindOwnerTypeChain(typ) {
+		urlBuildingParams = append(urlBuildingParams,
+			jen.IDf("%sBasePath", pt.Name.PluralUnexportedVarName()),
+			jen.ID("id").Call(
+				jen.IDf("%sID", pt.Name.UnexportedVarName()),
+			),
+		)
+	}
+	urlBuildingParams = append(urlBuildingParams,
+		jen.ID(basePath),
+		jen.ID("id").Call(jen.IDf("%sID", typ.Name.UnexportedVarName())),
+		jen.Lit("audit"),
+	)
+
+	return urlBuildingParams
+}
+
 func buildBuildGetAuditLogForSomethingRequest(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 	uvn := typ.Name.UnexportedVarName()
-	puvn := typ.Name.PluralUnexportedVarName()
+
+	params := []jen.Code{
+		jen.ID("ctx").Qual("context", "Context"),
+	}
+
+	idParams := []jen.Code{}
+	for _, owner := range proj.FindOwnerTypeChain(typ) {
+		idParams = append(idParams, jen.IDf("%sID", owner.Name.UnexportedVarName()))
+	}
+
+	idParams = append(idParams, jen.IDf("%sID", uvn))
+	params = append(params, jen.List(idParams...).Uint64())
 
 	bodyLines := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
-		),
+		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName),
 		jen.Newline(),
-		jen.ID("logger").Assign().ID("b").Dot("logger").Dot("WithValue").Call(
-			jen.ID("keys").Dotf("%sIDKey", sn),
-			jen.IDf("%sID", uvn),
-		),
-		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-			jen.ID("span"),
-			jen.IDf("%sID", uvn),
-		),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true)...)
+
+	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
-			jen.ID("ctx"),
-			jen.ID("nil"),
-			jen.IDf("%sBasePath", puvn),
-			jen.ID("id").Call(jen.IDf("%sID", uvn)),
-			jen.Lit("audit"),
+			buildGetAuditLogsForSomethingURLParts(proj, typ)...,
 		),
 		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
 			jen.ID("span"),
@@ -785,12 +856,12 @@ func buildBuildGetAuditLogForSomethingRequest(proj *models.Project, typ models.D
 		),
 		jen.Newline(),
 		jen.Return().List(jen.ID("req"), jen.ID("nil")),
-	}
+	)
 
 	lines := []jen.Code{
 		jen.Commentf("BuildGetAuditLogFor%sRequest builds an HTTP request for fetching a list of audit log entries pertaining to %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("Builder")).IDf("BuildGetAuditLogFor%sRequest", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", uvn).ID("uint64")).Params(jen.PointerTo().Qual("net/http", "Request"), jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("Builder")).IDf("BuildGetAuditLogFor%sRequest", sn).Params(params...).Params(jen.PointerTo().Qual("net/http", "Request"), jen.ID("error")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),

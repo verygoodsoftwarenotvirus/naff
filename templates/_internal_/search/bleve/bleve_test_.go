@@ -32,8 +32,8 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(constants.TestSuitePackage, "AfterTest").Equals().Parens(jen.PointerTo().ID("bleveIndexManagerTestSuite")).Call(jen.ID("nil")),
-			jen.ID("_").Qual(constants.TestSuitePackage, "BeforeTest").Equals().Parens(jen.PointerTo().ID("bleveIndexManagerTestSuite")).Call(jen.ID("nil")),
+			jen.Underscore().Qual(constants.TestSuitePackage, "AfterTest").Equals().Parens(jen.PointerTo().ID("bleveIndexManagerTestSuite")).Call(jen.ID("nil")),
+			jen.Underscore().Qual(constants.TestSuitePackage, "BeforeTest").Equals().Parens(jen.PointerTo().ID("bleveIndexManagerTestSuite")).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
@@ -71,7 +71,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("BeforeTest").Params(jen.List(jen.ID("_"), jen.ID("_")).ID("string")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("BeforeTest").Params(jen.List(jen.Underscore(), jen.ID("_")).ID("string")).Body(
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.ID("s").Dot("indexPath").Equals().ID("createTmpIndexPath").Call(jen.ID("t")),
@@ -92,7 +92,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("AfterTest").Params(jen.List(jen.ID("_"), jen.ID("_")).ID("string")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("AfterTest").Params(jen.List(jen.Underscore(), jen.ID("_")).ID("string")).Body(
 			jen.ID("s").Dot("Require").Call().Dot("NoError").Call(jen.Qual("os", "RemoveAll").Call(jen.ID("s").Dot("indexPath")))),
 		jen.Newline(),
 	)
@@ -118,7 +118,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("constructor_test_happy_path_test.bleve"),
 			)),
 			jen.Newline(),
-			jen.List(jen.ID("_"), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
+			jen.List(jen.Underscore(), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
 				jen.ID("exampleIndexPath"),
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
@@ -143,7 +143,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 						jen.Litf("constructor_test_happy_path_%s.bleve", typ.Name.PluralRouteName()),
 					)),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
+					jen.List(jen.Underscore(), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
 						jen.ID("exampleIndexPath"),
 						jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural())),
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
@@ -164,7 +164,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Lit("constructor_test_invalid_name.bleve")),
 			jen.Newline(),
-			jen.List(jen.ID("_"), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
+			jen.List(jen.Underscore(), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
 				jen.ID("exampleIndexPath"),
 				jen.Lit("invalid"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
