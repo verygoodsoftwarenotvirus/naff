@@ -651,7 +651,7 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 		),
 	)
 
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, true)...)
+	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
