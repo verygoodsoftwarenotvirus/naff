@@ -624,79 +624,151 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 	}
 }
 
+func buildSearchSomethingFormatString(proj *models.Project, typ models.DataType) string {
+	parts := []string{"api", "v1"}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+	}
+
+	parts = append(parts, typ.Name.PluralRouteName(), "search")
+
+	return fmt.Sprintf("/%s", path.Join(parts...))
+}
+
+func buildSearchSomethingFormatArgs(proj *models.Project, typ models.DataType, index int) []jen.Code {
+	parts := []jen.Code{}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if i == index {
+			parts = append(parts, jen.Zero())
+		} else {
+			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
+		}
+	}
+
+	return parts
+}
+
+func buildSearchSomethingArgs(proj *models.Project, typ models.DataType, index int, withEmptyQuery bool) []jen.Code {
+	parts := []jen.Code{
+		jen.ID("s").Dot("ctx"),
+	}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if i == index {
+			parts = append(parts, jen.Zero())
+		} else {
+			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
+		}
+	}
+
+	if withEmptyQuery {
+		parts = append(parts, jen.EmptyString())
+	} else {
+		parts = append(parts, jen.ID("exampleQuery"))
+	}
+
+	parts = append(parts,
+		jen.Lit(0),
+	)
+
+	return parts
+}
+
 func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
-	prn := typ.Name.PluralRouteName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
+	firstSubtest := []jen.Code{
+		jen.ID("t").Assign().ID("s").Dot("T").Call(),
+		jen.Newline(),
+		jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
+		jen.Newline(),
+		jen.ID("spec").Assign().ID("newRequestSpec").Call(
+			append([]jen.Code{
+				jen.ID("true"),
+				jen.Qual("net/http", "MethodGet"),
+				jen.Lit("limit=20&q=whatever"),
+				jen.ID("expectedPath"),
+			},
+				buildSearchSomethingFormatArgs(proj, typ, -1)...,
+			)...,
+		),
+		jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientWithJSONResponse").Call(
+			jen.ID("t"),
+			jen.ID("spec"),
+			jen.IDf("example%sList", sn).Dot(pn),
+		),
+		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Search%s", pn).Call(
+			buildSearchSomethingArgs(proj, typ, -1, false)...,
+		),
+		jen.Newline(),
+		jen.ID("require").Dot("NotNil").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+		),
+		jen.ID("assert").Dot("NoError").Call(
+			jen.ID("t"),
+			jen.ID("err"),
+		),
+		jen.ID("assert").Dot("Equal").Call(
+			jen.ID("t"),
+			jen.IDf("example%sList", sn).Dot(pn),
+			jen.ID("actual"),
+		),
+	}
+
 	lines := []jen.Code{
-		jen.Const().ID("expectedPath").Equals().Litf("/api/v1/%s/search", prn),
+		jen.Const().ID("expectedPath").Equals().Lit(buildSearchSomethingFormatString(proj, typ)),
 		jen.Newline(),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.Newline(),
-		jen.ID("s").Dot("Run").Call(
-			jen.Lit("standard"),
-			jen.Func().Params().Body(
-				jen.ID("t").Assign().ID("s").Dot("T").Call(),
-				jen.Newline(),
-				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
-				jen.Newline(),
-				jen.ID("spec").Assign().ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.Qual("net/http", "MethodGet"),
-					jen.Lit("limit=20&q=whatever"),
-					jen.ID("expectedPath"),
-				),
-				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientWithJSONResponse").Call(
-					jen.ID("t"),
-					jen.ID("spec"),
-					jen.IDf("example%sList", sn).Dot(pn),
-				),
-				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Search%s", pn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("exampleQuery"),
-					jen.Lit(0),
-				),
-				jen.Newline(),
-				jen.ID("require").Dot("NotNil").Call(
-					jen.ID("t"),
-					jen.ID("actual"),
-				),
-				jen.ID("assert").Dot("NoError").Call(
-					jen.ID("t"),
-					jen.ID("err"),
-				),
-				jen.ID("assert").Dot("Equal").Call(
-					jen.ID("t"),
-					jen.IDf("example%sList", sn).Dot(pn),
-					jen.ID("actual"),
-				),
+		jen.ID("s").Dot("Run").Call(jen.Lit("standard"), jen.Func().Params().Body(
+			firstSubtest...,
+		)),
+	}
+
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
+		subtest := []jen.Code{
+			jen.ID("t").Assign().ID("s").Dot("T").Call(),
+			jen.Newline(),
+			jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
+			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Search%s", pn).Call(
+				buildSearchSomethingArgs(proj, typ, i, false)...,
 			),
-		),
+			jen.Newline(),
+			jen.ID("assert").Dot("Nil").Call(
+				jen.ID("t"),
+				jen.ID("actual"),
+			),
+			jen.ID("assert").Dot("Error").Call(
+				jen.ID("t"),
+				jen.ID("err"),
+			),
+		}
+
+		lines = append(lines,
+			jen.Newline(),
+			jen.ID("s").Dot("Run").Call(jen.Litf("with invalid %s ID", owner.Name.SingularCommonName()), jen.Func().Params().Body(
+				subtest...,
+			)),
+		)
+	}
+
+	lines = append(lines,
 		jen.Newline(),
 		jen.ID("s").Dot("Run").Call(
 			jen.Lit("with empty query"),
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
-				jen.Newline(),
-				jen.ID("spec").Assign().ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.Qual("net/http", "MethodGet"),
-					jen.Lit("limit=20&q=whatever"),
-					jen.ID("expectedPath"),
-				),
-				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientWithJSONResponse").Call(
+				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(
 					jen.ID("t"),
-					jen.ID("spec"),
-					jen.IDf("example%sList", sn).Dot(pn),
 				),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Search%s", pn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.Lit(""),
-					jen.Lit(0),
+					buildSearchSomethingArgs(proj, typ, -1, true)...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("Nil").Call(
@@ -715,13 +787,10 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Search%s", pn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("exampleQuery"),
-					jen.ID("limit"),
+					buildSearchSomethingArgs(proj, typ, -1, false)...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("Nil").Call(
@@ -736,25 +805,26 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("Run").Call(
-			jen.Lit("standard"),
+			jen.Lit("with bad response from server"),
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.Qual("net/http", "MethodGet"),
-					jen.Lit("limit=20&q=whatever"),
-					jen.ID("expectedPath"),
+					append([]jen.Code{
+						jen.ID("true"),
+						jen.Qual("net/http", "MethodGet"),
+						jen.Lit("limit=20&q=whatever"),
+						jen.ID("expectedPath"),
+					},
+						buildSearchSomethingFormatArgs(proj, typ, -1)...,
+					)...,
 				),
-				jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidResponse").Call(
 					jen.ID("t"),
 					jen.ID("spec"),
 				),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Search%s", pn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("exampleQuery"),
-					jen.ID("limit"),
+					buildSearchSomethingArgs(proj, typ, -1, false)...,
 				),
 				jen.Newline(),
 				jen.ID("assert").Dot("Nil").Call(
@@ -767,7 +837,7 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 				),
 			),
 		),
-	}
+	)
 
 	return []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().IDf("%sTestSuite", puvn)).IDf("TestClient_Search%s", pn).Params().Body(
@@ -1311,58 +1381,143 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 	}
 }
 
+func buildAuditSomethingFormatString(proj *models.Project, typ models.DataType) string {
+	parts := []string{"api", "v1"}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+	}
+
+	parts = append(parts, typ.Name.PluralRouteName(), "%d", "audit")
+
+	return fmt.Sprintf("/%s", path.Join(parts...))
+}
+
+func buildAuditSomethingFormatArgs(proj *models.Project, typ models.DataType, index int, includeSelf bool) []jen.Code {
+	parts := []jen.Code{}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if i == index {
+			parts = append(parts, jen.Zero())
+		} else {
+			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
+		}
+	}
+
+	if includeSelf {
+		parts = append(parts, jen.ID("s").Dotf("example%s", typ.Name.Singular()).Dot("ID"))
+	}
+
+	return parts
+}
+
+func buildAuditSomethingArgs(proj *models.Project, typ models.DataType, index int, includeSelf bool) []jen.Code {
+	parts := []jen.Code{
+		jen.ID("s").Dot("ctx"),
+	}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if i == index {
+			parts = append(parts, jen.Zero())
+		} else {
+			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
+		}
+	}
+
+	if includeSelf {
+		parts = append(parts, jen.ID("s").Dotf("example%s", typ.Name.Singular()).Dot("ID"))
+	} else {
+		parts = append(parts, jen.Zero())
+	}
+
+	return parts
+}
+
 func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
-	prn := typ.Name.PluralRouteName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
-	lines := []jen.Code{
+	firstSubtest := []jen.Code{
+		jen.ID("t").Assign().ID("s").Dot("T").Call(),
+		jen.Newline(),
+		jen.ID("spec").Assign().ID("newRequestSpec").Call(
+			append([]jen.Code{
+				jen.ID("true"),
+				jen.ID("expectedMethod"),
+				jen.Lit(""),
+				jen.ID("expectedPath"),
+			},
+				buildAuditSomethingFormatArgs(proj, typ, -1, true)...,
+			)...,
+		),
+		jen.ID("exampleAuditLogEntryList").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntryList").Call().Dot("Entries"),
+		jen.Newline(),
+		jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientWithJSONResponse").Call(
+			jen.ID("t"),
+			jen.ID("spec"),
+			jen.ID("exampleAuditLogEntryList"),
+		),
+		jen.Newline(),
+		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
+			buildAuditSomethingArgs(proj, typ, -1, true)...,
+		),
+		jen.ID("require").Dot("NotNil").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+		),
+		jen.ID("assert").Dot("NoError").Call(
+			jen.ID("t"),
+			jen.ID("err"),
+		),
+		jen.ID("assert").Dot("Equal").Call(
+			jen.ID("t"),
+			jen.ID("exampleAuditLogEntryList"),
+			jen.ID("actual"),
+		),
+	}
 
+	lines := []jen.Code{
 		jen.Const().Defs(
-			jen.ID("expectedPath").Equals().Lit(fmt.Sprintf("/api/v1/%s/", prn)+"%d/audit"),
+			jen.ID("expectedPath").Equals().Lit(buildAuditSomethingFormatString(proj, typ)),
 			jen.ID("expectedMethod").Equals().Qual("net/http", "MethodGet"),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("Run").Call(
-			jen.Lit("standard"),
-			jen.Func().Params().Body(
-				jen.ID("t").Assign().ID("s").Dot("T").Call(),
-				jen.Newline(),
-				jen.ID("spec").Assign().ID("newRequestSpec").Call(
-					jen.ID("true"),
-					jen.ID("expectedMethod"),
-					jen.Lit(""),
-					jen.ID("expectedPath"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
-				),
-				jen.ID("exampleAuditLogEntryList").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntryList").Call().Dot("Entries"),
-				jen.Newline(),
-				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientWithJSONResponse").Call(
-					jen.ID("t"),
-					jen.ID("spec"),
-					jen.ID("exampleAuditLogEntryList"),
-				),
-				jen.Newline(),
-				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
-				),
-				jen.ID("require").Dot("NotNil").Call(
-					jen.ID("t"),
-					jen.ID("actual"),
-				),
-				jen.ID("assert").Dot("NoError").Call(
-					jen.ID("t"),
-					jen.ID("err"),
-				),
-				jen.ID("assert").Dot("Equal").Call(
-					jen.ID("t"),
-					jen.ID("exampleAuditLogEntryList"),
-					jen.ID("actual"),
-				),
+		jen.ID("s").Dot("Run").Call(jen.Lit("standard"), jen.Func().Params().Body(
+			firstSubtest...,
+		)),
+	}
+
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
+		subtest := []jen.Code{
+			jen.ID("t").Assign().ID("s").Dot("T").Call(),
+			jen.Newline(),
+			jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(
+				jen.ID("t"),
 			),
-		),
+			jen.Newline(),
+			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
+				buildAuditSomethingArgs(proj, typ, i, true)...,
+			),
+			jen.ID("assert").Dot("Nil").Call(
+				jen.ID("t"),
+				jen.ID("actual"),
+			),
+			jen.ID("assert").Dot("Error").Call(
+				jen.ID("t"),
+				jen.ID("err"),
+			),
+		}
+
+		lines = append(lines,
+			jen.Newline(),
+			jen.ID("s").Dot("Run").Call(jen.Litf("with invalid %s ID", owner.Name.SingularCommonName()), jen.Func().Params().Body(
+				subtest...,
+			)),
+		)
+	}
+
+	lines = append(lines,
 		jen.Newline(),
 		jen.ID("s").Dot("Run").Call(
 			jen.Litf("with invalid %s ID", scn),
@@ -1372,8 +1527,7 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.Lit(0),
+					buildAuditSomethingArgs(proj, typ, -1, false)...,
 				),
 				jen.ID("assert").Dot("Nil").Call(
 					jen.ID("t"),
@@ -1394,8 +1548,7 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					buildAuditSomethingArgs(proj, typ, -1, true)...,
 				),
 				jen.ID("assert").Dot("Nil").Call(
 					jen.ID("t"),
@@ -1416,8 +1569,7 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientThatWaitsTooLong").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
-					jen.ID("s").Dot("ctx"),
-					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
+					buildAuditSomethingArgs(proj, typ, -1, true)...,
 				),
 				jen.ID("assert").Dot("Nil").Call(
 					jen.ID("t"),
@@ -1429,7 +1581,7 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				),
 			),
 		),
-	}
+	)
 
 	return []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().IDf("%sTestSuite", puvn)).IDf("TestClient_GetAuditLogFor%s", sn).Params().Body(
