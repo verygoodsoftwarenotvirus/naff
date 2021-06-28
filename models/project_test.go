@@ -22,7 +22,7 @@ func buildExampleTodoListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -30,14 +30,14 @@ func buildExampleTodoListProject() *Project {
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
 						DefaultValue:          "''",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
-				SearchEnabled:    true,
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: true,
+				SearchEnabled:              true,
 			},
 		},
 	}
@@ -54,7 +54,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -67,7 +67,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -80,14 +80,14 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Title"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-				BelongsToUser:    true,
-				RestrictedToUser: false,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Post"),
@@ -95,14 +95,14 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Content"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-				BelongsToUser:    true,
-				RestrictedToUser: false,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("ReactionIcon"),
@@ -110,7 +110,7 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Icon"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
@@ -123,14 +123,14 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("PostReactionIcon"),
 						Type:                  "uint64",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Post"),
-				BelongsToUser:    true,
-				RestrictedToUser: false,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Post"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: false,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Notification"),
@@ -138,13 +138,13 @@ func buildExampleForumsListProject() *Project {
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Text"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 					},
 				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: true,
 			},
 		},
 	}
@@ -171,7 +171,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -179,14 +179,14 @@ func TestProject_Validate(T *testing.T) {
 							Name:                  wordsmith.FromSingularPascalCase("Details"),
 							Type:                  "string",
 							DefaultValue:          "''",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
 					},
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    true,
+					BelongsToAccount:           true,
+					RestrictedToAccountMembers: true,
+					SearchEnabled:              true,
 				},
 			},
 		}
@@ -231,10 +231,10 @@ func TestProject_Validate(T *testing.T) {
 			enabledDatabases: validDatabaseMap,
 			DataTypes: []DataType{
 				{
-					Name:             wordsmith.FromSingularPascalCase("Item"),
-					BelongsToUser:    true,
-					RestrictedToUser: true,
-					SearchEnabled:    true,
+					Name:                       wordsmith.FromSingularPascalCase("Item"),
+					BelongsToAccount:           true,
+					RestrictedToAccountMembers: true,
+					SearchEnabled:              true,
 				},
 			},
 		}
@@ -260,7 +260,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -273,7 +273,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -286,7 +286,7 @@ func TestProject_Validate(T *testing.T) {
 						{
 							Name:                  wordsmith.FromSingularPascalCase("Name"),
 							Type:                  "string",
-							Pointer:               false,
+							IsPointer:             false,
 							ValidForCreationInput: true,
 							ValidForUpdateInput:   true,
 						},
@@ -376,7 +376,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -389,7 +389,7 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -402,14 +402,14 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Title"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 		postType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -417,14 +417,14 @@ func TestProject_FindOwnerTypeChainWithoutReversing(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Content"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 
 		p := &Project{
@@ -460,7 +460,7 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -473,7 +473,7 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -486,14 +486,14 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Title"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 		postType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -501,14 +501,14 @@ func TestProject_FindType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Content"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 
 		p := &Project{
@@ -548,7 +548,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -561,7 +561,7 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Name"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
@@ -574,14 +574,14 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Title"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Subforum"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Subforum"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 		postType := DataType{
 			Name: wordsmith.FromSingularPascalCase("Post"),
@@ -589,14 +589,14 @@ func TestProject_FindDependentsOfType(T *testing.T) {
 				{
 					Name:                  wordsmith.FromSingularPascalCase("Content"),
 					Type:                  "string",
-					Pointer:               false,
+					IsPointer:             false,
 					ValidForCreationInput: true,
 					ValidForUpdateInput:   true,
 				},
 			},
-			BelongsToStruct:  wordsmith.FromSingularPascalCase("Thread"),
-			BelongsToUser:    true,
-			RestrictedToUser: false,
+			BelongsToStruct:            wordsmith.FromSingularPascalCase("Thread"),
+			BelongsToAccount:           true,
+			RestrictedToAccountMembers: false,
 		}
 
 		p := &Project{
@@ -761,7 +761,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -770,14 +770,14 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -843,7 +843,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(58),
@@ -852,18 +852,18 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(71),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -897,7 +897,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               true,
+						IsPointer:             true,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -906,14 +906,14 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(53),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -951,7 +951,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               true,
+						IsPointer:             true,
 						ValidForCreationInput: false,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -960,14 +960,14 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   false,
 						Pos:                   token.Pos(73),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 		}
 		expectedImports := []string{
@@ -1011,14 +1011,14 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
 						Pos:                   token.Pos(41),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
@@ -1026,7 +1026,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1035,15 +1035,15 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
 						Pos:                   token.Pos(93),
 					},
 				},
-				BelongsToUser:   false,
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+				BelongsToAccount: false,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
@@ -1089,14 +1089,14 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
 						Pos:                   token.Pos(41),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
@@ -1104,7 +1104,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1113,20 +1113,20 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
 						Pos:                   token.Pos(93),
 					},
 				},
-				BelongsToUser:   true,
-				BelongsToStruct: wordsmith.FromSingularPascalCase("Owner"),
+				BelongsToAccount: true,
+				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1243,14 +1243,14 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("FirstName"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
 						Pos:                   token.Pos(41),
 					},
 				},
-				BelongsToUser: true,
+				BelongsToAccount: true,
 			},
 			{
 				Name: wordsmith.FromSingularPascalCase("Item"),
@@ -1258,7 +1258,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
@@ -1267,21 +1267,21 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						UnderlyingType:        GetTypeForTypeName("string"),
 						Pos:                   token.Pos(93),
 					},
 				},
-				BelongsToUser:    true,
-				RestrictedToUser: true,
-				BelongsToStruct:  wordsmith.FromSingularPascalCase("Owner"),
+				BelongsToAccount:           true,
+				RestrictedToAccountMembers: true,
+				BelongsToStruct:            wordsmith.FromSingularPascalCase("Owner"),
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/owners", exampleOutputPath),
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/owners", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1318,7 +1318,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -1327,19 +1327,19 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: false,
-				IsEnumeration: true,
+				BelongsToAccount: false,
+				IsEnumeration:    true,
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1376,7 +1376,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -1385,20 +1385,20 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: false,
-				SearchEnabled: true,
-				IsEnumeration: true,
+				BelongsToAccount: false,
+				SearchEnabled:    true,
+				IsEnumeration:    true,
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})
@@ -1458,7 +1458,7 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Name"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(39),
@@ -1467,19 +1467,19 @@ type Item struct{
 					{
 						Name:                  wordsmith.FromSingularPascalCase("Details"),
 						Type:                  "string",
-						Pointer:               false,
+						IsPointer:             false,
 						ValidForCreationInput: true,
 						ValidForUpdateInput:   true,
 						Pos:                   token.Pos(52),
 						UnderlyingType:        GetTypeForTypeName("string"),
 					},
 				},
-				BelongsToUser: true,
-				SearchEnabled: true,
+				BelongsToAccount: true,
+				SearchEnabled:    true,
 			},
 		}
 		expectedImports := []string{
-			fmt.Sprintf("%s/services/v1/items", exampleOutputPath),
+			fmt.Sprintf("%s/services/items", exampleOutputPath),
 		}
 
 		actualDataTypes, actualImports, err := parseModels(exampleOutputPath, map[string]*ast.File{f.Name.String(): f})

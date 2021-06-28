@@ -59,96 +59,6 @@ func Test_getDatabasePalabra(T *testing.T) {
 	})
 }
 
-func Test_developmentDotYaml(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-
-		expected := `version: "3.3"
-services:
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: 'whatever'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
-    grafana:
-        image: grafana/grafana
-        logging:
-            driver: none
-        ports:
-            - 3000:3000
-        links:
-            - prometheus
-        volumes:
-            - source: '../../environments/local/grafana/grafana.ini'
-              target: '/etc/grafana/grafana.ini'
-              type: 'bind'
-            - source: '../../environments/local/grafana/datasources.yaml'
-              target: '/etc/grafana/provisioning/datasources/datasources.yml'
-              type: 'bind'
-            - source: '../../environments/local/grafana/dashboards.yaml'
-              target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
-              type: 'bind'
-            - source: '../../environments/local/grafana/dashboards'
-              target: '/etc/grafana/provisioning/dashboards/dashboards'
-              type: 'bind'
-    prometheus:
-        image: quay.io/prometheus/prometheus:v2.0.0
-        logging:
-            driver: none
-        ports:
-            - 9090:9090
-        volumes:
-            - source: "../../environments/local/prometheus/config.yaml"
-              target: "/etc/prometheus/config.yaml"
-              type: 'bind'
-        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
-    whatever-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-            JAEGER_AGENT_HOST: 'tracing-server'
-            JAEGER_AGENT_PORT: '6831'
-            JAEGER_SAMPLER_MANAGER_HOST_PORT: 'tracing-server:5778'
-            JAEGER_SERVICE_NAME: 'whatever-server'
-        ports:
-            - 80:8888
-        links:
-            - tracing-server
-            - database
-        volumes:
-            - source: '../../frontend/v1/public'
-              target: '/frontend'
-              type: 'bind'
-            - source: '../../environments/local/config.toml'
-              target: '/etc/config.toml'
-              type: 'bind'
-        build:
-            context: '../../'
-            dockerfile: 'environments/local/Dockerfile'
-        depends_on:
-            - prometheus
-            - grafana
-    tracing-server:
-        image: jaegertracing/all-in-one:latest
-        logging:
-            driver: none
-        ports:
-            - 6831:6831/udp
-            - 5778:5778
-            - 16686:16686
-`
-		actual := developmentDotYaml(exampleProjectName)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
 func Test_integrationTestsDotYAML(T *testing.T) {
 	T.Parallel()
 
@@ -381,86 +291,6 @@ services:
 	})
 }
 
-func Test_frontendTestsDotYAML(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-
-		expected := `version: "3.3"
-services:
-    chrome:
-        image: selenium/node-chrome:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: 'whatever'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
-    firefox:
-        image: selenium/node-firefox:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    selenium-hub:
-        image: selenium/hub:3.141.59-oxygen
-        logging:
-            driver: none
-        ports:
-            - 4444:4444
-    test:
-        environment:
-            DOCKER: 'true'
-            TARGET_ADDRESS: 'http://whatever-server:8888'
-        links:
-            - selenium-hub
-            - whatever-server
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests.Dockerfile'
-        depends_on:
-            - firefox
-            - chrome
-    whatever-server:
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests-server.Dockerfile'
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        links:
-            - database
-`
-		actual := frontendTestsDotYAML(exampleProjectName)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
 func Test_integrationCoverageDotYAML(T *testing.T) {
 	T.Parallel()
 
@@ -511,7 +341,7 @@ services:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
 `
-		actual := integrationCoverageDotYAML(exampleProjectName)
+		actual := integrationTestsBaseDotYAML(exampleProjectName)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
@@ -14,9 +15,9 @@ import (
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]string{
-		"environments/local/docker-compose.yaml":                                         developmentDotYaml(project.Name),
-		"environments/testing/compose_files/frontend-tests.yaml":                         frontendTestsDotYAML(project.Name),
-		"environments/testing/compose_files/integration_tests/integration-coverage.yaml": integrationCoverageDotYAML(project.Name),
+		"environments/local/docker-compose.yaml":                                           developmentDotYaml(project),
+		"environments/testing/compose_files/integration_tests/integration-tests-base.yaml": integrationTestsBaseDotYAML(project.Name),
+		"environments/testing/compose_files/load_tests/load-tests-base.yaml":               loadTestsBaseDotYAML(project.Name),
 	}
 
 	for _, db := range project.EnabledDatabases() {
@@ -75,7 +76,7 @@ func getDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 	}
 }
 
-func developmentDotYaml(projectName wordsmith.SuperPalabra) string {
+func developmentDotYaml(project *models.Project) string {
 	return fmt.Sprintf(`version: "3.3"
 services:
     database:
@@ -88,72 +89,71 @@ services:
             driver: none
         ports:
             - 2345:5432
-    grafana:
-        image: grafana/grafana
-        logging:
-            driver: none
-        ports:
-            - 3000:3000
-        links:
-            - prometheus
-        volumes:
-            - source: '../../environments/local/grafana/grafana.ini'
-              target: '/etc/grafana/grafana.ini'
-              type: 'bind'
-            - source: '../../environments/local/grafana/datasources.yaml'
-              target: '/etc/grafana/provisioning/datasources/datasources.yml'
-              type: 'bind'
-            - source: '../../environments/local/grafana/dashboards.yaml'
-              target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
-              type: 'bind'
-            - source: '../../environments/local/grafana/dashboards'
-              target: '/etc/grafana/provisioning/dashboards/dashboards'
-              type: 'bind'
-    prometheus:
-        image: quay.io/prometheus/prometheus:v2.0.0
-        logging:
-            driver: none
-        ports:
-            - 9090:9090
-        volumes:
-            - source: "../../environments/local/prometheus/config.yaml"
-              target: "/etc/prometheus/config.yaml"
-              type: 'bind'
-        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
     %s-server:
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
-            JAEGER_AGENT_HOST: 'tracing-server'
-            JAEGER_AGENT_PORT: '6831'
-            JAEGER_SAMPLER_MANAGER_HOST_PORT: 'tracing-server:5778'
-            JAEGER_SERVICE_NAME: '%s-server'
+            JAEGER_DISABLED: 'false'
         ports:
-            - 80:8888
+            - 8888:8888
         links:
-            - tracing-server
+#            - tracing-server
             - database
+#            - prometheus
         volumes:
-            - source: '../../frontend/v1/public'
-              target: '/frontend'
-              type: 'bind'
-            - source: '../../environments/local/config.toml'
+            - source: '../../environments/local/service.config'
               target: '/etc/config.toml'
+              type: 'bind'
+            - source: '../../'
+              target: '/go/src/%s'
               type: 'bind'
         build:
             context: '../../'
             dockerfile: 'environments/local/Dockerfile'
-        depends_on:
-            - prometheus
-            - grafana
-    tracing-server:
-        image: jaegertracing/all-in-one:latest
-        logging:
-            driver: none
-        ports:
-            - 6831:6831/udp
-            - 5778:5778
-            - 16686:16686
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName())
+#    tracing-server:
+#        image: jaegertracing/all-in-one:1.22.0
+#        logging:
+#            driver: none
+#        ports:
+#            - "5775:5775/udp"
+#            - "6831:6831/udp"
+#            - "6832:6832/udp"
+#            - "5778:5778"
+#            - "16686:16686"
+#            - "14268:14268"
+#            - "9411:9411"
+#    prometheus:
+#        image: quay.io/prometheus/prometheus:v2.25.0
+#        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus --log.level=debug'
+#        logging:
+#          driver: none
+#        ports:
+#            - 9090:9090
+#        volumes:
+#            - source: "../../environments/local/prometheus/config.yaml"
+#              target: "/etc/prometheus/config.yaml"
+#              type: 'bind'
+#    grafana:
+#      image: grafana/grafana:7.4.3
+#      logging:
+#        driver: none
+#      ports:
+#        - 3000:3000
+#      links:
+#        - prometheus
+#      volumes:
+#        - source: '../../environments/local/grafana/grafana.ini'
+#          target: '/etc/grafana/grafana.ini'
+#          type: 'bind'
+#        - source: '../../environments/local/grafana/datasources.yaml'
+#          target: '/etc/grafana/provisioning/datasources/datasources.yml'
+#          type: 'bind'
+#        - source: '../../environments/local/grafana/dashboards.yaml'
+#          target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
+#          type: 'bind'
+#        - source: '../../environments/local/grafana/dashboards'
+#          target: '/etc/grafana/provisioning/dashboards/dashboards'
+#          type: 'bind'
+`, project.Name.RouteName(), project.Name.KebabName(), project.OutputPath)
 }
 
 func integrationTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
@@ -173,24 +173,17 @@ services:
             - 2345:5432
     %s-server:
         environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
+            %s_SERVICE_LOCAL_SECRET_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
+            USE_NOOP_LOGGER: 'nope'
         links:
             - database
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
+        volumes:
+            - source: '../../../../environments/testing/config_files/integration-tests-postgres.config'
+              target: '/etc/config.toml'
+              type: 'bind'
     test:
-        environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
-        links:
-            - %s-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'postgres_integration_tests'
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
+`, projectName.RouteName(), projectName.KebabName(), strings.ToUpper(projectName.RouteName()))
 	case "mariadb", "maria_db":
 		return fmt.Sprintf(`version: "3.3"
 services:
@@ -207,49 +200,96 @@ services:
         ports:
             - 3306:3306
     %s-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
         links:
             - database
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
-    test:
         environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
-        links:
-            - %s-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
+            %s_SERVICE_LOCAL_SECRET_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
+            USE_NOOP_LOGGER: 'nope'
+        volumes:
+            - source: '../../../../environments/testing/config_files/integration-tests-mariadb.config'
+              target: '/etc/config.toml'
+              type: 'bind'
+    test:
         container_name: 'mariadb_integration_tests'
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
+`, projectName.RouteName(), projectName.KebabName(), strings.ToUpper(projectName.RouteName()))
 	case "sqlite":
 		return fmt.Sprintf(`version: '3.3'
 services:
     %s-server:
         environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
+            %s_SERVICE_LOCAL_SECRET_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
+            USE_NOOP_LOGGER: 'nope'
+        volumes:
+            - source: '../../../../environments/testing/config_files/integration-tests-sqlite.config'
+              target: '/etc/config.toml'
+              type: 'bind'
     test:
-        environment:
-            TARGET_ADDRESS: 'http://%s-server:8888'
+        container_name: 'sqlite_integration_tests'
+`, projectName.KebabName(), strings.ToUpper(projectName.RouteName()))
+	}
+
+	panic("invalid db")
+}
+
+func loadTestsBaseDotYAML(projectName wordsmith.SuperPalabra) string {
+	return fmt.Sprintf(`---
+version: '3.3'
+services:
+    load-tests:
         links:
             - %s-server
         build:
             context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
-        container_name: 'sqlite_integration_tests'
-`, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	}
-
-	panic("invalid db")
+            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
+    %s-server:
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-server.Dockerfile'
+        environment:
+            CONFIGURATION_FILEPATH: '/etc/config.toml'
+        ports:
+            - 80:8888
+#    tracing-server:
+#        image: jaegertracing/all-in-one:1.22.0
+#        logging:
+#            driver: none
+#        ports:
+#            - 6831:6831/udp
+#            - 5778:5778
+#            - 16686:16686
+#    prometheus:
+#        image: quay.io/prometheus/prometheus:v2.0.0
+#        logging:
+#            driver: none
+#        ports:
+#            - 9090:9090
+#        volumes:
+#            - source: "../../../../environments/testing/prometheus/config.yaml"
+#              target: "/etc/prometheus/config.yaml"
+#              type: 'bind'
+#        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
+#    grafana:
+#        image: grafana/grafana
+#        logging:
+#            driver: none
+#        ports:
+#            - 3000:3000
+#        links:
+#            - prometheus
+#        volumes:
+#            - source: '../../../../environments/testing/grafana/grafana.ini'
+#              target: '/etc/grafana/grafana.ini'
+#              type: 'bind'
+#            - source: '../../../../environments/testing/grafana/datasources.yaml'
+#              target: '/etc/grafana/provisioning/datasources/datasources.yml'
+#              type: 'bind'
+#            - source: '../../../../environments/testing/grafana/dashboards.yaml'
+#              target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
+#              type: 'bind'
+#            - source: '../../../../environments/testing/grafana/dashboards'
+#              target: '/etc/grafana/provisioning/dashboards/dashboards'
+#              type: 'bind'
+`, projectName.KebabName(), projectName.KebabName())
 }
 
 func loadTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
@@ -277,15 +317,16 @@ services:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
     %s-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
         links:
             - database
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
+            - tracing-server
+            - prometheus
+            - loki
+            - promtail
+        volumes:
+            - source: '../../../../environments/testing/config_files/integration-tests-postgres.toml'
+              target: '/etc/config.toml'
+              type: 'bind'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	case "mariadb", "maria_db":
 		return fmt.Sprintf(`version: '3.3'
@@ -307,19 +348,20 @@ services:
             TARGET_ADDRESS: 'http://%s-server:8888'
         links:
             - %s-server
+    %s-server:
         build:
             context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    %s-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
+            dockerfile: 'environments/testing/dockerfiles/integration-server.Dockerfile'
         links:
             - database
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
+            - tracing-server
+            - prometheus
+            - loki
+            - promtail
+        volumes:
+            - source: '../../../../environments/testing/config_files/integration-tests-mariadb.toml'
+              target: '/etc/config.toml'
+              type: 'bind'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	case "sqlite":
 		return fmt.Sprintf(`version: '3.3'
@@ -339,127 +381,83 @@ services:
             - 80:8888
         build:
             context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server.Dockerfile'
+        volumes:
+            - source: '../../../../environments/testing/config_files/integration-tests-sqlite.toml'
+              target: '/etc/config.toml'
+              type: 'bind'
 `, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	}
 
 	panic("invalid db")
 }
 
-func frontendTestsDotYAML(projectName wordsmith.SuperPalabra) string {
+func integrationTestsBaseDotYAML(projectName wordsmith.SuperPalabra) string {
 	return fmt.Sprintf(`version: "3.3"
 services:
-    chrome:
-        image: selenium/node-chrome:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: '%s'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
-    firefox:
-        image: selenium/node-firefox:3.141.59-oxygen
-        environment:
-            HUB_HOST: 'selenium-hub'
-            HUB_PORT: '4444'
-        logging:
-            driver: none
-        links:
-            - selenium-hub
-        volumes:
-            - source: '/dev/shm'
-              target: '/dev/shm'
-              type: 'bind'
-    selenium-hub:
-        image: selenium/hub:3.141.59-oxygen
-        logging:
-            driver: none
-        ports:
-            - 4444:4444
-    test:
-        environment:
-            DOCKER: 'true'
-            TARGET_ADDRESS: 'http://%s-server:8888'
-        links:
-            - selenium-hub
-            - %s-server
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests.Dockerfile'
-        depends_on:
-            - firefox
-            - chrome
     %s-server:
-        build:
-            context: '../../../'
-            dockerfile: 'environments/testing/dockerfiles/frontend-tests-server.Dockerfile'
         environment:
             CONFIGURATION_FILEPATH: '/etc/config.toml'
+            JAEGER_DISABLED: 'true'
         ports:
             - 80:8888
-        links:
-            - database
-`, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-}
-
-func integrationCoverageDotYAML(projectName wordsmith.SuperPalabra) string {
-	return fmt.Sprintf(`version: '3.3'
-services:
-    coverage-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-            RUNTIME_DURATION: '30s'
-        ports:
-            - 80:8888
-        links:
-            - database
-        volumes:
-            - source: '../../../../artifacts/'
-              target: '/home/'
-              type: 'bind'
-            - source: '../../../../environments/testing/config_files/coverage.toml'
-              target: '/etc/config.toml'
-              type: 'bind'
         build:
             context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-coverage-server.Dockerfile'
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: '%s'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
+            dockerfile: 'environments/testing/dockerfiles/integration-server.Dockerfile'
     test:
         environment:
-            JAEGER_AGENT_HOST: 'tracing-server'
-            JAEGER_AGENT_PORT: '6831'
-            JAEGER_SAMPLER_MANAGER_HOST_PORT: 'tracing-server:5778'
-            JAEGER_SERVICE_NAME: 'coverage-server'
-            TARGET_ADDRESS: 'http://coverage-server'
-            WAIT_FOR_COVERAGE: 'yes'
+            TARGET_ADDRESS: 'http://%s-server:8888'
         links:
-            - coverage-server
+            - %s-server
+#            - tracing-server
+#            - prometheus
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
-`, projectName.RouteName())
+        container_name: 'integration_tests'
+#    tracing-server:
+#        image: jaegertracing/all-in-one:1.22.0
+#        logging:
+#            driver: none
+#        ports:
+#            - "5775:5775/udp"
+#            - "6831:6831/udp"
+#            - "6832:6832/udp"
+#            - "5778:5778"
+#            - "16686:16686"
+#            - "14268:14268"
+#            - "9411:9411"
+#    prometheus:
+#        image: quay.io/prometheus/prometheus:v2.25.0
+#        logging:
+#            driver: none
+#        ports:
+#            - 9090:9090
+#        volumes:
+#            - source: "../../../../environments/testing/prometheus/config.yaml"
+#              target: "/etc/prometheus/config.yaml"
+#              type: 'bind'
+#        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
+#    grafana:
+#        image: grafana/grafana
+#        logging:
+#            driver: none
+#        ports:
+#            - 3000:3000
+#        links:
+#            - prometheus
+#        volumes:
+#            - source: '../../../../environments/testing/grafana/grafana.ini'
+#              target: '/etc/grafana/grafana.ini'
+#              type: 'bind'
+#            - source: '../../../../environments/testing/grafana/datasources.yaml'
+#              target: '/etc/grafana/provisioning/datasources/datasources.yml'
+#              type: 'bind'
+#            - source: '../../../../environments/testing/grafana/dashboards.yaml'
+#              target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
+#              type: 'bind'
+#            - source: '../../../../environments/testing/grafana/dashboards'
+#              target: '/etc/grafana/provisioning/dashboards/dashboards'
+#              type: 'bind'
+`, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 }

@@ -107,29 +107,6 @@ func main() {
 	})
 }
 
-func TestLoggerParam(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		t.Parallel()
-
-		result := LoggerParam()
-
-		expected := `
-package main
-
-import (
-	v1 "gitlab.com/verygoodsoftwarenotvirus/logging/v1"
-)
-
-func example(logger v1.Logger) {}
-`
-		actual := testutils.RenderFunctionParamsToString(t, []jen.Code{result})
-
-		assert.Equal(t, expected, actual)
-	})
-}
-
 func TestObligatoryError(T *testing.T) {
 	T.Parallel()
 

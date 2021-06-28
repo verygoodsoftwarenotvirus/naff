@@ -314,20 +314,20 @@ func (s *Statement) Body(statements ...Code) *Statement {
 	return s
 }
 
-// SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
-func SingleLineBlock(statements ...Code) *Statement {
-	return newStatement().SingleLineBlock(statements...)
+// SingleLineBody renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func SingleLineBody(statements ...Code) *Statement {
+	return newStatement().SingleLineBody(statements...)
 }
 
-// SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
-func (g *Group) SingleLineBlock(statements ...Code) *Statement {
-	s := SingleLineBlock(statements...)
+// SingleLineBody renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func (g *Group) SingleLineBody(statements ...Code) *Statement {
+	s := SingleLineBody(statements...)
 	g.items = append(g.items, s)
 	return s
 }
 
-// SingleLineBlock renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
-func (s *Statement) SingleLineBlock(statements ...Code) *Statement {
+// SingleLineBody renders a statement list enclosed by curly braces. Use for code blocks. A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements.
+func (s *Statement) SingleLineBody(statements ...Code) *Statement {
 	g := &Group{
 		close:     "}",
 		items:     statements,

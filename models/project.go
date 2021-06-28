@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -71,7 +73,7 @@ type Project struct {
 	OutputPathSubstitution    string
 
 	iterableServicesImports []string
-	EnableNewsman           bool
+	EnableCapitalism        bool
 
 	Name      wordsmith.SuperPalabra
 	DataTypes []DataType
@@ -270,9 +272,9 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 		ast.Inspect(file, func(n ast.Node) bool {
 			if dec, ok := n.(*ast.TypeSpec); ok {
 				dt := DataType{
-					Name:          wordsmith.FromSingularPascalCase(dec.Name.Name),
-					Fields:        []DataField{},
-					BelongsToUser: true,
+					Name:             wordsmith.FromSingularPascalCase(dec.Name.Name),
+					Fields:           []DataField{},
+					BelongsToAccount: true,
 				}
 
 				if _, ok := dec.Type.(*ast.StructType); !ok {
@@ -292,7 +294,7 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 					if x, identOK := field.Type.(*ast.Ident); identOK {
 						df.Type = x.Name
 					} else if y, starOK := field.Type.(*ast.StarExpr); starOK {
-						df.Pointer = true
+						df.IsPointer = true
 						df.Type = y.X.(*ast.Ident).Name
 					}
 
@@ -341,15 +343,15 @@ func parseModels(outputPath string, pkgFiles map[string]*ast.File) (dataTypes []
 								}
 
 								if properOwner == "__nobody__" {
-									dt.BelongsToUser = false
+									dt.BelongsToAccount = false
 									dt.IsEnumeration = true
 								} else if properOwner != "" {
 									dt.BelongsToStruct = wordsmith.FromSingularPascalCase(properOwner)
-									dt.BelongsToUser = alsoBelongsToUser
+									dt.BelongsToAccount = alsoBelongsToUser
 								}
 							} else {
 								if strings.Contains(tagWithoutBackticks, `restricted_to_user:"true"`) {
-									dt.RestrictedToUser = true
+									dt.RestrictedToAccountMembers = true
 								}
 								if strings.Contains(tagWithoutBackticks, `search_enabled:"true"`) {
 									dt.SearchEnabled = true
@@ -616,6 +618,7 @@ func CompleteSurvey(
 
 	targetDestination := filepath.Join(os.Getenv("GOPATH"), "src", p.OutputRepository)
 	if strings.HasSuffix(targetDestination, "verygoodsoftwarenotvirus") {
+		// future me will thank present me for this because present me hates past me for not doing this.
 		log.Fatal("I don't think you actually want to do that.")
 	} else {
 		if err := os.RemoveAll(targetDestination); err != nil {
@@ -624,7 +627,6 @@ func CompleteSurvey(
 	}
 
 	proj := &Project{
-		EnableNewsman: true,
 		Name:          wordsmith.FromSingularPascalCase(p.Name),
 		OutputPath:    p.OutputRepository,
 		sourcePackage: p.ModelsPackage,
@@ -634,4 +636,9 @@ func CompleteSurvey(
 	}
 
 	return proj, nil
+}
+
+// LoggerParam is a shorthand for a context param
+func (p *Project) LoggerParam() jen.Code {
+	return jen.ID(constants.LoggerVarName).Qual(p.InternalLoggingPackage(), "Logger")
 }

@@ -164,7 +164,12 @@ func callExpr(t *ast.CallExpr) jen.Code {
 	if t.Ellipsis.IsValid() {
 		args[len(args)-1] = jen.Add(args[len(args)-1]).Dot("Op").Call(jen.Lit("..."))
 	}
-	return jen.Add(genExpr(t.Fun)).Dot("Call").Call(args...)
+
+	if len(args) <= 1 {
+		return jen.Add(genExpr(t.Fun)).Dot("Call").Call(args...)
+	}
+
+	return jen.Add(genExpr(t.Fun)).Dot("Call").Callln(args...)
 }
 
 func sliceExpr(t *ast.SliceExpr) jen.Code {

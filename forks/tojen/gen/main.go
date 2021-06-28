@@ -104,17 +104,17 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 	codes = append(codes, genNewJenFile(astFile.Name.String()))
 	// add anon imports i.e. _ for side effects
 	if len(anonImports) > 0 {
-		codes = append(codes, jen.ID("ret").Dot("Anon").Call(anonImports...))
+		codes = append(codes, jen.ID("code").Dot("Anon").Call(anonImports...))
 	}
 	// add the generated functions to the created jen file
 	for _, name := range decls {
-		codes = append(codes, jen.ID("ret").Dot("Add").Callln(jen.ID(name).Call(), jen.Qual(jenImp, "Line").Call()))
+		codes = append(codes, jen.ID("code").Dot("Add").Callln(jen.ID(name).Call(), jen.Qual(jenImp, "Newline").Call()))
 	}
 	// return the created jen file
-	codes = append(codes, jen.Return().ID("ret"))
+	codes = append(codes, jen.Return().ID("code"))
 	// add the patch function to the output file
 	file.Add(
-		jen.Func().ID("genFile").Params().Op("*").Qual(jenImp, "File").Body(codes...),
+		jen.Func().ID("genFile").Params(jen.ID("proj").PointerTo().Qual("gitlab.com/verygoodsoftwarenotvirus/naff/models", "Project")).Op("*").Qual(jenImp, "File").Body(codes...),
 	)
 	// if main then generate a main function that prints out the output of the
 	// patch function
@@ -125,16 +125,16 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 }
 
 func genNewJenFile(name string) jen.Code {
-	const varName = "ret"
-	return jen.ID(varName).Op(":=").Qual(jenImp, "NewFile").Call(jen.Lit(name)).Line().Line().Qual(utilsImp, "AddImports").Call(jen.ID(varName)).Line().Line()
+	const varName = "code"
+	return jen.ID(varName).Op(":=").Qual(jenImp, "NewFile").Call(jen.ID("packageName")).Newline().Newline().Qual(utilsImp, "AddImports").Call(jen.ID("proj"), jen.ID(varName), jen.False()).Newline().Newline()
 }
 
 func genMainFunc() jen.Code {
 	return jen.Func().ID("main").Params().Body(
-		jen.ID("ret").Op(":=").ID("genFile").Call(),
+		jen.ID("code").Op(":=").ID("genFile").Call(),
 		jen.Qual("fmt", "Printf").Call(
 			jen.Lit("%#v"),
-			jen.ID("ret"),
+			jen.ID("code"),
 		),
 	)
 }
@@ -171,25 +171,33 @@ func parseFile(code []byte) *ast.File {
 }
 
 func genDecl(g *ast.GenDecl) jen.Code {
-	ret := jen.Qual(jenImp, "Null").Call()
+	var wrapperRet *jen.Statement
+	var decls []jen.Code
 
 	for _, spec := range g.Specs {
 		switch s := spec.(type) {
 		case *ast.ValueSpec:
-			ret.Add(valueSpec(s))
+			wrapperRet = jen.Qual(jenImp, "Var").Call()
+			decls = append(decls, valueSpec(s))
 		case *ast.TypeSpec:
-			ret.Add(typeSpec(s))
+			wrapperRet = jen.Qual(jenImp, "Type").Call()
+			decls = append(decls, typeSpec(s))
 		}
 	}
-	return ret
+
+	if wrapperRet == nil {
+		return jen.Nil()
+	}
+
+	return wrapperRet.Dot("Defs").Callln(decls...)
 }
 
 func typeSpec(s *ast.TypeSpec) jen.Code {
-	return jen.Dot("Type").Call().Add(ident(s.Name)).Add(genExpr(s.Type))
+	return jen.ID("jen").Add(ident(s.Name)).Add(genExpr(s.Type))
 }
 
 func valueSpec(s *ast.ValueSpec) jen.Code {
-	ret := jen.Dot("Var").Call()
+	ret := jen.ID("jen")
 	ret.Add(identsList(s.Names))
 	ret.Add(genExpr(s.Type))
 	if len(s.Values) > 0 {

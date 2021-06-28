@@ -74,6 +74,19 @@ func (s *Statement) Render(writer io.Writer) error {
 	return s.RenderWithFile(writer, NewFile(""))
 }
 
+// RenderWithoutFormatting renders the Statement to the provided writer, using imports from the provided file, and does not format.
+func (s *Statement) RenderWithoutFormatting(writer io.Writer) error {
+	buf := &bytes.Buffer{}
+	file := NewFile("")
+	if err := s.render(file, buf, nil); err != nil {
+		return err
+	}
+	if _, err := writer.Write(buf.Bytes()); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GoString renders the Statement for testing. Any error will cause a panic.
 func (s *Statement) GoString() string {
 	buf := bytes.Buffer{}

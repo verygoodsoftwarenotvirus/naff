@@ -4,3 +4,4 @@ vendor
 example_output
 artifacts
 coverage.out
+templates/experimental

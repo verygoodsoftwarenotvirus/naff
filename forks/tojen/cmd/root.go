@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -34,19 +35,18 @@ func Execute() {
 				os.Exit(1)
 			}
 			if len(args) == 2 {
-				osFile, err := os.Create(args[1])
+				var osFile io.WriteCloser
+				osFile, err = os.Create(args[1])
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				_, err = osFile.Write(retBytes)
-				if err != nil {
+				if _, err = osFile.Write(retBytes); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
 				fmt.Println("Successfuly wrote file to " + args[1])
-				err = osFile.Close()
-				if err != nil {
+				if err = osFile.Close(); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
@@ -64,10 +64,10 @@ func Execute() {
 	}
 	cmdGen.Flags().StringVarP(&packageName, "package", "p", "", "Name of package")
 	cmdGen.Flags().BoolVarP(&genMain, "main", "m", false, "Generate main function that prints out the generated code when called -- used for testing.")
-
 	cmdGen.Flags().BoolVarP(&formating, "formatted", "f", false, "Format the generated code EXPERIMENTAL")
 
 	rootCmd.AddCommand(cmdGen)
+
 	rootCmd.Execute()
 
 }

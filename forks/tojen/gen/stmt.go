@@ -79,12 +79,12 @@ func deferStmt(t *ast.DeferStmt) jen.Code {
 
 func labeledStmt(t *ast.LabeledStmt) jen.Code {
 	ret := jen.ID("jen")
-	return ret.Add(ident(t.Label)).Dot("Op").Call(jen.Lit(":")).Dot("Line").Call().Dot("Add").Callln(stmt(t.Stmt))
+	return ret.Add(ident(t.Label)).Dot("Op").Call(jen.Lit(":")).Dot("Newline").Call().Dot("Add").Callln(stmt(t.Stmt))
 }
 
 func sendStmt(t *ast.SendStmt) jen.Code {
 	ret := jen.ID("jen")
-	return ret.Add(genExpr(t.Chan)).Dot("Op").Call(jen.Lit("<-")).Add(genExpr(t.Value))
+	return ret.Add(genExpr(t.Chan)).Dot("ReceiveFromChannel").Call().Add(genExpr(t.Value))
 }
 
 func incDecStmt(t *ast.IncDecStmt) jen.Code {
@@ -239,6 +239,9 @@ func rangeStmt(t *ast.RangeStmt) jen.Code {
 
 func blockStmt(s *ast.BlockStmt) jen.Code {
 	ret := stmts(s.List)
+	if len(ret) <= 1 {
+		return jen.Dot("Body").Call(ret...)
+	}
 	return jen.Dot("Body").Callln(ret...)
 }
 

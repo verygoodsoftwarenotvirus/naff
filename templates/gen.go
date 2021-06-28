@@ -5,114 +5,147 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gosuri/uiprogress"
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
-
-	httpclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/client/v1/http"
-	configgen "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/config_gen/v1"
-	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server/v1"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/audit"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication"
+	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
+	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism/stripe"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config/viper"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
+	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querier"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
+	mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
+	querybuilders "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/querybuilders"
+	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mariadb"
+	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/postgres"
+	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/sqlite"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
+	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics"
+	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/tracing"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/chi"
+	mockrouting "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/bleve"
+	mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/secrets"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/server"
+	accountsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/accounts"
+	adminservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/admin"
+	apiclientsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/apiclients"
+	auditservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/audit"
+	authenticationservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/authentication"
+	frontendservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/frontend"
+	iterablesservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/iterables"
+	usersservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/users"
+	webhooksservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/webhooks"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/storage"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/images"
+	mockuploads "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/mock"
+	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server"
+	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
+	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
+	encodedqrcodegeneratorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/encoded_qr_code_generator"
 	indexinitializercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/index_initializer"
-	twofactorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/two_factor"
-	database "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1"
-	dbclient "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1/client"
-	queriers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/database/v1/queriers"
-	environments "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments"
-	composefiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
-	deploy "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/deploy"
-	dockerfiles "gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
-	frontendv1 "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/v1"
-	frontendsrc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/v1/src"
-	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/auth"
-	internalauthmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/auth/mock"
-	config "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/config"
-	encoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/encoding"
-	encodingmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/encoding/mock"
-	metrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/metrics"
-	metricsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/metrics/mock"
-	search "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/search"
-	bleve "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/search/bleve"
-	searchmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/search/mock"
-	tracing "gitlab.com/verygoodsoftwarenotvirus/naff/templates/iinternal/v1/tracing"
-	misc "gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/templates/models/v1"
-	fakemodels "gitlab.com/verygoodsoftwarenotvirus/naff/templates/models/v1/fake"
-	modelsmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/models/v1/mock"
-	server "gitlab.com/verygoodsoftwarenotvirus/naff/templates/server/v1"
-	httpserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/server/v1/http"
-	auth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/services/v1/auth"
-	frontend "gitlab.com/verygoodsoftwarenotvirus/naff/templates/services/v1/frontend"
-	iterables "gitlab.com/verygoodsoftwarenotvirus/naff/templates/services/v1/iterables"
-	oauth2clients "gitlab.com/verygoodsoftwarenotvirus/naff/templates/services/v1/oauth2clients"
-	users "gitlab.com/verygoodsoftwarenotvirus/naff/templates/services/v1/users"
-	webhooks "gitlab.com/verygoodsoftwarenotvirus/naff/templates/services/v1/webhooks"
-	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/v1/frontend"
-	integrationtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/v1/integration"
-	loadtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/v1/load"
-	testutil "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/v1/testutil"
-)
+	templategencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/template_gen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/fakes"
+	mocktypes "gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/types/mock"
+	frontendtests "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/frontend"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/integration"
+	testutils "gitlab.com/verygoodsoftwarenotvirus/naff/templates/tests/utils"
 
-type renderHelper struct {
-	name       string
-	renderFunc func(*naffmodels.Project) error
-	activated  bool
-}
+	"github.com/gosuri/uiprogress"
+)
 
 const async = true
 
 // RenderProject renders a project
 func RenderProject(proj *naffmodels.Project) {
-	allActive := true
-	searchActive := false
-
-	for _, typ := range proj.DataTypes {
-		if typ.SearchEnabled && !searchActive {
-			searchActive = true
-			break
-		}
-	}
-
-	packageRenderers := []renderHelper{
-		{name: "httpclient", renderFunc: httpclient.RenderPackage, activated: allActive},
-		{name: "configgen", renderFunc: configgen.RenderPackage, activated: allActive},
-		{name: "servercmd", renderFunc: servercmd.RenderPackage, activated: allActive},
-		{name: "twofactorcmd", renderFunc: twofactorcmd.RenderPackage, activated: allActive},
-		{name: "indexinitializercmd", renderFunc: indexinitializercmd.RenderPackage, activated: searchActive},
-		{name: "database", renderFunc: database.RenderPackage, activated: allActive},
-		{name: "internalauth", renderFunc: internalauth.RenderPackage, activated: allActive},
-		{name: "internalauthmock", renderFunc: internalauthmock.RenderPackage, activated: allActive},
-		{name: "config", renderFunc: config.RenderPackage, activated: allActive},
-		{name: "encoding", renderFunc: encoding.RenderPackage, activated: allActive},
-		{name: "encodingmock", renderFunc: encodingmock.RenderPackage, activated: allActive},
-		{name: "metrics", renderFunc: metrics.RenderPackage, activated: allActive},
-		{name: "tracing", renderFunc: tracing.RenderPackage, activated: allActive},
-		{name: "search", renderFunc: search.RenderPackage, activated: searchActive},
-		{name: "searchmock", renderFunc: searchmock.RenderPackage, activated: searchActive},
-		{name: "bleve", renderFunc: bleve.RenderPackage, activated: searchActive},
-		{name: "metricsmock", renderFunc: metricsmock.RenderPackage, activated: allActive},
-		{name: "server", renderFunc: server.RenderPackage, activated: allActive},
-		{name: "testutil", renderFunc: testutil.RenderPackage, activated: allActive},
-		{name: "frontendtests", renderFunc: frontendtests.RenderPackage, activated: allActive},
-		{name: "webhooks", renderFunc: webhooks.RenderPackage, activated: allActive},
-		{name: "oauth2clients", renderFunc: oauth2clients.RenderPackage, activated: allActive},
-		{name: "frontend", renderFunc: frontend.RenderPackage, activated: allActive},
-		{name: "auth", renderFunc: auth.RenderPackage, activated: allActive},
-		{name: "users", renderFunc: users.RenderPackage, activated: allActive},
-		{name: "httpserver", renderFunc: httpserver.RenderPackage, activated: allActive},
-		{name: "modelsmock", renderFunc: modelsmock.RenderPackage, activated: allActive},
-		{name: "models", renderFunc: models.RenderPackage, activated: allActive},
-		{name: "fakemodels", renderFunc: fakemodels.RenderPackage, activated: allActive},
-		{name: "iterables", renderFunc: iterables.RenderPackage, activated: allActive},
-		{name: "dbclient", renderFunc: dbclient.RenderPackage, activated: allActive},
-		{name: "integrationtests", renderFunc: integrationtests.RenderPackage, activated: allActive},
-		{name: "loadtests", renderFunc: loadtests.RenderPackage, activated: allActive},
-		{name: "queriers", renderFunc: queriers.RenderPackage, activated: allActive},
-		{name: "composefiles", renderFunc: composefiles.RenderPackage, activated: allActive},
-		{name: "environments", renderFunc: environments.RenderPackage, activated: allActive},
-		{name: "deployfiles", renderFunc: deploy.RenderPackage, activated: allActive},
-		{name: "dockerfiles", renderFunc: dockerfiles.RenderPackage, activated: allActive},
-		{name: "miscellaneous", renderFunc: misc.RenderPackage, activated: allActive},
-		{name: "frontendsrc", renderFunc: frontendsrc.RenderPackage, activated: allActive},
-		{name: "frontendv1", renderFunc: frontendv1.RenderPackage, activated: allActive},
+	packageRenderers := map[string]func(*naffmodels.Project) error{
+		"servercmd":                 servercmd.RenderPackage,
+		"templategencmd":            templategencmd.RenderPackage,
+		"configgen":                 configgencmd.RenderPackage,
+		"datascaffoldercmd":         datascaffoldercmd.RenderPackage,
+		"encodedqrcodegeneratorcmd": encodedqrcodegeneratorcmd.RenderPackage,
+		"indexinitializercmd":       indexinitializercmd.RenderPackage,
+		"composefiles":              composefiles.RenderPackage,
+		"deployfiles":               providerconfigs.RenderPackage,
+		"dockerfiles":               dockerfiles.RenderPackage,
+		"audit":                     audit.RenderPackage,
+		"authentication":            authentication.RenderPackage,
+		"authorization":             internalauth.RenderPackage,
+		"buildserver":               buildserver.RenderPackage,
+		"config":                    config.RenderPackage,
+		"viper":                     viper.RenderPackage,
+		"database":                  database.RenderPackage,
+		"dbconfig":                  dbconfig.RenderPackage,
+		"querier":                   querier.RenderPackage,
+		"querybuilding":             querybuilding.RenderPackage,
+		"querybuilders":             querybuilders.RenderPackage,
+		"dbmock":                    mockquerybuilding.RenderPackage,
+		"capitalism":                capitalism.RenderPackage,
+		"stripe":                    stripe.RenderPackage,
+		"encoding":                  encoding.RenderPackage,
+		"mockencoding":              mockencoding.RenderPackage,
+		"events":                    events.RenderPackage,
+		"observability":             observability.RenderPackage,
+		"keys":                      keys.RenderPackage,
+		"logging":                   logging.RenderPackage,
+		"metrics":                   metrics.RenderPackage,
+		"mockmetrics":               mockmetrics.RenderPackage,
+		"tracing":                   tracing.RenderPackage,
+		"panicking":                 panicking.RenderPackage,
+		"random":                    random.RenderPackage,
+		"routing":                   routing.RenderPackage,
+		"chi":                       chi.RenderPackage,
+		"mockrouting":               mockrouting.RenderPackage,
+		"search":                    search.RenderPackage,
+		"searchmock":                mocksearch.RenderPackage,
+		"bleve":                     bleve.RenderPackage,
+		"secrets":                   secrets.RenderPackage,
+		"server":                    server.RenderPackage,
+		"accountsservice":           accountsservice.RenderPackage,
+		"adminservice":              adminservice.RenderPackage,
+		"apiclientsservice":         apiclientsservice.RenderPackage,
+		"auditservice":              auditservice.RenderPackage,
+		"authenticationservice":     authenticationservice.RenderPackage,
+		"frontendservice":           frontendservice.RenderPackage,
+		"iterablesservice":          iterablesservice.RenderPackage,
+		"usersservice":              usersservice.RenderPackage,
+		"webhooksservice":           webhooksservice.RenderPackage,
+		"storage":                   storage.RenderPackage,
+		"images":                    images.RenderPackage,
+		"uploads":                   uploads.RenderPackage,
+		"mockuploads":               mockuploads.RenderPackage,
+		"httpclient":                httpclient.RenderPackage,
+		"requests":                  requests.RenderPackage,
+		"mocktypes":                 mocktypes.RenderPackage,
+		"types":                     types.RenderPackage,
+		"fakes":                     fakes.RenderPackage,
+		"miscellaneous":             misc.RenderPackage,
+		"frontendtests":             frontendtests.RenderPackage,
+		"integrationtests":          integration.RenderPackage,
+		"testutils":                 testutils.RenderPackage,
 	}
 
 	var wg sync.WaitGroup
@@ -122,13 +155,11 @@ func RenderProject(proj *naffmodels.Project) {
 
 	wg.Add(1)
 	if proj != nil {
-		for _, x := range packageRenderers {
-			if x.activated {
-				if async {
-					go renderTask(proj, &wg, x, progressBar)
-				} else {
-					renderTask(proj, &wg, x, progressBar)
-				}
+		for name, x := range packageRenderers {
+			if async {
+				go renderTask(proj, &wg, name, x, progressBar)
+			} else {
+				renderTask(proj, &wg, name, x, progressBar)
 			}
 		}
 	}
@@ -139,12 +170,14 @@ func RenderProject(proj *naffmodels.Project) {
 	wg.Wait()
 }
 
-func renderTask(proj *naffmodels.Project, wg *sync.WaitGroup, renderer renderHelper, progressBar *uiprogress.Bar) {
+func renderTask(proj *naffmodels.Project, wg *sync.WaitGroup, name string, renderer func(*naffmodels.Project) error, progressBar *uiprogress.Bar) {
 	wg.Add(1)
 	start := time.Now()
-	if err := renderer.renderFunc(proj); err != nil {
-		log.Panicf("error rendering %q after %s: %v\n", renderer.name, time.Since(start), err)
+
+	if err := renderer(proj); err != nil {
+		log.Panicf("error rendering %q after %s: %v\n", name, time.Since(start), err)
 	}
+
 	progressBar.Incr()
 	wg.Done()
 }

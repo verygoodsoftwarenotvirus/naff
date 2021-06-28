@@ -3,7 +3,6 @@ package jen
 import (
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -13,11 +12,11 @@ type tokenType string
 const (
 	packageToken          tokenType = "package"
 	identifierToken       tokenType = "identifier"
-	qualifiedToken        tokenType = "qualified"
 	keywordToken          tokenType = "keyword"
 	operatorToken         tokenType = "operator"
 	delimiterToken        tokenType = "delimiter"
 	literalToken          tokenType = "literal"
+	octalToken            tokenType = "octal"
 	literalRawStringToken tokenType = "literal_raw_string"
 	literalRuneToken      tokenType = "literal_rune"
 	literalByteToken      tokenType = "literal_byte"
@@ -71,6 +70,18 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 			out = fmt.Sprintf("%T%#v", t.content, t.content)
 		default:
 			panic(fmt.Sprintf("unsupported type for literal: %T", t.content))
+		}
+		if _, err := w.Write([]byte(out)); err != nil {
+			return err
+		}
+	case octalToken:
+		var out string
+		switch x := t.content.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			// other built-in types need specific type info
+			out = fmt.Sprintf("0%d", x)
+		default:
+			panic(fmt.Sprintf("unsupported type for octal: %T", t.content))
 		}
 		if _, err := w.Write([]byte(out)); err != nil {
 			return err
@@ -294,6 +305,28 @@ func (s *Statement) RightShift() *Statement {
 	t := token{
 		typ:     operatorToken,
 		content: ">>",
+	}
+	*s = append(*s, t)
+	return s
+}
+
+// Increment renders the provided operator ++ token.
+func Increment() *Statement {
+	return newStatement().Increment()
+}
+
+// Increment renders the provided operator ++ token.
+func (g *Group) Increment() *Statement {
+	s := Increment()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Increment renders the provided operator ++ token.
+func (s *Statement) Increment() *Statement {
+	t := token{
+		typ:     operatorToken,
+		content: "++",
 	}
 	*s = append(*s, t)
 	return s
@@ -875,9 +908,9 @@ func (s *Statement) ID(name string) *Statement {
 
 // IDf renders an identifier.
 func IDf(name string, args ...interface{}) *Statement {
-	if len(args) == 0 {
-		log.Panicf("IDf called for name %q with no arguments, are you sure you don't mean ID?", name)
-	}
+	//if len(args) == 0 {
+	//	log.Panicf("IDf called for name %q with no arguments, are you sure you don't mean ID?", name)
+	//}
 	return newStatement().IDf(name, args...)
 }
 
@@ -953,20 +986,75 @@ func (s *Statement) Qual(path, name string) *Statement {
 	return s
 }
 
-// Line inserts a blank line.
-func Line() *Statement {
-	return newStatement().Line()
+// Qualf renders a qualified identifier. Imports are automatically added when
+// used with a File. If the path matches the local path, the package name is
+// omitted. If package names conflict they are automatically renamed. Note that
+// it is not possible to reliably determine the package name given an arbitrary
+// package path, so a sensible name is guessed from the path and added as an
+// alias. The names of all standard library packages are known so these do not
+// need to be aliased. If more control is needed of the aliases, see
+// [File.ImportName](#importname) or [File.ImportAlias](#importalias).
+func Qualf(path, fmtStr string, args ...interface{}) *Statement {
+	return newStatement().Qualf(path, fmt.Sprintf(fmtStr, args...))
 }
 
-// Line inserts a blank line.
-func (g *Group) Line() *Statement {
-	s := Line()
+// Qualf renders a qualified identifier. Imports are automatically added when
+// used with a File. If the path matches the local path, the package name is
+// omitted. If package names conflict they are automatically renamed. Note that
+// it is not possible to reliably determine the package name given an arbitrary
+// package path, so a sensible name is guessed from the path and added as an
+// alias. The names of all standard library packages are known so these do not
+// need to be aliased. If more control is needed of the aliases, see
+// [File.ImportName](#importname) or [File.ImportAlias](#importalias).
+func (g *Group) Qualf(path, fmtStr string, args ...interface{}) *Statement {
+	s := Qualf(path, fmt.Sprintf(fmtStr, args...))
 	g.items = append(g.items, s)
 	return s
 }
 
-// Line inserts a blank line.
-func (s *Statement) Line() *Statement {
+// Qualf renders a qualified identifier. Imports are automatically added when
+// used with a File. If the path matches the local path, the package name is
+// omitted. If package names conflict they are automatically renamed. Note that
+// it is not possible to reliably determine the package name given an arbitrary
+// package path, so a sensible name is guessed from the path and added as an
+// alias. The names of all standard library packages are known so these do not
+// need to be aliased. If more control is needed of the aliases, see
+// [File.ImportName](#importname) or [File.ImportAlias](#importalias).
+func (s *Statement) Qualf(path, fmtStr string, args ...interface{}) *Statement {
+	g := &Group{
+		close: " ",
+		items: []Code{
+			token{
+				typ:     packageToken,
+				content: path,
+			},
+			token{
+				typ:     identifierToken,
+				content: fmt.Sprintf(fmtStr, args...),
+			},
+		},
+		name:      "qual",
+		open:      " ",
+		separator: ".",
+	}
+	*s = append(*s, g)
+	return s
+}
+
+// Newline inserts a blank line.
+func Newline() *Statement {
+	return newStatement().Newline()
+}
+
+// Newline inserts a blank line.
+func (g *Group) Newline() *Statement {
+	s := Newline()
+	g.items = append(g.items, s)
+	return s
+}
+
+// Newline inserts a blank line.
+func (s *Statement) Newline() *Statement {
 	t := token{
 		typ:     layoutToken,
 		content: "\n",

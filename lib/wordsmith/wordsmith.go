@@ -82,7 +82,7 @@ func (s *SuperWord) UnexportedVarName() string {
 	x := strings.ToLower(s.word)
 	switch x {
 	case "case", "chan", "const", "continue", "default", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "iota", "import", "interface", "map", "package", "range", "return", "select", "struct", "switch", "type", "var":
-		return kace.Camel(fmt.Sprintf("_%s", s.word))
+		return fmt.Sprintf("_%s", kace.Camel(s.word))
 	default:
 		return kace.Camel(s.word)
 	}

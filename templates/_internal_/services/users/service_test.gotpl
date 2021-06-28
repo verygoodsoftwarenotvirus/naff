@@ -1,0 +1,87 @@
+package users
+
+import (
+	"net/http"
+	"testing"
+
+	{{ projectImport "internal/authentication" }}
+	{{ projectImport "internal/database" }}
+	mockencoding {{ projectImport "internal/encoding/mock" }}
+	{{ projectImport "internal/observability/logging" }}
+	{{ projectImport "internal/observability/metrics" }}
+	mockmetrics {{ projectImport "internal/observability/metrics/mock" }}
+	{{ projectImport "internal/routing/chi" }}
+	mockrouting {{ projectImport "internal/routing/mock" }}
+	authservice {{ projectImport "internal/services/authentication" }}
+	{{ projectImport "internal/uploads/images" }}
+	mockuploads {{ projectImport "internal/uploads/mock" }}
+	mocktypes {{ projectImport "pkg/types/mock" }}
+	testutils {{ projectImport "tests/utils" }}
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func buildTestService(t *testing.T) *service {
+	t.Helper()
+
+	expectedUserCount := uint64(123)
+
+	uc := &mockmetrics.UnitCounter{}
+	mockDB := database.BuildMockDatabase()
+	mockDB.UserDataManager.On(
+		"GetAllUsersCount",
+		testutils.ContextMatcher,
+	).Return(expectedUserCount, nil)
+
+	s := ProvideUsersService(
+		&authservice.Config{},
+		logging.NewNoopLogger(),
+		&mocktypes.UserDataManager{},
+		&mocktypes.AccountDataManager{},
+		&authentication.MockAuthenticator{},
+		mockencoding.NewMockEncoderDecoder(),
+		func(counterName, description string) metrics.UnitCounter {
+			return uc
+		},
+		&images.MockImageUploadProcessor{},
+		&mockuploads.UploadManager{},
+		chi.NewRouteParamManager(),
+	)
+
+	mock.AssertExpectationsForObjects(t, mockDB, uc)
+
+	return s.(*service)
+}
+
+func TestProvideUsersService(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		rpm := mockrouting.NewRouteParamManager()
+		rpm.On(
+			"BuildRouteParamIDFetcher",
+			mock.IsType(logging.NewNoopLogger()), UserIDURIParamKey, "user").Return(func(*http.Request) uint64 { return 0 })
+
+		s := ProvideUsersService(
+			&authservice.Config{},
+			logging.NewNoopLogger(),
+			&mocktypes.UserDataManager{},
+			&mocktypes.AccountDataManager{},
+			&authentication.MockAuthenticator{},
+			mockencoding.NewMockEncoderDecoder(),
+			func(counterName, description string) metrics.UnitCounter {
+				return &mockmetrics.UnitCounter{}
+			},
+			&images.MockImageUploadProcessor{},
+			&mockuploads.UploadManager{},
+			rpm,
+		)
+
+		assert.NotNil(t, s)
+
+		mock.AssertExpectationsForObjects(t, rpm)
+	})
+}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
@@ -23,6 +24,14 @@ const (
 	T = "T"
 )
 
+// ConditionalCode returns conditional code
+func ConditionalCode(condition bool, code jen.Code) jen.Code {
+	if condition {
+		return code
+	}
+	return jen.Null()
+}
+
 // WriteHeader calls res.WriteHeader for a given status
 func WriteHeader(status string) jen.Code {
 	return WriteXHeader("res", status)
@@ -33,6 +42,24 @@ func WriteXHeader(varName, status string) jen.Code {
 	return jen.ID(varName).Dot("WriteHeader").Call(
 		jen.Qual("net/http", status),
 	)
+}
+
+func BuildStructTag(value wordsmith.SuperPalabra, plural bool) map[string]string {
+	var uvn, rn string
+
+	if plural {
+		uvn = value.PluralUnexportedVarName()
+		rn = value.PluralRouteName()
+	} else {
+		uvn = value.UnexportedVarName()
+		rn = value.RouteName()
+	}
+
+	return map[string]string{
+		"json":         uvn,
+		"mapstructure": rn,
+		"toml":         fmt.Sprintf("%s,omitempty", rn),
+	}
 }
 
 // ExpectMethod creates a test expectation for a gievn method
@@ -49,19 +76,19 @@ func ParallelTest(tee *jen.Statement) jen.Code {
 }
 
 func NilQueryFilter(proj *models.Project) jen.Code {
-	return jen.Call(jen.PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil())
 }
 
 func DefaultQueryFilter(proj *models.Project) jen.Code {
-	return jen.Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+	return jen.Qual(proj.TypesPackage(), "DefaultQueryFilter").Call()
 }
 
 func CreateNilQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.PointerTo().Qual(filepath.Join(proj.OutputPath, "models/v1"), "QueryFilter")).Call(jen.Nil())
+	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil())
 }
 
 func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Qual(filepath.Join(proj.OutputPath, "models/v1"), "DefaultQueryFilter").Call()
+	return jen.ID(constants.FilterVarName).Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call()
 }
 
 func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
@@ -70,6 +97,20 @@ func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
 
 func FakeError() jen.Code {
 	return jen.Qual("errors", "New").Call(jen.Lit("blah"))
+}
+
+func IntersperseWithNewlines(input []jen.Code, includeTrailingNewline bool) []jen.Code {
+	output := []jen.Code{}
+
+	for i, code := range input {
+		if i == len(input)-1 && !includeTrailingNewline {
+			output = append(output, code)
+		} else {
+			output = append(output, code, jen.Newline())
+		}
+	}
+
+	return output
 }
 
 func buildSingleValueTestifyFunc(pkg, method string) func(value, message *jen.Statement, formatArgs ...*jen.Statement) jen.Code {
@@ -135,7 +176,7 @@ func BuildSubTestWithoutContext(name string, testInstructions ...jen.Code) jen.C
 func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Code) jen.Code {
 	insts := []jen.Code{}
 	if includeContext {
-		insts = append(insts, constants.CreateCtx(), jen.Line())
+		insts = append(insts, constants.CreateCtx(), jen.Newline())
 	}
 	insts = append(insts, testInstructions...)
 
@@ -164,7 +205,7 @@ func OuterTestFunc(subjectName string) *jen.Statement {
 // QueryFilterParam does
 func QueryFilterParam(proj *models.Project) jen.Code {
 	if proj != nil {
-		return jen.ID(constants.FilterVarName).PointerTo().Qual(proj.ModelsV1Package(), "QueryFilter")
+		return jen.ID(constants.FilterVarName).PointerTo().Qual(proj.TypesPackage(), "QueryFilter")
 	}
 	return jen.ID(constants.FilterVarName).PointerTo().ID("QueryFilter")
 }
@@ -211,14 +252,14 @@ func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen
 				return jen.Underscore()
 			}(),
 			jen.ID(SpanVarName),
-		).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(
+		).Op(":=").Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 			constants.CtxVar(),
 			spanName,
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
-		jen.Line(),
-		jen.Line(),
+		jen.Newline(),
+		jen.Newline(),
 	)
 
 	return g
@@ -240,14 +281,14 @@ func StartSpanWithInlineCtx(proj *models.Project, saveCtx bool, spanName jen.Cod
 				return jen.ID("_")
 			}(),
 			jen.ID(SpanVarName),
-		).Op(":=").Qual(filepath.Join(proj.OutputPath, "internal", "v1", "tracing"), "StartSpan").Call(
+		).Op(":=").Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 			constants.InlineCtx(),
 			spanName,
 		),
-		jen.Line(),
+		jen.Newline(),
 		jen.Defer().ID(SpanVarName).Dot("End").Call(),
-		jen.Line(),
-		jen.Line(),
+		jen.Newline(),
+		jen.Newline(),
 	)
 
 	return g
@@ -299,7 +340,7 @@ func RunGoFormatForFile(filename string) error {
 	}
 }
 
-// RenderGoFile does
+// RenderGoFile renders a jen file object.
 func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 	fp := BuildTemplatePath(proj.OutputPath, path)
 
@@ -310,11 +351,12 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 		}
 
 		var b bytes.Buffer
-		if err := file.Render(&b); err != nil {
+		if err = file.Render(&b); err != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 
-		if err := ioutil.WriteFile(fp, b.Bytes(), 0644); err != nil {
+		fileContent := b.Bytes()
+		if err = ioutil.WriteFile(fp, fileContent, 0644); err != nil {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 
@@ -336,6 +378,38 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 	return nil
 }
 
+// RenderStringFile renders a jen file object.
+func RenderStringFile(proj *models.Project, path, file string) error {
+	fp := BuildTemplatePath(proj.OutputPath, path)
+
+	if _, err := os.Stat(fp); os.IsNotExist(err) {
+		if mkdirErr := os.MkdirAll(filepath.Dir(fp), os.ModePerm); mkdirErr != nil {
+			log.Printf("error making directory: %v\n", mkdirErr)
+			return err
+		}
+
+		if err = ioutil.WriteFile(fp, []byte(file), 0644); err != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, err)
+		}
+
+		if gie := RunGoimportsForFile(fp); gie != nil {
+			return fmt.Errorf("error rendering file %q: %w", path, gie)
+		}
+
+		if ferr := FindAndFixImportBlock(proj.OutputPath, fp); ferr != nil {
+			return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
+		}
+
+		if gfe := RunGoFormatForFile(fp); gfe != nil {
+			return fmt.Errorf("error formatting file %q: %w", path, gfe)
+		}
+	} else {
+		return err
+	}
+
+	return nil
+}
+
 func BuildFakeVarName(typName string) string {
 	return fmt.Sprintf("example%s", typName)
 }
@@ -348,5 +422,5 @@ func BuildFakeVarWithCustomName(proj *models.Project, varName, funcName string, 
 	if !strings.HasPrefix(funcName, "BuildFake") {
 		funcName = fmt.Sprintf("BuildFake%s", funcName)
 	}
-	return jen.ID(varName).Assign().Qual(proj.FakeModelsPackage(), funcName).Call(args...)
+	return jen.ID(varName).Assign().Qual(proj.FakeTypesPackage(), funcName).Call(args...)
 }

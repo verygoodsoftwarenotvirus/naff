@@ -14,76 +14,51 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
-func AddImports(proj *models.Project, file *jen.File) {
+func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bool) {
 	pkgRoot := proj.OutputPath
 
-	file.ImportAlias(proj.HTTPClientV1Package(), "client")
+	file.ImportAlias(proj.HTTPClientPackage(), "client")
 
-	file.ImportAlias(proj.DatabaseV1Package(), "database")
+	file.ImportAlias(proj.DatabasePackage(), "database")
 
-	file.ImportName(proj.InternalAuthV1Package(), "auth")
-	file.ImportAlias(proj.InternalAuthV1Package("mock"), "mockauth")
-	file.ImportName(proj.InternalConfigV1Package(), "config")
-	file.ImportName(proj.InternalEncodingV1Package(), "encoding")
-	file.ImportAlias(proj.InternalEncodingV1Package("mock"), "mockencoding")
-	file.ImportName(proj.InternalMetricsV1Package(), "metrics")
-	file.ImportAlias(proj.InternalMetricsV1Package("mock"), "mockmetrics")
-	file.ImportName(proj.InternalTracingV1Package(), "tracing")
-	file.ImportName(proj.InternalSearchV1Package(), "search")
-	file.ImportName(proj.InternalSearchV1Package("bleve"), "bleve")
-	file.ImportName(proj.InternalSearchV1Package("mock"), "mocksearch")
+	if includeEmbedAnonymously {
+		file.Anon("embed")
+	} else {
+		file.ImportName("embed", "embed")
+	}
 
-	file.ImportAlias(proj.DatabaseV1Package("client"), "dbclient")
-	file.ImportName(proj.DatabaseV1Package("queriers", "mariadb"), "mariadb")
-	file.ImportName(proj.DatabaseV1Package("queriers", "postgres"), "postgres")
-	file.ImportName(proj.DatabaseV1Package("queriers", "sqlite"), "sqlite")
+	file.ImportAlias(proj.InternalAuthenticationPackage("mock"), "mockauth")
+	file.ImportAlias(proj.EncodingPackage("mock"), "mockencoding")
+	file.ImportAlias(proj.InternalRoutingPackage("mock"), "mockrouting")
+	file.ImportAlias(proj.InternalSearchPackage("mock"), "mocksearch")
+	file.ImportAlias(proj.MetricsPackage("mock"), "mockmetrics")
 
-	file.ImportAlias(proj.ModelsV1Package(), "models")
-	file.ImportAlias(proj.ModelsV1Package("mock"), "mockmodels")
-	file.ImportAlias(proj.ModelsV1Package("fake"), "fakemodels")
+	file.ImportAlias(proj.DatabasePackage("config"), "dbconfig")
+	file.ImportAlias(proj.DatabasePackage("client"), "dbclient")
+	file.ImportAlias(proj.TypesPackage("mock"), "mocktypes")
 
-	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1"), "server")
-	file.ImportAlias(filepath.Join(pkgRoot, "server", "v1", "http"), "httpserver")
+	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
 
-	file.ImportAlias(proj.ServiceV1AuthPackage(), "authservice")
-	file.ImportAlias(proj.ServiceV1FrontendPackage(), "frontendservice")
-	file.ImportAlias(proj.ServiceV1OAuth2ClientsPackage(), "oauth2clientsservice")
-	file.ImportAlias(proj.ServiceV1UsersPackage(), "usersservice")
-	file.ImportAlias(proj.ServiceV1WebhooksPackage(), "webhooksservice")
+	file.ImportAlias(proj.AuditServicePackage(), "auditservice")
+	file.ImportAlias(proj.APIClientsServicePackage(), "apiclientsservice")
+	file.ImportAlias(proj.AccountsServicePackage(), "accountsservice")
+	file.ImportAlias(proj.AdminServicePackage(), "adminservice")
+	file.ImportAlias(proj.AuthServicePackage(), "authservice")
+	file.ImportAlias(proj.FrontendServicePackage(), "frontendservice")
+	file.ImportAlias(proj.UsersServicePackage(), "usersservice")
+	file.ImportAlias(proj.WebhooksServicePackage(), "webhooksservice")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
-		file.ImportAlias(filepath.Join(pkgRoot, "services/v1", pn), fmt.Sprintf("%sservice", pn))
+		file.ImportAlias(filepath.Join(pkgRoot, "internal", "services", pn), fmt.Sprintf("%sservice", pn))
 	}
 
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "frontend"), "frontend")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "integration"), "integration")
-	file.ImportName(filepath.Join(pkgRoot, "tests", "v1", "load"), "load")
-	file.ImportName(proj.TestUtilV1Package(), "testutil")
+	file.ImportAlias(proj.TestUtilsPackage(), "testutils")
 
 	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
 
-	file.ImportName(constants.CoreOAuth2Pkg, "oauth2")
-	file.ImportName(constants.LoggingPkg, "logging")
-	file.ImportName(constants.NoopLoggingPkg, "noop")
-	file.ImportName(filepath.Join(constants.LoggingPkg, "zerolog"), "zerolog")
-	file.ImportName(constants.AssertPkg, "assert")
-	file.ImportName(constants.MustAssertPkg, "require")
-	file.ImportName(constants.MockPkg, "mock")
+	file.ImportAlias("github.com/go-ozzo/ozzo-validation/v4", "validation")
 	file.ImportAlias(constants.FakeLibrary, "fake")
-	file.ImportName(constants.TracingLibrary, "trace")
-	file.ImportName(constants.SessionManagerLibrary, "scs")
-
-	file.ImportName("go.opencensus.io/stats", "stats")
-	file.ImportName("go.opencensus.io/stats/view", "view")
-
-	file.ImportAlias("gopkg.in/oauth2.v3", "oauth2")
-	file.ImportAlias("gopkg.in/oauth2.v3/models", "oauth2models")
-	file.ImportAlias("gopkg.in/oauth2.v3/errors", "oauth2errors")
-	file.ImportAlias("gopkg.in/oauth2.v3/server", "oauth2server")
-	file.ImportAlias("gopkg.in/oauth2.v3/store", "oauth2store")
-
-	file.ImportName("golang.org/x/crypto/bcrypt", "bcrypt")
 
 	// databases
 	file.ImportAlias("github.com/lib/pq", "postgres")
@@ -91,65 +66,92 @@ func AddImports(proj *models.Project, file *jen.File) {
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
 
 	file.ImportNames(map[string]string{
-		"context":           "context",
-		"fmt":               "fmt",
-		"net/http":          "http",
-		"net/http/httputil": "httputil",
-		"errors":            "errors",
-		"net/url":           "url",
-		"path":              "path",
-		"strings":           "strings",
-		"time":              "time",
-		"bytes":             "bytes",
-		"encoding/json":     "json",
-		"io":                "io",
-		"io/ioutil":         "ioutil",
-		"reflect":           "reflect",
-
-		"gopkg.in/oauth2.v3/manage":                    "manage",
-		"github.com/boombuler/barcode/qr":              "qr",
-		"contrib.go.opencensus.io/exporter/jaeger":     "jaeger",
-		"contrib.go.opencensus.io/exporter/prometheus": "prometheus",
-		"contrib.go.opencensus.io/integrations/ocsql":  "ocsql",
-		"github.com/DATA-DOG/go-sqlmock":               "sqlmock",
-		"github.com/GuiaBolso/darwin":                  "darwin",
-		"github.com/Masterminds/squirrel":              "squirrel",
-		"github.com/boombuler/barcode":                 "barcode",
-		"github.com/emicklei/hazana":                   "hazana",
-		"github.com/go-chi/chi":                        "chi",
-		"github.com/go-chi/chi/middleware":             "middleware",
-		"github.com/go-chi/cors":                       "cors",
-		"github.com/google/wire":                       "wire",
-		"github.com/gorilla/securecookie":              "securecookie",
-		"github.com/heptiolabs/healthcheck":            "healthcheck",
-		"github.com/moul/http2curl":                    "http2curl",
-		"github.com/pquerna/otp":                       "otp",
-		"github.com/spf13/afero":                       "afero",
-		"github.com/spf13/viper":                       "viper",
-		"github.com/tebeka/selenium":                   "selenium",
-		"gitlab.com/verygoodsoftwarenotvirus/newsman":  "newsman",
-		"go.opencensus.io":                             "opencensus",
-		"golang.org/x/crypto":                          "crypto",
-		"go.opencensus.io/plugin/ochttp":               "ochttp",
-		"github.com/spf13/pflag":                       "flag",
-		"github.com/pquerna/otp/totp":                  "totp",
-		"golang.org/x/oauth2/clientcredentials":        "clientcredentials",
+		"context":                            "context",
+		"fmt":                                "fmt",
+		"net/http":                           "http",
+		"net/http/httputil":                  "httputil",
+		"path":                               "path",
+		"path/filepath":                      "filepath",
+		"errors":                             "errors",
+		"net/url":                            "url",
+		"strings":                            "strings",
+		"time":                               "time",
+		"bytes":                              "bytes",
+		"encoding/json":                      "json",
+		"io":                                 "io",
+		"io/ioutil":                          "ioutil",
+		"reflect":                            "reflect",
+		proj.InternalAuthenticationPackage(): "authentication",
+		proj.InternalAuthorizationPackage():  "authorization",
+		proj.ConfigPackage():                 "config",
+		proj.EncodingPackage():               "encoding",
+		proj.MetricsPackage():                "metrics",
+		proj.InternalTracingPackage():        "tracing",
+		proj.InternalSearchPackage():         "search",
+		proj.InternalSecretsPackage():        "secrets",
+		proj.InternalEventsPackage():         "events",
+		proj.InternalSearchPackage("bleve"):  "bleve",
+		proj.InternalSearchPackage("mock"):   "mocksearch",
+		proj.DatabasePackage("queriers", "mariadb"):        "mariadb",
+		proj.DatabasePackage("queriers", "postgres"):       "postgres",
+		proj.DatabasePackage("queriers", "sqlite"):         "sqlite",
+		proj.TypesPackage():                                "types",
+		proj.TypesPackage("fakes"):                         "fakes",
+		proj.TestsPackage("frontend"):                      "frontend",
+		proj.TestsPackage("integration"):                   "integration",
+		proj.TestsPackage("load"):                          "load",
+		proj.InternalLoggingPackage():                      "logging",
+		proj.InternalLoggingPackage("zerolog"):             "zerolog",
+		constants.RBACLibrary:                              "gorbac",
+		constants.TracingAttributionLibrary:                "attribute",
+		constants.AssertionLibrary:                         "assert",
+		constants.MustAssertPkg:                            "require",
+		constants.TestSuitePackage:                         "suite",
+		constants.MockPkg:                                  "mock",
+		constants.TracingLibrary:                           "trace",
+		constants.SessionManagerLibrary:                    "scs",
+		"github.com/boombuler/barcode/qr":                  "qr",
+		"github.com/DATA-DOG/go-sqlmock":                   "sqlmock",
+		"github.com/GuiaBolso/darwin":                      "darwin",
+		"github.com/Masterminds/squirrel":                  "squirrel",
+		"github.com/boombuler/barcode":                     "barcode",
+		"github.com/nicksnyder/go-i18n/v2/i18n":            "i18n",
+		"github.com/emicklei/hazana":                       "hazana",
+		"github.com/go-chi/chi":                            "chi",
+		"github.com/blevesearch/bleve/v2/analysis/lang/en": "en",
+		"github.com/blevesearch/bleve/v2/mapping":          "mapping",
+		"github.com/blevesearch/bleve/v2/search/searcher":  "searcher",
+		constants.SearchLibrary:                            "bleve",
+		"github.com/go-chi/chi/middleware":                 "middleware",
+		"github.com/go-chi/cors":                           "cors",
+		constants.DependencyInjectionPkg:                   "wire",
+		"github.com/gorilla/securecookie":                  "securecookie",
+		"github.com/heptiolabs/healthcheck":                "healthcheck",
+		"github.com/moul/http2curl":                        "http2curl",
+		"github.com/pquerna/otp":                           "otp",
+		"github.com/spf13/afero":                           "afero",
+		"github.com/spf13/viper":                           "viper",
+		"github.com/tebeka/selenium":                       "selenium",
+		"golang.org/x/crypto":                              "crypto",
+		constants.FlagParsingLibrary:                       "flag",
+		"github.com/pquerna/otp/totp":                      "totp",
+		"golang.org/x/oauth2/clientcredentials":            "clientcredentials",
 	})
 
-	file.Line()
+	file.Newline()
 }
 
-type mport struct {
+type importDef struct {
 	name,
 	path string
 }
 
-type importList []mport
+type importList []importDef
 
 type importSet struct {
-	stdlibImports   []mport
-	localLibImports []mport
-	externalImports []mport
+	stdlibImports   []importDef
+	localLibImports []importDef
+	externalImports []importDef
 }
 
 func (s *importSet) render() string {
@@ -189,9 +191,9 @@ func (l importList) Swap(i, j int) {
 
 func (l importList) toSet(pkgRoot string) *importSet {
 	is := &importSet{
-		stdlibImports:   []mport{},
-		localLibImports: []mport{},
-		externalImports: []mport{},
+		stdlibImports:   []importDef{},
+		localLibImports: []importDef{},
+		externalImports: []importDef{},
 	}
 
 	for _, imp := range l {
@@ -238,7 +240,7 @@ func FindAndFixImportBlock(pkgRoot, filepath string) error {
 
 	for _, imp := range allLines[startLine+1 : endLine] {
 		if x := strings.TrimSpace(string(imp)); x != "" {
-			y := mport{path: strings.ReplaceAll(x, `"`, "")}
+			y := importDef{path: strings.ReplaceAll(x, `"`, "")}
 			if z := strings.Split(y.path, " "); len(z) > 1 {
 				y.name = z[0]
 				y.path = z[1]
@@ -255,7 +257,7 @@ func FindAndFixImportBlock(pkgRoot, filepath string) error {
 	fart := fmt.Sprintf("%s\n%s\n%s", head, newImportBlock, tail)
 
 	os.Remove(filepath)
-	if err := ioutil.WriteFile(filepath, []byte(fart), 0644); err != nil {
+	if err = ioutil.WriteFile(filepath, []byte(fart), 0644); err != nil {
 		return err
 	}
 
@@ -308,6 +310,7 @@ func importIsStdLib(imp string) bool {
 		"debug/macho",
 		"debug/pe",
 		"debug/plan9obj",
+		"embed",
 		"encoding",
 		"encoding/ascii85",
 		"encoding/asn1",
@@ -374,6 +377,7 @@ func importIsStdLib(imp string) bool {
 		"internal/trace",
 		"internal/xcoff",
 		"io",
+		"io/fs",
 		"io/ioutil",
 		"log",
 		"log/syslog",

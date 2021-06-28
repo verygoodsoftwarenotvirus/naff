@@ -1,6 +1,6 @@
 module gitlab.com/verygoodsoftwarenotvirus/naff
 
-go 1.14
+go 1.16
 
 require (
 	github.com/Masterminds/squirrel v1.4.0
