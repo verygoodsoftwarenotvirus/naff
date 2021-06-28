@@ -468,7 +468,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID("x").Equals().AddressOf().ID("types").Dotf("%sList", sn).Values(),
-		constants.LoggerVar().Equals().ID("filter").Dot("AttachToLogger").Call(jen.ID("q").Dot("logger")),
+		constants.LoggerVar().Equals().ID("filter").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Qual(proj.InternalTracingPackage(), "AttachQueryFilterToSpan").Call(
 			jen.ID("span"),
 			jen.ID("filter"),
