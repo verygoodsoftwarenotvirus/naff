@@ -15,16 +15,38 @@ func buildIterableRoutes(proj *models.Project) []jen.Code {
 		puvn := typ.Name.PluralUnexportedVarName()
 		sn := typ.Name.Singular()
 		pn := typ.Name.Plural()
-		pcn := typ.Name.PluralCommonName()
+		prn := typ.Name.PluralRouteName()
 
 		out = append(out,
 			jen.Newline(),
 			jen.Comment(pn),
-			jen.IDf("%sPath", uvn).Assign().Lit(pcn),
-			jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
-				jen.Lit("/%s"),
-				jen.IDf("%sPath", uvn),
-			),
+			jen.IDf("%sPath", uvn).Assign().Lit(prn),
+			func() jen.Code {
+				joinArgs := []jen.Code{}
+				for _, owner := range proj.FindOwnerTypeChain(typ) {
+					joinArgs = append(joinArgs, jen.IDf("%sPath", owner.Name.UnexportedVarName()), jen.IDf("%sIDRouteParam", owner.Name.UnexportedVarName()))
+				}
+				joinArgs = append(joinArgs, jen.IDf("%sPath", typ.Name.UnexportedVarName()))
+
+				if len(proj.FindOwnerTypeChain(typ)) > 0 {
+					return jen.IDf("%sRoute", puvn).Assign().Qual("path", "Join").Callln(
+						joinArgs...,
+					)
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if len(proj.FindOwnerTypeChain(typ)) > 0 {
+					return jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
+						jen.Lit("/%s"),
+						jen.IDf("%sRoute", puvn),
+					)
+				}
+				return jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
+					jen.Lit("/%s"),
+					jen.IDf("%sPath", uvn),
+				)
+			}(),
 			jen.IDf("%sIDRouteParam", uvn).Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.ServicePackage(typ.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", sn))),
 			jen.ID("v1Router").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),

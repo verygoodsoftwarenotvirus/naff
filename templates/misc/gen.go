@@ -460,7 +460,7 @@ linters-settings:
   lll:
     # max line length, lines longer will be reported. Default is 120.
     # '\t' is counted as 1 character by default, and can be changed with the tab-width option
-    line-length: 250
+    line-length: 512
     # tab width in spaces. Default to 1.
     tab-width: 1
   misspell:
@@ -568,7 +568,6 @@ linters:
     - gosec            # Inspects source code for security problems
     - ifshort          # Checks that your code uses short syntax for if-statements whenever possible
     - importas         # Enforces consistent import aliases
-    - lll              # Reports long lines
     - makezero         # Finds slice declarations with non-zero initial length
     - misspell         # Finds commonly misspelled English words in comments
     - nakedret         # Finds naked returns in functions greater than a specified function length
@@ -604,6 +603,7 @@ linters:
     - dupl             # Tool for code clone detection
     - funlen           # Tool for detection of long functions
     - gofumpt          # Gofumpt checks whether code was gofumpt-ed.
+    - lll              # Reports long lines
     - nlreturn         # nlreturn checks for a new line before return and branch statements to increase code clarity
     - rowserrcheck     # checks whether Err of rows is checked successfully; lots of false positives
     - tagliatelle      # Checks the struct tags.
