@@ -142,19 +142,19 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 	scnwp := n.SingularCommonNameWithPrefix()
 
 	updateLines := []jen.Code{
-		jen.Var().ID("out").Index().Op("*").ID("FieldChangeSummary"),
+		jen.Var().ID("out").Index().PointerTo().ID("FieldChangeSummary"),
 		jen.Newline(),
 	}
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 
 		conditionBodyLines := []jen.Code{
-			jen.ID("out").Op("=").ID("append").Call(
+			jen.ID("out").Equals().ID("append").Call(
 				jen.ID("out"),
-				jen.Op("&").ID("FieldChangeSummary").Valuesln(jen.ID("FieldName").Op(":").Lit(fsn), jen.ID("OldValue").Op(":").ID("x").Dot(fsn), jen.ID("NewValue").Op(":").ID("input").Dot(fsn)),
+				jen.AddressOf().ID("FieldChangeSummary").Valuesln(jen.ID("FieldName").Op(":").Lit(fsn), jen.ID("OldValue").Op(":").ID("x").Dot(fsn), jen.ID("NewValue").Op(":").ID("input").Dot(fsn)),
 			),
 			jen.Newline(),
-			jen.ID("x").Dot(fsn).Op("=").ID("input").Dot(fsn),
+			jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 		}
 
 		switch field.Type {
@@ -220,7 +220,7 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("Update merges an %sUpdateInput with %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("x").Op("*").ID(sn)).ID("Update").Params(jen.ID("input").Op("*").IDf("%sUpdateInput", sn)).Params(jen.Index().Op("*").ID("FieldChangeSummary")).Body(
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Params(jen.Index().PointerTo().ID("FieldChangeSummary")).Body(
 			updateLines...,
 		),
 		jen.Newline(),
@@ -411,19 +411,19 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 		}
 		validationFields = append(validationFields,
 			jen.Qual(constants.ValidationLibrary, "Field").Call(
-				jen.Op("&").ID("x").Dot(field.Name.Singular()),
+				jen.AddressOf().ID("x").Dot(field.Name.Singular()),
 				jen.Qual(constants.ValidationLibrary, "Required"),
 			),
 		)
 	}
 
 	lines := []jen.Code{
-		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Op("=").Parens(jen.Op("*").IDf("%sCreationInput", sn)).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sCreationInput.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("x").Op("*").IDf("%sCreationInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sCreationInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
 				validationFields...,
 			)),
@@ -446,19 +446,19 @@ func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Cod
 		}
 		validationFields = append(validationFields,
 			jen.Qual(constants.ValidationLibrary, "Field").Call(
-				jen.Op("&").ID("x").Dot(field.Name.Singular()),
+				jen.AddressOf().ID("x").Dot(field.Name.Singular()),
 				jen.Qual(constants.ValidationLibrary, "Required"),
 			),
 		)
 	}
 
 	lines := []jen.Code{
-		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Op("=").Parens(jen.Op("*").IDf("%sUpdateInput", sn)).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sUpdateInput.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("x").Op("*").IDf("%sUpdateInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sUpdateInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
 				validationFields...,
 			)),

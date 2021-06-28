@@ -20,7 +20,7 @@ func authorizationDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("hasPermission").Params(jen.ID("p").ID("Permission"), jen.ID("roles").Op("...").ID("string")).Params(jen.ID("bool")).Body(
-			jen.For(jen.List(jen.ID("_"), jen.ID("r")).Op(":=").Range().ID("roles")).Body(
+			jen.For(jen.List(jen.ID("_"), jen.ID("r")).Assign().Range().ID("roles")).Body(
 				jen.If(jen.Op("!").ID("globalAuthorizer").Dot("IsGranted").Call(
 					jen.ID("r"),
 					jen.ID("p"),

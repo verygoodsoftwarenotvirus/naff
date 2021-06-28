@@ -30,12 +30,12 @@ func httpRoutesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 func buildTestParseBool(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
-		jen.Func().ID("TestParseBool").Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+		jen.Func().ID("TestParseBool").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("expectations").Op(":=").Map(jen.ID("string")).ID("bool").Valuesln(jen.Lit("1").Op(":").ID("true"), jen.ID("t").Dot("Name").Call().Op(":").ID("false"), jen.Lit("true").Op(":").ID("true"), jen.Lit("troo").Op(":").ID("false"), jen.Lit("t").Op(":").ID("true"), jen.Lit("false").Op(":").ID("false")),
+			jen.ID("expectations").Assign().Map(jen.ID("string")).ID("bool").Valuesln(jen.Lit("1").Op(":").ID("true"), jen.ID("t").Dot("Name").Call().Op(":").ID("false"), jen.Lit("true").Op(":").ID("true"), jen.Lit("troo").Op(":").ID("false"), jen.Lit("t").Op(":").ID("true"), jen.Lit("false").Op(":").ID("false")),
 			jen.Newline(),
-			jen.For(jen.List(jen.ID("input"), jen.ID("expected")).Op(":=").Range().ID("expectations")).Body(
+			jen.For(jen.List(jen.ID("input"), jen.ID("expected")).Assign().Range().ID("expectations")).Body(
 				jen.ID("assert").Dot("Equal").Call(
 					jen.ID("t"),
 					jen.ID("expected"),
@@ -53,28 +53,28 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 	pn := typ.Name.Plural()
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_CreateHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_CreateHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -89,25 +89,25 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("Create%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
 						jen.ID("helper").Dot("exampleUser").Dot("ID"),
 					).Dot("Return").Call(
 						jen.ID("helper").Dotf("example%s", sn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+					jen.ID("unitCounter").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 					jen.ID("unitCounter").Dot("On").Call(jen.Lit("Increment"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Op("=").ID("unitCounter"),
+					jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Equals().ID("unitCounter"),
 					jen.Newline(),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
+							return jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
 						}
 						return jen.Null()
 					}(),
@@ -124,7 +124,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 					}(),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager")
+							return jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager")
 						}
 						return jen.Null()
 					}(),
@@ -156,17 +156,17 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("without input attached"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -196,23 +196,23 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid input attached"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -242,23 +242,23 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -273,7 +273,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("CreateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -290,23 +290,23 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with error creating %s", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -321,17 +321,17 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("Create%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
 						jen.ID("helper").Dot("exampleUser").Dot("ID"),
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("CreateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -354,23 +354,23 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 				if typ.SearchEnabled {
 					return jen.Newline().ID("T").Dot("Run").Call(
 						jen.Litf("with error indexing %s", scn),
-						jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+						jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 							jen.ID("t").Dot("Parallel").Call(),
 							jen.Newline(),
-							jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-							jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+							jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+							jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 								jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 								jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 							),
 							jen.Newline(),
-							jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
-							jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+							jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
+							jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 								jen.ID("helper").Dot("ctx"),
 								jen.ID("exampleCreationInput"),
 							),
 							jen.Newline(),
 							jen.Var().ID("err").ID("error"),
-							jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+							jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 								jen.ID("helper").Dot("ctx"),
 								jen.Qual("net/http", "MethodPost"),
 								jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -385,30 +385,30 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 								jen.ID("helper").Dot("req"),
 							),
 							jen.Newline(),
-							jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+							jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 							jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 								jen.Litf("Create%s", sn),
 								jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-								jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
+								jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values()),
 								jen.ID("helper").Dot("exampleUser").Dot("ID"),
 							).Dot("Return").Call(
 								jen.ID("helper").Dotf("example%s", sn),
 								jen.ID("nil"),
 							),
-							jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+							jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 							jen.Newline(),
-							jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+							jen.ID("unitCounter").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 							jen.ID("unitCounter").Dot("On").Call(jen.Lit("Increment"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
-							jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Op("=").ID("unitCounter"),
+							jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Equals().ID("unitCounter"),
 							jen.Newline(),
-							jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+							jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 							jen.ID("indexManager").Dot("On").Callln(
 								jen.Lit("Index"),
 								jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 								jen.ID("helper").Dotf("example%s", sn).Dot("ID"),
 								jen.ID("helper").Dotf("example%s", sn),
 							).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-							jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+							jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
 							jen.Newline(),
 							jen.ID("helper").Dot("service").Dot("CreateHandler").Call(
 								jen.ID("helper").Dot("res"),
@@ -467,31 +467,31 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 	getSomethingExpectationArgs := buildReadMockArgs(proj, typ)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_ReadHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_ReadHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(getSomethingExpectationArgs...).Dot("Return").Call(
 						jen.ID("helper").Dotf("example%s", sn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), sn).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), sn).Values()),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ReadHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -517,12 +517,12 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -530,9 +530,9 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 						jen.Lit("unauthenticated"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ReadHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -554,27 +554,27 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with no such %s in the database", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectationArgs...,
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ReadHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -597,27 +597,27 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error fetching from database"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectationArgs...,
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ReadHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -671,24 +671,24 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 	dbMockCallArgs := buildMockCallArgsForExistence(proj, typ)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_ExistenceHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_ExistenceHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						dbMockCallArgs...,
 					).Dot("Return").Call(
 						jen.ID("true"),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ExistenceHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -713,12 +713,12 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -726,9 +726,9 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 						jen.Lit("unauthenticated"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ExistenceHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -750,27 +750,27 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with no result in the database"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						dbMockCallArgs...,
 					).Dot("Return").Call(
 						jen.ID("false"),
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ExistenceHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -793,27 +793,27 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error checking database"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						dbMockCallArgs...,
 					).Dot("Return").Call(
 						jen.ID("false"),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ExistenceHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -869,35 +869,35 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 	getSomethingExpectedArgs := buildMockCallArgsForListHandler(proj, typ)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_ListHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_ListHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("example%sList", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
+					jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectedArgs...,
 					).Dot("Return").Call(
 						jen.IDf("example%sList", sn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values()),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ListHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -923,12 +923,12 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -936,9 +936,9 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 						jen.Lit("unauthenticated"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ListHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -960,28 +960,28 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with no rows returned"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectedArgs...,
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values()),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ListHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1007,27 +1007,27 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with error retrieving %s from database", pcn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectedArgs...,
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ListHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1082,31 +1082,31 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 	mockDBCallArgs := buildMockSearchArgs(proj, typ)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_SearchHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_SearchHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("exampleQuery").Op(":=").Lit("whatever"),
-			jen.ID("exampleLimit").Op(":=").ID("uint8").Call(jen.Lit(123)),
-			jen.IDf("example%sList", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
-			jen.IDf("example%sIDs", sn).Op(":=").Index().ID("uint64").Values(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().IDf("example%sList", sn).Dot(pn)).Body(
-				jen.IDf("example%sIDs", sn).Op("=").ID("append").Call(
+			jen.ID("exampleQuery").Assign().Lit("whatever"),
+			jen.ID("exampleLimit").Assign().ID("uint8").Call(jen.Lit(123)),
+			jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
+			jen.IDf("example%sIDs", sn).Assign().Index().Uint64().Values(),
+			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
+				jen.IDf("example%sIDs", sn).Equals().ID("append").Call(
 					jen.IDf("example%sIDs", sn),
 					jen.ID("x").Dot("ID"),
 				)),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(
-						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery")),
-						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Equals().Qual("net/url", "Values").Valuesln(
+						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().String().Values(jen.ID("exampleQuery")),
+						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
 					jen.Newline(),
-					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1116,25 +1116,25 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.IDf("example%sIDs", sn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+					jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						mockDBCallArgs...,
 					).Dot("Return").Call(
 						jen.IDf("example%sList", sn).Dot(pn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().Op("*").Qual(proj.TypesPackage(), sn).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), sn).Values()),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("SearchHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1161,12 +1161,12 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1174,9 +1174,9 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.Lit("unauthenticated"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("SearchHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1198,32 +1198,32 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error conducting search"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Values(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery"))).Dot("Encode").Call(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Equals().Qual("net/url", "Values").Values(jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().String().Values(jen.ID("exampleQuery"))).Dot("Encode").Call(),
 					jen.Newline(),
-					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("exampleQuery"),
 						jen.ID("helper").Dot("exampleAccount").Dot("ID"),
 					).Dot("Return").Call(
-						jen.Index().ID("uint64").Values(),
+						jen.Index().Uint64().Values(),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+					jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("SearchHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1246,16 +1246,16 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with no rows returned"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(
-						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery")),
-						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Equals().Qual("net/url", "Values").Valuesln(
+						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().String().Values(jen.ID("exampleQuery")),
+						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
 					jen.Newline(),
-					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1265,25 +1265,25 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.IDf("example%sIDs", sn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+					jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						mockDBCallArgs...,
 					).Dot("Return").Call(
-						jen.Index().Op("*").Qual(proj.TypesPackage(), sn).Values(),
+						jen.Index().PointerTo().Qual(proj.TypesPackage(), sn).Values(),
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().Op("*").Qual(proj.TypesPackage(), sn).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), sn).Values()),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("SearchHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1310,15 +1310,15 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving from database"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Op("=").Qual("net/url", "Values").Valuesln(
-						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().ID("string").Values(jen.ID("exampleQuery")),
-						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().ID("string").Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("req").Dot("URL").Dot("RawQuery").Equals().Qual("net/url", "Values").Valuesln(
+						jen.Qual(proj.TypesPackage(), "SearchQueryKey").Op(":").Index().String().Values(jen.ID("exampleQuery")),
+						jen.Qual(proj.TypesPackage(), "LimitQueryKey").Op(":").Index().String().Values(jen.Qual("strconv", "Itoa").Call(jen.ID("int").Call(jen.ID("exampleLimit"))))).Dot("Encode").Call(),
 					jen.Newline(),
-					jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("indexManager").Dot("On").Callln(
 						jen.Lit("Search"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1328,24 +1328,24 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.IDf("example%sIDs", sn),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+					jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						mockDBCallArgs...,
 					).Dot("Return").Call(
-						jen.Index().Op("*").Qual(proj.TypesPackage(), sn).Values(),
+						jen.Index().PointerTo().Qual(proj.TypesPackage(), sn).Values(),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("SearchHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1380,28 +1380,28 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 	getSomethingExpectationArgs := buildReadMockArgs(proj, typ)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_UpdateHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_UpdateHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1416,7 +1416,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectationArgs...,
 					).Dot("Return").Call(
@@ -1427,15 +1427,15 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("Update%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), sn).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), sn).Values()),
 						jen.ID("helper").Dot("exampleUser").Dot("ID"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary").Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary").Values()),
 					).Dot("Return").Call(jen.ID("nil")),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
+							return jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
 						}
 						return jen.Null()
 					}(),
@@ -1452,7 +1452,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 					}(),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager")
+							return jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager")
 						}
 						return jen.Null()
 					}(),
@@ -1486,23 +1486,23 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid input"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Values(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Values(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1535,11 +1535,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("UpdateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1556,17 +1556,17 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("without input attached to context"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1596,23 +1596,23 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with no such %s", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1627,14 +1627,14 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectationArgs...,
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("UpdateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1656,23 +1656,23 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with error retrieving %s from database", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1687,14 +1687,14 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectationArgs...,
 					).Dot("Return").Call(
-						jen.Parens(jen.Op("*").Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+						jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("UpdateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1716,23 +1716,23 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with error updating %s", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 						jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 					),
 					jen.Newline(),
-					jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
-					jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+					jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
+					jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.ID("exampleCreationInput"),
 					),
 					jen.Newline(),
 					jen.Var().ID("err").ID("error"),
-					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+					jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 						jen.ID("helper").Dot("ctx"),
 						jen.Qual("net/http", "MethodPost"),
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1747,7 +1747,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						getSomethingExpectationArgs...,
 					).Dot("Return").Call(
@@ -1758,11 +1758,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("Update%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), sn).Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), sn).Values()),
 						jen.ID("helper").Dot("exampleUser").Dot("ID"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary").Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary").Values()),
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("UpdateHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1785,23 +1785,23 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 				if typ.SearchEnabled {
 					return jen.Newline().ID("T").Dot("Run").Call(
 						jen.Lit("with error updating search index"),
-						jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+						jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 							jen.ID("t").Dot("Parallel").Call(),
 							jen.Newline(),
-							jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-							jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
+							jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+							jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 								jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 								jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 							),
 							jen.Newline(),
-							jen.ID("exampleCreationInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
-							jen.ID("jsonBytes").Op(":=").ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
+							jen.ID("exampleCreationInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInput", sn)).Call(),
+							jen.ID("jsonBytes").Assign().ID("helper").Dot("service").Dot("encoderDecoder").Dot("MustEncode").Call(
 								jen.ID("helper").Dot("ctx"),
 								jen.ID("exampleCreationInput"),
 							),
 							jen.Newline(),
 							jen.Var().ID("err").ID("error"),
-							jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Op("=").Qual("net/http", "NewRequestWithContext").Call(
+							jen.List(jen.ID("helper").Dot("req"), jen.ID("err")).Equals().Qual("net/http", "NewRequestWithContext").Call(
 								jen.ID("helper").Dot("ctx"),
 								jen.Qual("net/http", "MethodPost"),
 								jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
@@ -1816,7 +1816,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 								jen.ID("helper").Dot("req"),
 							),
 							jen.Newline(),
-							jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+							jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 							jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 								getSomethingExpectationArgs...,
 							).Dot("Return").Call(
@@ -1827,20 +1827,20 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 							jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 								jen.Litf("Update%s", sn),
 								jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
-								jen.Qual(constants.MockPkg, "IsType").Call(jen.Op("&").Qual(proj.TypesPackage(), sn).Values()),
+								jen.Qual(constants.MockPkg, "IsType").Call(jen.AddressOf().Qual(proj.TypesPackage(), sn).Values()),
 								jen.ID("helper").Dot("exampleUser").Dot("ID"),
-								jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary").Values()),
+								jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary").Values()),
 							).Dot("Return").Call(jen.ID("nil")),
-							jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+							jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 							jen.Newline(),
-							jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+							jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 							jen.ID("indexManager").Dot("On").Callln(
 								jen.Lit("Index"),
 								jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 								jen.ID("helper").Dotf("example%s", sn).Dot("ID"),
 								jen.ID("helper").Dotf("example%s", sn),
 							).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-							jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager"),
+							jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
 							jen.Newline(),
 							jen.ID("helper").Dot("service").Dot("UpdateHandler").Call(
 								jen.ID("helper").Dot("res"),
@@ -1902,25 +1902,25 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 	expectedCallArgs := buildMockCallArgsForArchive(proj, typ)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%sService_ArchiveHandler", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sService_ArchiveHandler", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						expectedCallArgs...,
 					).Dot("Return").Call(jen.ID("nil")),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
+							return jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
 						}
 						return jen.Null()
 					}(),
@@ -1936,14 +1936,14 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 					}(),
 					func() jen.Code {
 						if typ.SearchEnabled {
-							return jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager")
+							return jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager")
 						}
 						return jen.Null()
 					}(),
 					jen.Newline(),
-					jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+					jen.ID("unitCounter").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 					jen.ID("unitCounter").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Op("=").ID("unitCounter"),
+					jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Equals().ID("unitCounter"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -1972,12 +1972,12 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -1985,9 +1985,9 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 						jen.Lit("unauthenticated"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 					),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -2009,24 +2009,24 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Litf("with no such %s in the database", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						expectedCallArgs...,
 					).Dot("Return").Call(jen.Qual("database/sql", "ErrNoRows")),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -2049,24 +2049,24 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error saving as archived"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						expectedCallArgs...,
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -2090,20 +2090,20 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 				if typ.SearchEnabled {
 					return jen.Newline().ID("T").Dot("Run").Call(
 						jen.Lit("with error removing from search index"),
-						jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+						jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 							jen.ID("t").Dot("Parallel").Call(),
 							jen.Newline(),
-							jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+							jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 							jen.Newline(),
-							jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+							jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 							jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 								expectedCallArgs...,
 							).Dot("Return").Call(jen.ID("nil")),
-							jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+							jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 							jen.Newline(),
 							func() jen.Code {
 								if typ.SearchEnabled {
-									return jen.ID("indexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
+									return jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
 								}
 								return jen.Null()
 							}(),
@@ -2119,14 +2119,14 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 							}(),
 							func() jen.Code {
 								if typ.SearchEnabled {
-									return jen.ID("helper").Dot("service").Dot("search").Op("=").ID("indexManager")
+									return jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager")
 								}
 								return jen.Null()
 							}(),
 							jen.Newline(),
-							jen.ID("unitCounter").Op(":=").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+							jen.ID("unitCounter").Assign().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 							jen.ID("unitCounter").Dot("On").Call(jen.Lit("Decrement"), jen.Qual(proj.TestUtilsPackage(), "ContextMatcher")).Dot("Return").Call(),
-							jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Op("=").ID("unitCounter"),
+							jen.ID("helper").Dot("service").Dotf("%sCounter", uvn).Equals().ID("unitCounter"),
 							jen.Newline(),
 							jen.ID("helper").Dot("service").Dot("ArchiveHandler").Call(
 								jen.ID("helper").Dot("res"),
@@ -2165,19 +2165,19 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 	sn := typ.Name.Singular()
 
 	return []jen.Code{
-		jen.Func().ID("TestAccountsService_AuditEntryHandler").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().ID("TestAccountsService_AuditEntryHandler").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("exampleAuditLogEntries").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntryList").Call().Dot("Entries"),
+					jen.ID("exampleAuditLogEntries").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntryList").Call().Dot("Entries"),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("GetAuditLogEntriesFor%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2186,16 +2186,16 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("exampleAuditLogEntries"),
 						jen.ID("nil"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("RespondWithData"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
-						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Values()),
+						jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Values()),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("AuditEntryHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -2218,13 +2218,13 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error retrieving session context data"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
-					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Op("=").Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Qual(proj.TestUtilsPackage(), "BrokenSessionContextDataFetcher"),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -2232,7 +2232,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.Lit("unauthenticated"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("AuditEntryHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -2254,29 +2254,29 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with sql.ErrNoRows"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("GetAuditLogEntriesFor%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("helper").Dotf("example%s", sn).Dot("ID"),
 					).Dot("Return").Call(
-						jen.Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Call(jen.ID("nil")),
+						jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Call(jen.ID("nil")),
 						jen.Qual("database/sql", "ErrNoRows"),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeNotFoundResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("AuditEntryHandler").Call(
 						jen.ID("helper").Dot("res"),
@@ -2299,29 +2299,29 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error reading from database"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("helper").Op(":=").ID("buildTestHelper").Call(jen.ID("t")),
+					jen.ID("helper").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.IDf("%sDataManager", uvn).Op(":=").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+					jen.IDf("%sDataManager", uvn).Assign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 					jen.IDf("%sDataManager", uvn).Dot("On").Callln(
 						jen.Litf("GetAuditLogEntriesFor%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("helper").Dotf("example%s", sn).Dot("ID"),
 					).Dot("Return").Call(
-						jen.Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry").Call(jen.ID("nil")),
+						jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Call(jen.ID("nil")),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
-					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Op("=").IDf("%sDataManager", uvn),
+					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("encoderDecoder").Op(":=").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
+					jen.ID("encoderDecoder").Assign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 					jen.ID("encoderDecoder").Dot("On").Callln(
 						jen.Lit("EncodeUnspecifiedInternalServerErrorResponse"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(proj.TestUtilsPackage(), "HTTPResponseWriterMatcher"),
 					).Dot("Return").Call(),
-					jen.ID("helper").Dot("service").Dot("encoderDecoder").Op("=").ID("encoderDecoder"),
+					jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().ID("encoderDecoder"),
 					jen.Newline(),
 					jen.ID("helper").Dot("service").Dot("AuditEntryHandler").Call(
 						jen.ID("helper").Dot("res"),

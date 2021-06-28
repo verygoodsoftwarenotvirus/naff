@@ -14,7 +14,7 @@ func accountsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.QuerybuildingPackage(), "AccountSQLQueryBuilder").Op("=").Parens(jen.Op("*").ID(dbvendor.Singular())).Call(jen.ID("nil")),
+			jen.ID("_").Qual(proj.QuerybuildingPackage(), "AccountSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
@@ -35,8 +35,8 @@ func buildBuildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Proj
 	lines := []jen.Code{
 		jen.Comment("BuildGetAccountQuery constructs a SQL query for fetching an account with a given ID belong to a user with a given ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("accountID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("accountID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -48,7 +48,7 @@ func buildBuildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Proj
 				jen.ID("accountID"),
 			),
 			jen.Newline(),
-			jen.ID("columns").Op(":=").ID("append").Call(
+			jen.ID("columns").Assign().ID("append").Call(
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableColumns"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableColumns").Op("..."),
 			),
@@ -91,8 +91,8 @@ func buildBuildGetAllAccountsCountQuery(proj *models.Project, dbvendor wordsmith
 		jen.Newline(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAllAccountsCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllAccountsCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQueryOnly").Call(
@@ -119,8 +119,8 @@ func buildBuildGetBatchOfAccountsQuery(proj *models.Project, dbvendor wordsmith.
 	lines := []jen.Code{
 		jen.Comment("BuildGetBatchOfAccountsQuery returns a query that fetches every account in the database within a bucketed range."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetBatchOfAccountsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetBatchOfAccountsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
@@ -151,8 +151,8 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 		jen.Newline(),
 		jen.Comment("and returns both the query and the relevant args to pass to the query executor."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAccountsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").ID("uint64"), jen.ID("forAdmin").ID("bool"), jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAccountsQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("forAdmin").ID("bool"), jen.ID("filter").PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -165,20 +165,20 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
-					jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+					jen.String().Call(jen.ID("filter").Dot("SortBy")),
 				),
 			),
 			jen.Newline(),
 			jen.Var().ID("includeArchived").ID("bool"),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.ID("includeArchived").Op("=").ID("filter").Dot("IncludeArchived"),
+				jen.ID("includeArchived").Equals().ID("filter").Dot("IncludeArchived"),
 			),
 			jen.Newline(),
-			jen.ID("columns").Op(":=").ID("append").Call(
+			jen.ID("columns").Assign().ID("append").Call(
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableColumns"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableColumns").Op("..."),
 			),
-			jen.List(jen.ID("filteredCountQuery"), jen.ID("filteredCountQueryArgs")).Op(":=").ID("b").Dot("buildFilteredCountQuery").Call(
+			jen.List(jen.ID("filteredCountQuery"), jen.ID("filteredCountQueryArgs")).Assign().ID("b").Dot("buildFilteredCountQuery").Call(
 				jen.ID("ctx"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 				jen.ID("nil"),
@@ -189,7 +189,7 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.ID("includeArchived"),
 				jen.ID("filter"),
 			),
-			jen.List(jen.ID("totalCountQuery"), jen.ID("totalCountQueryArgs")).Op(":=").ID("b").Dot("buildTotalCountQuery").Call(
+			jen.List(jen.ID("totalCountQuery"), jen.ID("totalCountQueryArgs")).Assign().ID("b").Dot("buildTotalCountQuery").Call(
 				jen.ID("ctx"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 				jen.ID("nil"),
@@ -200,7 +200,7 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.ID("includeArchived"),
 			),
 			jen.Newline(),
-			jen.ID("builder").Op(":=").ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("append").Callln(
+			jen.ID("builder").Assign().ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.ID("append").Callln(
 				jen.ID("columns"),
 				jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("(%s) as total_count"),
@@ -222,7 +222,7 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			)),
 			jen.Newline(),
 			jen.If(jen.Op("!").ID("forAdmin")).Body(
-				jen.ID("builder").Op("=").ID("builder").Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+				jen.ID("builder").Equals().ID("builder").Dot("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
@@ -233,7 +233,7 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 				).Op(":").ID("userID"))),
 			),
 			jen.Newline(),
-			jen.ID("builder").Op("=").ID("builder").Dot("GroupBy").Call(jen.Qual("fmt", "Sprintf").Callln(
+			jen.ID("builder").Equals().ID("builder").Dot("GroupBy").Call(jen.Qual("fmt", "Sprintf").Callln(
 				jen.Lit("%s.%s, %s.%s"),
 				jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -242,14 +242,14 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			)),
 			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.ID("builder").Op("=").Qual(proj.QuerybuildingPackage(), "ApplyFilterToQueryBuilder").Call(
+				jen.ID("builder").Equals().Qual(proj.QuerybuildingPackage(), "ApplyFilterToQueryBuilder").Call(
 					jen.ID("filter"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 					jen.ID("builder"),
 				),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("query"), jen.ID("selectArgs")).Op(":=").ID("b").Dot("buildQuery").Call(
+			jen.List(jen.ID("query"), jen.ID("selectArgs")).Assign().ID("b").Dot("buildQuery").Call(
 				jen.ID("span"),
 				jen.ID("builder"),
 			),
@@ -272,8 +272,8 @@ func buildBuildAccountCreationQuery(proj *models.Project, dbvendor wordsmith.Sup
 	lines := []jen.Code{
 		jen.Comment("BuildAccountCreationQuery takes an account and returns a creation query for that account and the relevant arguments."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildAccountCreationQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), "AccountCreationInput")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildAccountCreationQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "AccountCreationInput")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
@@ -307,8 +307,8 @@ func buildBuildUpdateAccountQuery(proj *models.Project, dbvendor wordsmith.Super
 	lines := []jen.Code{
 		jen.Comment("BuildUpdateAccountQuery takes an account and returns an update SQL query, with the relevant query parameters."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildUpdateAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), "Account")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "Account")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
@@ -348,8 +348,8 @@ func buildBuildArchiveAccountQuery(proj *models.Project, dbvendor wordsmith.Supe
 	lines := []jen.Code{
 		jen.Comment("BuildArchiveAccountQuery returns a SQL query which marks a given account belonging to a given user as archived."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildArchiveAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("accountID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildArchiveAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("accountID"), jen.ID("userID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -385,8 +385,8 @@ func buildBuildGetAuditLogEntriesForAccountQuery(proj *models.Project, dbvendor 
 	lines := []jen.Code{
 		jen.Comment("BuildGetAuditLogEntriesForAccountQuery constructs a SQL query for fetching audit log entries belong to an account with a given ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesForAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesForAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
@@ -394,7 +394,7 @@ func buildBuildGetAuditLogEntriesForAccountQuery(proj *models.Project, dbvendor 
 				jen.ID("accountID"),
 			),
 			jen.Newline(),
-			jen.ID("accountIDKey").Op(":=").Qual("fmt", "Sprintf").Callln(
+			jen.ID("accountIDKey").Assign().Qual("fmt", "Sprintf").Callln(
 				jen.ID("jsonPluckQuery"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),

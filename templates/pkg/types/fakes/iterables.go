@@ -47,8 +47,8 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Commentf("BuildFake%s builds a faked %s.", sn, scn),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%s", sn).Params().Params(jen.Op("*").Qual(proj.TypesPackage(), sn)).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), sn).Valuesln(fakeFields...),
+		jen.Func().IDf("BuildFake%s", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), sn).Valuesln(fakeFields...),
 		),
 		jen.Newline(),
 	)
@@ -56,17 +56,17 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Commentf("BuildFake%sList builds a faked %sList.", sn, sn),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sList", sn).Params().Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Body(
-			jen.Var().ID("examples").Index().Op("*").Qual(proj.TypesPackage(), sn),
-			jen.For(jen.ID("i").Op(":=").Lit(0),
+		jen.Func().IDf("BuildFake%sList", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Body(
+			jen.Var().ID("examples").Index().PointerTo().Qual(proj.TypesPackage(), sn),
+			jen.For(jen.ID("i").Assign().Lit(0),
 				jen.ID("i").Op("<").ID("exampleQuantity"),
 				jen.ID("i").Op("++")).Body(
-				jen.ID("examples").Op("=").ID("append").Call(
+				jen.ID("examples").Equals().ID("append").Call(
 					jen.ID("examples"),
 					jen.IDf("BuildFake%s", sn).Call(),
 				)),
 			jen.Newline(),
-			jen.Return().Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Valuesln(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), fmt.Sprintf("Pagination")).Valuesln(
 					jen.ID("Page").MapAssign().Lit(1),
 					jen.ID("Limit").MapAssign().Lit(20),
@@ -95,9 +95,9 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Commentf("BuildFake%sUpdateInput builds a faked %sUpdateInput from %s.", sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sUpdateInput", sn).Params().Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
-			jen.ID(uvn).Op(":=").IDf("BuildFake%s", sn).Call(),
-			jen.Return().Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(updateVals...),
+		jen.Func().IDf("BuildFake%sUpdateInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
+			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(updateVals...),
 		),
 		jen.Newline(),
 	)
@@ -105,16 +105,16 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Commentf("BuildFake%sUpdateInputFrom%s builds a faked %sUpdateInput from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sUpdateInputFrom%s", sn, sn).Params(jen.ID(uvn).Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(updateVals...)),
+		jen.Func().IDf("BuildFake%sUpdateInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(updateVals...)),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Commentf("BuildFake%sCreationInput builds a faked %sCreationInput.", sn, sn),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sCreationInput", sn).Params().Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Body(
-			jen.ID(uvn).Op(":=").IDf("BuildFake%s", sn).Call(),
+		jen.Func().IDf("BuildFake%sCreationInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Body(
+			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
 			jen.Return().IDf("BuildFake%sCreationInputFrom%s", sn, sn).Call(jen.ID(uvn)),
 		),
 		jen.Newline(),
@@ -138,8 +138,8 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Commentf("BuildFake%sCreationInputFrom%s builds a faked %sCreationInput from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sCreationInputFrom%s", sn, sn).Params(jen.ID(uvn).Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(creationVals...)),
+		jen.Func().IDf("BuildFake%sCreationInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(creationVals...)),
 		jen.Newline(),
 	)
 

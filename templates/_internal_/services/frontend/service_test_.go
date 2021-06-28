@@ -13,7 +13,7 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Func().ID("dummyIDFetcher").Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).Body(
+		jen.Func().ID("dummyIDFetcher").Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).Body(
 			jen.Return().Lit(0)),
 		jen.Newline(),
 	)
@@ -21,13 +21,13 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.ID("cfg").Op(":=").Op("&").ID("Config").Values(),
-		jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-		jen.ID("authService").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "AuthService").Values(),
-		jen.ID("usersService").Op(":=").Op("&").Qual(proj.TypesPackage("mock"), "UsersService").Values(),
-		jen.ID("dataManager").Op(":=").ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("cfg").Assign().AddressOf().ID("Config").Values(),
+		jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+		jen.ID("authService").Assign().AddressOf().Qual(proj.TypesPackage("mock"), "AuthService").Values(),
+		jen.ID("usersService").Assign().AddressOf().Qual(proj.TypesPackage("mock"), "UsersService").Values(),
+		jen.ID("dataManager").Assign().ID("database").Dot("BuildMockDatabase").Call(),
 		jen.Newline(),
-		jen.ID("rpm").Op(":=").Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
+		jen.ID("rpm").Assign().Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
 		jen.ID("rpm").Dot("On").Call(
 			jen.Lit("BuildRouteParamIDFetcher"),
 			jen.Qual(constants.MockPkg, "IsType").Call(jen.ID("logger")),
@@ -61,7 +61,7 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("s").Op(":=").ID("ProvideService").Callln(
+		jen.ID("s").Assign().ID("ProvideService").Callln(
 			jen.ID("cfg"),
 			jen.ID("logger"),
 			jen.ID("authService"),
@@ -82,7 +82,7 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestProvideService").Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+		jen.Func().ID("TestProvideService").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),

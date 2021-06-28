@@ -156,7 +156,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).Op("==").Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
 				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -167,7 +167,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if typ.RestrictedToAccountAtSomeLevel(proj) {
 		lines = append(lines,
-			jen.If(jen.ID("accountID").Op("==").Lit(0)).Body(
+			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
 				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID")),

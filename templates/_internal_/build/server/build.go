@@ -24,9 +24,9 @@ func buildDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("Build").Paramsln(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("cfg").Op("*").Qual(proj.ConfigPackage(), "InstanceConfig"),
+			jen.ID("cfg").PointerTo().Qual(proj.ConfigPackage(), "InstanceConfig"),
 			constants.LoggerVar().Qual(proj.InternalLoggingPackage(), "Logger"),
-		).Params(jen.Op("*").ID("server").Dot("HTTPServer"), jen.ID("error")).Body(
+		).Params(jen.PointerTo().ID("server").Dot("HTTPServer"), jen.ID("error")).Body(
 			jen.Qual(constants.DependencyInjectionPkg, "Build").Callln(
 				append([]jen.Code{
 					jen.Qual(proj.InternalSearchPackage("bleve"), "Providers"),

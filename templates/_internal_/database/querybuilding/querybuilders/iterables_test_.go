@@ -193,8 +193,8 @@ func buildTestVendor_BuildSomethingExistsQuery(proj *models.Project, typ models.
 
 	bodyLines := []jen.Code{jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
@@ -204,11 +204,11 @@ func buildTestVendor_BuildSomethingExistsQuery(proj *models.Project, typ models.
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+		jen.ID("expectedQuery").Assign().Lit(query),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 			expectedArgs...,
 		),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("Build%sExistsQuery", sn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("Build%sExistsQuery", sn).Call(
 			callArgs...,
 		),
 		jen.Newline(),
@@ -218,11 +218,11 @@ func buildTestVendor_BuildSomethingExistsQuery(proj *models.Project, typ models.
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_Build%sExistsQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_Build%sExistsQuery", dbvendor.Singular(), sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -250,8 +250,8 @@ func buildTestVendor_BuildGetSomethingQuery(proj *models.Project, typ models.Dat
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
@@ -261,11 +261,11 @@ func buildTestVendor_BuildGetSomethingQuery(proj *models.Project, typ models.Dat
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+		jen.ID("expectedQuery").Assign().Lit(query),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 			expectedArgs...,
 		),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGet%sQuery", sn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildGet%sQuery", sn).Call(
 			callArgs...,
 		),
 		jen.Newline(),
@@ -275,11 +275,11 @@ func buildTestVendor_BuildGetSomethingQuery(proj *models.Project, typ models.Dat
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildGet%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGet%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -304,11 +304,11 @@ func buildTestVendor_BuildGetAllSomethingsCountQuery(proj *models.Project, typ m
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("actualQuery").Op(":=").ID("q").Dotf("BuildGetAll%sCountQuery", pn).Call(jen.ID("ctx")),
+		jen.ID("expectedQuery").Assign().Lit(query),
+		jen.ID("actualQuery").Assign().ID("q").Dotf("BuildGetAll%sCountQuery", pn).Call(jen.ID("ctx")),
 		jen.Newline(),
 		jen.ID("assertArgCountMatchesQuery").Call(
 			jen.ID("t"),
@@ -323,11 +323,11 @@ func buildTestVendor_BuildGetAllSomethingsCountQuery(proj *models.Project, typ m
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildGetAll%sCountQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGetAll%sCountQuery", dbvendor.Singular(), pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -357,18 +357,18 @@ func buildTestVendor_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ mo
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("beginID"), jen.ID("endID")).Op(":=").List(jen.ID("uint64").Call(jen.Lit(1)),
-			jen.ID("uint64").Call(jen.Lit(1000)),
+		jen.List(jen.ID("beginID"), jen.ID("endID")).Assign().List(jen.Uint64().Call(jen.Lit(1)),
+			jen.Uint64().Call(jen.Lit(1000)),
 		),
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(jen.ID("beginID"),
+		jen.ID("expectedQuery").Assign().Lit(query),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("beginID"),
 			jen.ID("endID"),
 		),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGetBatchOf%sQuery", pn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildGetBatchOf%sQuery", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("beginID"),
 			jen.ID("endID"),
@@ -380,11 +380,11 @@ func buildTestVendor_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ mo
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildGetBatchOf%sQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGetBatchOf%sQuery", dbvendor.Singular(), pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -485,8 +485,8 @@ func buildTestVendor_BuildGetSomethingsQuery(proj *models.Project, typ models.Da
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
@@ -494,13 +494,13 @@ func buildTestVendor_BuildGetSomethingsQuery(proj *models.Project, typ models.Da
 	callArgs := buildArgsForDBQuerierTestOfListRetrievalQueryBuilder(proj, typ)
 
 	bodyLines = append(bodyLines,
-		jen.ID("filter").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
+		jen.ID("filter").Assign().Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+		jen.ID("expectedQuery").Assign().Lit(query),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 			expectedArgs...,
 		),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGet%sQuery", pn).Call(callArgs...),
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildGet%sQuery", pn).Call(callArgs...),
 		jen.Newline(),
 		jen.ID("assertArgCountMatchesQuery").Call(jen.ID("t"), jen.ID("actualQuery"), jen.ID("actualArgs")),
 		jen.Qual(constants.AssertionLibrary, "Equal").Call(jen.ID("t"), jen.ID("expectedQuery"), jen.ID("actualQuery")),
@@ -508,11 +508,11 @@ func buildTestVendor_BuildGetSomethingsQuery(proj *models.Project, typ models.Da
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildGet%sQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGet%sQuery", dbvendor.Singular(), pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -570,24 +570,24 @@ func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
-				return jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()
+				return jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()
 			}
 			return jen.Null()
 		}(),
-		jen.ID("exampleIDs").Op(":=").Index().ID("uint64").Valuesln(
+		jen.ID("exampleIDs").Assign().Index().Uint64().Valuesln(
 			jen.Lit(789),
 			jen.Lit(123),
 			jen.Lit(456),
 		),
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
@@ -599,7 +599,7 @@ func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 			jen.ID("exampleIDs").Index(jen.Lit(1)),
 			jen.ID("exampleIDs").Index(jen.Lit(2)),
 		),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGet%sWithIDsQuery", pn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildGet%sWithIDsQuery", pn).Call(
 			jen.ID("ctx"),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
@@ -624,11 +624,11 @@ func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 	}
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildGet%sWithIDsQuery", dbvendor.Singular(), pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGet%sWithIDsQuery", dbvendor.Singular(), pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -684,32 +684,32 @@ func buildTestVendor_BuildCreateSomethingQuery(proj *models.Project, typ models.
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
 	bodyLines = append(bodyLines,
-		jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 	)
 
 	bodyLines = append(bodyLines,
-		jen.ID("exampleInput").Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
-		jen.ID("exIDGen").Op(":=").Op("&").Qual(proj.QuerybuildingPackage(), "MockExternalIDGenerator").Values(),
+		jen.ID("exIDGen").Assign().AddressOf().Qual(proj.QuerybuildingPackage(), "MockExternalIDGenerator").Values(),
 		jen.ID("exIDGen").Dot("On").Call(jen.Lit("NewExternalID")).Dot("Return").Call(jen.IDf("example%s", sn).Dot("ExternalID")),
-		jen.ID("q").Dot("externalIDGenerator").Op("=").ID("exIDGen"),
+		jen.ID("q").Dot("externalIDGenerator").Equals().ID("exIDGen"),
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(expectedQuery),
+		jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 		func() jen.Code {
 			if len(fieldArgs) == 0 {
-				return jen.ID("expectedArgs").Op(":=").Index().Interface().Values(fieldArgs...)
+				return jen.ID("expectedArgs").Assign().Index().Interface().Values(fieldArgs...)
 			}
-			return jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+			return jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 				fieldArgs...,
 			)
 		}(),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildCreate%sQuery", sn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildCreate%sQuery", sn).Call(
 			jen.ID("ctx"),
 			jen.ID("exampleInput"),
 		),
@@ -725,11 +725,11 @@ func buildTestVendor_BuildCreateSomethingQuery(proj *models.Project, typ models.
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildCreate%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildCreate%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -789,27 +789,27 @@ func buildTestVendor_BuildUpdateSomethingQuery(proj *models.Project, typ models.
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
 	bodyLines = append(bodyLines,
-		jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 	)
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
+		jen.ID("expectedQuery").Assign().Lit(query),
 		func() jen.Code {
 			if len(expectedArgs) == 0 {
-				return jen.ID("expectedArgs").Op(":=").Index().Interface().Values(expectedArgs...)
+				return jen.ID("expectedArgs").Assign().Index().Interface().Values(expectedArgs...)
 			}
-			return jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+			return jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 				expectedArgs...,
 			)
 		}(),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildUpdate%sQuery", sn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildUpdate%sQuery", sn).Call(
 			jen.ID("ctx"),
 			jen.IDf("example%s", sn),
 		),
@@ -820,11 +820,11 @@ func buildTestVendor_BuildUpdateSomethingQuery(proj *models.Project, typ models.
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildUpdate%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildUpdate%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -879,8 +879,8 @@ func buildTestVendor_BuildArchiveSomethingQuery(proj *models.Project, typ models
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
@@ -902,8 +902,8 @@ func buildTestVendor_BuildArchiveSomethingQuery(proj *models.Project, typ models
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("expectedQuery").Op(":=").Lit(query),
-		jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+		jen.ID("expectedQuery").Assign().Lit(query),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
 					return jen.IDf("example%sID", typ.BelongsToStruct.Singular())
@@ -913,7 +913,7 @@ func buildTestVendor_BuildArchiveSomethingQuery(proj *models.Project, typ models
 			utils.ConditionalCode(typ.RestrictedToAccountMembers, jen.ID("exampleAccountID")),
 			jen.IDf("example%sID", sn),
 		),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildArchive%sQuery", sn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildArchive%sQuery", sn).Call(
 			jen.ID("ctx"),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
@@ -931,11 +931,11 @@ func buildTestVendor_BuildArchiveSomethingQuery(proj *models.Project, typ models
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildArchive%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildArchive%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -978,32 +978,32 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 
 	bodyLines := []jen.Code{jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestService").Call(jen.ID("t")),
-		jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+		jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestService").Call(jen.ID("t")),
+		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.Newline(),
 	}
 
 	bodyLines = append(bodyLines,
-		jen.IDf("example%s", sn).Op(":=").Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 	)
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		func() jen.Code {
 			if dbvendor.SingularPackageName() == "mariadb" {
-				return jen.ID("expectedQuery").Op(":=").Qual("fmt", "Sprintf").Call(jen.Lit(query), jen.IDf("example%s", sn).Dot("ID"))
+				return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(query), jen.IDf("example%s", sn).Dot("ID"))
 			}
-			return jen.ID("expectedQuery").Op(":=").Lit(query)
+			return jen.ID("expectedQuery").Assign().Lit(query)
 		}(),
 		func() jen.Code {
 			if dbvendor.SingularPackageName() == "mariadb" {
-				return jen.ID("expectedArgs").Op(":=").Index().Interface().Call(jen.Nil())
+				return jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 			}
-			return jen.ID("expectedArgs").Op(":=").Index().Interface().Valuesln(
+			return jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
 				jen.IDf("example%s", sn).Dot("ID"),
 			)
 		}(),
-		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Op(":=").ID("q").Dotf("BuildGetAuditLogEntriesFor%sQuery", sn).Call(
+		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildGetAuditLogEntriesFor%sQuery", sn).Call(
 			jen.ID("ctx"),
 			jen.IDf("example%s", sn).Dot("ID"),
 		),
@@ -1014,11 +1014,11 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 	)
 
 	return []jen.Code{
-		jen.Func().IDf("Test%s_BuildGetAuditLogEntriesFor%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_BuildGetAuditLogEntriesFor%sQuery", dbvendor.Singular(), sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),

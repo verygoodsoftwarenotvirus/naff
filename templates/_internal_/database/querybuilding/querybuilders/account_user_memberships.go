@@ -14,14 +14,14 @@ func accountUserMembershipsDotGo(proj *models.Project, dbvendor wordsmith.SuperP
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").Qual(proj.QuerybuildingPackage(), "AccountUserMembershipSQLQueryBuilder").Op("=").Parens(jen.Op("*").ID(dbvendor.Singular())).Call(jen.ID("nil")),
+			jen.ID("_").Qual(proj.QuerybuildingPackage(), "AccountUserMembershipSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("accountMemberRolesSeparator").Op("=").Lit(","),
+			jen.ID("accountMemberRolesSeparator").Equals().Lit(","),
 		),
 		jen.Newline(),
 	)
@@ -45,10 +45,10 @@ func buildBuildGetDefaultAccountIDForUserQuery(proj *models.Project, dbvendor wo
 	lines := []jen.Code{
 		jen.Comment("BuildGetDefaultAccountIDForUserQuery does ."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetDefaultAccountIDForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetDefaultAccountIDForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -92,10 +92,10 @@ func buildBuildArchiveAccountMembershipsForUserQuery(proj *models.Project, dbven
 	lines := []jen.Code{
 		jen.Comment("BuildArchiveAccountMembershipsForUserQuery does ."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildArchiveAccountMembershipsForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildArchiveAccountMembershipsForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -118,10 +118,10 @@ func buildBuildGetAccountMembershipsForUserQuery(proj *models.Project, dbvendor 
 	lines := []jen.Code{
 		jen.Comment("BuildGetAccountMembershipsForUserQuery does ."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildGetAccountMembershipsForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("userID").ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAccountMembershipsForUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("userID").ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
@@ -164,10 +164,10 @@ func buildBuildMarkAccountAsUserDefaultQuery(proj *models.Project, dbvendor word
 	lines := []jen.Code{
 		jen.Comment("BuildMarkAccountAsUserDefaultQuery builds a query that marks a user's account as their primary."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildMarkAccountAsUserDefaultQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildMarkAccountAsUserDefaultQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -199,10 +199,10 @@ func buildBuildTransferAccountOwnershipQuery(proj *models.Project, dbvendor word
 	lines := []jen.Code{
 		jen.Comment("BuildTransferAccountOwnershipQuery does ."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildTransferAccountOwnershipQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("currentOwnerID"), jen.ID("newOwnerID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildTransferAccountOwnershipQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("currentOwnerID"), jen.ID("newOwnerID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("newOwnerID")),
@@ -227,10 +227,10 @@ func buildBuildTransferAccountMembershipsQuery(proj *models.Project, dbvendor wo
 	lines := []jen.Code{
 		jen.Comment("BuildTransferAccountMembershipsQuery does ."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildTransferAccountMembershipsQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("currentOwnerID"), jen.ID("newOwnerID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildTransferAccountMembershipsQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("currentOwnerID"), jen.ID("newOwnerID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("newOwnerID")),
@@ -255,11 +255,11 @@ func buildBuildModifyUserPermissionsQuery(proj *models.Project, dbvendor wordsmi
 	lines := []jen.Code{
 		jen.Comment("BuildModifyUserPermissionsQuery builds."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildModifyUserPermissionsQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64"),
-			jen.ID("newRoles").Index().ID("string")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildModifyUserPermissionsQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("userID"), jen.ID("accountID")).Uint64(),
+			jen.ID("newRoles").Index().ID("string")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -286,10 +286,10 @@ func buildBuildCreateMembershipForNewUserQuery(proj *models.Project, dbvendor wo
 	lines := []jen.Code{
 		jen.Comment("BuildCreateMembershipForNewUserQuery builds a query that ."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildCreateMembershipForNewUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildCreateMembershipForNewUserQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -307,7 +307,7 @@ func buildBuildCreateMembershipForNewUserQuery(proj *models.Project, dbvendor wo
 					jen.ID("userID"),
 					jen.ID("accountID"),
 					jen.ID("true"),
-					jen.Qual("strings", "Join").Call(jen.Index().ID("string").Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountAdminRole").Dot("String").Call()), jen.ID("accountMemberRolesSeparator")),
+					jen.Qual("strings", "Join").Call(jen.Index().String().Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountAdminRole").Dot("String").Call()), jen.ID("accountMemberRolesSeparator")),
 				),
 			),
 		),
@@ -321,10 +321,10 @@ func buildBuildUserIsMemberOfAccountQuery(proj *models.Project, dbvendor wordsmi
 	lines := []jen.Code{
 		jen.Comment("BuildUserIsMemberOfAccountQuery builds a query that checks to see if the user is the member of a given account."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildUserIsMemberOfAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUserIsMemberOfAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),
@@ -368,10 +368,10 @@ func buildBuildAddUserToAccountQuery(proj *models.Project, dbvendor wordsmith.Su
 	lines := []jen.Code{
 		jen.Comment("BuildAddUserToAccountQuery builds a query that adds a user to an account."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildAddUserToAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("input").Op("*").Qual(proj.TypesPackage(), "AddUserToAccountInput")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildAddUserToAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "AddUserToAccountInput")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("input").Dot("UserID")),
@@ -402,10 +402,10 @@ func buildBuildRemoveUserFromAccountQuery(proj *models.Project, dbvendor wordsmi
 	lines := []jen.Code{
 		jen.Comment("BuildRemoveUserFromAccountQuery builds a query that removes a user from an account."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").Op("*").ID(dbvendor.Singular())).ID("BuildRemoveUserFromAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").ID("string"),
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildRemoveUserFromAccountQuery").Params(jen.ID("ctx").Qual("context", "Context"),
+			jen.List(jen.ID("userID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(jen.ID("span"), jen.ID("userID")),

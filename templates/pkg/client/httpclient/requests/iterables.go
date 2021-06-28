@@ -17,7 +17,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.IDf("%sBasePath", puvn).Op("=").Lit(typ.Name.PluralRouteName()),
+			jen.IDf("%sBasePath", puvn).Equals().Lit(typ.Name.PluralRouteName()),
 		),
 		jen.Newline(),
 	)
@@ -54,7 +54,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).Op("==").Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -245,7 +245,7 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.ID("params").Dot("Set").Call(
 			jen.ID("types").Dot("LimitQueryKey"),
 			jen.Qual("strconv", "FormatUint").Call(
-				jen.ID("uint64").Call(jen.ID("limit")),
+				jen.Uint64().Call(jen.ID("limit")),
 				jen.Lit(10),
 			),
 		),
@@ -282,7 +282,7 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 	lines := []jen.Code{
 		jen.Commentf("BuildSearch%sRequest builds an HTTP request for querying %s.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID("Builder")).IDf("BuildSearch%sRequest", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").ID("string"), jen.ID("limit").ID("uint8")).Params(jen.PointerTo().Qual("net/http", "Request"), jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID("Builder")).IDf("BuildSearch%sRequest", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").String(), jen.ID("limit").ID("uint8")).Params(jen.PointerTo().Qual("net/http", "Request"), jen.ID("error")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -476,7 +476,7 @@ func buildBuildCreateSomethingRequest(proj *models.Project, typ models.DataType)
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.If(jen.ID("input").Op("==").ID("nil")).Body(
+		jen.If(jen.ID("input").IsEqualTo().ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
@@ -626,7 +626,7 @@ func buildBuildUpdateSomethingRequest(proj *models.Project, typ models.DataType)
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.If(jen.ID(uvn).Op("==").ID("nil")).Body(
+		jen.If(jen.ID(uvn).IsEqualTo().ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
@@ -743,7 +743,7 @@ func buildBuildGetAuditLogForSomethingRequest(proj *models.Project, typ models.D
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.If(jen.IDf("%sID", uvn).Op("==").Lit(0)).Body(
+		jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 		),
 		jen.Newline(),

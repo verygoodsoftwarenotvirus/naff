@@ -22,12 +22,12 @@ func buildBuildBasicCreatorTemplate() []jen.Code {
 	return []jen.Code{
 		jen.Comment("//go:embed templates/creator.gotpl"),
 		jen.Newline(),
-		jen.Var().ID("basicCreatorTemplateSrc").ID("string"),
+		jen.Var().ID("basicCreatorTemplateSrc").String(),
 		jen.Newline(),
-		jen.Func().ID("buildBasicCreatorTemplate").Params(jen.ID("cfg").Op("*").ID("basicCreatorTemplateConfig")).Params(jen.ID("string")).Body(
+		jen.Func().ID("buildBasicCreatorTemplate").Params(jen.ID("cfg").PointerTo().ID("basicCreatorTemplateConfig")).Params(jen.ID("string")).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicCreatorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.Op("&").ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicCreatorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -158,7 +158,7 @@ func buildCreatorConfigs(types []models.DataType) []jen.Code {
 	}
 
 	return []jen.Code{
-		jen.Var().ID("creatorConfigs").Op("=").Map(jen.ID("string")).Op("*").ID("basicCreatorTemplateConfig").Valuesln(
+		jen.Var().ID("creatorConfigs").Equals().Map(jen.ID("string")).PointerTo().ID("basicCreatorTemplateConfig").Valuesln(
 			iterableCreatorConfigs...,
 		),
 		jen.Newline(),

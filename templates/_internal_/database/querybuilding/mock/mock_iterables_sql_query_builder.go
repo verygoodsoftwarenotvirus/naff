@@ -16,7 +16,7 @@ func mockIterablesSQLQueryBuilderDotGo(proj *models.Project, typ models.DataType
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().ID("_").ID("querybuilding").Dotf("%sSQLQueryBuilder", sn).Op("=").Parens(jen.Op("*").IDf("%sSQLQueryBuilder", sn)).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("querybuilding").Dotf("%sSQLQueryBuilder", sn).Equals().Parens(jen.PointerTo().IDf("%sSQLQueryBuilder", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
@@ -84,8 +84,8 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 	lines := []jen.Code{
 		jen.Commentf("Build%sExistsQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("Build%sExistsQuery", sn).Params(buildDBQuerierSingletonQueryMethodParams(proj, typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("Build%sExistsQuery", sn).Params(buildDBQuerierSingletonQueryMethodParams(proj, typ)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				buildDBQuerierSingletonQueryMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
@@ -103,8 +103,8 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []je
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", sn).Params(buildDBQuerierSingletonQueryMethodParams(proj, typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", sn).Params(buildDBQuerierSingletonQueryMethodParams(proj, typ)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				buildDBQuerierSingletonQueryMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
@@ -123,8 +123,8 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 	lines := []jen.Code{
 		jen.Commentf("BuildGetAll%sCountQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(jen.ID("ctx")),
 			jen.Newline(),
 			jen.Return().ID("returnArgs").Dot("String").Call(jen.Lit(0)),
 		),
@@ -141,8 +141,8 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 	lines := []jen.Code{
 		jen.Commentf("BuildGetBatchOf%sQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"),
 				jen.ID("beginID"),
 				jen.ID("endID"),
@@ -172,7 +172,7 @@ func buildDBQuerierListRetrievalQueryBuildingMethodParams(p *models.Project, typ
 		params = append(params, jen.List(lp...).ID("uint64"))
 	}
 
-	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
+	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
 
 	return params
 }
@@ -205,8 +205,8 @@ func buildBuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []j
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", pn).Params(buildDBQuerierListRetrievalQueryBuildingMethodParams(proj, typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sQuery", pn).Params(buildDBQuerierListRetrievalQueryBuildingMethodParams(proj, typ)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				buildDBQuerierListRetrievalQueryBuildingMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
@@ -234,7 +234,7 @@ func buildBuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataTy
 	lines := []jen.Code{
 		jen.Commentf("BuildGet%sWithIDsQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sWithIDsQuery", pn).Params(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGet%sWithIDsQuery", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			func() jen.Code {
 				if len(prerequisiteIDs) > 0 {
@@ -243,10 +243,10 @@ func buildBuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataTy
 				return jen.Null()
 			}(),
 			jen.ID("limit").ID("uint8"),
-			jen.ID("ids").Index().ID("uint64"),
+			jen.ID("ids").Index().Uint64(),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("restrictToAccount").ID("bool")),
-		).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"), func() jen.Code {
 					if len(prerequisiteIDs) > 0 {
 						return jen.List(prerequisiteIDs...)
@@ -272,8 +272,8 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) [
 	lines := []jen.Code{
 		jen.Commentf("BuildCreate%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildCreate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildCreate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"),
 				jen.ID("input"),
 			),
@@ -293,8 +293,8 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 	lines := []jen.Code{
 		jen.Commentf("BuildGetAuditLogEntriesFor%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
 			),
@@ -313,8 +313,8 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 	lines := []jen.Code{
 		jen.Commentf("BuildUpdate%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildUpdate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").Qual(proj.TypesPackage(), sn)).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildUpdate%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"),
 				jen.ID("input"),
 			),
@@ -369,8 +369,8 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) 
 	lines := []jen.Code{
 		jen.Commentf("BuildArchive%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").Op("*").IDf("%sSQLQueryBuilder", sn)).IDf("BuildArchive%sQuery", sn).Params(buildDBQuerierArchiveQueryMethodParams(typ)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
-			jen.ID("returnArgs").Op(":=").ID("m").Dot("Called").Call(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildArchive%sQuery", sn).Params(buildDBQuerierArchiveQueryMethodParams(typ)...).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				buildDBQuerierArchiveQueryMethodArgs(typ)...,
 			),
 			jen.Newline(),

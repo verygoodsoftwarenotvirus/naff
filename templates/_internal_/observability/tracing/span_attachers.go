@@ -14,7 +14,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("attachUint8ToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("attachmentKey").ID("string"),
+			jen.ID("attachmentKey").String(),
 			jen.ID("id").ID("uint8")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int64").Call(
@@ -28,7 +28,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("attachUint64ToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("attachmentKey").ID("string"),
+			jen.ID("attachmentKey").String(),
 			jen.ID("id").ID("uint64")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int64").Call(
@@ -56,7 +56,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("attachBooleanToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("key").ID("string"),
+			jen.ID("key").String(),
 			jen.ID("b").ID("bool")).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Bool").Call(
@@ -70,7 +70,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("attachSliceToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("key").ID("string"),
+			jen.ID("key").String(),
 			jen.ID("slice").Interface()).Body(
 			jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Array").Call(
 				jen.ID("key"),
@@ -84,7 +84,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachToSpan allows a user to attach any value to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("key").ID("string"),
+			jen.ID("key").String(),
 			jen.ID("val").Interface()).Body(
 			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
@@ -100,7 +100,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachFilterToSpan provides a consistent way to attach a filter's info to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachFilterToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("page").ID("uint64"),
+			jen.ID("page").Uint64(),
 			jen.ID("limit").ID("uint8"),
 			jen.ID("sortBy").ID("string")).Body(
 			jen.ID("attachUint64ToSpan").Call(
@@ -196,10 +196,10 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachChangeSummarySpan provides a consistent way to attach a SessionContextData object to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachChangeSummarySpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("typeName").ID("string"),
-			jen.ID("changes").Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary")).Body(
+			jen.ID("typeName").String(),
+			jen.ID("changes").Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary")).Body(
 			jen.For(jen.List(jen.ID("i"),
-				jen.ID("change")).Op(":=").Range().ID("changes")).Body(
+				jen.ID("change")).Assign().Range().ID("changes")).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.field_changes.%d"),
@@ -217,7 +217,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachSessionContextDataToSpan provides a consistent way to attach a SessionContextData object to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachSessionContextDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData")).Body(
+			jen.ID("sessionCtxData").PointerTo().Qual(proj.TypesPackage(), "SessionContextData")).Body(
 			jen.If(jen.ID("sessionCtxData").Op("!=").ID("nil")).Body(
 				jen.ID("AttachRequestingUserIDToSpan").Call(
 					jen.ID("span"),
@@ -271,7 +271,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachUserToSpan provides a consistent way to attach a user to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachUserToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("user").Op("*").Qual(proj.TypesPackage(), "User")).Body(
+			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User")).Body(
 			jen.If(jen.ID("user").Op("!=").ID("nil")).Body(
 				jen.ID("AttachUserIDToSpan").Call(
 					jen.ID("span"),
@@ -332,7 +332,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachURLToSpan attaches a given URI to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachURLToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("u").Op("*").Qual("net/url", "URL")).Body(
+			jen.ID("u").PointerTo().Qual("net/url", "URL")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
 				jen.ID("keys").Dot("RequestURIKey"),
@@ -360,7 +360,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachRequestToSpan attaches a given *http.Request to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachRequestToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+			jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			jen.If(jen.ID("req").Op("!=").ID("nil")).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
@@ -373,7 +373,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.ID("req").Dot("Method"),
 				),
 				jen.Newline(),
-				jen.ID("htmxHeaderSpanKeys").Op(":=").Map(jen.ID("string")).ID("string").Valuesln(jen.Lit("HX-Prompt").Op(":").Lit("htmx.prompt"),
+				jen.ID("htmxHeaderSpanKeys").Assign().Map(jen.ID("string")).String().Valuesln(jen.Lit("HX-Prompt").Op(":").Lit("htmx.prompt"),
 					jen.Lit("HX-Target").Op(":").Lit("htmx.target"),
 					jen.Lit("HX-Request").Op(":").Lit("htmx.request"),
 					jen.Lit("HX-Trigger").Op(":").Lit("htmx.trigger"),
@@ -382,8 +382,8 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 					jen.Lit("HX-History-Restore-Request").Op(":").Lit("htmx.historyRestoreRequest")),
 				jen.Newline(),
 				jen.For(jen.List(jen.ID("header"),
-					jen.ID("spanKey")).Op(":=").Range().ID("htmxHeaderSpanKeys")).Body(
-					jen.If(jen.ID("val").Op(":=").ID("req").Dot("Header").Dot("Get").Call(jen.ID("header")),
+					jen.ID("spanKey")).Assign().Range().ID("htmxHeaderSpanKeys")).Body(
+					jen.If(jen.ID("val").Assign().ID("req").Dot("Header").Dot("Get").Call(jen.ID("header")),
 						jen.ID("val").Op("!=").Lit("")).Body(
 						jen.ID("attachStringToSpan").Call(
 							jen.ID("span"),
@@ -394,7 +394,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Newline(),
 				jen.For(jen.List(jen.ID("k"),
-					jen.ID("v")).Op(":=").Range().ID("req").Dot("Header")).Body(
+					jen.ID("v")).Assign().Range().ID("req").Dot("Header")).Body(
 					jen.ID("attachSliceToSpan").Call(
 						jen.ID("span"),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -414,7 +414,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachResponseToSpan attaches a given *http.Response to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachResponseToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("res").Op("*").Qual("net/http", "Response")).Body(
+			jen.ID("res").PointerTo().Qual("net/http", "Response")).Body(
 			jen.If(jen.ID("res").Op("!=").ID("nil")).Body(
 				jen.ID("AttachRequestToSpan").Call(
 					jen.ID("span"),
@@ -427,7 +427,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				)),
 				jen.Newline(),
 				jen.For(jen.List(jen.ID("k"),
-					jen.ID("v")).Op(":=").Range().ID("res").Dot("Header")).Body(
+					jen.ID("v")).Assign().Range().ID("res").Dot("Header")).Body(
 					jen.ID("attachSliceToSpan").Call(
 						jen.ID("span"),
 						jen.Qual("fmt", "Sprintf").Call(
@@ -447,7 +447,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachErrorToSpan attaches a given error to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachErrorToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("description").ID("string"),
+			jen.ID("description").String(),
 			jen.ID("err").ID("error")).Body(
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("span").Dot("RecordError").Callln(
@@ -469,7 +469,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachDatabaseQueryToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.List(jen.ID("queryDescription"),
-				jen.ID("query")).ID("string"),
+				jen.ID("query")).String(),
 			jen.ID("args").Index().Interface()).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
@@ -483,7 +483,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("i"),
-				jen.ID("arg")).Op(":=").Range().ID("args")).Body(
+				jen.ID("arg")).Assign().Range().ID("args")).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("query_args_%d"),
@@ -501,7 +501,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachQueryFilterToSpan attaches a given query filter to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachQueryFilterToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("filter").Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Body(
+			jen.ID("filter").PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Body(
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
 				jen.ID("attachUint8ToSpan").Call(
 					jen.ID("span"),
@@ -536,7 +536,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
 					jen.ID("keys").Dot("FilterSortByKey"),
-					jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+					jen.String().Call(jen.ID("filter").Dot("SortBy")),
 				),
 			).Else().Body(
 				jen.ID("attachBooleanToSpan").Call(
@@ -567,7 +567,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Comment("AttachUserAgentDataToSpan attaches a given search query to a span."),
 		jen.Newline(),
 		jen.Func().ID("AttachUserAgentDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
-			jen.ID("ua").Op("*").Qual("github.com/mssola/user_agent", "UserAgent")).Body(
+			jen.ID("ua").PointerTo().Qual("github.com/mssola/user_agent", "UserAgent")).Body(
 			jen.If(jen.ID("ua").Op("!=").ID("nil")).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),

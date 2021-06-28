@@ -169,7 +169,7 @@ func httpRoutesDotGo(proj *models.Project) string {
 		routes = append(routes,
 			jen.Newline(),
 			jen.Newline(),
-			jen.IDf("single%sPattern", sn).Op(":=").Qual("fmt", "Sprintf").Call(
+			jen.IDf("single%sPattern", sn).Assign().Qual("fmt", "Sprintf").Call(
 				jen.ID("numericIDPattern"),
 				jen.IDf("%sIDURLParamKey", uvn),
 			),

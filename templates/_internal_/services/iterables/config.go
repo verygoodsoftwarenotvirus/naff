@@ -20,7 +20,7 @@ func configDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("Logging").Qual(proj.InternalLoggingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Logging"), false)),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("SearchIndexPath").ID("string").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("SearchIndexPath"), false))
+					return jen.ID("SearchIndexPath").String().Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("SearchIndexPath"), false))
 				}
 				return jen.Null()
 			}(),
@@ -29,25 +29,25 @@ func configDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Op("=").Parens(jen.Op("*").ID("Config")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("Config")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Comment("ValidateWithContext validates a Config struct."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("Config")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("cfg").PointerTo().ID("Config")).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 				jen.Qual(constants.ValidationLibrary, "Field").Call(
-					jen.Op("&").ID("cfg").Dot("Logging"),
+					jen.AddressOf().ID("cfg").Dot("Logging"),
 					jen.Qual(constants.ValidationLibrary, "Required"),
 				),
 				func() jen.Code {
 					if typ.SearchEnabled {
 						return jen.Qual(constants.ValidationLibrary, "Field").Call(
-							jen.Op("&").ID("cfg").Dot("SearchIndexPath"),
+							jen.AddressOf().ID("cfg").Dot("SearchIndexPath"),
 							jen.Qual(constants.ValidationLibrary, "Required"),
 						)
 					}

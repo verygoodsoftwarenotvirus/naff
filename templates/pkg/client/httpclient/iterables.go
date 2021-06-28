@@ -24,7 +24,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).Op("==").Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
 				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -100,7 +100,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
@@ -111,7 +111,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("Build%sExistsRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("Build%sExistsRequest", sn).Call(
 			buildArgsForHTTPClientExistenceRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
@@ -127,7 +127,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.Newline(),
 		jen.List(jen.ID("exists"),
-			jen.ID("err")).Op(":=").ID("c").Dot("responseIsOK").Call(
+			jen.ID("err")).Assign().ID("c").Dot("responseIsOK").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
 		),
@@ -150,7 +150,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 	return []jen.Code{
 		jen.Commentf("%sExists retrieves whether %s exists.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("%sExists", sn).Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("%sExists", sn).Params(
 			buildParamsForHTTPClientExistenceMethod(proj, typ)...,
 		).Params(jen.ID("bool"), jen.ID("error")).Body(
 			lines...,
@@ -219,7 +219,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
@@ -230,7 +230,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", sn).Call(
 			buildArgsForHTTPClientRetrievalRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
@@ -245,11 +245,11 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 			),
 		),
 		jen.Newline(),
-		jen.Var().ID(uvn).Op("*").Qual(proj.TypesPackage(), sn),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.Var().ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.Op("&").ID(uvn),
+			jen.AddressOf().ID(uvn),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
@@ -269,9 +269,9 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	return []jen.Code{
 		jen.Commentf("Get%s gets %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", sn).Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%s", sn).Params(
 			buildParamsForHTTPClientRetrievalMethod(proj, typ, false)...,
-		).Params(jen.Op("*").Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
@@ -285,21 +285,21 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
 		jen.Newline(),
-		jen.If(jen.ID("query").Op("==").Lit("")).Body(
+		jen.If(jen.ID("query").IsEqualTo().Lit("")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
 				jen.ID("ErrEmptyQueryProvided")),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("limit").Op("==").Lit(0)).Body(
-			jen.ID("limit").Op("=").Lit(20)),
+		jen.If(jen.ID("limit").IsEqualTo().Lit(0)).Body(
+			jen.ID("limit").Equals().Lit(20)),
 		jen.Newline(),
-		jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+		jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "SearchQueryKey"),
 			jen.ID("query"),
 		).Dot("WithValue").Call(
@@ -307,7 +307,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("limit"),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildSearch%sRequest", pn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildSearch%sRequest", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("query"),
 			jen.ID("limit"),
@@ -324,11 +324,11 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Var().ID(puvn).Index().Op("*").Qual(proj.TypesPackage(), sn),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.Var().ID(puvn).Index().PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.Op("&").ID(puvn),
+			jen.AddressOf().ID(puvn),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
@@ -349,11 +349,11 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Commentf("Search%s searches through a list of %s.", pn, pcn),
 		jen.Newline(),
 		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("Search%s", pn).Params(
+			jen.ID("c").PointerTo().ID("Client")).IDf("Search%s", pn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("query").ID("string"),
+			jen.ID("query").String(),
 			jen.ID("limit").ID("uint8"),
-		).Params(jen.Index().Op("*").Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
+		).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
@@ -401,10 +401,10 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("c").Dot("loggerWithFilter").Call(jen.ID("filter")),
+		jen.ID("logger").Assign().ID("c").Dot("loggerWithFilter").Call(jen.ID("filter")),
 		jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
 			jen.ID("span"),
 			jen.ID("filter"),
@@ -416,7 +416,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", pn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", pn).Call(
 			buildArgsForHTTPClientListRequestMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
@@ -430,11 +430,11 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			),
 		),
 		jen.Newline(),
-		jen.Var().ID(puvn).Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.Var().ID(puvn).PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)),
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.Op("&").ID(puvn),
+			jen.AddressOf().ID(puvn),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
@@ -453,9 +453,9 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 	return []jen.Code{
 		jen.Commentf("Get%s retrieves a list of %s.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Get%s", pn).Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Get%s", pn).Params(
 			buildParamsForHTTPClientMethodThatFetchesAList(proj, typ)...,
-		).Params(jen.Op("*").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)), jen.ID("error")).Body(
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
@@ -487,7 +487,7 @@ func buildIDBoilerplateForCreation(proj *models.Project, typ models.DataType, in
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).Op("==").Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
 				func() jen.Code {
 					if returnVal != nil {
 						return jen.Return(returnVal, jen.ID("ErrInvalidIDProvided"))
@@ -555,7 +555,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
@@ -565,14 +565,14 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	lines = append(lines, buildIDBoilerplateForCreation(proj, typ, false, jen.Nil())...)
 
 	lines = append(lines,
-		jen.If(jen.ID("input").Op("==").ID("nil")).Body(
+		jen.If(jen.ID("input").IsEqualTo().ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
 				jen.ID("ErrNilInputProvided"),
 			),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("err").Op(":=").ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")),
+		jen.If(jen.ID("err").Assign().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
@@ -585,7 +585,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildCreate%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildCreate%sRequest", sn).Call(
 			buildArgsForHTTPClientCreateRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
@@ -600,11 +600,11 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Var().ID(uvn).Op("*").Qual(proj.TypesPackage(), sn),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.Var().ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.Op("&").ID(uvn),
+			jen.AddressOf().ID(uvn),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
@@ -624,9 +624,9 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	return []jen.Code{
 		jen.Commentf("Create%s creates %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Create%s", sn).Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Create%s", sn).Params(
 			buildParamsForHTTPClientCreateMethod(proj, typ)...,
-		).Params(jen.Op("*").Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
+		).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
@@ -682,7 +682,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
@@ -696,13 +696,13 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID(uvn).IsEqualTo().Nil()).Body(
 			jen.Return(jen.ID("ErrNilInputProvided")),
 		),
-		jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+		jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
 			jen.ID(uvn).Dot("ID"),
 		),
 		jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%s", typ.Name.UnexportedVarName()).Dot("ID")),
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildUpdate%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildUpdate%sRequest", sn).Call(
 			buildArgsForHTTPClientUpdateRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
@@ -713,10 +713,10 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.Litf("building update %s request", scn),
 			)),
 		jen.Newline(),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.Op("&").ID(uvn),
+			jen.AddressOf().ID(uvn),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().ID("observability").Dot("PrepareError").Call(
@@ -733,7 +733,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	return []jen.Code{
 		jen.Commentf("Update%s updates %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Update%s", sn).Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Update%s", sn).Params(
 			buildParamsForHTTPClientUpdateMethod(proj, typ)...,
 		).Params(jen.ID("error")).Body(
 			lines...,
@@ -785,7 +785,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
@@ -796,7 +796,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildArchive%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildArchive%sRequest", sn).Call(
 			buildArgsForHTTPClientArchiveRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
@@ -807,7 +807,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 				jen.Litf("building archive %s request", scn),
 			)),
 		jen.Newline(),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
 			jen.ID("nil"),
@@ -827,7 +827,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 	return []jen.Code{
 		jen.Commentf("Archive%s archives %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("c").Op("*").ID("Client")).IDf("Archive%s", sn).Params(
+		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Archive%s", sn).Params(
 			buildParamsForHTTPClientArchiveMethod(proj, typ)...,
 		).Params(jen.ID("error")).Body(
 			lines...,
@@ -844,22 +844,22 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 
 	lines := []jen.Code{
 
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("c").Dot(constants.LoggerVarName),
 		jen.Newline(),
-		jen.If(jen.IDf("%sID", uvn).Op("==").Lit(0)).Body(
+		jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
 			jen.Return().List(jen.ID("nil"),
 				jen.ID("ErrInvalidIDProvided")),
 		),
 		jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
-		jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+		jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
 			jen.IDf("%sID", uvn),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("req"), jen.ID("err")).Op(":=").ID("c").Dot("requestBuilder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
+		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 			jen.ID("ctx"),
 			jen.IDf("%sID", uvn),
 		),
@@ -874,11 +874,11 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 			),
 		),
 		jen.Newline(),
-		jen.Var().ID("entries").Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry"),
-		jen.If(jen.ID("err").Op("=").ID("c").Dot("fetchAndUnmarshal").Call(
+		jen.Var().ID("entries").Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"),
+		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.Op("&").ID("entries"),
+			jen.AddressOf().ID("entries"),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
@@ -898,10 +898,10 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 		jen.Commentf("GetAuditLogFor%s retrieves a list of audit log entries pertaining to %s.", sn, scnwp),
 		jen.Newline(),
 		jen.Func().Params(
-			jen.ID("c").Op("*").ID("Client")).IDf("GetAuditLogFor%s", sn).Params(
+			jen.ID("c").PointerTo().ID("Client")).IDf("GetAuditLogFor%s", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
-			jen.IDf("%sID", uvn).ID("uint64"),
-		).Params(jen.Index().Op("*").Qual(proj.TypesPackage(), "AuditLogEntry"), jen.ID("error")).Body(
+			jen.IDf("%sID", uvn).Uint64(),
+		).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),

@@ -19,15 +19,15 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	uvn := typ.Name.UnexportedVarName()
 
 	code.Add(
-		jen.Func().ID("buildTestService").Params().Params(jen.Op("*").ID("service")).Body(
-			jen.Return().Op("&").ID("service").Valuesln(jen.ID("logger").Op(":").ID("logging").Dot("NewNoopLogger").Call(),
-				jen.IDf("%sCounter", uvn).Op(":").Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
-				jen.IDf("%sDataManager", uvn).Op(":").Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.IDf("%sIDFetcher", uvn).Op(":").Func().Params(jen.ID("req").Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0)),
+		jen.Func().ID("buildTestService").Params().Params(jen.PointerTo().ID("service")).Body(
+			jen.Return().AddressOf().ID("service").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+				jen.IDf("%sCounter", uvn).Op(":").AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+				jen.IDf("%sDataManager", uvn).Op(":").AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+				jen.IDf("%sIDFetcher", uvn).Op(":").Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0)),
 				jen.ID("encoderDecoder").Op(":").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 				func() jen.Code {
 					if typ.SearchEnabled {
-						return jen.ID("search").Op(":").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
+						return jen.ID("search").Op(":").AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()
 					}
 					return jen.Null()
 				}(),
@@ -38,13 +38,13 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	bodyLines := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
-			jen.ID("description")).ID("string"),
+		jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Equals().Func().Params(jen.List(jen.ID("counterName"),
+			jen.ID("description")).String(),
 		).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter")).Body(
-			jen.Return().Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+			jen.Return().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 		),
 		jen.Newline(),
-		jen.ID("rpm").Op(":=").Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
+		jen.ID("rpm").Assign().Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
 	}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
@@ -57,7 +57,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
 				jen.Qual(proj.ServicePackage(dep.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", tsn)),
 				jen.Lit(trn),
-			).Dot("Return").Call(jen.Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
+			).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
 		)
 	}
 
@@ -67,14 +67,14 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
 			jen.IDf("%sIDURIParamKey", sn),
 			jen.Lit(rn),
-		).Dot("Return").Call(jen.Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
+		).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
 	)
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.List(jen.ID("s"),
-			jen.ID("err")).Op(":=").ID("ProvideService").Callln(
-			jen.ID("logging").Dot("NewNoopLogger").Call(),
+			jen.ID("err")).Assign().ID("ProvideService").Callln(
+			jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			jen.ID("Config").Values(
 				func() jen.Code {
 					if typ.SearchEnabled {
@@ -83,17 +83,17 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					return jen.Null()
 				}(),
 			),
-			jen.Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+			jen.AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 			jen.Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 			jen.ID("ucp"),
 			func() jen.Code {
 				if typ.SearchEnabled {
 					return jen.Func().Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
 						jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"),
-						jen.ID("logger").ID("logging").Dot("Logger"),
+						jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 					).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(
-							jen.Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+							jen.AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 							jen.ID("nil"),
 						),
 					)
@@ -120,12 +120,12 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().IDf("TestProvide%sService", pn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("TestProvide%sService", pn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					bodyLines...,
 				),
 			),
@@ -133,25 +133,25 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				if typ.SearchEnabled {
 					return jen.Newline().ID("T").Dot("Run").Call(
 						jen.Lit("with error providing index"),
-						jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+						jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 							jen.ID("t").Dot("Parallel").Call(),
 							jen.Newline(),
-							jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Op("=").Func().Params(jen.List(jen.ID("counterName"),
-								jen.ID("description")).ID("string"),
+							jen.Var().ID("ucp").Qual(proj.MetricsPackage(), "UnitCounterProvider").Equals().Func().Params(jen.List(jen.ID("counterName"),
+								jen.ID("description")).String(),
 							).Params(jen.Qual(proj.MetricsPackage(), "UnitCounter")).Body(
-								jen.Return().Op("&").Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
+								jen.Return().AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 							),
 							jen.Newline(),
 							jen.List(jen.ID("s"),
-								jen.ID("err")).Op(":=").ID("ProvideService").Callln(
-								jen.ID("logging").Dot("NewNoopLogger").Call(),
+								jen.ID("err")).Assign().ID("ProvideService").Callln(
+								jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 								jen.ID("Config").Values(jen.ID("SearchIndexPath").Op(":").Lit("example/path")),
-								jen.Op("&").Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
+								jen.AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
 								jen.Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 								jen.ID("ucp"),
 								jen.Func().Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"),
 									jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"),
-									jen.ID("logger").ID("logging").Dot("Logger"),
+									jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 								).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"),
 									jen.ID("error")).Body(
 									jen.Return().List(jen.ID("nil"),

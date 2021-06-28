@@ -20,12 +20,12 @@ func buildIterableRoutes(proj *models.Project) []jen.Code {
 		out = append(out,
 			jen.Newline(),
 			jen.Comment(pn),
-			jen.IDf("%sPath", uvn).Op(":=").Lit(pcn),
-			jen.IDf("%sRouteWithPrefix", puvn).Op(":=").Qual("fmt", "Sprintf").Call(
+			jen.IDf("%sPath", uvn).Assign().Lit(pcn),
+			jen.IDf("%sRouteWithPrefix", puvn).Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("/%s"),
 				jen.IDf("%sPath", uvn),
 			),
-			jen.IDf("%sIDRouteParam", uvn).Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.ServicePackage(typ.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", sn))),
+			jen.IDf("%sIDRouteParam", uvn).Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.ServicePackage(typ.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", sn))),
 			jen.ID("v1Router").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),
 				jen.Func().Params(jen.IDf("%sRouter", puvn).ID("routing").Dot("Router")).Body(
@@ -87,10 +87,10 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("root").Op("=").Lit("/"),
-			jen.ID("auditRoute").Op("=").Lit("/audit"),
-			jen.ID("searchRoot").Op("=").Lit("/search"),
-			jen.ID("numericIDPattern").Op("=").Lit("{%s:[0-9]+}"),
+			jen.ID("root").Equals().Lit("/"),
+			jen.ID("auditRoute").Equals().Lit("/audit"),
+			jen.ID("searchRoot").Equals().Lit("/search"),
+			jen.ID("numericIDPattern").Equals().Lit("{%s:[0-9]+}"),
 		),
 		jen.Newline(),
 	)
@@ -106,14 +106,14 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("s").Op("*").ID("HTTPServer")).ID("setupRouter").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("router").ID("routing").Dot("Router"), jen.ID("metricsHandler").Qual(proj.MetricsPackage(), "Handler")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("HTTPServer")).ID("setupRouter").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("router").ID("routing").Dot("Router"), jen.ID("metricsHandler").Qual(proj.MetricsPackage(), "Handler")).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("router").Dot("Route").Call(
 				jen.Lit("/_meta_"),
 				jen.Func().Params(jen.ID("metaRouter").ID("routing").Dot("Router")).Body(
-					jen.ID("health").Op(":=").Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
+					jen.ID("health").Assign().Qual("github.com/heptiolabs/healthcheck", "NewHandler").Call(),
 					jen.Comment("Expose a liveness check on /live"),
 					jen.ID("metaRouter").Dot("Get").Call(
 						jen.Lit("/live"),
@@ -143,7 +143,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("authService").Dot("PASETOHandler"),
 			),
 			jen.Newline(),
-			jen.ID("authenticatedRouter").Op(":=").ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("UserAttributionMiddleware")),
+			jen.ID("authenticatedRouter").Assign().ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("UserAttributionMiddleware")),
 			jen.ID("authenticatedRouter").Dot("Get").Call(
 				jen.Lit("/auth/status"),
 				jen.ID("s").Dot("authService").Dot("StatusHandler"),
@@ -173,7 +173,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					),
 					jen.Newline(),
 					jen.Comment("need credentials beyond this point"),
-					jen.ID("authedRouter").Op(":=").ID("userRouter").Dot("WithMiddleware").Call(
+					jen.ID("authedRouter").Assign().ID("userRouter").Dot("WithMiddleware").Call(
 						jen.ID("s").Dot("authService").Dot("UserAttributionMiddleware"),
 						jen.ID("s").Dot("authService").Dot("AuthorizationMiddleware"),
 					),
@@ -194,7 +194,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("authenticatedRouter").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("AuthorizationMiddleware")).Dot("Route").Call(jen.Lit("/api/v1"), jen.Func().Params(jen.ID("v1Router").ID("routing").Dot("Router")).Body(
 				append([]jen.Code{
-					jen.ID("adminRouter").Op(":=").ID("v1Router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("ServiceAdminMiddleware")),
+					jen.ID("adminRouter").Assign().ID("v1Router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("ServiceAdminMiddleware")),
 					jen.Newline(),
 					jen.Comment("Admin"),
 					jen.ID("adminRouter").Dot("Route").Call(jen.Lit("/admin"), jen.Func().Params(jen.ID("adminRouter").ID("routing").Dot("Router")).Body(
@@ -209,7 +209,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 						jen.Newline(),
 						jen.ID("adminRouter").Dot("Route").Call(jen.Lit("/audit_log"),
 							jen.Func().Params(jen.ID("auditRouter").ID("routing").Dot("Router")).Body(
-								jen.ID("entryIDRouteParam").Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AuditServicePackage(), "LogEntryURIParamKey")),
+								jen.ID("entryIDRouteParam").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AuditServicePackage(), "LogEntryURIParamKey")),
 								jen.ID("auditRouter").
 									Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadAllAuditLogEntriesPermission"))).
 									Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dot("auditService").Dot("ListHandler")),
@@ -251,7 +251,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 								jen.ID("s").Dot("usersService").Dot("SelfHandler"),
 							),
 							jen.Newline(),
-							jen.ID("singleUserRoute").Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.UsersServicePackage(), "UserIDURIParamKey")),
+							jen.ID("singleUserRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.UsersServicePackage(), "UserIDURIParamKey")),
 							jen.ID("usersRouter").Dot("Route").Call(
 								jen.ID("singleUserRoute"),
 								jen.Func().Params(jen.ID("singleUserRouter").ID("routing").Dot("Router")).Body(
@@ -284,8 +284,8 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 								jen.ID("s").Dot("accountsService").Dot("ListHandler"),
 							),
 							jen.Newline(),
-							jen.ID("singleUserRoute").Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AccountsServicePackage(), "UserIDURIParamKey")),
-							jen.ID("singleAccountRoute").Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AccountsServicePackage(), "AccountIDURIParamKey")),
+							jen.ID("singleUserRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AccountsServicePackage(), "UserIDURIParamKey")),
+							jen.ID("singleAccountRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AccountsServicePackage(), "AccountIDURIParamKey")),
 							jen.ID("accountsRouter").Dot("Route").Call(
 								jen.ID("singleAccountRoute"),
 								jen.Func().Params(jen.ID("singleAccountRouter").ID("routing").Dot("Router")).Body(
@@ -334,7 +334,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "CreateAPIClientsPermission"))).
 								Dotln("Post").Call(jen.ID("root"), jen.ID("s").Dot("apiClientsService").Dot("CreateHandler")),
 							jen.Newline(),
-							jen.ID("singleClientRoute").Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.APIClientsServicePackage(), "APIClientIDURIParamKey")),
+							jen.ID("singleClientRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.APIClientsServicePackage(), "APIClientIDURIParamKey")),
 							jen.ID("clientRouter").Dot("Route").Call(
 								jen.ID("singleClientRoute"),
 								jen.Func().Params(jen.ID("singleClientRouter").ID("routing").Dot("Router")).Body(
@@ -356,7 +356,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.ID("v1Router").Dot("Route").Call(
 						jen.Lit("/webhooks"),
 						jen.Func().Params(jen.ID("webhookRouter").ID("routing").Dot("Router")).Body(
-							jen.ID("singleWebhookRoute").Op(":=").ID("buildNumericIDURLChunk").Call(jen.Qual(proj.WebhooksServicePackage(), "WebhookIDURIParamKey")),
+							jen.ID("singleWebhookRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.WebhooksServicePackage(), "WebhookIDURIParamKey")),
 							jen.ID("webhookRouter").
 								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadWebhooksPermission"))).
 								Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("ListHandler")),
@@ -386,7 +386,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					buildIterableRoutes(proj)...)...,
 			)),
 			jen.Newline(),
-			jen.ID("s").Dot("router").Op("=").ID("router"),
+			jen.ID("s").Dot("router").Equals().ID("router"),
 		),
 		jen.Newline(),
 	)

@@ -51,11 +51,11 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	code.Add(
-		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -63,7 +63,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.Newline(),
 						jen.ID("updated").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
 						jen.Newline(),
-						jen.ID("expected").Assign().Index().Op("*").ID("FieldChangeSummary").Valuesln(
+						jen.ID("expected").Assign().Index().PointerTo().ID("FieldChangeSummary").Valuesln(
 							fieldChangeSummaries...,
 						),
 						jen.ID("actual").Assign().ID("x").Dot("Update").Call(jen.ID("updated")),
@@ -97,11 +97,11 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	code.Add(
-		jen.Func().IDf("Test%sCreationInput_Validate", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sCreationInput_Validate", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("x").Assign().AddressOf().IDf("%sCreationInput", sn).Valuesln(
@@ -118,7 +118,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with invalid structure"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("x").Assign().AddressOf().IDf("%sCreationInput", sn).Values(),
@@ -135,12 +135,12 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().IDf("Test%sUpdateInput_Validate", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sUpdateInput_Validate", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("x").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(
@@ -157,7 +157,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with empty strings"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("x").Assign().AddressOf().IDf("%sUpdateInput", sn).Values(),

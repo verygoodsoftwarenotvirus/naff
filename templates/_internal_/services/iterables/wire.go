@@ -15,7 +15,7 @@ func wireDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Comment("Providers is our collection of what we provide to other services."),
 		jen.Newline(),
-		jen.Var().ID("Providers").Op("=").Qual(constants.DependencyInjectionPkg, "NewSet").Callln(jen.ID("ProvideService")),
+		jen.Var().ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(jen.ID("ProvideService")),
 		jen.Newline(),
 	)
 

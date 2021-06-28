@@ -13,15 +13,15 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("base64ImagePrefix").Op("=").Lit("data:image/png;base64,"),
-			jen.ID("otpAuthURL").Op("=").Litf(`otpauth://totp/%s:username?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=&issuer=%s`, proj.Name.RouteName(), proj.Name.RouteName()),
+			jen.ID("base64ImagePrefix").Equals().Lit("data:image/png;base64,"),
+			jen.ID("otpAuthURL").Equals().Litf(`otpauth://totp/%s:username?secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=&issuer=%s`, proj.Name.RouteName(), proj.Name.RouteName()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Func().ID("main").Params().Body(
-			jen.List(jen.ID("bmp"), jen.ID("err")).Op(":=").ID("qrcode").Dot("NewQRCodeWriter").Call().Dot("EncodeWithoutHint").Call(
+			jen.List(jen.ID("bmp"), jen.ID("err")).Assign().ID("qrcode").Dot("NewQRCodeWriter").Call().Dot("EncodeWithoutHint").Call(
 				jen.ID("otpAuthURL"),
 				jen.ID("gozxing").Dot("BarcodeFormat_QR_CODE"),
 				jen.Lit(128),
@@ -30,8 +30,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual("log", "Fatal").Call(jen.ID("err"))),
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
-			jen.If(jen.ID("err").Op("=").Qual("image/png", "Encode").Call(
-				jen.Op("&").ID("b"),
+			jen.If(jen.ID("err").Equals().Qual("image/png", "Encode").Call(
+				jen.AddressOf().ID("b"),
 				jen.ID("bmp"),
 			), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual("log", "Fatal").Call(jen.ID("err"))),

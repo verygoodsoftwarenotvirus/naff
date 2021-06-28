@@ -15,24 +15,24 @@ func bleveDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("base").Op("=").Lit(10),
-			jen.ID("bitSize").Op("=").Lit(64),
+			jen.ID("base").Equals().Lit(10),
+			jen.ID("bitSize").Equals().Lit(64),
 			jen.Newline(),
 			jen.Comment("testingSearchIndexName is an index name that is only valid for testing's sake."),
-			jen.ID("testingSearchIndexName").ID("search").Dot("IndexName").Op("=").Lit("example_index_name"),
+			jen.ID("testingSearchIndexName").ID("search").Dot("IndexName").Equals().Lit("example_index_name"),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("errInvalidIndexName").Op("=").Qual("errors", "New").Call(jen.Lit("invalid index name")),
+			jen.ID("errInvalidIndexName").Equals().Qual("errors", "New").Call(jen.Lit("invalid index name")),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Var().ID("_").ID("search").Dot("IndexManager").Op("=").Parens(jen.Op("*").ID("bleveIndexManager")).Call(jen.ID("nil")),
+		jen.Var().ID("_").ID("search").Dot("IndexManager").Equals().Parens(jen.PointerTo().ID("bleveIndexManager")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
@@ -49,8 +49,8 @@ func bleveDotGo(proj *models.Project) *jen.File {
 
 	typeCases := []jen.Code{
 		jen.Case(jen.ID("testingSearchIndexName")).Body(
-			jen.List(jen.ID("index"), jen.ID("err")).Op("=").Qual(constants.SearchLibrary, "New").Call(
-				jen.ID("string").Call(jen.ID("path")),
+			jen.List(jen.ID("index"), jen.ID("err")).Equals().Qual(constants.SearchLibrary, "New").Call(
+				jen.String().Call(jen.ID("path")),
 				jen.Qual(constants.SearchLibrary, "NewIndexMapping").Call(),
 			),
 		),
@@ -59,8 +59,8 @@ func bleveDotGo(proj *models.Project) *jen.File {
 		if typ.SearchEnabled {
 			typeCases = append(typeCases,
 				jen.Case(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural()))).Body(
-					jen.List(jen.ID("index"), jen.ID("err")).Op("=").Qual(constants.SearchLibrary, "New").Call(
-						jen.ID("string").Call(jen.ID("path")),
+					jen.List(jen.ID("index"), jen.ID("err")).Equals().Qual(constants.SearchLibrary, "New").Call(
+						jen.String().Call(jen.ID("path")),
 						jen.IDf("build%sMapping", typ.Name.Singular()).Call(),
 					),
 				),
@@ -80,12 +80,12 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("NewBleveIndexManager instantiates a bleve index."),
 		jen.Newline(),
-		jen.Func().ID("NewBleveIndexManager").Params(jen.ID("path").ID("search").Dot("IndexPath"), jen.ID("name").ID("search").Dot("IndexName"), jen.ID("logger").ID("logging").Dot("Logger")).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
+		jen.Func().ID("NewBleveIndexManager").Params(jen.ID("path").ID("search").Dot("IndexPath"), jen.ID("name").ID("search").Dot("IndexName"), jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
 			jen.Var().ID("index").Qual(constants.SearchLibrary, "Index"),
 			jen.Newline(),
-			jen.List(jen.ID("preexistingIndex"), jen.ID("err")).Op(":=").Qual(constants.SearchLibrary, "Open").Call(jen.ID("string").Call(jen.ID("path"))),
-			jen.If(jen.ID("err").Op("==").ID("nil")).Body(
-				jen.ID("index").Op("=").ID("preexistingIndex"),
+			jen.List(jen.ID("preexistingIndex"), jen.ID("err")).Assign().Qual(constants.SearchLibrary, "Open").Call(jen.String().Call(jen.ID("path"))),
+			jen.If(jen.ID("err").IsEqualTo().ID("nil")).Body(
+				jen.ID("index").Equals().ID("preexistingIndex"),
 			),
 			jen.Newline(),
 			jen.If(jen.Qual("errors", "Is").Call(jen.ID("err"), jen.Qual(constants.SearchLibrary, "ErrorIndexPathDoesNotExist")).Op("||").Qual("errors", "Is").Call(jen.ID("err"), jen.Qual(constants.SearchLibrary, "ErrorIndexMetaMissing"))).Body(
@@ -105,14 +105,14 @@ func bleveDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			jen.ID("serviceName").Op(":=").Qual("fmt", "Sprintf").Call(
+			jen.ID("serviceName").Assign().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s_search"),
 				jen.ID("name"),
 			),
 			jen.Newline(),
-			jen.ID("im").Op(":=").Op("&").ID("bleveIndexManager").Valuesln(
+			jen.ID("im").Assign().AddressOf().ID("bleveIndexManager").Valuesln(
 				jen.ID("index").Op(":").ID("index"),
-				jen.ID("logger").Op(":").ID("logging").Dot("EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
+				jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
 				jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("serviceName")),
 			),
 			jen.Newline(),
@@ -124,8 +124,8 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("Index implements our IndexManager interface."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("sm").Op("*").ID("bleveIndexManager")).ID("Index").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("id").ID("uint64"), jen.ID("value").Interface()).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("sm").PointerTo().ID("bleveIndexManager")).ID("Index").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("id").Uint64(), jen.ID("value").Interface()).Params(jen.ID("error")).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("sm").Dot("logger").Dot("WithValue").Call(
@@ -147,34 +147,34 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("search executes search queries."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("sm").Op("*").ID("bleveIndexManager")).ID("search").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").ID("string"), jen.ID("accountID").ID("uint64"), jen.ID("forServiceAdmin").ID("bool")).Params(jen.ID("ids").Index().ID("uint64"), jen.ID("err").ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("sm").PointerTo().ID("bleveIndexManager")).ID("search").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").String(), jen.ID("accountID").Uint64(), jen.ID("forServiceAdmin").ID("bool")).Params(jen.ID("ids").Index().Uint64(), jen.ID("err").ID("error")).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("tracing").Dot("AttachSearchQueryToSpan").Call(
 				jen.ID("span"),
 				jen.ID("query"),
 			),
-			jen.ID("logger").Op(":=").ID("sm").Dot("logger").Dot("WithValue").Call(
+			jen.ID("logger").Assign().ID("sm").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("SearchQueryKey"),
 				jen.ID("query"),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("query").Op("==").Lit("")).Body(
+			jen.If(jen.ID("query").IsEqualTo().Lit("")).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("search").Dot("ErrEmptyQueryProvided")),
 			),
 			jen.Newline(),
 			jen.If(jen.Op("!").ID("forServiceAdmin").Op("&&").ID("accountID").Op("!=").Lit(0)).Body(
-				jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 					jen.ID("keys").Dot("AccountIDKey"),
 					jen.ID("accountID"),
 				),
 			),
 			jen.Newline(),
-			jen.ID("q").Op(":=").Qual(constants.SearchLibrary, "NewFuzzyQuery").Call(jen.ID("query")),
+			jen.ID("q").Assign().Qual(constants.SearchLibrary, "NewFuzzyQuery").Call(jen.ID("query")),
 			jen.ID("q").Dot("SetFuzziness").Call(jen.Qual("github.com/blevesearch/bleve/v2/search/searcher", "MaxFuzziness")),
 			jen.Newline(),
-			jen.List(jen.ID("searchResults"), jen.ID("err")).Op(":=").ID("sm").Dot("index").Dot("SearchInContext").Call(
+			jen.List(jen.ID("searchResults"), jen.ID("err")).Assign().ID("sm").Dot("index").Dot("SearchInContext").Call(
 				jen.ID("ctx"),
 				jen.Qual(constants.SearchLibrary, "NewSearchRequest").Call(jen.ID("q")),
 			),
@@ -188,8 +188,8 @@ func bleveDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("result")).Op(":=").Range().ID("searchResults").Dot("Hits")).Body(
-				jen.List(jen.ID("x"), jen.ID("parseErr")).Op(":=").Qual("strconv", "ParseUint").Call(
+			jen.For(jen.List(jen.ID("_"), jen.ID("result")).Assign().Range().ID("searchResults").Dot("Hits")).Body(
+				jen.List(jen.ID("x"), jen.ID("parseErr")).Assign().Qual("strconv", "ParseUint").Call(
 					jen.ID("result").Dot("ID"),
 					jen.ID("base"),
 					jen.ID("bitSize"),
@@ -206,7 +206,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.Newline(),
-				jen.ID("ids").Op("=").ID("append").Call(
+				jen.ID("ids").Equals().ID("append").Call(
 					jen.ID("ids"),
 					jen.ID("x"),
 				),
@@ -220,7 +220,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("Search implements our IndexManager interface."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("sm").Op("*").ID("bleveIndexManager")).ID("Search").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").ID("string"), jen.ID("accountID").ID("uint64")).Params(jen.ID("ids").Index().ID("uint64"), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("sm").PointerTo().ID("bleveIndexManager")).ID("Search").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").String(), jen.ID("accountID").ID("uint64")).Params(jen.ID("ids").Index().Uint64(), jen.ID("err").ID("error")).Body(
 			jen.Return().ID("sm").Dot("search").Call(
 				jen.ID("ctx"),
 				jen.ID("query"),
@@ -234,7 +234,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("SearchForAdmin implements our IndexManager interface."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("sm").Op("*").ID("bleveIndexManager")).ID("SearchForAdmin").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").ID("string")).Params(jen.ID("ids").Index().ID("uint64"), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("sm").PointerTo().ID("bleveIndexManager")).ID("SearchForAdmin").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("query").ID("string")).Params(jen.ID("ids").Index().Uint64(), jen.ID("err").ID("error")).Body(
 			jen.Return().ID("sm").Dot("search").Call(
 				jen.ID("ctx"),
 				jen.ID("query"),
@@ -248,16 +248,16 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("Delete implements our IndexManager interface."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("sm").Op("*").ID("bleveIndexManager")).ID("Delete").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("id").ID("uint64")).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Func().Params(jen.ID("sm").PointerTo().ID("bleveIndexManager")).ID("Delete").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("id").ID("uint64")).Params(jen.ID("error")).Body(
+			jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("sm").Dot("logger").Dot("WithValue").Call(
+			jen.ID("logger").Assign().ID("sm").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("id"),
 				jen.ID("id"),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("sm").Dot("index").Dot("Delete").Call(jen.Qual("strconv", "FormatUint").Call(
+			jen.If(jen.ID("err").Assign().ID("sm").Dot("index").Dot("Delete").Call(jen.Qual("strconv", "FormatUint").Call(
 				jen.ID("id"),
 				jen.ID("base"),
 			),

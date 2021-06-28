@@ -12,12 +12,12 @@ func authorizationTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Func().ID("TestAuthorizations").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().ID("TestAuthorizations").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("service user"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -29,7 +29,7 @@ func authorizationTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("service admin"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -41,7 +41,7 @@ func authorizationTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("account admin"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -53,7 +53,7 @@ func authorizationTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("account member"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),

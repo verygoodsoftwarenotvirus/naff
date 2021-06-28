@@ -21,7 +21,7 @@ func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File 
 	code.Add(
 		jen.Var().Defs(
 			jen.Comment("Providers is what we provide for dependency injection."),
-			jen.ID("Providers").Op("=").Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
+			jen.ID("Providers").Equals().Qual(constants.DependencyInjectionPkg, "NewSet").Callln(
 				jen.IDf("Provide%s%s", dbvendor.Singular(), suffix),
 				jen.IDf("Provide%s", dbvendor.Singular()),
 			),

@@ -15,10 +15,10 @@ func mappingsDotGo(proj *models.Project) *jen.File {
 	for _, typ := range proj.DataTypes {
 		if typ.SearchEnabled {
 			mappingLines := []jen.Code{
-				jen.ID("m").Op(":=").Qual("github.com/blevesearch/bleve/v2/mapping", "NewIndexMapping").Call(),
+				jen.ID("m").Assign().Qual("github.com/blevesearch/bleve/v2/mapping", "NewIndexMapping").Call(),
 				jen.Newline(),
-				jen.ID("englishTextFieldMapping").Op(":=").Qual(constants.SearchLibrary, "NewTextFieldMapping").Call(),
-				jen.ID("englishTextFieldMapping").Dot("Analyzer").Op("=").Qual("github.com/blevesearch/bleve/v2/analysis/lang/en", "AnalyzerName"),
+				jen.ID("englishTextFieldMapping").Assign().Qual(constants.SearchLibrary, "NewTextFieldMapping").Call(),
+				jen.ID("englishTextFieldMapping").Dot("Analyzer").Equals().Qual("github.com/blevesearch/bleve/v2/analysis/lang/en", "AnalyzerName"),
 				jen.Newline(),
 				jen.IDf("%sMapping", typ.Name.UnexportedVarName()).Assign().Qual(constants.SearchLibrary, "NewDocumentMapping").Call(),
 			}
@@ -47,7 +47,7 @@ func mappingsDotGo(proj *models.Project) *jen.File {
 			)
 
 			code.Add(
-				jen.Func().IDf("build%sMapping", typ.Name.Singular()).Params().Params(jen.Op("*").Qual("github.com/blevesearch/bleve/v2/mapping", "IndexMappingImpl")).Body(
+				jen.Func().IDf("build%sMapping", typ.Name.Singular()).Params().Params(jen.PointerTo().Qual("github.com/blevesearch/bleve/v2/mapping", "IndexMappingImpl")).Body(
 					mappingLines...,
 				),
 				jen.Newline(),

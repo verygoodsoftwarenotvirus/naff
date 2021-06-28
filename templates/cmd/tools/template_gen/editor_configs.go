@@ -14,7 +14,7 @@ func editorConfigsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("//go:embed templates/editor.gotpl"),
 		jen.Newline(),
-		jen.Var().ID("basicEditorTemplateSrc").ID("string"),
+		jen.Var().ID("basicEditorTemplateSrc").String(),
 		jen.Newline(),
 	)
 
@@ -27,10 +27,10 @@ func editorConfigsDotGo(proj *models.Project) *jen.File {
 
 func buildBuildBasicEditorTemplate() []jen.Code {
 	return []jen.Code{
-		jen.Func().ID("buildBasicEditorTemplate").Params(jen.ID("cfg").Op("*").ID("basicEditorTemplateConfig")).Params(jen.ID("string")).Body(
+		jen.Func().ID("buildBasicEditorTemplate").Params(jen.ID("cfg").PointerTo().ID("basicEditorTemplateConfig")).Params(jen.ID("string")).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicEditorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.Op("&").ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicEditorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -42,7 +42,7 @@ func buildBuildBasicEditorTemplate() []jen.Code {
 
 func buildBasicEditorTemplateConfig() []jen.Code {
 	return []jen.Code{
-		jen.Type().ID("basicEditorTemplateConfig").Struct(jen.ID("SubmissionURL").ID("string"),
+		jen.Type().ID("basicEditorTemplateConfig").Struct(jen.ID("SubmissionURL").String(),
 			jen.ID("Fields").Index().ID("formField"),
 		),
 		jen.Newline(),
@@ -152,7 +152,7 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 	}
 
 	return []jen.Code{
-		jen.Var().ID("editorConfigs").Op("=").Map(jen.ID("string")).Op("*").ID("basicEditorTemplateConfig").Valuesln(
+		jen.Var().ID("editorConfigs").Equals().Map(jen.ID("string")).PointerTo().ID("basicEditorTemplateConfig").Valuesln(
 			editorTemplateConfigs...,
 		),
 		jen.Newline(),

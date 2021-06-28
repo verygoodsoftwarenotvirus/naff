@@ -30,12 +30,12 @@ func buildIDFetchers(proj *models.Project, typ models.DataType, includePrimaryTy
 	if includePrimaryType {
 		idFetches = append(idFetches,
 			jen.Commentf("determine %s ID.", scn),
-			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
+			jen.IDf("%sID", uvn).Assign().ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
 			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
 				jen.IDf("%sID", uvn),
 			),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
 				jen.IDf("%sID", uvn),
 			),
@@ -58,7 +58,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			jen.Commentf("%sIDURIParamKey is a standard string that we'll use to refer to %s IDs with.", sn, scn),
-			jen.IDf("%sIDURIParamKey", sn).Op("=").Litf("%sID", uvn),
+			jen.IDf("%sIDURIParamKey", sn).Equals().Litf("%sID", uvn),
 		),
 		jen.Newline(),
 	)
@@ -118,17 +118,17 @@ func buildReadHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	dbCallArgs := buildDBClientRetrievalMethodCallArgs(proj, typ)
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 		jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 			jen.ID("span"),
 			jen.ID("req"),
 		),
 		jen.Newline(),
 		jen.Comment("determine user ID."),
-		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 				jen.ID("err"),
@@ -149,7 +149,7 @@ func buildReadHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("sessionCtxData"),
 		),
-		jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Newline(),
 	}
 
@@ -157,7 +157,7 @@ func buildReadHandler(proj *models.Project, typ models.DataType) []jen.Code {
 
 	bodyLines = append(bodyLines,
 		jen.Commentf("fetch %s from database.", scn),
-		jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", sn).Call(
+		jen.List(jen.ID("x"), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", sn).Call(
 			dbCallArgs...,
 		),
 		jen.If(jen.Qual("errors", "Is").Call(
@@ -194,7 +194,7 @@ func buildReadHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("ReadHandler returns a GET handler that returns %s.", scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ReadHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("ReadHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -228,17 +228,17 @@ func buildExistenceHandler(proj *models.Project, typ models.DataType) []jen.Code
 
 	dbCallArgs := buildDBClientExistenceMethodCallArgs(proj, typ)
 
-	bodyLines := []jen.Code{jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+	bodyLines := []jen.Code{jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 		jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 			jen.ID("span"),
 			jen.ID("req"),
 		),
 		jen.Newline(),
 		jen.Comment("determine user ID."),
-		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.ID("s").Dot("logger").Dot("Error").Call(
 				jen.ID("err"),
@@ -257,7 +257,7 @@ func buildExistenceHandler(proj *models.Project, typ models.DataType) []jen.Code
 			jen.ID("span"),
 			jen.ID("sessionCtxData"),
 		),
-		jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Newline(),
 	}
 
@@ -265,7 +265,7 @@ func buildExistenceHandler(proj *models.Project, typ models.DataType) []jen.Code
 
 	bodyLines = append(bodyLines,
 		jen.Comment("check the database."),
-		jen.List(jen.ID("exists"), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(
+		jen.List(jen.ID("exists"), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(
 			dbCallArgs...,
 		),
 		jen.If(jen.Op("!").Qual("errors", "Is").Call(
@@ -290,7 +290,7 @@ func buildExistenceHandler(proj *models.Project, typ models.DataType) []jen.Code
 	lines := []jen.Code{
 		jen.Commentf("ExistenceHandler returns a HEAD handler that returns 200 if %s exists, 404 otherwise.", scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ExistenceHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("ExistenceHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -324,11 +324,11 @@ func buildListHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	dbCallArgs := buildDBClientListRetrievalMethodCallArgs(proj, typ)
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID("req")),
-		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).
+		jen.ID("filter").Assign().Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID("req")),
+		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).
 			Dotln("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "FilterLimitKey"),
 			jen.ID("filter").Dot("Limit"),
@@ -339,7 +339,7 @@ func buildListHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		).
 			Dotln("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "FilterSortByKey"),
-			jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+			jen.String().Call(jen.ID("filter").Dot("SortBy")),
 		),
 		jen.Newline(),
 		jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
@@ -350,11 +350,11 @@ func buildListHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("filter").Dot("Page"),
 			jen.ID("filter").Dot("Limit"),
-			jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+			jen.String().Call(jen.ID("filter").Dot("SortBy")),
 		),
 		jen.Newline(),
 		jen.Comment("determine user ID."),
-		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 				jen.ID("err"),
@@ -375,19 +375,19 @@ func buildListHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("sessionCtxData"),
 		),
-		jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Newline(),
 	}
 
 	bodyLines = append(bodyLines, buildIDFetchers(proj, typ, false)...)
 
 	bodyLines = append(bodyLines,
-		jen.List(jen.ID(puvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", pn).Call(
+		jen.List(jen.ID(puvn), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", pn).Call(
 			dbCallArgs...,
 		),
 		jen.If(jen.Qual("errors", "Is").Call(jen.ID("err"), jen.Qual("database/sql", "ErrNoRows"))).Body(
 			jen.Comment("in the event no rows exist, return an empty list."),
-			jen.ID(puvn).Op("=").Op("&").Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values(jen.ID(pn).Op(":").Index().Op("*").Qual(proj.TypesPackage(), sn).Values())).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID(puvn).Equals().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Values(jen.ID(pn).Op(":").Index().PointerTo().Qual(proj.TypesPackage(), sn).Values())).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
@@ -412,7 +412,7 @@ func buildListHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("ListHandler is our list route."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ListHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("ListHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -446,17 +446,17 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 		jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 			jen.ID("span"),
 			jen.ID("req"),
 		),
 		jen.Newline(),
 		jen.Comment("determine user ID."),
-		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 				jen.ID("err"),
@@ -477,11 +477,11 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("sessionCtxData"),
 		),
-		jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Newline(),
 		jen.Comment("check for parsed input attached to session context data."),
-		jen.ID("input").Op(":=").ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))),
-		jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(
+		jen.ID("input").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))),
+		jen.If(jen.ID("err").Equals().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
 			jen.ID("input"),
@@ -499,7 +499,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Return(),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("err").Op("=").ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").Equals().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.ID("logger").Dot("Error").Call(
 				jen.ID("err"),
 				jen.Lit("provided input was invalid"),
@@ -514,7 +514,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		func() jen.Code {
 			if typ.BelongsToAccount {
-				return jen.ID("input").Dot("BelongsToAccount").Op("=").ID("sessionCtxData").Dot("ActiveAccountID")
+				return jen.ID("input").Dot("BelongsToAccount").Equals().ID("sessionCtxData").Dot("ActiveAccountID")
 			}
 			return jen.Null()
 		}(),
@@ -528,7 +528,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.Commentf("fetch %s from database.", scn),
-		jen.List(jen.ID(uvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", sn).Call(
+		jen.List(jen.ID(uvn), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("Get%s", sn).Call(
 			dbCallArgs...,
 		),
 		jen.If(jen.Qual("errors", "Is").Call(
@@ -555,7 +555,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.Commentf("update the %s.", scn),
-		jen.ID("changeReport").Op(":=").ID(uvn).Dot("Update").Call(jen.ID("input")),
+		jen.ID("changeReport").Assign().ID(uvn).Dot("Update").Call(jen.ID("input")),
 		jen.Qual(proj.InternalTracingPackage(), "AttachChangeSummarySpan").Call(
 			jen.ID("span"),
 			jen.Lit(rn),
@@ -563,7 +563,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.Commentf("update %s in database.", scn),
-		jen.If(jen.ID("err").Op("=").ID("s").Dotf("%sDataManager", uvn).Dotf("Update%s", sn).Call(
+		jen.If(jen.ID("err").Equals().ID("s").Dotf("%sDataManager", uvn).Dotf("Update%s", sn).Call(
 			jen.ID("ctx"),
 			jen.ID(uvn),
 			jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
@@ -585,7 +585,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Comment("notify interested parties."),
 		func() jen.Code {
 			if typ.SearchEnabled {
-				return jen.If(jen.ID("searchIndexErr").Op(":=").ID("s").Dot("search").Dot("Index").Call(
+				return jen.If(jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(
 					jen.ID("ctx"),
 					jen.ID(uvn).Dot("ID"),
 					jen.ID(uvn),
@@ -612,7 +612,7 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("UpdateHandler returns a handler that updates %s.", scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("UpdateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("UpdateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -646,12 +646,12 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	pcn := typ.Name.PluralCommonName()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("query").Op(":=").ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.TypesPackage(), "SearchQueryKey")),
-		jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID("req")),
-		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).
+		jen.ID("query").Assign().ID("req").Dot("URL").Dot("Query").Call().Dot("Get").Call(jen.Qual(proj.TypesPackage(), "SearchQueryKey")),
+		jen.ID("filter").Assign().Qual(proj.TypesPackage(), "ExtractQueryFilter").Call(jen.ID("req")),
+		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")).
 			Dotln("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "FilterLimitKey"),
 			jen.ID("filter").Dot("Limit"),
@@ -662,7 +662,7 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		).
 			Dotln("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "FilterSortByKey"),
-			jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+			jen.String().Call(jen.ID("filter").Dot("SortBy")),
 		).
 			Dotln("WithValue").Call(
 			jen.Qual(proj.ObservabilityPackage("keys"), "SearchQueryKey"),
@@ -677,11 +677,11 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("filter").Dot("Page"),
 			jen.ID("filter").Dot("Limit"),
-			jen.ID("string").Call(jen.ID("filter").Dot("SortBy")),
+			jen.String().Call(jen.ID("filter").Dot("SortBy")),
 		),
 		jen.Newline(),
 		jen.Comment("determine user ID."),
-		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.ID("s").Dot("logger").Dot("Error").Call(
 				jen.ID("err"),
@@ -700,9 +700,9 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("sessionCtxData"),
 		),
-		jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Newline(),
-		jen.List(jen.ID("relevantIDs"), jen.ID("err")).Op(":=").ID("s").Dot("search").Dot("Search").Call(
+		jen.List(jen.ID("relevantIDs"), jen.ID("err")).Assign().ID("s").Dot("search").Dot("Search").Call(
 			jen.ID("ctx"),
 			jen.ID("query"),
 			jen.ID("sessionCtxData").Dot("ActiveAccountID"),
@@ -729,7 +729,7 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 
 	bodyLines = append(bodyLines,
 		jen.Commentf("fetch %s from database.", pcn),
-		jen.List(jen.ID(puvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Get%sWithIDs", pn).Call(
+		jen.List(jen.ID(puvn), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("Get%sWithIDs", pn).Call(
 			dbCallArgs...,
 		),
 		jen.If(jen.Qual("errors", "Is").Call(
@@ -737,7 +737,7 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Qual("database/sql", "ErrNoRows"),
 		)).Body(
 			jen.Comment("in the event no rows exist, return an empty list."),
-			jen.ID(puvn).Op("=").Index().Op("*").Qual(proj.TypesPackage(), sn).Values()).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID(puvn).Equals().Index().PointerTo().Qual(proj.TypesPackage(), sn).Values()).Else().If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
@@ -762,7 +762,7 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("SearchHandler is our search route."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("SearchHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("SearchHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -779,18 +779,18 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("CreateHandler is our %s creation route.", scn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("CreateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("CreateHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
 			jen.Newline(),
 			jen.Comment("determine user ID."),
-			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("err"),
@@ -811,11 +811,11 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.ID("span"),
 				jen.ID("sessionCtxData"),
 			),
-			jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+			jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 			jen.Newline(),
 			jen.Comment("check session context data for parsed input struct."),
-			jen.ID("input").Op(":=").ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))),
-			jen.If(jen.ID("err").Op("=").ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("ctx"), jen.ID("req"), jen.ID("input")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("input").Assign().ID("new").Call(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))),
+			jen.If(jen.ID("err").Equals().ID("s").Dot("encoderDecoder").Dot("DecodeRequest").Call(jen.ID("ctx"), jen.ID("req"), jen.ID("input")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -831,7 +831,7 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.Return(),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op("=").ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Equals().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("logger").Dot("WithValue").Call(
 					jen.Qual(proj.ObservabilityPackage("keys"), "ValidationErrorKey"),
 					jen.ID("err"),
@@ -846,14 +846,24 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			),
 			jen.Newline(),
 			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.Commentf("determine %s ID.", typ.BelongsToStruct.SingularCommonName()).Newline().
+						IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).Assign().ID("s").Dotf("%sIDFetcher", typ.BelongsToStruct.UnexportedVarName()).Call(jen.ID("req")).Newline().
+						Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Newline().
+						ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.BelongsToStruct.Singular())), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())).Newline().Newline().
+						ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
 				if typ.BelongsToAccount {
-					return jen.ID("input").Dot("BelongsToAccount").Op("=").ID("sessionCtxData").Dot("ActiveAccountID")
+					return jen.ID("input").Dot("BelongsToAccount").Equals().ID("sessionCtxData").Dot("ActiveAccountID")
 				}
 				return jen.Null()
 			}(),
 			jen.Newline(),
 			jen.Commentf("create %s in database.", scn),
-			jen.List(jen.ID(uvn), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("Create%s", sn).Call(
+			jen.List(jen.ID(uvn), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("Create%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("input"),
 				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
@@ -876,7 +886,7 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.ID("span"),
 				jen.ID(uvn).Dot("ID"),
 			),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
 				jen.ID(uvn).Dot("ID"),
 			),
@@ -884,7 +894,7 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Comment("notify interested parties."),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.If(jen.ID("searchIndexErr").Op(":=").ID("s").Dot("search").Dot("Index").Call(jen.ID("ctx"), jen.ID(uvn).Dot("ID"), jen.ID(uvn)), jen.ID("searchIndexErr").Op("!=").ID("nil")).Body(
+					return jen.If(jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(jen.ID("ctx"), jen.ID(uvn).Dot("ID"), jen.ID(uvn)), jen.ID("searchIndexErr").Op("!=").ID("nil")).Body(
 						jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.ID("err"), jen.ID("logger"), jen.ID("span"), jen.Litf("adding %s to search index", scn)),
 					)
 				}
@@ -930,17 +940,17 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+		jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 		jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 			jen.ID("span"),
 			jen.ID("req"),
 		),
 		jen.Newline(),
 		jen.Comment("determine user ID."),
-		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 				jen.ID("err"),
@@ -961,7 +971,7 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("span"),
 			jen.ID("sessionCtxData"),
 		),
-		jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 		jen.Newline(),
 	}
 
@@ -972,7 +982,7 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.Commentf("archive the %s in the database.", scn),
-		jen.ID("err").Op("=").ID("s").Dotf("%sDataManager", uvn).Dotf("Archive%s", sn).Call(
+		jen.ID("err").Equals().ID("s").Dotf("%sDataManager", uvn).Dotf("Archive%s", sn).Call(
 			dbCallArgs...,
 		),
 		jen.If(jen.Qual("errors", "Is").Call(jen.ID("err"), jen.Qual("database/sql", "ErrNoRows"))).Body(
@@ -1000,7 +1010,7 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 		func() jen.Code {
 			if typ.SearchEnabled {
-				return jen.If(jen.ID("indexDeleteErr").Op(":=").ID("s").Dot("search").Dot("Delete").Call(
+				return jen.If(jen.ID("indexDeleteErr").Assign().ID("s").Dot("search").Dot("Delete").Call(
 					jen.ID("ctx"),
 					jen.IDf("%sID", uvn),
 				), jen.ID("indexDeleteErr").Op("!=").ID("nil")).Body(
@@ -1022,7 +1032,7 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	lines := []jen.Code{
 		jen.Commentf("ArchiveHandler returns a handler that archives %s.", scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("ArchiveHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("ArchiveHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -1040,18 +1050,18 @@ func buildAuditEntryHandler(proj *models.Project, typ models.DataType) []jen.Cod
 	lines := []jen.Code{
 		jen.Commentf("AuditEntryHandler returns a GET handler that returns all audit log entries related to %s.", scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("s").Op("*").ID("service")).ID("AuditEntryHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").Op("*").Qual("net/http", "Request")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).ID("AuditEntryHandler").Params(jen.ID("res").Qual("net/http", "ResponseWriter"), jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("req").Dot("Context").Call()),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
+			jen.ID("logger").Assign().ID("s").Dot("logger").Dot("WithRequest").Call(jen.ID("req")),
 			jen.Qual(proj.InternalTracingPackage(), "AttachRequestToSpan").Call(
 				jen.ID("span"),
 				jen.ID("req"),
 			),
 			jen.Newline(),
 			jen.Comment("determine user ID."),
-			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Op(":=").ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
+			jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("err"),
@@ -1072,20 +1082,20 @@ func buildAuditEntryHandler(proj *models.Project, typ models.DataType) []jen.Cod
 				jen.ID("span"),
 				jen.ID("sessionCtxData"),
 			),
-			jen.ID("logger").Op("=").ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
+			jen.ID("logger").Equals().ID("sessionCtxData").Dot("AttachToLogger").Call(jen.ID("logger")),
 			jen.Newline(),
 			jen.Commentf("determine %s ID.", scn),
-			jen.IDf("%sID", uvn).Op(":=").ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
+			jen.IDf("%sID", uvn).Assign().ID("s").Dotf("%sIDFetcher", uvn).Call(jen.ID("req")),
 			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
 				jen.ID("span"),
 				jen.IDf("%sID", uvn),
 			),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
 				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("x"), jen.ID("err")).Op(":=").ID("s").Dotf("%sDataManager", uvn).Dotf("GetAuditLogEntriesFor%s", sn).Call(
+			jen.List(jen.ID("x"), jen.ID("err")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("GetAuditLogEntriesFor%s", sn).Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
 			),

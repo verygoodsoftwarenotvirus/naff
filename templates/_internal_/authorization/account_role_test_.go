@@ -19,16 +19,16 @@ func accountRoleTestDotGo(proj *models.Project) *jen.File {
 	}
 
 	code.Add(
-		jen.Func().ID("TestNewAccountRolePermissionChecker").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
+		jen.Func().ID("TestNewAccountRolePermissionChecker").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("account user"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
-						jen.ID("r").Op(":=").ID("NewAccountRolePermissionChecker").Call(jen.ID("AccountMemberRole").Dot("String").Call()),
+						jen.ID("r").Assign().ID("NewAccountRolePermissionChecker").Call(jen.ID("AccountMemberRole").Dot("String").Call()),
 						jen.Newline(),
 						utils.AssertFalse(jen.ID("r").Dot("CanUpdateAccounts").Call(), nil),
 						utils.AssertFalse(jen.ID("r").Dot("CanDeleteAccounts").Call(), nil),
@@ -49,11 +49,11 @@ func accountRoleTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("account admin"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					append([]jen.Code{
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
-						jen.ID("r").Op(":=").ID("NewAccountRolePermissionChecker").Call(jen.ID("AccountAdminRole").Dot("String").Call()),
+						jen.ID("r").Assign().ID("NewAccountRolePermissionChecker").Call(jen.ID("AccountAdminRole").Dot("String").Call()),
 						jen.Newline(),
 						utils.AssertTrue(jen.ID("r").Dot("CanUpdateAccounts").Call(), nil),
 						utils.AssertTrue(jen.ID("r").Dot("CanDeleteAccounts").Call(), nil),

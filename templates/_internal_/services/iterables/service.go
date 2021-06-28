@@ -21,15 +21,15 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName").Op("=").Lit(prn),
-			jen.ID("counterDescription").ID("string").Op("=").Litf("the number of %s managed by the %s service", pcn, pcn),
-			jen.ID("serviceName").ID("string").Op("=").Litf("%s_service", prn),
+			jen.ID("counterName").Qual(proj.MetricsPackage(), "CounterName").Equals().Lit(prn),
+			jen.ID("counterDescription").String().Equals().Litf("the number of %s managed by the %s service", pcn, pcn),
+			jen.ID("serviceName").String().Equals().Litf("%s_service", prn),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)).Op("=").Parens(jen.Op("*").ID("service")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)).Equals().Parens(jen.PointerTo().ID("service")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
@@ -38,11 +38,11 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)),
 	}
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		structLines = append(structLines, jen.IDf("%sIDFetcher", dep.Name.UnexportedVarName()).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")))
+		structLines = append(structLines, jen.IDf("%sIDFetcher", dep.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")))
 	}
 	structLines = append(structLines,
-		jen.IDf("%sIDFetcher", uvn).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
-		jen.ID("sessionContextDataFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.TypesPackage(), "SessionContextData"),
+		jen.IDf("%sIDFetcher", uvn).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.ID("sessionContextDataFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"),
 			jen.ID("error")),
 		jen.IDf("%sCounter", uvn).Qual(proj.MetricsPackage(), "UnitCounter"),
 		jen.ID("encoderDecoder").Qual(proj.EncodingPackage(), "ServerEncoderDecoder"),
@@ -127,7 +127,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)), jen.ID("error")).Body(
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.List(jen.ID("searchIndexManager"), jen.ID("err")).Op(":=").ID("searchIndexProvider").Call(
+					return jen.List(jen.ID("searchIndexManager"), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
 						jen.Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("cfg").Dot("SearchIndexPath")),
 						jen.Lit(prn),
 						jen.ID("logger"),
@@ -144,7 +144,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				return jen.Null()
 			}(),
 			jen.Newline(),
-			jen.ID("svc").Op(":=").Op("&").ID("service").Valuesln(
+			jen.ID("svc").Assign().AddressOf().ID("service").Valuesln(
 				serviceInitLines...,
 			),
 			jen.Newline(),

@@ -16,7 +16,7 @@ func tableConfigsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("//go:embed templates/table.gotpl"),
 		jen.Newline(),
-		jen.Var().ID("basicTableTemplateSrc").ID("string"),
+		jen.Var().ID("basicTableTemplateSrc").String(),
 		jen.Newline(),
 	)
 
@@ -28,13 +28,13 @@ func tableConfigsDotGo(proj *models.Project) *jen.File {
 
 func buildBasicTableTemplateConfig() []jen.Code {
 	return []jen.Code{
-		jen.Type().ID("basicTableTemplateConfig").Struct(jen.ID("SearchURL").ID("string"),
-			jen.ID("CreatorPageURL").ID("string"),
-			jen.ID("RowDataFieldName").ID("string"),
-			jen.ID("Title").ID("string"),
-			jen.ID("CreatorPagePushURL").ID("string"),
-			jen.ID("CellFields").Index().ID("string"),
-			jen.ID("Columns").Index().ID("string"),
+		jen.Type().ID("basicTableTemplateConfig").Struct(jen.ID("SearchURL").String(),
+			jen.ID("CreatorPageURL").String(),
+			jen.ID("RowDataFieldName").String(),
+			jen.ID("Title").String(),
+			jen.ID("CreatorPagePushURL").String(),
+			jen.ID("CellFields").Index().String(),
+			jen.ID("Columns").Index().String(),
 			jen.ID("EnableSearch").ID("bool"),
 			jen.ID("ExcludeIDRow").ID("bool"),
 			jen.ID("ExcludeLink").ID("bool"),
@@ -48,10 +48,10 @@ func buildBasicTableTemplateConfig() []jen.Code {
 
 func buildBuildBasicTableTemplate() []jen.Code {
 	return []jen.Code{
-		jen.Func().ID("buildBasicTableTemplate").Params(jen.ID("cfg").Op("*").ID("basicTableTemplateConfig")).Params(jen.ID("string")).Body(
+		jen.Func().ID("buildBasicTableTemplate").Params(jen.ID("cfg").PointerTo().ID("basicTableTemplateConfig")).Params(jen.ID("string")).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicTableTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.Op("&").ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicTableTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -67,7 +67,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("Title").Op(":").Lit("API Clients"),
 			jen.ID("CreatorPagePushURL").Op(":").Lit("/api_clients/new"),
 			jen.ID("CreatorPageURL").Op(":").Lit("/dashboard_pages/api_clients/new"),
-			jen.ID("Columns").Op(":").Index().ID("string").Valuesln(
+			jen.ID("Columns").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
 				jen.Lit("External ID"),
@@ -75,7 +75,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("Belongs To User"),
 				jen.Lit("Created On"),
 			),
-			jen.ID("CellFields").Op(":").Index().ID("string").Valuesln(
+			jen.ID("CellFields").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
 				jen.Lit("ExternalID"),
@@ -91,7 +91,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("Title").Op(":").Lit("Accounts"),
 			jen.ID("CreatorPagePushURL").Op(":").Lit("/accounts/new"),
 			jen.ID("CreatorPageURL").Op(":").Lit("/dashboard_pages/accounts/new"),
-			jen.ID("Columns").Op(":").Index().ID("string").Valuesln(
+			jen.ID("Columns").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
 				jen.Lit("External ID"),
@@ -99,7 +99,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("Last Updated On"),
 				jen.Lit("Created On"),
 			),
-			jen.ID("CellFields").Op(":").Index().ID("string").Valuesln(
+			jen.ID("CellFields").Op(":").Index().String().Valuesln(
 				jen.Lit("Name"),
 				jen.Lit("ExternalID"),
 				jen.Lit("BelongsToUser"),
@@ -110,13 +110,13 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/tables/users_table.gotpl").Op(":").Valuesln(
 			jen.ID("Title").Op(":").Lit("Users"),
-			jen.ID("Columns").Op(":").Index().ID("string").Valuesln(
+			jen.ID("Columns").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Username"),
 				jen.Lit("Last Updated On"),
 				jen.Lit("Created On"),
 			),
-			jen.ID("CellFields").Op(":").Index().ID("string").Valuesln(
+			jen.ID("CellFields").Op(":").Index().String().Valuesln(
 				jen.Lit("Username"),
 			),
 			jen.ID("EnableSearch").Op(":").ID("true"),
@@ -130,7 +130,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("Title").Op(":").Lit("Webhooks"),
 			jen.ID("CreatorPagePushURL").Op(":").Lit("/accounts/webhooks/new"),
 			jen.ID("CreatorPageURL").Op(":").Lit("/dashboard_pages/accounts/webhooks/new"),
-			jen.ID("Columns").Op(":").Index().ID("string").Valuesln(
+			jen.ID("Columns").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
 				jen.Lit("Method"),
@@ -140,7 +140,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("Last Updated On"),
 				jen.Lit("Created On"),
 			),
-			jen.ID("CellFields").Op(":").Index().ID("string").Valuesln(
+			jen.ID("CellFields").Op(":").Index().String().Valuesln(
 				jen.Lit("Name"),
 				jen.Lit("Method"),
 				jen.Lit("URL"),
@@ -170,8 +170,8 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.ID("Title").Op(":").Lit(tn.Plural()),
 				jen.ID("CreatorPagePushURL").Op(":").Litf("/%s/new", tn.PluralRouteName()),
 				jen.ID("CreatorPageURL").Op(":").Litf("/dashboard_pages/%s/new", tn.PluralRouteName()),
-				jen.ID("Columns").Op(":").Index().ID("string").Valuesln(columns...),
-				jen.ID("CellFields").Op(":").Index().ID("string").Valuesln(cellFields...),
+				jen.ID("Columns").Op(":").Index().String().Valuesln(columns...),
+				jen.ID("CellFields").Op(":").Index().String().Valuesln(cellFields...),
 				jen.ID("RowDataFieldName").Op(":").Lit(tn.Plural()),
 				jen.ID("IncludeLastUpdatedOn").Op(":").ID("true"),
 				jen.ID("IncludeCreatedOn").Op(":").ID("true"),
@@ -181,7 +181,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 	}
 
 	return []jen.Code{
-		jen.Var().ID("tableConfigs").Op("=").Map(jen.ID("string")).Op("*").ID("basicTableTemplateConfig").Valuesln(tableConfigs...),
+		jen.Var().ID("tableConfigs").Equals().Map(jen.ID("string")).PointerTo().ID("basicTableTemplateConfig").Valuesln(tableConfigs...),
 		jen.Newline(),
 	}
 }

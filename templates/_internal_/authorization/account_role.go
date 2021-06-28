@@ -51,20 +51,20 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			jen.Comment("AccountMemberRole is a role for a plain account participant."),
-			jen.ID("AccountMemberRole").ID("AccountRole").Op("=").ID("iota"),
+			jen.ID("AccountMemberRole").ID("AccountRole").Equals().ID("iota"),
 			jen.Comment("AccountAdminRole is a role for someone who can manipulate the specifics of an account."),
-			jen.ID("AccountAdminRole").ID("AccountRole").Op("=").ID("iota"),
+			jen.ID("AccountAdminRole").ID("AccountRole").Equals().ID("iota"),
 			jen.Newline(),
-			jen.ID("accountAdminRoleName").Op("=").Lit("account_admin"),
-			jen.ID("accountMemberRoleName").Op("=").Lit("account_member"),
+			jen.ID("accountAdminRoleName").Equals().Lit("account_admin"),
+			jen.ID("accountMemberRoleName").Equals().Lit("account_member"),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("accountAdmin").Op("=").Qual(constants.RBACLibrary, "NewStdRole").Call(jen.ID("accountAdminRoleName")),
-			jen.ID("accountMember").Op("=").Qual(constants.RBACLibrary, "NewStdRole").Call(jen.ID("accountMemberRoleName")),
+			jen.ID("accountAdmin").Equals().Qual(constants.RBACLibrary, "NewStdRole").Call(jen.ID("accountAdminRoleName")),
+			jen.ID("accountMember").Equals().Qual(constants.RBACLibrary, "NewStdRole").Call(jen.ID("accountMemberRoleName")),
 		),
 		jen.Newline(),
 	)
@@ -84,7 +84,7 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 		jen.Comment("NewAccountRolePermissionChecker returns a new checker for a set of Roles."),
 		jen.Newline(),
 		jen.Func().ID("NewAccountRolePermissionChecker").Params(jen.ID("roles").Op("...").ID("string")).Params(jen.ID("AccountRolePermissionsChecker")).Body(
-			jen.Return().Op("&").ID("accountRoleCollection").Valuesln(jen.ID("Roles").Op(":").ID("roles"))),
+			jen.Return().AddressOf().ID("accountRoleCollection").Valuesln(jen.ID("Roles").Op(":").ID("roles"))),
 		jen.Newline(),
 	)
 

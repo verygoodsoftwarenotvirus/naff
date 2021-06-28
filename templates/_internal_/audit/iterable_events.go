@@ -16,13 +16,13 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			jen.Commentf("%sAssignmentKey is the key we use to indicate that an audit log entry is associated with an item.", n.Singular()),
-			jen.IDf("%sAssignmentKey", n.Singular()).Op("=").Litf("%s_id", n.RouteName()),
+			jen.IDf("%sAssignmentKey", n.Singular()).Equals().Litf("%s_id", n.RouteName()),
 			jen.Commentf("%sCreationEvent is the event type used to indicate an item was created.", n.Singular()),
-			jen.IDf("%sCreationEvent", n.Singular()).Op("=").Litf("%s_created", n.RouteName()),
+			jen.IDf("%sCreationEvent", n.Singular()).Equals().Litf("%s_created", n.RouteName()),
 			jen.Commentf("%sUpdateEvent is the event type used to indicate an item was updated.", n.Singular()),
-			jen.IDf("%sUpdateEvent", n.Singular()).Op("=").Litf("%s_updated", n.RouteName()),
+			jen.IDf("%sUpdateEvent", n.Singular()).Equals().Litf("%s_updated", n.RouteName()),
 			jen.Commentf("%sArchiveEvent is the event type used to indicate an item was archived.", n.Singular()),
-			jen.IDf("%sArchiveEvent", n.Singular()).Op("=").Litf("%s_archived", n.RouteName()),
+			jen.IDf("%sArchiveEvent", n.Singular()).Equals().Litf("%s_archived", n.RouteName()),
 		),
 		jen.Newline(),
 	)
@@ -31,11 +31,11 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Commentf("Build%sCreationEventEntry builds an entry creation input for when %s is created.", n.Singular(), n.SingularCommonNameWithPrefix()),
 		jen.Newline(),
 		jen.Func().IDf("Build%sCreationEventEntry", n.Singular()).Params(
-			jen.ID(n.UnexportedVarName()).Op("*").Qual(proj.TypesPackage(), n.Singular()),
-			jen.ID("createdByUser").ID("uint64"),
+			jen.ID(n.UnexportedVarName()).PointerTo().Qual(proj.TypesPackage(), n.Singular()),
+			jen.ID("createdByUser").Uint64(),
 		).Params(
-			jen.Op("*").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput").Valuesln(
+			jen.PointerTo().Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), "AuditLogEntryCreationInput").Valuesln(
 				jen.ID("EventType").Op(":").IDf("%sCreationEvent", n.Singular()),
 				jen.ID("Context").Op(":").Map(jen.ID("string")).Interface().Valuesln(
 					jen.ID("ActorAssignmentKey").Op(":").ID("createdByUser"),
@@ -66,11 +66,11 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					}
 					return jen.Null()
 				}(),
-			).ID("uint64"),
-			jen.ID("changes").Index().Op("*").Qual(proj.TypesPackage(), "FieldChangeSummary"),
+			).Uint64(),
+			jen.ID("changes").Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary"),
 		).Params(
-			jen.Op("*").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput").Valuesln(
+			jen.PointerTo().Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), "AuditLogEntryCreationInput").Valuesln(
 				jen.ID("EventType").Op(":").IDf("%sUpdateEvent", n.Singular()),
 				jen.ID("Context").Op(":").Map(jen.ID("string")).Interface().Valuesln(
 					jen.ID("ActorAssignmentKey").Op(":").ID("changedByUser"),
@@ -102,8 +102,8 @@ func iterableEventsDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				}(),
 				jen.IDf("%sID", n.UnexportedVarName()),
 			).ID("uint64")).Params(
-			jen.Op("*").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
-			jen.Return().Op("&").Qual(proj.TypesPackage(), "AuditLogEntryCreationInput").Valuesln(
+			jen.PointerTo().Qual(proj.TypesPackage(), "AuditLogEntryCreationInput")).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), "AuditLogEntryCreationInput").Valuesln(
 				jen.ID("EventType").Op(":").IDf("%sArchiveEvent", n.Singular()),
 				jen.ID("Context").Op(":").Map(jen.ID("string")).Interface().Valuesln(
 					jen.ID("ActorAssignmentKey").Op(":").ID("archivedByUser"),

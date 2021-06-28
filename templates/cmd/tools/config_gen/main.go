@@ -17,7 +17,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 	}
 	defaultSearchIndexCount := len(searchIndices)
 	for _, typ := range proj.DataTypes {
-		searchIndices = append(searchIndices, jen.IDf("default%sSearchIndexPath", typ.Name.Plural()).Equals().Litf("%s.bleve", typ.Name.PluralRouteName()))
+		if typ.SearchEnabled {
+			searchIndices = append(searchIndices, jen.IDf("default%sSearchIndexPath", typ.Name.Plural()).Equals().Litf("%s.bleve", typ.Name.PluralRouteName()))
+		}
 	}
 
 	code.Add(
@@ -25,9 +27,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("defaultPort").Equals().Lit(8888),
 			jen.ID("defaultCookieDomain").Equals().Lit("localhost"),
 			jen.ID("debugCookieSecret").Equals().Lit("HEREISA32CHARSECRETWHICHISMADEUP"),
-			jen.ID("devPostgresDBConnDetails").Equals().Lit("postgres://dbuser:hunter2@database:5432/todo?sslmode=disable"),
 			jen.ID("devSqliteConnDetails").Equals().Lit("/tmp/db"),
 			jen.ID("devMariaDBConnDetails").Equals().Litf("dbuser:hunter2@tcp(database:3306)/%s", proj.Name.RouteName()),
+			jen.ID("devPostgresDBConnDetails").Equals().Litf("postgres://dbuser:hunter2@database:5432/%s?sslmode=disable", proj.Name.RouteName()),
 			jen.ID("defaultCookieName").Equals().Qual(proj.AuthServicePackage(), "DefaultCookieName"),
 			jen.Newline(),
 			jen.Comment("run modes."),
@@ -51,7 +53,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("pasetoSecretSize").Equals().Lit(32),
 			jen.ID("maxAttempts").Equals().Lit(50),
-			jen.ID("defaultPASETOLifetime").Equals().Lit(1).Op("*").Qual("time", "Minute"),
+			jen.ID("defaultPASETOLifetime").Equals().Lit(1).PointerTo().Qual("time", "Minute"),
 			jen.Newline(),
 			jen.ID("contentTypeJSON").Equals().Lit("application/json"),
 		),
@@ -85,7 +87,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("localTracingConfig").Equals().Qual(proj.InternalTracingPackage(), "Config").Valuesln(
 				jen.ID("Provider").MapAssign().Lit("jaeger"),
 				jen.ID("SpanCollectionProbability").MapAssign().Lit(1),
-				jen.ID("Jaeger").MapAssign().Op("&").Qual(proj.InternalTracingPackage(), "JaegerConfig").Valuesln(
+				jen.ID("Jaeger").MapAssign().AddressOf().Qual(proj.InternalTracingPackage(), "JaegerConfig").Valuesln(
 					jen.ID("CollectorEndpoint").MapAssign().Lit("http://tracing-server:14268/api/traces"),
 					jen.ID("ServiceName").MapAssign().Litf("%s_service", proj.Name.RouteName()),
 				),
@@ -96,14 +98,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("initializeLocalSecretManager").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Qual(proj.InternalSecretsPackage(), "SecretManager")).Body(
-			constants.LoggerVar().Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+			constants.LoggerVar().Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			jen.Newline(),
-			jen.ID("cfg").Op(":=").Op("&").Qual(proj.InternalSecretsPackage(), "Config").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalSecretsPackage(), "Config").Valuesln(
 				jen.ID("Provider").MapAssign().Qual(proj.InternalSecretsPackage(), "ProviderLocal"),
 				jen.ID("Key").MapAssign().Lit("SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU="),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("k"), jen.ID("err")).Op(":=").Qual(proj.InternalSecretsPackage(), "ProvideSecretKeeper").Call(
+			jen.List(jen.ID("k"), jen.ID("err")).Assign().Qual(proj.InternalSecretsPackage(), "ProvideSecretKeeper").Call(
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 			),
@@ -111,7 +113,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
-			jen.List(jen.ID("sm"), jen.ID("err")).Op(":=").Qual(proj.InternalSecretsPackage(), "ProvideSecretManager").Call(
+			jen.List(jen.ID("sm"), jen.ID("err")).Assign().Qual(proj.InternalSecretsPackage(), "ProvideSecretManager").Call(
 				constants.LoggerVar(),
 				jen.ID("k"),
 			),
@@ -126,10 +128,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("encryptAndSaveConfig").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("outputPath").ID("string"),
-			jen.ID("cfg").Op("*").Qual(proj.ConfigPackage(), "InstanceConfig")).Params(jen.ID("error")).Body(
-			jen.ID("sm").Op(":=").ID("initializeLocalSecretManager").Call(jen.ID("ctx")),
-			jen.List(jen.ID("output"), jen.ID("err")).Op(":=").ID("sm").Dot("Encrypt").Call(
+			jen.ID("outputPath").String(),
+			jen.ID("cfg").PointerTo().Qual(proj.ConfigPackage(), "InstanceConfig")).Params(jen.ID("error")).Body(
+			jen.ID("sm").Assign().ID("initializeLocalSecretManager").Call(jen.ID("ctx")),
+			jen.List(jen.ID("output"), jen.ID("err")).Assign().ID("sm").Dot("Encrypt").Call(
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 			),
@@ -189,7 +191,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("mustHashPass").Params(jen.ID("password").ID("string")).Params(jen.ID("string")).Body(
-			jen.List(jen.ID("hashed"), jen.ID("err")).Op(":=").Qual(proj.InternalAuthenticationPackage(), "ProvideArgon2Authenticator").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()).
+			jen.List(jen.ID("hashed"), jen.ID("err")).Assign().Qual(proj.InternalAuthenticationPackage(), "ProvideArgon2Authenticator").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()).
 				Dotln("HashPassword").Call(jen.Qual("context", "Background").Call(), jen.ID("password")),
 			jen.Newline(),
 			jen.If(jen.ID("err").DoesNotEqual().ID("nil")).Body(
@@ -203,11 +205,11 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("generatePASETOKey").Params().Params(jen.Index().ID("byte")).Body(
-			jen.ID("b").Op(":=").ID("make").Call(
+			jen.ID("b").Assign().ID("make").Call(
 				jen.Index().ID("byte"),
 				jen.ID("pasetoSecretSize"),
 			),
-			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Op(":=").Qual("crypto/rand", "Read").Call(jen.ID("b")),
+			jen.If(jen.List(jen.ID("_"), jen.ID("err")).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
 				jen.ID("err").DoesNotEqual().ID("nil")).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
@@ -237,7 +239,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("localDevelopmentConfig").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
-			jen.ID("cfg").Op(":=").Op("&").Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
 				jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
 					jen.ID("RunMode").MapAssign().ID("developmentEnv"),
@@ -253,7 +255,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Provider").MapAssign().ID("postgres"),
 					jen.ID("ConnectionDetails").MapAssign().ID("devPostgresDBConnDetails"),
 					jen.ID("MetricsCollectionInterval").MapAssign().Qual("time", "Second"),
-					jen.ID("CreateTestUser").MapAssign().Op("&").Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
+					jen.ID("CreateTestUser").MapAssign().AddressOf().Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
 						jen.ID("Username").MapAssign().Lit("username"),
 						jen.ID("Password").MapAssign().ID("defaultPassword"),
 						jen.ID("HashedPassword").MapAssign().ID("mustHashPass").Call(jen.ID("defaultPassword")),
@@ -277,7 +279,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("AzureConfig").MapAssign().ID("nil"),
 						jen.ID("GCSConfig").MapAssign().ID("nil"),
 						jen.ID("S3Config").MapAssign().ID("nil"),
-						jen.ID("FilesystemConfig").MapAssign().Op("&").Qual(proj.StoragePackage(), "FilesystemConfig").Valuesln(
+						jen.ID("FilesystemConfig").MapAssign().AddressOf().Qual(proj.StoragePackage(), "FilesystemConfig").Valuesln(
 							jen.ID("RootDirectory").MapAssign().Lit("/avatars"),
 						),
 					),
@@ -326,7 +328,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("frontendTestsConfig").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
-			jen.ID("cfg").Op(":=").Op("&").Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
 				jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(
 					jen.ID("Debug").MapAssign().ID("false"),
 					jen.ID("RunMode").MapAssign().ID("developmentEnv"),
@@ -402,12 +404,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbVendor"), jen.ID("dbDetails")).ID("string")).Params(jen.ID("configFunc")).Body(
 			jen.Return().Func().Params(jen.ID("ctx").Qual("context", "Context"),
 				jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
-				jen.ID("startupDeadline").Op(":=").Qual("time", "Minute"),
-				jen.If(jen.ID("dbVendor").Op("==").ID("mariadb")).Body(
-					jen.ID("startupDeadline").Equals().Lit(5).Op("*").Qual("time", "Minute"),
+				jen.ID("startupDeadline").Assign().Qual("time", "Minute"),
+				jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
+					jen.ID("startupDeadline").Equals().Lit(5).PointerTo().Qual("time", "Minute"),
 				),
 				jen.Newline(),
-				jen.ID("cfg").Op(":=").Op("&").Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
+				jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
 					jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(
 						jen.ID("Debug").MapAssign().ID("false"),
 						jen.ID("RunMode").MapAssign().ID("testingEnv"),
@@ -425,9 +427,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("RunMigrations").MapAssign().ID("true"),
 						jen.ID("Provider").MapAssign().ID("dbVendor"),
 						jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
-						jen.ID("MetricsCollectionInterval").MapAssign().Lit(2).Op("*").Qual("time", "Second"),
+						jen.ID("MetricsCollectionInterval").MapAssign().Lit(2).PointerTo().Qual("time", "Second"),
 						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.ID("dbDetails")),
-						jen.ID("CreateTestUser").MapAssign().Op("&").Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
+						jen.ID("CreateTestUser").MapAssign().AddressOf().Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
 							jen.ID("Username").MapAssign().Lit("exampleUser"),
 							jen.ID("Password").MapAssign().Lit("integration-tests-are-cool"),
 							jen.ID("HashedPassword").MapAssign().ID("mustHashPass").Call(jen.Lit("integration-tests-are-cool")),
@@ -500,10 +502,10 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("main").Params().Body(
-			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+			jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 			jen.Newline(),
-			jen.For(jen.List(jen.ID("filePath"), jen.ID("fun")).Op(":=").Range().ID("files")).Body(
-				jen.If(jen.ID("err").Op(":=").ID("fun").Call(
+			jen.For(jen.List(jen.ID("filePath"), jen.ID("fun")).Assign().Range().ID("files")).Body(
+				jen.If(jen.ID("err").Assign().ID("fun").Call(
 					jen.ID("ctx"),
 					jen.ID("filePath"),
 				),

@@ -13,7 +13,7 @@ func serviceDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("serviceName").ID("string").Op("=").Lit("frontend_service"),
+			jen.ID("serviceName").String().Equals().Lit("frontend_service"),
 		),
 		jen.Newline(),
 	)
@@ -24,18 +24,18 @@ func serviceDotGo(proj *models.Project) *jen.File {
 		jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 		jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
 		jen.ID("panicker").Qual(proj.InternalPackage("panicking"), "Panicker"),
-		jen.ID("localizer").Op("*").Qual("github.com/nicksnyder/go-i18n/v2/i18n", "Localizer"),
+		jen.ID("localizer").PointerTo().Qual("github.com/nicksnyder/go-i18n/v2/i18n", "Localizer"),
 		jen.ID("dataStore").ID("database").Dot("DataManager"),
 		jen.ID("paymentManager").ID("capitalism").Dot("PaymentManager"),
 		jen.ID("authService").ID("AuthService"),
 		jen.ID("usersService").ID("UsersService"),
-		jen.ID("sessionContextDataFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.Op("*").Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")),
-		jen.ID("accountIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
-		jen.ID("apiClientIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
-		jen.ID("webhookIDFetcher").Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.ID("sessionContextDataFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")),
+		jen.ID("accountIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.ID("apiClientIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.ID("webhookIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
 	}
 	for _, typ := range proj.DataTypes {
-		structFields = append(structFields, jen.IDf("%sIDFetcher", typ.Name.UnexportedVarName()).Func().Params(jen.Op("*").Qual("net/http", "Request")).Params(jen.ID("uint64")))
+		structFields = append(structFields, jen.IDf("%sIDFetcher", typ.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")))
 	}
 
 	code.Add(
@@ -47,14 +47,14 @@ func serviceDotGo(proj *models.Project) *jen.File {
 				jen.ID("ServiceAdminMiddleware").Params(jen.ID("next").Qual("net/http", "Handler")).Params(jen.Qual("net/http", "Handler")),
 				jen.Newline(),
 				jen.ID("AuthenticateUser").Params(jen.ID("ctx").Qual("context", "Context"),
-					jen.ID("loginData").Op("*").Qual(proj.TypesPackage(), "UserLoginInput"),
-				).Params(jen.Op("*").Qual(proj.TypesPackage(), "User"),
-					jen.Op("*").Qual("net/http", "Cookie"),
+					jen.ID("loginData").PointerTo().Qual(proj.TypesPackage(), "UserLoginInput"),
+				).Params(jen.PointerTo().Qual(proj.TypesPackage(), "User"),
+					jen.PointerTo().Qual("net/http", "Cookie"),
 					jen.ID("error"),
 				),
 				jen.ID("LogoutUser").Params(jen.ID("ctx").Qual("context", "Context"),
-					jen.ID("sessionCtxData").Op("*").Qual(proj.TypesPackage(), "SessionContextData"),
-					jen.ID("req").Op("*").Qual("net/http", "Request"),
+					jen.ID("sessionCtxData").PointerTo().Qual(proj.TypesPackage(), "SessionContextData"),
+					jen.ID("req").PointerTo().Qual("net/http", "Request"),
 					jen.ID("res").Qual("net/http", "ResponseWriter"),
 				).Params(jen.ID("error")),
 			),
@@ -62,12 +62,12 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			jen.Comment("UsersService is a subset of the larger types.UsersService interface."),
 			jen.ID("UsersService").Interface(
 				jen.ID("RegisterUser").Params(jen.ID("ctx").Qual("context", "Context"),
-					jen.ID("registrationInput").Op("*").Qual(proj.TypesPackage(), "UserRegistrationInput"),
-				).Params(jen.Op("*").Qual(proj.TypesPackage(), "UserCreationResponse"),
+					jen.ID("registrationInput").PointerTo().Qual(proj.TypesPackage(), "UserRegistrationInput"),
+				).Params(jen.PointerTo().Qual(proj.TypesPackage(), "UserCreationResponse"),
 					jen.ID("error"),
 				),
 				jen.ID("VerifyUserTwoFactorSecret").Params(jen.ID("ctx").Qual("context", "Context"),
-					jen.ID("input").Op("*").Qual(proj.TypesPackage(), "TOTPSecretVerificationInput"),
+					jen.ID("input").PointerTo().Qual(proj.TypesPackage(), "TOTPSecretVerificationInput"),
 				).Params(jen.ID("error")),
 			),
 			jen.Newline(),
@@ -128,7 +128,7 @@ func serviceDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideService builds a new Service."),
 		jen.Newline(),
 		jen.Func().ID("ProvideService").Paramsln(
-			jen.ID("cfg").Op("*").ID("Config"),
+			jen.ID("cfg").PointerTo().ID("Config"),
 			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 			jen.ID("authService").ID("AuthService"),
 			jen.ID("usersService").ID("UsersService"),
@@ -136,9 +136,9 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
 			jen.ID("paymentManager").Qual(proj.CapitalismPackage(), "PaymentManager"),
 		).Params(jen.ID("Service")).Body(
-			jen.ID("svc").Op(":=").Op("&").ID("service").Valuesln(serviceInitFields...),
+			jen.ID("svc").Assign().AddressOf().ID("service").Valuesln(serviceInitFields...),
 			jen.Newline(),
-			jen.ID("svc").Dot("templateFuncMap").Index(jen.Lit("translate")).Op("=").ID("svc").Dot("getSimpleLocalizedString"),
+			jen.ID("svc").Dot("templateFuncMap").Index(jen.Lit("translate")).Equals().ID("svc").Dot("getSimpleLocalizedString"),
 			jen.Newline(),
 			jen.Return().ID("svc"),
 		),
