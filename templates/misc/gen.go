@@ -15,6 +15,7 @@ import (
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(*models.Project) string{
 		".gitignore":           gitIgnore,
+		".gitattributes":       gitAttributes,
 		"go.mod":               goMod,
 		"mage.go":              mageDotGo,
 		"magefile.go":          magefileDotGo,
@@ -43,6 +44,11 @@ func RenderPackage(project *models.Project) error {
 	}
 
 	return nil
+}
+
+func gitAttributes(_ *models.Project) string {
+	return `*.go diff=golang
+`
 }
 
 func dockerSecurityDotRego(_ *models.Project) string {
