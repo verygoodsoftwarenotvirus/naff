@@ -2,6 +2,7 @@ package authorization
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -76,28 +77,28 @@ func buildServiceUserTests(proj *models.Project) []jen.Code {
 		pn := typ.Name.Plural()
 
 		out = append(out,
-			jen.ID("assert").Dot("False").Call(
+			jen.Qual(constants.AssertionLibrary, "False").Call(
 				jen.ID("t"),
 				jen.IDf("CanCreate%s", pn).Call(jen.ID("serviceUserRoleName")),
 			),
-			jen.ID("assert").Dot("False").Call(
+			jen.Qual(constants.AssertionLibrary, "False").Call(
 				jen.ID("t"),
 				jen.IDf("CanSee%s", pn).Call(jen.ID("serviceUserRoleName")),
 			),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("assert").Dot("False").Call(
+					return jen.Qual(constants.AssertionLibrary, "False").Call(
 						jen.ID("t"),
 						jen.IDf("CanSearch%s", pn).Call(jen.ID("serviceUserRoleName")),
 					)
 				}
 				return jen.Null()
 			}(),
-			jen.ID("assert").Dot("False").Call(
+			jen.Qual(constants.AssertionLibrary, "False").Call(
 				jen.ID("t"),
 				jen.IDf("CanUpdate%s", pn).Call(jen.ID("serviceUserRoleName")),
 			),
-			jen.ID("assert").Dot("False").Call(
+			jen.Qual(constants.AssertionLibrary, "False").Call(
 				jen.ID("t"),
 				jen.IDf("CanDelete%s", pn).Call(jen.ID("serviceUserRoleName")),
 			),
@@ -114,28 +115,28 @@ func buildServiceAdminTests(proj *models.Project) []jen.Code {
 		pn := typ.Name.Plural()
 
 		out = append(out,
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanCreate%s", pn).Call(jen.ID("serviceAdminRoleName")),
 			),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanSee%s", pn).Call(jen.ID("serviceAdminRoleName")),
 			),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("assert").Dot("True").Call(
+					return jen.Qual(constants.AssertionLibrary, "True").Call(
 						jen.ID("t"),
 						jen.IDf("CanSearch%s", pn).Call(jen.ID("serviceAdminRoleName")),
 					)
 				}
 				return jen.Null()
 			}(),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanUpdate%s", pn).Call(jen.ID("serviceAdminRoleName")),
 			),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanDelete%s", pn).Call(jen.ID("serviceAdminRoleName")),
 			),
@@ -152,28 +153,28 @@ func buildAccountAdminTests(proj *models.Project) []jen.Code {
 		pn := typ.Name.Plural()
 
 		out = append(out,
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanCreate%s", pn).Call(jen.ID("accountAdminRoleName")),
 			),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanSee%s", pn).Call(jen.ID("accountAdminRoleName")),
 			),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("assert").Dot("True").Call(
+					return jen.Qual(constants.AssertionLibrary, "True").Call(
 						jen.ID("t"),
 						jen.IDf("CanSearch%s", pn).Call(jen.ID("accountAdminRoleName")),
 					)
 				}
 				return jen.Null()
 			}(),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanUpdate%s", pn).Call(jen.ID("accountAdminRoleName")),
 			),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanDelete%s", pn).Call(jen.ID("accountAdminRoleName")),
 			),
@@ -190,28 +191,28 @@ func buildAccountMemberTests(proj *models.Project) []jen.Code {
 		pn := typ.Name.Plural()
 
 		out = append(out,
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanCreate%s", pn).Call(jen.ID("accountMemberRoleName")),
 			),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanSee%s", pn).Call(jen.ID("accountMemberRoleName")),
 			),
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("assert").Dot("True").Call(
+					return jen.Qual(constants.AssertionLibrary, "True").Call(
 						jen.ID("t"),
 						jen.IDf("CanSearch%s", pn).Call(jen.ID("accountMemberRoleName")),
 					)
 				}
 				return jen.Null()
 			}(),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanUpdate%s", pn).Call(jen.ID("accountMemberRoleName")),
 			),
-			jen.ID("assert").Dot("True").Call(
+			jen.Qual(constants.AssertionLibrary, "True").Call(
 				jen.ID("t"),
 				jen.IDf("CanDelete%s", pn).Call(jen.ID("accountMemberRoleName")),
 			),

@@ -36,9 +36,9 @@ var (
 	}
 
 	validDatabaseTypes = map[string]struct{}{
-		dbconfig.PostgresProvider: {},
-		dbconfig.MariaDBProvider:  {},
-		dbconfig.SqliteProvider:   {},
+		{{ dbConditional "Postgres" "dbconfig.PostgresProvider: {}," }}
+		{{ dbConditional "MariaDB" "dbconfig.MariaDBProvider: {}," }}
+		{{ dbConditional "Sqlite" "dbconfig.SqliteProvider: {}," }}
 	}
 )
 

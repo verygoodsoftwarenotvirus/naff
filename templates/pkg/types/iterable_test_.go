@@ -42,7 +42,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		)
 
 		assertions = append(assertions,
-			jen.ID("assert").Dot("Equal").Call(
+			jen.Qual(constants.AssertionLibrary, "Equal").Call(
 				jen.ID("t"),
 				jen.ID("updated").Dot(fsn),
 				jen.ID("x").Dot(fsn),
@@ -76,7 +76,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 						jen.Newline(),
 						jen.List(jen.ID("expectedJSON"), jen.ID("actualJSON")).Assign().List(jen.String().Call(jen.ID("expectedJSONBytes")), jen.String().Call(jen.ID("actualJSONBytes"))),
 						jen.Newline(),
-						jen.ID("assert").Dot("Equal").Call(
+						jen.Qual(constants.AssertionLibrary, "Equal").Call(
 							jen.ID("t"),
 							jen.ID("expectedJSON"),
 							jen.ID("actualJSON"),
@@ -109,7 +109,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 					jen.Newline(),
 					jen.ID("actual").Assign().ID("x").Dot("ValidateWithContext").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -124,7 +124,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("x").Assign().AddressOf().IDf("%sCreationInput", sn).Values(),
 					jen.Newline(),
 					jen.ID("actual").Assign().ID("x").Dot("ValidateWithContext").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -148,7 +148,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					),
 					jen.Newline(),
 					jen.ID("actual").Assign().ID("x").Dot("ValidateWithContext").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -163,7 +163,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 					jen.ID("x").Assign().AddressOf().IDf("%sUpdateInput", sn).Values(),
 					jen.Newline(),
 					jen.ID("actual").Assign().ID("x").Dot("ValidateWithContext").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),

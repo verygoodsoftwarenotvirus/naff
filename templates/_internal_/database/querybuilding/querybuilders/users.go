@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -47,16 +48,16 @@ func buildBuildUserHasStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
 			jen.Newline(),
-			jen.ID("whereStatuses").Assign().ID("squirrel").Dot("Or").Values(),
+			jen.ID("whereStatuses").Assign().Qual(constants.SQLGenerationLibrary, "Or").Values(),
 			jen.For(jen.List(jen.Underscore(), jen.ID("status")).Assign().Range().ID("statuses")).Body(
 				jen.ID("whereStatuses").Equals().ID("append").Call(
 					jen.ID("whereStatuses"),
-					jen.ID("squirrel").Dot("Eq").Values(jen.Qual("fmt", "Sprintf").Call(
+					jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 						jen.Qual(proj.QuerybuildingPackage(), "UsersTableReputationColumn"),
@@ -73,7 +74,7 @@ func buildBuildUserHasStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 				)).
 					Dotln("Prefix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistencePrefix")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -100,7 +101,7 @@ func buildBuildGetUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabr
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -109,7 +110,7 @@ func buildBuildGetUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabr
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -118,7 +119,7 @@ func buildBuildGetUserQuery(proj *models.Project, dbvendor wordsmith.SuperPalabr
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).Op(":").ID("nil"))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("NotEq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "NotEq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableTwoFactorVerifiedOnColumn"),
@@ -141,7 +142,7 @@ func buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models.Project, d
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -150,7 +151,7 @@ func buildBuildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models.Project, d
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -179,7 +180,7 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(
 				jen.ID("span"),
 				jen.ID("username"),
 			),
@@ -188,7 +189,7 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableUsernameColumn"),
@@ -197,7 +198,7 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).Op(":").ID("nil"))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("NotEq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "NotEq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableTwoFactorVerifiedOnColumn"),
@@ -223,7 +224,7 @@ func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor words
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachSearchQueryToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachSearchQueryToSpan").Call(
 				jen.ID("span"),
 				jen.ID("usernameQuery"),
 			),
@@ -232,7 +233,7 @@ func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor words
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Expr").Callln(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Expr").Callln(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit(searchCmd),
 						jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
@@ -243,12 +244,12 @@ func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor words
 						jen.ID("usernameQuery"),
 					),
 				)).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 				).Op(":").ID("nil"))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("NotEq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "NotEq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableTwoFactorVerifiedOnColumn"),
@@ -279,7 +280,7 @@ func buildBuildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.Su
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "UsersTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
@@ -303,7 +304,7 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.ID("tracing").Dot("AttachFilterToSpan").Call(
+				jen.Qual(proj.InternalTracingPackage(), "AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
@@ -337,7 +338,7 @@ func buildBuildTestUserCreationQuery(proj *models.Project, dbvendor wordsmith.Su
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(
 				jen.ID("span"),
 				jen.ID("testUserConfig").Dot("Username"),
 			),
@@ -392,7 +393,7 @@ func buildBuildCreateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("Username"),
 			),
@@ -432,11 +433,11 @@ func buildBuildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("ID"),
 			),
-			jen.ID("tracing").Dot("AttachUsernameToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUsernameToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("Username"),
 			),
@@ -468,7 +469,7 @@ func buildBuildUpdateUserQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -485,7 +486,7 @@ func buildBuildSetUserStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("TargetUserID"),
 			),
@@ -501,7 +502,7 @@ func buildBuildSetUserStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableStatusExplanationColumn"),
 					jen.ID("input").Dot("Reason"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("TargetUserID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("TargetUserID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -518,7 +519,7 @@ func buildBuildUpdateUserPasswordQuery(proj *models.Project, dbvendor wordsmith.
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -542,7 +543,7 @@ func buildBuildUpdateUserPasswordQuery(proj *models.Project, dbvendor wordsmith.
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -559,7 +560,7 @@ func buildBuildUpdateUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -575,7 +576,7 @@ func buildBuildUpdateUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableTwoFactorSekretColumn"),
 					jen.ID("newSecret"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -592,7 +593,7 @@ func buildBuildVerifyUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -608,7 +609,7 @@ func buildBuildVerifyUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableReputationColumn"),
 					jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -625,7 +626,7 @@ func buildBuildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -637,7 +638,7 @@ func buildBuildArchiveUserQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("userID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -654,7 +655,7 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -679,18 +680,18 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Or").Valuesln(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Or").Valuesln(
 					func() jen.Code {
 						if dbvendor.SingularPackageName() == "mariadb" {
-							return jen.ID("squirrel").Dot("Expr").Call(jen.ID("userIDKey"))
+							return jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("userIDKey"))
 						}
-						return jen.ID("squirrel").Dot("Eq").Values(jen.ID("userIDKey").Op(":").ID("userID"))
+						return jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("userIDKey").Op(":").ID("userID"))
 					}(),
 					func() jen.Code {
 						if dbvendor.SingularPackageName() == "mariadb" {
-							return jen.ID("squirrel").Dot("Expr").Call(jen.ID("performedByIDKey"))
+							return jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("performedByIDKey"))
 						}
-						return jen.ID("squirrel").Dot("Eq").Values(jen.ID("performedByIDKey").Op(":").ID("userID"))
+						return jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("performedByIDKey").Op(":").ID("userID"))
 					}(),
 				)).
 					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(

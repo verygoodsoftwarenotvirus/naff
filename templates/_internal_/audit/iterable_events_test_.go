@@ -3,6 +3,7 @@ package audit
 import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -25,7 +26,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 			jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("assert").Dot("NotNil").Call(
+			jen.Qual(constants.AssertionLibrary, "NotNil").Call(
 				jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sCreationEventEntry", n.Singular())).Call(
 					jen.AddressOf().Qual(proj.TypesPackage(), n.Singular()).Values(),
@@ -41,7 +42,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 			jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("assert").Dot("NotNil").Call(jen.ID("t"),
+			jen.Qual(constants.AssertionLibrary, "NotNil").Call(jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sUpdateEventEntry", n.Singular())).Call(
 					jen.ID("exampleUserID"),
 					jen.IDf("example%sID", n.Singular()),
@@ -63,7 +64,7 @@ func iterableEventsTestDotGo(proj *models.Project, typ models.DataType) *jen.Fil
 			jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("assert").Dot("NotNil").Call(jen.ID("t"),
+			jen.Qual(constants.AssertionLibrary, "NotNil").Call(jen.ID("t"),
 				jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("Build%sArchiveEventEntry", n.Singular())).Call(jen.ID("exampleUserID"),
 					jen.IDf("example%sID", n.Singular()),
 					func() jen.Code {

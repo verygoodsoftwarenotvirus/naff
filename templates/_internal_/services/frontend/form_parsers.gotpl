@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability"
+	{{ projectImport "internal/observability" }}
 )
 
 func anyToString(x interface{}) string {

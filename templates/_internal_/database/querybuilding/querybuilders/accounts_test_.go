@@ -91,12 +91,12 @@ func buildTestSqlite_BuildGetAccountQuery(proj *models.Project, dbvendor wordsmi
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -139,7 +139,7 @@ func buildTestSqlite_BuildGetAllAccountsCountQuery(proj *models.Project, dbvendo
 						jen.ID("actualQuery"),
 						jen.Index().Interface().Values(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
@@ -205,12 +205,12 @@ func buildTestSqlite_BuildGetBatchOfAccountsQuery(proj *models.Project, dbvendor
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -254,12 +254,12 @@ func buildTestSqlite_BuildGetAccountsQuery(proj *models.Project, dbvendor wordsm
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -331,12 +331,12 @@ func buildTestSqlite_BuildCreateAccountQuery(proj *models.Project, dbvendor word
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -397,12 +397,12 @@ func buildTestSqlite_BuildUpdateAccountQuery(proj *models.Project, dbvendor word
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -457,12 +457,12 @@ func buildTestSqlite_BuildArchiveAccountQuery(proj *models.Project, dbvendor wor
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -543,12 +543,12 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAccountQuery(proj *models.Project
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),

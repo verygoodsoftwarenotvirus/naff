@@ -17,6 +17,7 @@ import (
 	testutils {{ projectImport "tests/utils" }}
 
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type serviceHTTPRoutesTestHelper struct {

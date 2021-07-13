@@ -36,7 +36,7 @@ func buildTestParseBool(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("expectations").Assign().Map(jen.ID("string")).ID("bool").Valuesln(jen.Lit("1").Op(":").ID("true"), jen.ID("t").Dot("Name").Call().Op(":").ID("false"), jen.Lit("true").Op(":").ID("true"), jen.Lit("troo").Op(":").ID("false"), jen.Lit("t").Op(":").ID("true"), jen.Lit("false").Op(":").ID("false")),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("input"), jen.ID("expected")).Assign().Range().ID("expectations")).Body(
-				jen.ID("assert").Dot("Equal").Call(
+				jen.Qual(constants.AssertionLibrary, "Equal").Call(
 					jen.ID("t"),
 					jen.ID("expected"),
 					jen.ID("parseBool").Call(jen.ID("input")),
@@ -80,11 +80,11 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -134,7 +134,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusCreated"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -172,11 +172,11 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("nil")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -186,7 +186,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -218,11 +218,11 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -232,7 +232,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -264,11 +264,11 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -280,7 +280,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -312,11 +312,11 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -338,7 +338,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -376,11 +376,11 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 								jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 								jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 							),
-							jen.ID("require").Dot("NoError").Call(
+							jen.Qual(constants.MustAssertPkg, "NoError").Call(
 								jen.ID("t"),
 								jen.ID("err"),
 							),
-							jen.ID("require").Dot("NotNil").Call(
+							jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 								jen.ID("t"),
 								jen.ID("helper").Dot("req"),
 							),
@@ -415,7 +415,7 @@ func buildTestSomethingsService_CreateHandler(proj *models.Project, typ models.D
 								jen.ID("helper").Dot("req"),
 							),
 							jen.Newline(),
-							jen.ID("assert").Dot("Equal").Call(
+							jen.Qual(constants.AssertionLibrary, "Equal").Call(
 								jen.ID("t"),
 								jen.Qual("net/http", "StatusCreated"),
 								jen.ID("helper").Dot("res").Dot("Code"),
@@ -498,7 +498,7 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -539,7 +539,7 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -581,7 +581,7 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -624,7 +624,7 @@ func buildTestSomethingsService_ReadHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -695,7 +695,7 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -735,7 +735,7 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -777,7 +777,7 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -820,7 +820,7 @@ func buildTestSomethingsService_ExistenceHandler(proj *models.Project, typ model
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -904,7 +904,7 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -945,7 +945,7 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -988,7 +988,7 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1034,7 +1034,7 @@ func buildTestSomethingsService_ListHandler(proj *models.Project, typ models.Dat
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1141,7 +1141,7 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1183,7 +1183,7 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1230,7 +1230,7 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1290,7 +1290,7 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1352,7 +1352,7 @@ func buildTestSomethingsService_SearchHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1407,11 +1407,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -1462,7 +1462,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1508,11 +1508,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -1522,7 +1522,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1546,7 +1546,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1572,11 +1572,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("nil")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -1586,7 +1586,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusBadRequest"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1618,11 +1618,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -1641,7 +1641,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1678,11 +1678,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -1701,7 +1701,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1738,11 +1738,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 						jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("require").Dot("NotNil").Call(
+					jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 						jen.ID("t"),
 						jen.ID("helper").Dot("req"),
 					),
@@ -1769,7 +1769,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1807,11 +1807,11 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 								jen.Lit("https://todo.verygoodsoftwarenotvirus.ru"),
 								jen.Qual("bytes", "NewReader").Call(jen.ID("jsonBytes")),
 							),
-							jen.ID("require").Dot("NoError").Call(
+							jen.Qual(constants.MustAssertPkg, "NoError").Call(
 								jen.ID("t"),
 								jen.ID("err"),
 							),
-							jen.ID("require").Dot("NotNil").Call(
+							jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 								jen.ID("t"),
 								jen.ID("helper").Dot("req"),
 							),
@@ -1847,7 +1847,7 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 								jen.ID("helper").Dot("req"),
 							),
 							jen.Newline(),
-							jen.ID("assert").Dot("Equal").Call(
+							jen.Qual(constants.AssertionLibrary, "Equal").Call(
 								jen.ID("t"),
 								jen.Qual("net/http", "StatusOK"),
 								jen.ID("helper").Dot("res").Dot("Code"),
@@ -1950,7 +1950,7 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNoContent"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -1994,7 +1994,7 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -2033,7 +2033,7 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -2073,7 +2073,7 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -2133,7 +2133,7 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 								jen.ID("helper").Dot("req"),
 							),
 							jen.Newline(),
-							jen.ID("assert").Dot("Equal").Call(
+							jen.Qual(constants.AssertionLibrary, "Equal").Call(
 								jen.ID("t"),
 								jen.Qual("net/http", "StatusNoContent"),
 								jen.ID("helper").Dot("res").Dot("Code"),
@@ -2202,7 +2202,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusOK"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -2239,7 +2239,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusUnauthorized"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -2283,7 +2283,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusNotFound"),
 						jen.ID("helper").Dot("res").Dot("Code"),
@@ -2328,7 +2328,7 @@ func buildTestAccountsService_AuditEntryHandler(proj *models.Project, typ models
 						jen.ID("helper").Dot("req"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.Qual("net/http", "StatusInternalServerError"),
 						jen.ID("helper").Dot("res").Dot("Code"),

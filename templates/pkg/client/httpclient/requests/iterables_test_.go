@@ -2,6 +2,7 @@ package requests
 
 import (
 	"fmt"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"path"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -138,7 +139,7 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 			)...,
 		),
 		jen.Newline(),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.ID("assertRequestQuality").Call(jen.ID("t"), jen.ID("actual"), jen.ID("spec")),
 	)
 
@@ -176,8 +177,8 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
 				buildArgs...,
 			),
-			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 		)
 
 		lines = append(lines,
@@ -207,8 +208,8 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
 			buildArgs...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -236,8 +237,8 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("Build%sExistsRequest", sn).Call(
 			buildSomethingGeneralArgs(proj, typ, true)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -285,7 +286,7 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
 			buildSomethingGeneralArgs(proj, typ, true)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("assertRequestQuality").Call(jen.ID("t"), jen.ID("actual"), jen.ID("spec")),
 	)
@@ -316,8 +317,8 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
 				buildSomethingGeneralArgsWithoutIndex(proj, typ, i)...,
 			),
-			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 		)
 
 		lines = append(lines,
@@ -345,8 +346,8 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
 			buildSomethingGeneralArgsWithoutIndex(proj, typ, -1)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -374,8 +375,8 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", sn).Call(
 			buildSomethingGeneralArgs(proj, typ, true)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -491,7 +492,7 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
 			buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("assertRequestQuality").Call(jen.ID("t"), jen.ID("actual"), jen.ID("spec")),
 	)
@@ -528,8 +529,8 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
 				buildListOfSomethingArgsWithoutIndex(proj, typ, i)...,
 			),
-			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 		)
 
 		lines = append(lines,
@@ -560,8 +561,8 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
 			buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -675,7 +676,7 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildSearch%sRequest", pn).Call(
 			buildSearchSomethingRequestBuilderArgs(proj, typ, -1)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("assertRequestQuality").Call(
 			jen.ID("t"),
@@ -715,8 +716,8 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildSearch%sRequest", pn).Call(
 				buildSearchSomethingRequestBuilderArgs(proj, typ, i)...,
 			),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
 		)
 
 		bodyLines = append(bodyLines,
@@ -747,8 +748,8 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildSearch%sRequest", pn).Call(
 			buildSearchSomethingRequestBuilderArgs(proj, typ, -1)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	bodyLines = append(bodyLines,
@@ -865,7 +866,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 			buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("assertRequestQuality").Call(jen.ID("t"), jen.ID("actual"), jen.ID("spec")),
 	)
@@ -903,8 +904,8 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, i, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			)
 
 			lines = append(lines,
@@ -933,8 +934,8 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 			append(buildCreateSomethingArgsWithoutIndex(proj, typ, -1, false), jen.Nil())...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	thirdSubtest := []jen.Code{
@@ -954,8 +955,8 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 				jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values(),
 			)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -991,8 +992,8 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 			buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -1080,7 +1081,7 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildUpdate%sRequest", sn).Call(
 			buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("assertRequestQuality").Call(jen.ID("t"), jen.ID("actual"), jen.ID("spec")),
 	)
@@ -1117,8 +1118,8 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildUpdate%sRequest", sn).Call(
 					buildUpdateSomethingArgsWithoutIndex(proj, typ, i, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			)
 
 			lines = append(lines,
@@ -1147,8 +1148,8 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildUpdate%sRequest", sn).Call(
 			append(buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, false), jen.Nil())...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 	lines = append(lines,
 		jen.Newline(),
@@ -1176,8 +1177,8 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildUpdate%sRequest", sn).Call(
 			buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -1227,7 +1228,7 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildArchive%sRequest", sn).Call(
 			buildSomethingGeneralArgs(proj, typ, true)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("assertRequestQuality").Call(jen.ID("t"), jen.ID("actual"), jen.ID("spec")),
 	)
@@ -1262,8 +1263,8 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildArchive%sRequest", sn).Call(
 				buildSomethingGeneralArgsWithoutIndex(proj, typ, i)...,
 			),
-			jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 		)
 
 		lines = append(lines,
@@ -1291,8 +1292,8 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildArchive%sRequest", sn).Call(
 			buildSomethingGeneralArgsWithoutIndex(proj, typ, -1)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -1320,8 +1321,8 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildArchive%sRequest", sn).Call(
 			buildSomethingGeneralArgs(proj, typ, true)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -1392,11 +1393,11 @@ func buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj *models.Project, 
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 			buildAuditSomethingRequestBuilderArgs(proj, typ, -1, true)...,
 		),
-		jen.ID("require").Dot("NotNil").Call(
+		jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 			jen.ID("t"),
 			jen.ID("actual"),
 		),
-		jen.ID("assert").Dot("NoError").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.ID("err")),
 		jen.Newline(),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append([]jen.Code{
@@ -1439,8 +1440,8 @@ func buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj *models.Project, 
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 				buildAuditSomethingRequestBuilderArgs(proj, typ, i, true)...,
 			),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
-			jen.ID("assert").Dot("Nil").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(
 				jen.ID("t"),
 				jen.ID("actual"),
 			),
@@ -1471,8 +1472,8 @@ func buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj *models.Project, 
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 			buildAuditSomethingRequestBuilderArgs(proj, typ, -1, false)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,
@@ -1500,8 +1501,8 @@ func buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj *models.Project, 
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 			buildAuditSomethingRequestBuilderArgs(proj, typ, -1, true)...,
 		),
-		jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-		jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 	)
 
 	lines = append(lines,

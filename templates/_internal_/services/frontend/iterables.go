@@ -261,24 +261,13 @@ func buildKeys(proj *models.Project, typ models.DataType) []jen.Code {
 		fuvn := field.Name.UnexportedVarName()
 		fsn := field.Name.Singular()
 
-		var alreadyCreated bool
-		for _, parent := range proj.FindOwnerTypeChain(typ) {
-			for _, f := range parent.Fields {
-				if f.Name.UnexportedVarName() == fuvn {
-					alreadyCreated = true
-				}
-			}
-		}
-
-		if !alreadyCreated {
-			allFieldsKeys = append(allFieldsKeys, jen.IDf("%sFormKey", fuvn).Equals().Lit(fuvn))
-		}
+		allFieldsKeys = append(allFieldsKeys, jen.IDf("%s%sFormKey", uvn, fsn).Equals().Lit(fuvn))
 
 		if field.ValidForCreationInput {
-			creationKeys = append(creationKeys, jen.IDf("%sCreationInput%sFormKey", uvn, fsn).Equals().IDf("%sFormKey", fuvn))
+			creationKeys = append(creationKeys, jen.IDf("%sCreationInput%sFormKey", uvn, fsn).Equals().IDf("%s%sFormKey", uvn, fsn))
 		}
 		if field.ValidForUpdateInput {
-			updateKeys = append(updateKeys, jen.IDf("%sUpdateInput%sFormKey", uvn, fsn).Equals().IDf("%sFormKey", fuvn))
+			updateKeys = append(updateKeys, jen.IDf("%sUpdateInput%sFormKey", uvn, fsn).Equals().IDf("%s%sFormKey", uvn, fsn))
 		}
 	}
 

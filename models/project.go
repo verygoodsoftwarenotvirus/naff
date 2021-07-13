@@ -32,9 +32,9 @@ const (
 	notCreatable = "!creatable"
 	notEditable  = "!editable"
 
-	Postgres validDatabase = "postgres"
-	MariaDB  validDatabase = "mariadb"
-	Sqlite   validDatabase = "sqlite"
+	Postgres validDatabase = "Postgres"
+	MariaDB  validDatabase = "MariaDB"
+	Sqlite   validDatabase = "Sqlite"
 )
 
 type depWrapper struct {

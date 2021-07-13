@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -44,12 +45,12 @@ func buildBuildGetBatchOfAPIClientsQuery(proj *models.Project, dbvendor wordsmit
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).Op(":").ID("beginID"))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -70,7 +71,7 @@ func buildBuildGetAPIClientByClientIDQuery(proj *models.Project, dbvendor wordsm
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachAPIClientClientIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAPIClientClientIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("clientID"),
 			),
@@ -79,7 +80,7 @@ func buildBuildGetAPIClientByClientIDQuery(proj *models.Project, dbvendor wordsm
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableClientIDColumn"),
@@ -113,7 +114,7 @@ func buildBuildGetAllAPIClientsCountQuery(proj *models.Project, dbvendor wordsmi
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
@@ -136,13 +137,13 @@ func buildBuildGetAPIClientsQuery(proj *models.Project, dbvendor wordsmith.Super
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
 			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.ID("tracing").Dot("AttachFilterToSpan").Call(
+				jen.Qual(proj.InternalTracingPackage(), "AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
@@ -176,11 +177,11 @@ func buildBuildGetAPIClientByDatabaseIDQuery(proj *models.Project, dbvendor word
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
-			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAPIClientDatabaseIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("clientID"),
 			),
@@ -189,7 +190,7 @@ func buildBuildGetAPIClientByDatabaseIDQuery(proj *models.Project, dbvendor word
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
@@ -251,15 +252,15 @@ func buildBuildUpdateAPIClientQuery(proj *models.Project, dbvendor wordsmith.Sup
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("BelongsToUser"),
 			),
-			jen.ID("tracing").Dot("AttachAPIClientClientIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAPIClientClientIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("ClientID"),
 			),
-			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAPIClientDatabaseIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("ID"),
 			),
@@ -275,7 +276,7 @@ func buildBuildUpdateAPIClientQuery(proj *models.Project, dbvendor wordsmith.Sup
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").Op(":").ID("input").Dot("BelongsToUser"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").Op(":").ID("input").Dot("BelongsToUser"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
 		jen.Newline(),
@@ -292,11 +293,11 @@ func buildBuildArchiveAPIClientQuery(proj *models.Project, dbvendor wordsmith.Su
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
-			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAPIClientDatabaseIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("clientID"),
 			),
@@ -312,7 +313,7 @@ func buildBuildArchiveAPIClientQuery(proj *models.Project, dbvendor wordsmith.Su
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("clientID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").Op(":").ID("userID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("clientID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").Op(":").ID("userID"))),
 			),
 		),
 		jen.Newline(),
@@ -329,7 +330,7 @@ func buildBuildGetAuditLogEntriesForAPIClientQuery(proj *models.Project, dbvendo
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachAPIClientDatabaseIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAPIClientDatabaseIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("clientID"),
 			),
@@ -348,7 +349,7 @@ func buildBuildGetAuditLogEntriesForAPIClientQuery(proj *models.Project, dbvendo
 					if dbvendor.SingularPackageName() == "mariadb" {
 						return jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 							Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-							Dotln("Where").Call(jen.ID("squirrel").Dot("Expr").Call(jen.ID("apiClientIDKey"))).
+							Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("apiClientIDKey"))).
 							Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%s.%s"),
 							jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
@@ -357,7 +358,7 @@ func buildBuildGetAuditLogEntriesForAPIClientQuery(proj *models.Project, dbvendo
 					}
 					return jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 						Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-						Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Values(jen.ID("apiClientIDKey").Op(":").ID("clientID"))).
+						Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("apiClientIDKey").Op(":").ID("clientID"))).
 						Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),

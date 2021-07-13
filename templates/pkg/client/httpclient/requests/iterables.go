@@ -138,7 +138,7 @@ func buildBuildSomethingExistsRequest(proj *models.Project, typ models.DataType)
 			jen.ID("nil"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -182,7 +182,7 @@ func buildBuildGetSomethingRequest(proj *models.Project, typ models.DataType) []
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
 			buildGetSomethingURLParts(proj, typ)...,
 		),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
@@ -194,7 +194,7 @@ func buildBuildGetSomethingRequest(proj *models.Project, typ models.DataType) []
 			jen.ID("nil"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -301,7 +301,7 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
 			buildSearchForSomethingURLParts(proj, typ)...,
 		),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
@@ -313,7 +313,7 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 			jen.ID("nil"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -392,11 +392,11 @@ func buildBuildGetListOfSomethingsRequest(proj *models.Project, typ models.DataT
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(urlBuildingParams...),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
-		jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachQueryFilterToSpan").Call(
 			jen.ID("span"),
 			jen.ID("filter"),
 		),
@@ -408,7 +408,7 @@ func buildBuildGetListOfSomethingsRequest(proj *models.Project, typ models.DataT
 			jen.ID("nil"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -526,7 +526,7 @@ func buildBuildCreateSomethingRequest(proj *models.Project, typ models.DataType)
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -538,7 +538,7 @@ func buildBuildCreateSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
 			buildV1ClientURLBuildingParamsForCreatingSomething(proj, typ)...,
 		),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
@@ -550,7 +550,7 @@ func buildBuildCreateSomethingRequest(proj *models.Project, typ models.DataType)
 			jen.ID("input"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -684,7 +684,7 @@ func buildBuildUpdateSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
 			buildV1ClientURLBuildingParamsForMethodThatIncludesItsOwnType(proj, typ)...,
 		),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
@@ -696,7 +696,7 @@ func buildBuildUpdateSomethingRequest(proj *models.Project, typ models.DataType)
 			jen.ID(uvn),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -740,7 +740,7 @@ func buildBuildArchiveSomethingRequest(proj *models.Project, typ models.DataType
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
 			buildGetSomethingURLParts(proj, typ)...,
 		),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
@@ -752,7 +752,7 @@ func buildBuildArchiveSomethingRequest(proj *models.Project, typ models.DataType
 			jen.ID("nil"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -834,7 +834,7 @@ func buildBuildGetAuditLogForSomethingRequest(proj *models.Project, typ models.D
 		jen.ID("uri").Assign().ID("b").Dot("BuildURL").Callln(
 			buildGetAuditLogsForSomethingURLParts(proj, typ)...,
 		),
-		jen.ID("tracing").Dot("AttachRequestURIToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachRequestURIToSpan").Call(
 			jen.ID("span"),
 			jen.ID("uri"),
 		),
@@ -846,7 +846,7 @@ func buildBuildGetAuditLogForSomethingRequest(proj *models.Project, typ models.D
 			jen.ID("nil"),
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),

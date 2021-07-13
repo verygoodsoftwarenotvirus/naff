@@ -50,11 +50,11 @@ func RenderPackage(project *models.Project) error {
 
 func getDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 	switch vendor {
-	case "postgres":
+	case string(models.Postgres):
 		return wordsmith.FromSingularPascalCase("Postgres")
-	case "sqlite":
+	case string(models.Sqlite):
 		return wordsmith.FromSingularPascalCase("Sqlite")
-	case "mariadb", "maria_db":
+	case string(models.MariaDB):
 		return &wordsmith.ManualWord{
 			SingularStr:                           "MariaDB",
 			PluralStr:                             "MariaDBs",
@@ -157,8 +157,8 @@ services:
 }
 
 func integrationTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
-	switch dbName.RouteName() {
-	case "postgres":
+	switch dbName.Singular() {
+	case string(models.Postgres):
 		return fmt.Sprintf(`version: "3.3"
 services:
     database:
@@ -184,7 +184,7 @@ services:
     test:
         container_name: 'postgres_integration_tests'
 `, projectName.RouteName(), projectName.KebabName(), strings.ToUpper(projectName.RouteName()))
-	case "mariadb", "maria_db":
+	case string(models.MariaDB):
 		return fmt.Sprintf(`version: "3.3"
 services:
     database:
@@ -212,7 +212,7 @@ services:
     test:
         container_name: 'mariadb_integration_tests'
 `, projectName.RouteName(), projectName.KebabName(), strings.ToUpper(projectName.RouteName()))
-	case "sqlite":
+	case string(models.Sqlite):
 		return fmt.Sprintf(`version: '3.3'
 services:
     %s-server:
@@ -228,7 +228,7 @@ services:
 `, projectName.KebabName(), strings.ToUpper(projectName.RouteName()))
 	}
 
-	panic("invalid db")
+	panic(fmt.Sprintf("invalid db: ", dbName.RouteName()))
 }
 
 func loadTestsBaseDotYAML(projectName wordsmith.SuperPalabra) string {
@@ -293,8 +293,8 @@ services:
 }
 
 func loadTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string {
-	switch dbName.RouteName() {
-	case "postgres":
+	switch dbName.Singular() {
+	case string(models.Postgres):
 		return fmt.Sprintf(`---
 version: '3.3'
 services:
@@ -328,7 +328,7 @@ services:
               target: '/etc/config.toml'
               type: 'bind'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	case "mariadb", "maria_db":
+	case string(models.MariaDB):
 		return fmt.Sprintf(`version: '3.3'
 services:
     database:
@@ -363,7 +363,7 @@ services:
               target: '/etc/config.toml'
               type: 'bind'
 `, projectName.RouteName(), projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
-	case "sqlite":
+	case string(models.Sqlite):
 		return fmt.Sprintf(`version: '3.3'
 services:
     load-tests:
@@ -389,7 +389,7 @@ services:
 `, projectName.KebabName(), projectName.KebabName(), projectName.KebabName())
 	}
 
-	panic("invalid db")
+	panic(fmt.Sprintf("invalid db: ", dbName.RouteName()))
 }
 
 func integrationTestsBaseDotYAML(projectName wordsmith.SuperPalabra) string {

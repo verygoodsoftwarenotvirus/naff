@@ -74,12 +74,12 @@ func buildTestSqlite_BuildGetBatchOfAPIClientsQuery(proj *models.Project, dbvend
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -139,12 +139,12 @@ func buildTestSqlite_BuildGetAPIClientQuery(proj *models.Project, dbvendor words
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -186,7 +186,7 @@ func buildTestSqlite_BuildGetAllAPIClientsCountQuery(proj *models.Project, dbven
 						jen.ID("actualQuery"),
 						jen.Index().Interface().Values(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
@@ -229,12 +229,12 @@ func buildTestSqlite_BuildGetAPIClientsQuery(proj *models.Project, dbvendor word
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -297,12 +297,12 @@ func buildTestSqlite_BuildGetAPIClientByDatabaseIDQuery(proj *models.Project, db
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -370,12 +370,12 @@ func buildTestSqlite_BuildCreateAPIClientQuery(proj *models.Project, dbvendor wo
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -432,12 +432,12 @@ func buildTestSqlite_BuildUpdateAPIClientQuery(proj *models.Project, dbvendor wo
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -491,12 +491,12 @@ func buildTestSqlite_BuildArchiveAPIClientQuery(proj *models.Project, dbvendor w
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -575,12 +575,12 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAPIClientQuery(proj *models.Proje
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),

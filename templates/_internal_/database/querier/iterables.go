@@ -689,7 +689,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 			jen.Newline(),
 			constants.LoggerVar().Assign().ID("q").Dot("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("RequesterIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "RequesterIDKey"),
 				jen.ID("createdByUser"),
 			),
 			jen.Qual(proj.InternalTracingPackage(), "AttachRequestingUserIDToSpan").Call(

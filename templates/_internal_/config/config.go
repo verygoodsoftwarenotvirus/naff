@@ -275,15 +275,15 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("shouldCreateTestUser").Assign().ID("cfg").Dot("Meta").Dot("RunMode").Op("!=").ID("ProductionRunMode"),
 			jen.Newline(),
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("cfg").Dot("Database").Dot("Provider")))).Body(
-				jen.Case(jen.Lit("sqlite")).Body(
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Case(jen.Lit("sqlite")).Body(
 					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "sqlite"), "ProvideSqlite").Call(constants.LoggerVar()),
-				),
-				jen.Case(jen.Lit("mariadb")).Body(
+				)),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Case(jen.Lit("mariadb")).Body(
 					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "mariadb"), "ProvideMariaDB").Call(constants.LoggerVar()),
-				),
-				jen.Case(jen.Lit("postgres")).Body(
+				)),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Case(jen.Lit("postgres")).Body(
 					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "postgres"), "ProvidePostgres").Call(constants.LoggerVar()),
-				),
+				)),
 				jen.Default().Body(
 					jen.Return().List(jen.ID("nil"),
 						jen.Qual("fmt", "Errorf").Call(

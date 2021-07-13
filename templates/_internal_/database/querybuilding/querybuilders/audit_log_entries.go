@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -36,7 +37,7 @@ func buildBuildGetAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.Su
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachAuditLogEntryIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAuditLogEntryIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("entryID"),
 			),
@@ -45,7 +46,7 @@ func buildBuildGetAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.Su
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -96,12 +97,12 @@ func buildBuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, dbvendor wor
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				).Op(":").ID("beginID"))).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
@@ -125,7 +126,7 @@ func buildBuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor wordsmith.
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.ID("tracing").Dot("AttachFilterToSpan").Call(
+				jen.Qual(proj.InternalTracingPackage(), "AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
@@ -189,7 +190,7 @@ func buildBuildCreateAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachAuditLogEntryEventTypeToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachAuditLogEntryEventTypeToSpan").Call(
 				jen.ID("span"),
 				jen.ID("input").Dot("EventType"),
 			),

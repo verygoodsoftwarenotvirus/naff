@@ -810,7 +810,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 
 	keyUsage := jen.Null()
 
-	switch dbvendor.SingularPackageName() {
+	switch dbvendor.Singular() {
 	case string(models.MariaDB):
 		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
 	case string(models.Postgres), string(models.Sqlite):

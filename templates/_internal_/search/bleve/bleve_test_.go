@@ -60,7 +60,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 					jen.Qual("time", "Now").Call().Dot("Unix").Call(),
 				),
 			),
-			jen.ID("require").Dot("NoError").Call(
+			jen.Qual(constants.MustAssertPkg, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -80,7 +80,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("indexPath"),
 				jen.Octal(700),
 			),
-			jen.ID("require").Dot("NoError").Call(
+			jen.Qual(constants.MustAssertPkg, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -113,7 +113,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("TestNewBleveIndexManagerWithTestIndex").Params().Body(
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("constructor_test_happy_path_test.bleve"),
 			)),
@@ -123,7 +123,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -138,7 +138,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).IDf("TestNewBleveIndexManagerWith%sIndex", typ.Name.Plural()).Params().Body(
 					jen.ID("t").Assign().ID("s").Dot("T").Call(),
 					jen.Newline(),
-					jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+					jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 						jen.ID("s").Dot("indexPath"),
 						jen.Litf("constructor_test_happy_path_%s.bleve", typ.Name.PluralRouteName()),
 					)),
@@ -148,7 +148,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sSearchIndexName", typ.Name.Plural())),
 						jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
@@ -162,14 +162,14 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("TestNewBleveIndexManagerWithInvalidName").Params().Body(
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Lit("constructor_test_invalid_name.bleve")),
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Lit("constructor_test_invalid_name.bleve")),
 			jen.Newline(),
 			jen.List(jen.Underscore(), jen.ID("err")).Assign().ID("NewBleveIndexManager").Call(
 				jen.ID("exampleIndexPath"),
 				jen.Lit("invalid"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("Error").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -182,7 +182,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.Const().ID("exampleQuery").Equals().Lit("_test"),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("_test_obligatory.bleve"),
 			)),
@@ -192,11 +192,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
@@ -206,7 +206,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("Name").Op(":").ID("exampleQuery"), jen.ID("BelongsToUser").Op(":").ID("s").Dot("exampleAccountID"),
 			),
 			jen.Newline(),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Dot("Index").Call(
 					jen.ID("s").Dot("ctx"),
@@ -223,7 +223,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("search_test_obligatory.bleve"),
 			)),
@@ -233,17 +233,17 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
 			jen.Newline(),
 			jen.ID("x").Assign().ID("exampleType").Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").ID("exampleQuery"), jen.ID("BelongsToUser").Op(":").ID("s").Dot("exampleAccountID")),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Dot("Index").Call(
 					jen.ID("s").Dot("ctx"),
@@ -257,11 +257,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("x").Dot("Name"),
 				jen.ID("s").Dot("exampleAccountID"),
 			),
-			jen.ID("assert").Dot("NotEmpty").Call(
+			jen.Qual(constants.AssertionLibrary, "NotEmpty").Call(
 				jen.ID("t"),
 				jen.ID("results"),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -273,7 +273,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("TestSearchWithInvalidQuery").Params().Body(
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("search_test_invalid_query.bleve"),
 			)),
@@ -283,11 +283,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
@@ -297,11 +297,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit(""),
 				jen.ID("s").Dot("exampleAccountID"),
 			),
-			jen.ID("assert").Dot("Empty").Call(
+			jen.Qual(constants.AssertionLibrary, "Empty").Call(
 				jen.ID("t"),
 				jen.ID("results"),
 			),
-			jen.ID("assert").Dot("Error").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -313,7 +313,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("bleveIndexManagerTestSuite")).ID("TestSearchWithEmptyIndexAndSearch").Params().Body(
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("search_test_empty_index.bleve"),
 			)),
@@ -323,11 +323,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
@@ -337,11 +337,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("example"),
 				jen.ID("s").Dot("exampleAccountID"),
 			),
-			jen.ID("assert").Dot("Empty").Call(
+			jen.Qual(constants.AssertionLibrary, "Empty").Call(
 				jen.ID("t"),
 				jen.ID("results"),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -354,7 +354,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("search_test_closed_index.bleve"),
 			)),
@@ -364,17 +364,17 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
 			jen.Newline(),
 			jen.ID("x").Assign().AddressOf().ID("exampleType").Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").ID("exampleQuery"), jen.ID("BelongsToUser").Op(":").ID("s").Dot("exampleAccountID")),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Dot("Index").Call(
 					jen.ID("s").Dot("ctx"),
@@ -383,7 +383,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Assert(jen.PointerTo().ID("bleveIndexManager")).Dot("index").Dot("Close").Call(),
 			),
@@ -393,11 +393,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("x").Dot("Name"),
 				jen.ID("s").Dot("exampleAccountID"),
 			),
-			jen.ID("assert").Dot("Empty").Call(
+			jen.Qual(constants.AssertionLibrary, "Empty").Call(
 				jen.ID("t"),
 				jen.ID("results"),
 			),
-			jen.ID("assert").Dot("Error").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -410,7 +410,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("search_test_invalid_id.bleve"),
 			)),
@@ -420,17 +420,17 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
 			jen.Newline(),
 			jen.ID("x").Assign().AddressOf().ID("exampleTypeWithStringID").Valuesln(jen.ID("ID").Op(":").Lit("whatever"), jen.ID("Name").Op(":").ID("exampleQuery"), jen.ID("BelongsToUser").Op(":").ID("s").Dot("exampleAccountID")),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Assert(jen.PointerTo().ID("bleveIndexManager")).Dot("index").Dot("Index").Call(
 					jen.ID("x").Dot("ID"),
@@ -443,11 +443,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("x").Dot("Name"),
 				jen.ID("s").Dot("exampleAccountID"),
 			),
-			jen.ID("assert").Dot("Empty").Call(
+			jen.Qual(constants.AssertionLibrary, "Empty").Call(
 				jen.ID("t"),
 				jen.ID("results"),
 			),
-			jen.ID("assert").Dot("Error").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -460,7 +460,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.Const().ID("exampleQuery").Equals().Lit("search_test"),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("search_test_obligatory.bleve"),
 			)),
@@ -470,17 +470,17 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
 			jen.Newline(),
 			jen.ID("x").Assign().ID("exampleType").Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").ID("exampleQuery"), jen.ID("BelongsToUser").Op(":").ID("s").Dot("exampleAccountID")),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Dot("Index").Call(
 					jen.ID("s").Dot("ctx"),
@@ -493,11 +493,11 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("s").Dot("ctx"),
 				jen.ID("x").Dot("Name"),
 			),
-			jen.ID("assert").Dot("NotEmpty").Call(
+			jen.Qual(constants.AssertionLibrary, "NotEmpty").Call(
 				jen.ID("t"),
 				jen.ID("results"),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -510,7 +510,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("t").Assign().ID("s").Dot("T").Call(),
 			jen.Newline(),
 			jen.Const().ID("exampleQuery").Equals().Lit("delete_test"),
-			jen.ID("exampleIndexPath").Assign().ID("search").Dot("IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
+			jen.ID("exampleIndexPath").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.Qual("path/filepath", "Join").Call(
 				jen.ID("s").Dot("indexPath"),
 				jen.Lit("delete_test.bleve"),
 			)),
@@ -520,18 +520,18 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 				jen.ID("testingSearchIndexName"),
 				jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
-			jen.ID("require").Dot("NotNil").Call(
+			jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 				jen.ID("t"),
 				jen.ID("im"),
 			),
 			jen.Newline(),
 			jen.ID("x").Assign().AddressOf().ID("exampleType").Valuesln(jen.ID("ID").Op(":").Lit(123), jen.ID("Name").Op(":").ID("exampleQuery"), jen.ID("BelongsToUser").Op(":").ID("s").Dot("exampleAccountID")),
 			jen.Newline(),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Dot("Index").Call(
 					jen.ID("s").Dot("ctx"),
@@ -539,7 +539,7 @@ func bleveTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("x"),
 				),
 			),
-			jen.ID("assert").Dot("NoError").Call(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
 				jen.ID("t"),
 				jen.ID("im").Dot("Delete").Call(
 					jen.ID("s").Dot("ctx"),

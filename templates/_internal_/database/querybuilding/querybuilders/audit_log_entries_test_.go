@@ -49,12 +49,12 @@ func buildTestSqlite_BuildGetAuditLogEntryQuery(proj *models.Project, dbvendor w
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -89,7 +89,7 @@ func buildTestSqlite_BuildGetAllAuditLogEntriesCountQuery(proj *models.Project, 
 						jen.ID("actualQuery"),
 						jen.Index().Interface().Values(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
@@ -131,12 +131,12 @@ func buildTestSqlite_BuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, d
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -177,12 +177,12 @@ func buildTestSqlite_BuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -233,12 +233,12 @@ func buildTestSqlite_BuildCreateAuditLogEntryQuery(proj *models.Project, dbvendo
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),

@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -70,7 +71,7 @@ func buildBuildGetDefaultAccountIDForUserQuery(proj *models.Project, dbvendor wo
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				)).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn"),
@@ -104,7 +105,7 @@ func buildBuildArchiveAccountMembershipsForUserQuery(proj *models.Project, dbven
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
 					Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"), jen.ID("currentUnixTimeQuery")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
 		),
@@ -124,7 +125,7 @@ func buildBuildGetAccountMembershipsForUserQuery(proj *models.Project, dbvendor 
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("userID"),
 			),
@@ -142,7 +143,7 @@ func buildBuildGetAccountMembershipsForUserQuery(proj *models.Project, dbvendor 
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
@@ -179,11 +180,11 @@ func buildBuildMarkAccountAsUserDefaultQuery(proj *models.Project, dbvendor word
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
 					Dotln("Set").Callln(
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableDefaultUserAccountColumn"),
-					jen.ID("squirrel").Dot("And").Valuesln(
-						jen.ID("squirrel").Dot("Eq").Values(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID")),
-						jen.ID("squirrel").Dot("Eq").Values(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").Op(":").ID("accountID")),
+					jen.Qual(constants.SQLGenerationLibrary, "And").Valuesln(
+						jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID")),
+						jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").Op(":").ID("accountID")),
 					)).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"),
 				)),
@@ -212,7 +213,7 @@ func buildBuildTransferAccountOwnershipQuery(proj *models.Project, dbvendor word
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName")).
 					Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn"), jen.ID("newOwnerID")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("accountID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("accountID"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn").Op(":").ID("currentOwnerID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
@@ -240,7 +241,7 @@ func buildBuildTransferAccountMembershipsQuery(proj *models.Project, dbvendor wo
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
 					Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn"), jen.ID("newOwnerID")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").Op(":").ID("accountID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").Op(":").ID("accountID"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("currentOwnerID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
 			),
@@ -272,7 +273,7 @@ func buildBuildModifyUserPermissionsQuery(proj *models.Project, dbvendor wordsmi
 					jen.ID("accountMemberRolesSeparator"),
 				),
 				).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").Op(":").ID("userID"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").Op(":").ID("accountID"))),
 			),
 		),
@@ -340,7 +341,7 @@ func buildBuildUserIsMemberOfAccountQuery(proj *models.Project, dbvendor wordsmi
 				)).
 					Dotln("Prefix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistencePrefix")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
@@ -414,7 +415,7 @@ func buildBuildRemoveUserFromAccountQuery(proj *models.Project, dbvendor wordsmi
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Delete").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
-					Dotln("Where").Call(jen.ID("squirrel").Dot("Eq").Valuesln(
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),

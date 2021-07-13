@@ -104,11 +104,11 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.ID("rpm"),
 		),
 		jen.Newline(),
-		jen.ID("assert").Dot("NotNil").Call(
+		jen.Qual(constants.AssertionLibrary, "NotNil").Call(
 			jen.ID("t"),
 			jen.ID("s"),
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.ID("err"),
 		),
@@ -159,11 +159,11 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 								jen.Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
 							),
 							jen.Newline(),
-							jen.ID("assert").Dot("Nil").Call(
+							jen.Qual(constants.AssertionLibrary, "Nil").Call(
 								jen.ID("t"),
 								jen.ID("s"),
 							),
-							jen.ID("assert").Dot("Error").Call(
+							jen.Qual(constants.AssertionLibrary, "Error").Call(
 								jen.ID("t"),
 								jen.ID("err"),
 							),

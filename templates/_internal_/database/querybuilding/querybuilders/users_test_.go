@@ -69,12 +69,12 @@ func buildTestSqlite_BuildUserIsBannedQuery(proj *models.Project, dbvendor words
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -115,12 +115,12 @@ func buildTestSqlite_BuildGetUserQuery(proj *models.Project, dbvendor wordsmith.
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -161,12 +161,12 @@ func buildTestSqlite_BuildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -207,12 +207,12 @@ func buildTestSqlite_BuildGetUsersQuery(proj *models.Project, dbvendor wordsmith
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -289,12 +289,12 @@ func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor w
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -337,12 +337,12 @@ func buildTestSqlite_BuildGetUserByUsernameQuery(proj *models.Project, dbvendor 
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -391,12 +391,12 @@ func buildTestSqlite_BuildSearchForUserByUsernameQuery(proj *models.Project, dbv
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -431,7 +431,7 @@ func buildTestSqlite_BuildGetAllUsersCountQuery(proj *models.Project, dbvendor w
 						jen.ID("actualQuery"),
 						jen.Index().Interface().Values(),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
@@ -482,12 +482,12 @@ func buildTestSqlite_BuildCreateUserQuery(proj *models.Project, dbvendor wordsmi
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -554,12 +554,12 @@ func buildTestSqlite_BuildUpdateUserQuery(proj *models.Project, dbvendor wordsmi
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -613,12 +613,12 @@ func buildTestSqlite_BuildUpdateUserPasswordQuery(proj *models.Project, dbvendor
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -660,12 +660,12 @@ func buildTestSqlite_BuildSetUserStatusQuery(proj *models.Project, dbvendor word
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -707,12 +707,12 @@ func buildTestSqlite_BuildUpdateUserTwoFactorSecretQuery(proj *models.Project, d
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -763,12 +763,12 @@ func buildTestSqlite_BuildVerifyUserTwoFactorSecretQuery(proj *models.Project, d
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -818,12 +818,12 @@ func buildTestSqlite_BuildArchiveUserQuery(proj *models.Project, dbvendor wordsm
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),
@@ -908,12 +908,12 @@ func buildTestSqlite_BuildGetAuditLogEntriesForUserQuery(proj *models.Project, d
 						jen.ID("actualQuery"),
 						jen.ID("actualArgs"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedQuery"),
 						jen.ID("actualQuery"),
 					),
-					jen.ID("assert").Dot("Equal").Call(
+					jen.Qual(constants.AssertionLibrary, "Equal").Call(
 						jen.ID("t"),
 						jen.ID("expectedArgs"),
 						jen.ID("actualArgs"),

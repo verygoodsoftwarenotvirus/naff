@@ -91,7 +91,6 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		proj.InternalSecretsPackage():        "secrets",
 		proj.InternalEventsPackage():         "events",
 		proj.InternalSearchPackage("bleve"):  "bleve",
-		proj.InternalSearchPackage("mock"):   "mocksearch",
 		proj.DatabasePackage("queriers", "mariadb"):        "mariadb",
 		proj.DatabasePackage("queriers", "postgres"):       "postgres",
 		proj.DatabasePackage("queriers", "sqlite"):         "sqlite",

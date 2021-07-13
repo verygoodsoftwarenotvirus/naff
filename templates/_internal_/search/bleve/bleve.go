@@ -19,7 +19,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 			jen.ID("bitSize").Equals().Lit(64),
 			jen.Newline(),
 			jen.Comment("testingSearchIndexName is an index name that is only valid for testing's sake."),
-			jen.ID("testingSearchIndexName").ID("search").Dot("IndexName").Equals().Lit("example_index_name"),
+			jen.ID("testingSearchIndexName").Qual(proj.InternalSearchPackage(), "IndexName").Equals().Lit("example_index_name"),
 		),
 		jen.Newline(),
 	)
@@ -32,7 +32,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().Underscore().ID("search").Dot("IndexManager").Equals().Parens(jen.PointerTo().ID("bleveIndexManager")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.InternalSearchPackage(), "IndexManager").Equals().Parens(jen.PointerTo().ID("bleveIndexManager")).Call(jen.ID("nil")),
 		jen.Newline(),
 	)
 
@@ -80,7 +80,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("NewBleveIndexManager instantiates a bleve index."),
 		jen.Newline(),
-		jen.Func().ID("NewBleveIndexManager").Params(jen.ID("path").ID("search").Dot("IndexPath"), jen.ID("name").ID("search").Dot("IndexName"), jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
+		jen.Func().ID("NewBleveIndexManager").Params(jen.ID("path").Qual(proj.InternalSearchPackage(), "IndexPath"), jen.ID("name").Qual(proj.InternalSearchPackage(), "IndexName"), jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 			jen.Var().ID("index").Qual(constants.SearchLibrary, "Index"),
 			jen.Newline(),
 			jen.List(jen.ID("preexistingIndex"), jen.ID("err")).Assign().Qual(constants.SearchLibrary, "Open").Call(jen.String().Call(jen.ID("path"))),
@@ -113,7 +113,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 			jen.ID("im").Assign().AddressOf().ID("bleveIndexManager").Valuesln(
 				jen.ID("index").Op(":").ID("index"),
 				jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
-				jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("serviceName")),
+				jen.ID("tracer").Op(":").Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
 			),
 			jen.Newline(),
 			jen.Return().List(jen.ID("im"), jen.ID("nil")),
@@ -151,22 +151,22 @@ func bleveDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("sm").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachSearchQueryToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachSearchQueryToSpan").Call(
 				jen.ID("span"),
 				jen.ID("query"),
 			),
 			jen.ID("logger").Assign().ID("sm").Dot("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("SearchQueryKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "SearchQueryKey"),
 				jen.ID("query"),
 			),
 			jen.Newline(),
 			jen.If(jen.ID("query").IsEqualTo().Lit("")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("search").Dot("ErrEmptyQueryProvided")),
+				jen.Return().List(jen.ID("nil"), jen.Qual(proj.InternalSearchPackage(), "ErrEmptyQueryProvided")),
 			),
 			jen.Newline(),
 			jen.If(jen.Op("!").ID("forServiceAdmin").Op("&&").ID("accountID").Op("!=").Lit(0)).Body(
 				jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-					jen.ID("keys").Dot("AccountIDKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"),
 					jen.ID("accountID"),
 				),
 			),
@@ -179,7 +179,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 				jen.Qual(constants.SearchLibrary, "NewSearchRequest").Call(jen.ID("q")),
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+				jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -196,7 +196,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 				),
 				jen.If(jen.ID("parseErr").Op("!=").ID("nil")).Body(
 					jen.Comment("this should literally never happen"),
-					jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+					jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 						jen.ID("parseErr"),
 						jen.ID("logger"),
 						jen.ID("span"),
@@ -262,7 +262,7 @@ func bleveDotGo(proj *models.Project) *jen.File {
 				jen.ID("base"),
 			),
 			), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().ID("observability").Dot("PrepareError").Call(
+				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),

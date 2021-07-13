@@ -145,7 +145,7 @@ func buildTestQuerier_ScanSomethings(proj *models.Project, typ models.DataType) 
 						jen.ID("mockRows"),
 						jen.ID("false"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
@@ -170,7 +170,7 @@ func buildTestQuerier_ScanSomethings(proj *models.Project, typ models.DataType) 
 						jen.ID("mockRows"),
 						jen.ID("false"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
@@ -222,11 +222,11 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 			buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.Err(),
 		),
-		jen.ID("assert").Dot("True").Call(
+		jen.Qual(constants.AssertionLibrary, "True").Call(
 			jen.ID("t"),
 			jen.ID("actual"),
 		),
@@ -261,8 +261,8 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 				buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, i, true, true)...,
 			),
-			jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.Err()),
-			jen.ID("assert").Dot("False").Call(jen.ID("t"), jen.ID("actual")),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.Err()),
+			jen.Qual(constants.AssertionLibrary, "False").Call(jen.ID("t"), jen.ID("actual")),
 		}
 
 		bodyLines = append(bodyLines,
@@ -291,11 +291,11 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, false, true)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -316,11 +316,11 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, false)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -366,11 +366,11 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true)...,
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -417,11 +417,11 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -480,7 +480,7 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
 			buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true)...,
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.Err(),
 		),
@@ -524,11 +524,11 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
 						buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, i, true, true)...,
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -552,11 +552,11 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, false, true)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -580,11 +580,11 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
 						buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, false)...,
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -628,11 +628,11 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -683,7 +683,7 @@ func buildTestQuerier_GetAllSomethingsCount(proj *models.Project, typ models.Dat
 						Dotln("WillReturnRows").Call(jen.ID("newCountDBRowResponse").Call(jen.Uint64().Call(jen.Lit(123)))),
 					jen.Newline(),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAll%sCount", pn).Call(jen.ID("ctx")),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
@@ -765,7 +765,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						jen.IDf("example%sList", sn).Dot(pn).Spread(),
 					)),
 					jen.Newline(),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("GetAll%s", pn).Call(
 							jen.ID("ctx"),
@@ -778,7 +778,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 					jen.For(jen.ID("stillQuerying")).Body(
 						jen.Select().Body(
 							jen.Case(jen.ID("batch").Assign().Op("<-").ID("results")).Body(
-								jen.ID("assert").Dot("NotEmpty").Call(
+								jen.Qual(constants.AssertionLibrary, "NotEmpty").Call(
 									jen.ID("t"),
 									jen.ID("batch"),
 								), jen.ID("doneChan").ReceiveFromChannel().ID("true")),
@@ -805,7 +805,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("GetAll%s", pn).Call(
 							jen.ID("ctx"),
@@ -858,7 +858,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("secondFakeArgs")).Spread()).
 						Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 					jen.Newline(),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("GetAll%s", pn).Call(
 							jen.ID("ctx"),
@@ -909,7 +909,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						jen.ID("results"),
 						jen.ID("exampleBatchSize"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
@@ -964,7 +964,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("secondFakeArgs")).Spread()).
 						Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("GetAll%s", pn).Call(
 							jen.ID("ctx"),
@@ -1025,7 +1025,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("secondFakeArgs")).Spread()).
 						Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRow").Call()),
 					jen.Newline(),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("GetAll%s", pn).Call(
 							jen.ID("ctx"),
@@ -1116,7 +1116,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 			callArgs...,
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.Err(),
 		),
@@ -1161,7 +1161,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 						buildArgsForListRetrievalQueryBuilder(proj, typ, false, true, i)...,
 					),
-					jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.Err()),
+					jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.Err()),
 					jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				),
 			),
@@ -1206,7 +1206,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 					callArgs...,
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
@@ -1239,11 +1239,11 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 					jen.Lit(0),
 					jen.ID("filter"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1279,11 +1279,11 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 					callArgs...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1325,11 +1325,11 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 					callArgs...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1428,7 +1428,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 			jen.ID("defaultLimit"),
 			jen.ID("exampleIDs"),
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.Err(),
 		),
@@ -1484,11 +1484,11 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 						jen.ID("defaultLimit"),
 						jen.ID("exampleIDs"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -1534,11 +1534,11 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 						jen.ID("defaultLimit"),
 						jen.ID("exampleIDs"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -1621,7 +1621,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					jen.Lit(0),
 					jen.ID("exampleIDs"),
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
@@ -1707,11 +1707,11 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					jen.ID("defaultLimit"),
 					jen.ID("exampleIDs"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1792,11 +1792,11 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					jen.ID("defaultLimit"),
 					jen.ID("exampleIDs"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.Err(),
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1873,7 +1873,7 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("exampleInput"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
@@ -1908,11 +1908,11 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("nil"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -1936,11 +1936,11 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("exampleInput"),
 						jen.Lit(0),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -1967,11 +1967,11 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("exampleInput"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -2022,18 +2022,18 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("exampleInput"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("True").Call(
+					jen.Qual(constants.AssertionLibrary, "True").Call(
 						jen.ID("t"),
 						jen.Qual("errors", "Is").Call(
 							jen.Err(),
 							jen.ID("expectedErr"),
 						),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -2090,11 +2090,11 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("exampleInput"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -2154,11 +2154,11 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("exampleInput"),
 						jen.ID("exampleUser").Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -2219,7 +2219,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectCommit").Call(),
 					jen.Newline(),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2247,7 +2247,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2269,7 +2269,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2294,7 +2294,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectBegin").Call().Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2338,7 +2338,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2394,7 +2394,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2450,7 +2450,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
@@ -2527,7 +2527,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 		jen.Newline(),
 		jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 		jen.Newline(),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.ID("c").Dotf("Archive%s", sn).Call(
 				jen.ID("ctx"),
@@ -2576,7 +2576,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Archive%s", sn).Call(
 							jen.ID("ctx"),
@@ -2610,7 +2610,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("c").Dotf("Archive%s", sn).Call(
 						jen.ID("ctx"),
@@ -2649,7 +2649,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("c").Dotf("Archive%s", sn).Call(
 							jen.ID("ctx"),
@@ -2688,7 +2688,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("c").Dotf("Archive%s", sn).Call(
 						jen.ID("ctx"),
@@ -2729,7 +2729,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.Newline(),
 				jen.ID("db").Dot("ExpectBegin").Call().Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("c").Dotf("Archive%s", sn).Call(
 						jen.ID("ctx"),
@@ -2797,7 +2797,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.Newline(),
 				jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("c").Dotf("Archive%s", sn).Call(
 						jen.ID("ctx"),
@@ -2877,7 +2877,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.Newline(),
 				jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("c").Dotf("Archive%s", sn).Call(
 						jen.ID("ctx"),
@@ -2957,7 +2957,7 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.Newline(),
 				jen.ID("c").Dot("sqlQueryBuilder").Equals().ID("mockQueryBuilder"),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("c").Dotf("Archive%s", sn).Call(
 						jen.ID("ctx"),
@@ -3033,7 +3033,7 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
@@ -3063,11 +3063,11 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 						jen.ID("ctx"),
 						jen.Lit(0),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -3105,11 +3105,11 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -3153,11 +3153,11 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.Err(),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),

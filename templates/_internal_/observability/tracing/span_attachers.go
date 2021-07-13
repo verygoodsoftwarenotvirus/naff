@@ -105,17 +105,17 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("sortBy").ID("string")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("FilterPageKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "FilterPageKey"),
 				jen.ID("page"),
 			),
 			jen.ID("attachUint8ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("FilterLimitKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "FilterLimitKey"),
 				jen.ID("limit"),
 			),
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("FilterSortByKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "FilterSortByKey"),
 				jen.ID("sortBy"),
 			),
 		),
@@ -129,7 +129,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("entryID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("AuditLogEntryIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "AuditLogEntryIDKey"),
 				jen.ID("entryID"),
 			),
 		),
@@ -143,7 +143,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("eventType").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("AuditLogEntryEventTypeKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "AuditLogEntryEventTypeKey"),
 				jen.ID("eventType"),
 			),
 		),
@@ -157,7 +157,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("accountID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("AccountIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"),
 				jen.ID("accountID"),
 			),
 		),
@@ -171,7 +171,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("accountID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("ActiveAccountIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "ActiveAccountIDKey"),
 				jen.ID("accountID"),
 			),
 		),
@@ -185,7 +185,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("userID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("RequesterIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "RequesterIDKey"),
 				jen.ID("userID"),
 			),
 		),
@@ -230,7 +230,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").DoesNotEqual().Nil()).Body(
 					jen.ID("attachBooleanToSpan").Call(
 						jen.ID("span"),
-						jen.ID("keys").Dot("UserIsServiceAdminKey"),
+						jen.Qual(proj.ConstantKeysPackage(), "UserIsServiceAdminKey"),
 						jen.ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
 					),
 				),
@@ -246,7 +246,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("clientID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("APIClientDatabaseIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "APIClientDatabaseIDKey"),
 				jen.ID("clientID"),
 			),
 		),
@@ -260,7 +260,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("clientID").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("APIClientClientIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "APIClientClientIDKey"),
 				jen.ID("clientID"),
 			),
 		),
@@ -293,7 +293,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("userID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("UserIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "UserIDKey"),
 				jen.ID("userID"),
 			),
 		),
@@ -307,7 +307,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("username").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("UsernameKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "UsernameKey"),
 				jen.ID("username"),
 			),
 		),
@@ -321,7 +321,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("webhookID").ID("uint64")).Body(
 			jen.ID("attachUint64ToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("WebhookIDKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "WebhookIDKey"),
 				jen.ID("webhookID"),
 			),
 		),
@@ -335,7 +335,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("u").PointerTo().Qual("net/url", "URL")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("RequestURIKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "RequestURIKey"),
 				jen.ID("u").Dot("String").Call(),
 			),
 		),
@@ -349,7 +349,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("uri").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("RequestURIKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "RequestURIKey"),
 				jen.ID("uri"),
 			),
 		),
@@ -364,12 +364,12 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("req").Op("!=").ID("nil")).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("RequestURIKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "RequestURIKey"),
 					jen.ID("req").Dot("URL").Dot("String").Call(),
 				),
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("RequestMethodKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "RequestMethodKey"),
 					jen.ID("req").Dot("Method"),
 				),
 				jen.Newline(),
@@ -399,7 +399,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 						jen.ID("span"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%s.%s"),
-							jen.ID("keys").Dot("RequestHeadersKey"),
+							jen.Qual(proj.ConstantKeysPackage(), "RequestHeadersKey"),
 							jen.ID("k"),
 						),
 						jen.ID("v"),
@@ -422,7 +422,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				),
 				jen.Newline(),
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int").Call(
-					jen.ID("keys").Dot("ResponseStatusKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "ResponseStatusKey"),
 					jen.ID("res").Dot("StatusCode"),
 				)),
 				jen.Newline(),
@@ -432,7 +432,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 						jen.ID("span"),
 						jen.Qual("fmt", "Sprintf").Call(
 							jen.Lit("%s.%s"),
-							jen.ID("keys").Dot("ResponseHeadersKey"),
+							jen.Qual(proj.ConstantKeysPackage(), "ResponseHeadersKey"),
 							jen.ID("k"),
 						),
 						jen.ID("v"),
@@ -473,7 +473,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("args").Index().Interface()).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("DatabaseQueryKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "DatabaseQueryKey"),
 				jen.ID("query"),
 			),
 			jen.ID("attachStringToSpan").Call(
@@ -505,43 +505,43 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
 				jen.ID("attachUint8ToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterLimitKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterLimitKey"),
 					jen.ID("filter").Dot("Limit"),
 				),
 				jen.ID("attachUint64ToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterPageKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterPageKey"),
 					jen.ID("filter").Dot("Page"),
 				),
 				jen.ID("attachUint64ToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterCreatedAfterKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterCreatedAfterKey"),
 					jen.ID("filter").Dot("CreatedAfter"),
 				),
 				jen.ID("attachUint64ToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterCreatedBeforeKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterCreatedBeforeKey"),
 					jen.ID("filter").Dot("CreatedBefore"),
 				),
 				jen.ID("attachUint64ToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterUpdatedAfterKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterUpdatedAfterKey"),
 					jen.ID("filter").Dot("UpdatedAfter"),
 				),
 				jen.ID("attachUint64ToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterUpdatedBeforeKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterUpdatedBeforeKey"),
 					jen.ID("filter").Dot("UpdatedBefore"),
 				),
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterSortByKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterSortByKey"),
 					jen.String().Call(jen.ID("filter").Dot("SortBy")),
 				),
 			).Else().Body(
 				jen.ID("attachBooleanToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("FilterIsNilKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "FilterIsNilKey"),
 					jen.ID("true"),
 				),
 			),
@@ -556,7 +556,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.ID("query").ID("string")).Body(
 			jen.ID("attachStringToSpan").Call(
 				jen.ID("span"),
-				jen.ID("keys").Dot("SearchQueryKey"),
+				jen.Qual(proj.ConstantKeysPackage(), "SearchQueryKey"),
 				jen.ID("query"),
 			),
 		),
@@ -571,17 +571,17 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("ua").Op("!=").ID("nil")).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("UserAgentOSKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "UserAgentOSKey"),
 					jen.ID("ua").Dot("OS").Call(),
 				),
 				jen.ID("attachBooleanToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("UserAgentMobileKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "UserAgentMobileKey"),
 					jen.ID("ua").Dot("Mobile").Call(),
 				),
 				jen.ID("attachBooleanToSpan").Call(
 					jen.ID("span"),
-					jen.ID("keys").Dot("UserAgentBotKey"),
+					jen.Qual(proj.ConstantKeysPackage(), "UserAgentBotKey"),
 					jen.ID("ua").Dot("Bot").Call(),
 				),
 			),

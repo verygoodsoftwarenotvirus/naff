@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -431,7 +432,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
 					jen.List(jen.ID("u"), jen.ID("err")).Assign().Qual("net/url", "ParseRequestURI").Call(jen.Lit("https://todo.verygoodsoftwarenotvirus.ru")),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
@@ -487,7 +488,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("t").Dot("Name").Call(),
 						jen.Lit("blah"),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),

@@ -3,6 +3,7 @@ package httpclient
 import (
 	"fmt"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"path"
@@ -155,11 +156,11 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
-				jen.ID("assert").Dot("True").Call(
+				jen.Qual(constants.AssertionLibrary, "True").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -180,11 +181,11 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 						buildGetSomethingArgs(proj, typ, true, true, i)...,
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("assert").Dot("False").Call(
+					jen.Qual(constants.AssertionLibrary, "False").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
@@ -205,11 +206,11 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -229,11 +230,11 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -250,11 +251,11 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
-				jen.ID("assert").Dot("False").Call(
+				jen.Qual(constants.AssertionLibrary, "False").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -301,15 +302,15 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("require").Dot("NotNil").Call(
+				jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
-				jen.ID("assert").Dot("Equal").Call(
+				jen.Qual(constants.AssertionLibrary, "Equal").Call(
 					jen.ID("t"),
 					jen.ID("s").Dotf("example%s", sn),
 					jen.ID("actual"),
@@ -331,11 +332,11 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 						buildGetSomethingArgs(proj, typ, true, true, i)...,
 					),
 					jen.Newline(),
-					jen.ID("require").Dot("Nil").Call(
+					jen.Qual(constants.MustAssertPkg, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
@@ -356,11 +357,11 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
 				),
 				jen.Newline(),
-				jen.ID("require").Dot("Nil").Call(
+				jen.Qual(constants.MustAssertPkg, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -380,11 +381,11 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -414,11 +415,11 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -516,15 +517,15 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 					buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("require").Dot("NotNil").Call(
+				jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
-				jen.ID("assert").Dot("Equal").Call(
+				jen.Qual(constants.AssertionLibrary, "Equal").Call(
 					jen.ID("t"),
 					jen.IDf("example%sList", sn),
 					jen.ID("actual"),
@@ -548,11 +549,11 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 						buildListOfSomethingArgsWithoutIndex(proj, typ, i)...,
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
@@ -575,11 +576,11 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 					buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -604,11 +605,11 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 					buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -705,15 +706,15 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 			buildSearchSomethingArgs(proj, typ, -1, false)...,
 		),
 		jen.Newline(),
-		jen.ID("require").Dot("NotNil").Call(
+		jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 			jen.ID("t"),
 			jen.ID("actual"),
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.ID("err"),
 		),
-		jen.ID("assert").Dot("Equal").Call(
+		jen.Qual(constants.AssertionLibrary, "Equal").Call(
 			jen.ID("t"),
 			jen.IDf("example%sList", sn).Dot(pn),
 			jen.ID("actual"),
@@ -739,11 +740,11 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 				buildSearchSomethingArgs(proj, typ, i, false)...,
 			),
 			jen.Newline(),
-			jen.ID("assert").Dot("Nil").Call(
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(
 				jen.ID("t"),
 				jen.ID("actual"),
 			),
-			jen.ID("assert").Dot("Error").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -771,11 +772,11 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 					buildSearchSomethingArgs(proj, typ, -1, true)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -793,11 +794,11 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 					buildSearchSomethingArgs(proj, typ, -1, false)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -827,11 +828,11 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 					buildSearchSomethingArgs(proj, typ, -1, false)...,
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -950,16 +951,16 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("require").Dot("NotNil").Call(
+				jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
 				jen.Newline(),
-				jen.ID("assert").Dot("Equal").Call(
+				jen.Qual(constants.AssertionLibrary, "Equal").Call(
 					jen.ID("t"),
 					jen.ID("s").Dotf("example%s", sn),
 					jen.ID("actual"),
@@ -988,8 +989,8 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, i, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(jen.ID("t"), jen.ID("actual")),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			}
 
 			lines = append(lines,
@@ -1016,11 +1017,11 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 						jen.ID("nil"),
 					)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1038,11 +1039,11 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1061,11 +1062,11 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1083,11 +1084,11 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1170,7 +1171,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 				jen.ID("err").Assign().ID("c").Dotf("Update%s", sn).Call(
 					buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1193,7 +1194,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 						jen.ID("err").Assign().ID("c").Dotf("Update%s", sn).Call(
 							buildUpdateSomethingArgsWithoutIndex(proj, typ, i, true)...,
 						),
-						jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+						jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 					),
 				),
 			)
@@ -1212,7 +1213,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 				jen.ID("err").Assign().ID("c").Dotf("Update%s", sn).Call(
 					append(buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, false), jen.Nil())...,
 				),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			),
 		),
 		jen.Newline(),
@@ -1226,7 +1227,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 				jen.ID("err").Assign().ID("c").Dotf("Update%s", sn).Call(
 					buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			),
 		),
 		jen.Newline(),
@@ -1240,7 +1241,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 				jen.ID("err").Assign().ID("c").Dotf("Update%s", sn).Call(
 					buildUpdateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Error").Call(jen.ID("t"), jen.ID("err")),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			),
 		),
 	)
@@ -1286,7 +1287,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("err").Assign().ID("c").Dotf("Archive%s", sn).Call(
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
-				jen.ID("assert").Dot("NoError").Call(
+				jen.Qual(constants.AssertionLibrary, "NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1307,7 +1308,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 					jen.ID("err").Assign().ID("c").Dotf("Archive%s", sn).Call(
 						buildGetSomethingArgs(proj, typ, true, true, i)...,
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
@@ -1328,7 +1329,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("err").Assign().ID("c").Dotf("Archive%s", sn).Call(
 					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1348,7 +1349,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("err").Assign().ID("c").Dotf("Archive%s", sn).Call(
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1365,7 +1366,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("err").Assign().ID("c").Dotf("Archive%s", sn).Call(
 					buildGetSomethingArgs(proj, typ, true, true, -1)...,
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1462,15 +1463,15 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
 			buildAuditSomethingArgs(proj, typ, -1, true)...,
 		),
-		jen.ID("require").Dot("NotNil").Call(
+		jen.Qual(constants.MustAssertPkg, "NotNil").Call(
 			jen.ID("t"),
 			jen.ID("actual"),
 		),
-		jen.ID("assert").Dot("NoError").Call(
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
 			jen.ID("err"),
 		),
-		jen.ID("assert").Dot("Equal").Call(
+		jen.Qual(constants.AssertionLibrary, "Equal").Call(
 			jen.ID("t"),
 			jen.ID("exampleAuditLogEntryList"),
 			jen.ID("actual"),
@@ -1499,11 +1500,11 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
 				buildAuditSomethingArgs(proj, typ, i, true)...,
 			),
-			jen.ID("assert").Dot("Nil").Call(
+			jen.Qual(constants.AssertionLibrary, "Nil").Call(
 				jen.ID("t"),
 				jen.ID("actual"),
 			),
-			jen.ID("assert").Dot("Error").Call(
+			jen.Qual(constants.AssertionLibrary, "Error").Call(
 				jen.ID("t"),
 				jen.ID("err"),
 			),
@@ -1529,11 +1530,11 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
 					buildAuditSomethingArgs(proj, typ, -1, false)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1550,11 +1551,11 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
 					buildAuditSomethingArgs(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
@@ -1571,11 +1572,11 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetAuditLogFor%s", sn).Call(
 					buildAuditSomethingArgs(proj, typ, -1, true)...,
 				),
-				jen.ID("assert").Dot("Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Nil").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
-				jen.ID("assert").Dot("Error").Call(
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),

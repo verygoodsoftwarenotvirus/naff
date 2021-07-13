@@ -29,6 +29,12 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 		"unexportedVarName": func(s string) string {
 			return wordsmith.FromSingularPascalCase(s).UnexportedVarName()
 		},
+		"dbConditional": func(dbName, content string) string {
+			if cf.proj.DatabaseIsEnabled(validDatabase(dbName)) {
+				return content
+			}
+			return ""
+		},
 		"projectImport": func(path string) string {
 			return fmt.Sprintf("%q", filepath.Join(append([]string{cf.proj.OutputPath}, path)...))
 		},

@@ -59,7 +59,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("Encoding").MapAssign().Qual(proj.EncodingPackage(), "Config").Valuesln(
 							jen.ID("ContentType").MapAssign().Lit("application/json"),
 						),
-						jen.ID("Observability").MapAssign().ID("observability").Dot("Config").Valuesln(
+						jen.ID("Observability").MapAssign().Qual(proj.ObservabilityPackage(), "Config").Valuesln(
 							jen.ID("Metrics").MapAssign().Qual(proj.MetricsPackage(), "Config").Valuesln(
 								jen.ID("Provider").MapAssign().Lit(""),
 								jen.ID("RouteToken").MapAssign().Lit(""),
@@ -83,12 +83,12 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.Lit(""),
 						jen.Lit(""),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("NoError").Call(
+					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("cfg").Dot("EncodeToFile").Call(
 							jen.ID("f").Dot("Name").Call(),
@@ -110,12 +110,12 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.Lit(""),
 						jen.Lit(""),
 					),
-					jen.ID("require").Dot("NoError").Call(
+					jen.Qual(constants.MustAssertPkg, "NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("cfg").Dot("EncodeToFile").Call(
 							jen.ID("f").Dot("Name").Call(),
@@ -146,9 +146,9 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					constants.LoggerVar().Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.Newline(),
 					jen.For(jen.List(jen.Underscore(), jen.ID("provider")).Assign().Range().Index().String().Values(
-						jen.Lit("sqlite"),
-						jen.Lit("postgres"),
-						jen.Lit("mariadb"),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Lit("sqlite")),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Lit("postgres")),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Lit("mariadb")),
 					)).Body(
 						jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Valuesln(
 							jen.ID("Database").MapAssign().ID("config").Dot("Config").Valuesln(
@@ -163,11 +163,11 @@ func configTestDotGo(proj *models.Project) *jen.File {
 							jen.AddressOf().Qual("database/sql", "DB").Values(),
 							jen.ID("cfg"),
 						),
-						jen.ID("assert").Dot("NotNil").Call(
+						jen.Qual(constants.AssertionLibrary, "NotNil").Call(
 							jen.ID("t"),
 							jen.ID("x"),
 						),
-						jen.ID("assert").Dot("NoError").Call(
+						jen.Qual(constants.AssertionLibrary, "NoError").Call(
 							jen.ID("t"),
 							jen.ID("err"),
 						),
@@ -191,11 +191,11 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("nil"),
 						jen.ID("cfg"),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("x"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
@@ -223,11 +223,11 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.AddressOf().Qual("database/sql", "DB").Values(),
 						jen.ID("cfg"),
 					),
-					jen.ID("assert").Dot("Nil").Call(
+					jen.Qual(constants.AssertionLibrary, "Nil").Call(
 						jen.ID("t"),
 						jen.ID("x"),
 					),
-					jen.ID("assert").Dot("Error").Call(
+					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),

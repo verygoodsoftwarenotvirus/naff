@@ -117,7 +117,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("false"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -134,7 +134,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("false"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -236,7 +236,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -254,7 +254,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -356,7 +356,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -374,7 +374,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -443,7 +443,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID("logger").Assign().ID("c").Dot("loggerWithFilter").Call(jen.ID("filter")),
-		jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachQueryFilterToSpan").Call(
 			jen.ID("span"),
 			jen.ID("filter"),
 		),
@@ -459,7 +459,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -476,7 +476,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -614,7 +614,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -629,7 +629,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -647,7 +647,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
 				jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -744,7 +744,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			buildArgsForHTTPClientUpdateRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().ID("observability").Dot("PrepareError").Call(
+			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -757,7 +757,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.AddressOf().ID(uvn),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().ID("observability").Dot("PrepareError").Call(
+			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -838,7 +838,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			buildArgsForHTTPClientArchiveRequestBuildingMethod(proj, typ)...,
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().ID("observability").Dot("PrepareError").Call(
+			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -851,7 +851,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			jen.ID("nil"),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().ID("observability").Dot("PrepareError").Call(
+			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -928,7 +928,7 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -945,7 +945,7 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(jen.ID("nil"),
-				jen.ID("observability").Dot("PrepareError").Call(
+				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
