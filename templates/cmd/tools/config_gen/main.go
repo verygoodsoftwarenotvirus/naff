@@ -164,18 +164,18 @@ func mainDotGo(proj *models.Project) *jen.File {
 		jen.Var().ID("files").Equals().Map(jen.ID("string")).ID("configFunc").Valuesln(
 			jen.Lit("environments/local/service.config").MapAssign().ID("localDevelopmentConfig"),
 			jen.Lit("environments/testing/config_files/frontend-tests.config").MapAssign().ID("frontendTestsConfig"),
-			jen.Lit("environments/testing/config_files/integration-tests-postgres.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Lit("environments/testing/config_files/integration-tests-postgres.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
 				jen.ID("postgres"),
 				jen.ID("devPostgresDBConnDetails"),
-			),
-			jen.Lit("environments/testing/config_files/integration-tests-sqlite.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
+			)),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Lit("environments/testing/config_files/integration-tests-sqlite.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
 				jen.ID("sqlite"),
 				jen.ID("devSqliteConnDetails"),
-			),
-			jen.Lit("environments/testing/config_files/integration-tests-mariadb.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
+			)),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Lit("environments/testing/config_files/integration-tests-mariadb.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
 				jen.ID("mariadb"),
 				jen.ID("devMariaDBConnDetails"),
-			),
+			)),
 		),
 		jen.Newline(),
 	)
@@ -405,9 +405,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("ctx").Qual("context", "Context"),
 				jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
 				jen.ID("startupDeadline").Assign().Qual("time", "Minute"),
-				jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
 					jen.ID("startupDeadline").Equals().Lit(5).PointerTo().Qual("time", "Minute"),
-				),
+				)),
 				jen.Newline(),
 				jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
 					jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(

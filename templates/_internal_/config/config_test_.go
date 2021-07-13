@@ -69,12 +69,12 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("Services").MapAssign().ID("ServicesConfigurations").Valuesln(
 							serviceConfigs...,
 						),
-						jen.ID("Database").MapAssign().ID("config").Dot("Config").Valuesln(
+						jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("postgres"),
 							jen.ID("MetricsCollectionInterval").MapAssign().Lit(2).PointerTo().Qual("time", "Second"),
 							jen.ID("Debug").MapAssign().ID("true"),
 							jen.ID("RunMigrations").MapAssign().ID("true"),
-							jen.ID("ConnectionDetails").MapAssign().ID("database").Dot("ConnectionDetails").Call(jen.Lit("postgres://username:passwords@host/table")),
+							jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.Lit("postgres://username:passwords@host/table")),
 						),
 					),
 					jen.Newline(),
@@ -151,7 +151,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Lit("mariadb")),
 					)).Body(
 						jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Valuesln(
-							jen.ID("Database").MapAssign().ID("config").Dot("Config").Valuesln(
+							jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 								jen.ID("Provider").MapAssign().ID("provider"),
 							),
 						),
@@ -211,7 +211,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					constants.LoggerVar().Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.Newline(),
 					jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Valuesln(
-						jen.ID("Database").MapAssign().ID("config").Dot("Config").Valuesln(
+						jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("provider"),
 						),
 					),

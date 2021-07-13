@@ -25,7 +25,7 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 		jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 		jen.ID("authService").Assign().AddressOf().Qual(proj.TypesPackage("mock"), "AuthService").Values(),
 		jen.ID("usersService").Assign().AddressOf().Qual(proj.TypesPackage("mock"), "UsersService").Values(),
-		jen.ID("dataManager").Assign().ID("database").Dot("BuildMockDatabase").Call(),
+		jen.ID("dataManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.Newline(),
 		jen.ID("rpm").Assign().Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
 		jen.ID("rpm").Dot("On").Call(

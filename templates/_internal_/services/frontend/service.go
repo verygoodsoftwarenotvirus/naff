@@ -25,7 +25,7 @@ func serviceDotGo(proj *models.Project) *jen.File {
 		jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
 		jen.ID("panicker").Qual(proj.InternalPackage("panicking"), "Panicker"),
 		jen.ID("localizer").PointerTo().Qual("github.com/nicksnyder/go-i18n/v2/i18n", "Localizer"),
-		jen.ID("dataStore").ID("database").Dot("DataManager"),
+		jen.ID("dataStore").Qual(proj.DatabasePackage(), "DataManager"),
 		jen.ID("paymentManager").ID("capitalism").Dot("PaymentManager"),
 		jen.ID("authService").ID("AuthService"),
 		jen.ID("usersService").ID("UsersService"),
