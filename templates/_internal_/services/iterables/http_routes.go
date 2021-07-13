@@ -886,10 +886,6 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.ID("span"),
 				jen.ID(uvn).Dot("ID"),
 			),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
-				jen.ID(uvn).Dot("ID"),
-			),
 			jen.Newline(),
 			jen.Comment("notify interested parties."),
 			func() jen.Code {

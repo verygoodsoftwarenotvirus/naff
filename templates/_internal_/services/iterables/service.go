@@ -108,6 +108,29 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.ID("tracer").Op(":").Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
 	)
 
+	serviceBodyLines := []jen.Code{}
+	if typ.SearchEnabled {
+		serviceBodyLines = append(serviceBodyLines,
+			jen.List(jen.ID("searchIndexManager"), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
+				jen.Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("cfg").Dot("SearchIndexPath")),
+				jen.Lit(prn),
+				jen.ID("logger"),
+			),
+			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up search index: %w"), jen.Err())),
+			),
+			jen.Newline(),
+		)
+	}
+
+	serviceBodyLines = append(serviceBodyLines,
+		jen.ID("svc").Assign().AddressOf().ID("service").Valuesln(
+			serviceInitLines...,
+		),
+		jen.Newline(),
+		jen.Return().List(jen.ID("svc"), jen.ID("nil")),
+	)
+
 	code.Add(
 		jen.Commentf("ProvideService builds a new %sService.", pn),
 		jen.Newline(),
@@ -125,30 +148,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			}(),
 			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
 		).Params(jen.Qual(proj.TypesPackage(), fmt.Sprintf("%sDataService", sn)), jen.ID("error")).Body(
-			func() jen.Code {
-				if typ.SearchEnabled {
-					return jen.List(jen.ID("searchIndexManager"), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
-						jen.Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("cfg").Dot("SearchIndexPath")),
-						jen.Lit(prn),
-						jen.ID("logger"),
-					)
-				}
-				return jen.Null()
-			}(),
-			func() jen.Code {
-				if typ.SearchEnabled {
-					return jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-						jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up search index: %w"), jen.Err())),
-					)
-				}
-				return jen.Null()
-			}(),
-			jen.Newline(),
-			jen.ID("svc").Assign().AddressOf().ID("service").Valuesln(
-				serviceInitLines...,
-			),
-			jen.Newline(),
-			jen.Return().List(jen.ID("svc"), jen.ID("nil")),
+			serviceBodyLines...,
 		),
 		jen.Newline(),
 	)

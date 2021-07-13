@@ -40,8 +40,21 @@ var configTemplate string
 func configDotGo(proj *models.Project) string {
 	serviceConfigCodes := []jen.Code{}
 	for _, typ := range proj.DataTypes {
+		serviceConfigCodes = append(serviceConfigCodes,
+			jen.ID("cfg").Dot("Set").Call(
+				jen.IDf("ConfigKey%sLogging", typ.Name.Plural()),
+				jen.ID("input").Dot("Services").Dot(typ.Name.Plural()).Dot("Logging"),
+			),
+			jen.Newline(),
+		)
 		if typ.SearchEnabled {
-			serviceConfigCodes = append(serviceConfigCodes, jen.ID("cfg").Dot("Set").Call(jen.IDf("ConfigKey%sSearchIndexPath", typ.Name.Plural()), jen.ID("input").Dot("Services").Dot(typ.Name.Plural()).Dot("SearchIndexPath")), jen.Newline())
+			serviceConfigCodes = append(serviceConfigCodes,
+				jen.ID("cfg").Dot("Set").Call(
+					jen.IDf("ConfigKey%sSearchIndexPath", typ.Name.Plural()),
+					jen.ID("input").Dot("Services").Dot(typ.Name.Plural()).Dot("SearchIndexPath"),
+				),
+				jen.Newline(),
+			)
 		}
 	}
 
@@ -113,8 +126,16 @@ func keysDotGo(proj *models.Project) string {
 	for _, typ := range proj.DataTypes {
 		keyDeclarations = append(keyDeclarations,
 			jen.Newline(),
+			jen.Newline(),
 			jen.IDf("%sKey", typ.Name.PluralUnexportedVarName()).Equals().ID("servicesKey").Plus().ID("x").Plus().Lit(typ.Name.PluralRouteName()),
 			jen.Newline(),
+		)
+
+		keyDeclarations = append(keyDeclarations,
+			jen.Newline(),
+			jen.Commentf("ConfigKey%sLogging controls logging for the %s service.", typ.Name.Plural(), typ.Name.Plural()),
+			jen.Newline(),
+			jen.IDf("ConfigKey%sLogging", typ.Name.Plural()).Equals().IDf("%sKey", typ.Name.PluralUnexportedVarName()).Plus().ID("x").Plus().ID("loggingKey"),
 		)
 
 		if typ.SearchEnabled {

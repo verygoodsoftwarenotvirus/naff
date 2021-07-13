@@ -22,7 +22,6 @@ func RenderPackage(proj *models.Project) error {
 		"audit_log_entry.go":         auditLogEntryDotGo(proj),
 		"delegated_client.go":        delegatedClientDotGo(proj),
 		"fake.go":                    fakeDotGo(proj),
-		"misc.go":                    miscDotGo(proj),
 		"query_filter.go":            queryFilterDotGo(proj),
 		"account.go":                 accountDotGo(proj),
 		"account_user_membership.go": accountUserMembershipDotGo(proj),
@@ -73,13 +72,6 @@ var fakeTemplate string
 
 func fakeDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, fakeTemplate, nil)
-}
-
-//go:embed misc.gotpl
-var miscTemplate string
-
-func miscDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, miscTemplate, nil)
 }
 
 //go:embed query_filter.gotpl

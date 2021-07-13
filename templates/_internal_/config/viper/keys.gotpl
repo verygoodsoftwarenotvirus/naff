@@ -178,6 +178,8 @@ const (
 	// ConfigKeyUploaderFilesystemRootDirectory is the key viper will use to refer to Uploads.Filesystem.RootDirectory.
 	ConfigKeyUploaderFilesystemRootDirectory = uploadsKey + x + storageConfigKey + x + filesystemKey + x + "root_directory"
 
+	loggingKey = "logging"
+
 	auditLogKey = "audit_log"
 	// ConfigKeyAuditLogEnabled is the key viper will use to refer to the AuditLogSettings.Enabled setting.
 	ConfigKeyAuditLogEnabled = auditLogKey + x + enabledKey
