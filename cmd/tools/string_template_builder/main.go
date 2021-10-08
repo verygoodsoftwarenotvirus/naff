@@ -12,8 +12,7 @@ import (
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/mariadb",
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/querybuilding/postgres",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/build/worker",
 	}
 
 	for _, pkg := range allPackages {

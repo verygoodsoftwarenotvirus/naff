@@ -6,26 +6,21 @@ import (
 	"time"
 
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/audit"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
 	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/capitalism/stripe"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config/viper"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
 	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querier"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding"
-	mockquerybuilding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mock"
-	querybuilders "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/querybuilders"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/mariadb"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/postgres"
-	//"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/querybuilding/sqlite"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/queriers/mysql"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/queriers/postgres"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding"
 	mockencoding "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/encoding/mock"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/events"
+	msgqconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/messagequeue/config"
+	msgqconsumers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/messagequeue/consumers"
+	msgqconsumersmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/messagequeue/consumers/mock"
+	msgqpublishers "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/messagequeue/publishers"
+	msgqpublishersmock "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/messagequeue/publishers/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/keys"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/logging"
@@ -38,23 +33,24 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/chi"
 	mockrouting "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/bleve"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/elasticsearch"
 	mocksearch "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/search/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/secrets"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/server"
 	accountsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/accounts"
 	adminservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/admin"
 	apiclientsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/apiclients"
-	auditservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/audit"
 	authenticationservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/authentication"
 	frontendservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/frontend"
 	iterablesservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/iterables"
 	usersservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/users"
 	webhooksservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/webhooks"
+	websocketsservice "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/services/websockets"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/storage"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/images"
 	mockuploads "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/uploads/mock"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/workers"
 	servercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/server"
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
 	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
@@ -91,23 +87,14 @@ func RenderProject(proj *naffmodels.Project) {
 		"composefiles":              composefiles.RenderPackage,
 		"deployfiles":               providerconfigs.RenderPackage,
 		"dockerfiles":               dockerfiles.RenderPackage,
-		"audit":                     audit.RenderPackage,
 		"authentication":            authentication.RenderPackage,
 		"authorization":             internalauth.RenderPackage,
 		"buildserver":               buildserver.RenderPackage,
 		"config":                    config.RenderPackage,
-		"viper":                     viper.RenderPackage,
 		"database":                  database.RenderPackage,
 		"dbconfig":                  dbconfig.RenderPackage,
-		"querier":                   querier.RenderPackage,
-		"querybuilding":             querybuilding.RenderPackage,
-		"querybuilders":             querybuilders.RenderPackage,
-		"dbmock":                    mockquerybuilding.RenderPackage,
-		"capitalism":                capitalism.RenderPackage,
-		"stripe":                    stripe.RenderPackage,
 		"encoding":                  encoding.RenderPackage,
 		"mockencoding":              mockencoding.RenderPackage,
-		"events":                    events.RenderPackage,
 		"observability":             observability.RenderPackage,
 		"keys":                      keys.RenderPackage,
 		"logging":                   logging.RenderPackage,
@@ -119,16 +106,24 @@ func RenderProject(proj *naffmodels.Project) {
 		"routing":                   routing.RenderPackage,
 		"chi":                       chi.RenderPackage,
 		"mockrouting":               mockrouting.RenderPackage,
+		"mysql":                     mysql.RenderPackage,
+		"postgres":                  postgres.RenderPackage,
+		"elasticsearch":             elasticsearch.RenderPackage,
+		"workers":                   workers.RenderPackage,
+		"websocketsservice":         websocketsservice.RenderPackage,
 		"search":                    search.RenderPackage,
 		"searchmock":                mocksearch.RenderPackage,
-		"bleve":                     bleve.RenderPackage,
 		"secrets":                   secrets.RenderPackage,
 		"server":                    server.RenderPackage,
 		"accountsservice":           accountsservice.RenderPackage,
 		"adminservice":              adminservice.RenderPackage,
 		"apiclientsservice":         apiclientsservice.RenderPackage,
-		"auditservice":              auditservice.RenderPackage,
 		"authenticationservice":     authenticationservice.RenderPackage,
+		"msgqconfig":                msgqconfig.RenderPackage,
+		"msgqconsumers":             msgqconsumers.RenderPackage,
+		"msgqconsumersmock":         msgqconsumersmock.RenderPackage,
+		"msgqpublishers":            msgqpublishers.RenderPackage,
+		"msgqpublishersmock":        msgqpublishersmock.RenderPackage,
 		"frontendservice":           frontendservice.RenderPackage,
 		"iterablesservice":          iterablesservice.RenderPackage,
 		"usersservice":              usersservice.RenderPackage,

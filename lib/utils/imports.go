@@ -160,15 +160,17 @@ func (s *importSet) render() string {
 		x += fmt.Sprintf("%s %q\n\t", i.name, i.path)
 	}
 	x += "\n\n\t"
-	for _, i := range s.localLibImports {
-		x += fmt.Sprintf("%s %q\n\t", i.name, i.path)
-	}
-	x += "\n\n\t"
+
 	for _, i := range s.externalImports {
 		x += fmt.Sprintf("%s %q\n\t", i.name, i.path)
 	}
+	x += "\n\n\t"
 
+	for _, i := range s.localLibImports {
+		x += fmt.Sprintf("%s %q\n\t", i.name, i.path)
+	}
 	x += "\n)\n\n"
+
 	return x
 }
 
