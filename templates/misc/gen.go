@@ -17,12 +17,10 @@ func RenderPackage(project *models.Project) error {
 		".gitignore":           gitIgnore,
 		".gitattributes":       gitAttributes,
 		"go.mod":               goMod,
-		"mage.go":              mageDotGo,
-		"magefile.go":          magefileDotGo,
 		"Makefile":             makefile,
 		".gitlab-ci.yml":       gitlabCIDotYAML,
 		"README.md":            readmeDotMD,
-		".golangci.yml":        golancCILintDotYAML,
+		".golangci.yml":        golangCILintDotYAML,
 		"docker_security.rego": dockerSecurityDotRego,
 	}
 
@@ -127,80 +125,51 @@ deny[msg] {
 func goMod(proj *models.Project) string {
 	return fmt.Sprintf(`module %s
 
-go 1.16
+go 1.17
 
 require (
-	cloud.google.com/go/storage v1.15.0 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3
 	github.com/Azure/azure-storage-blob-go v0.13.0
-	github.com/Azure/go-autorest/autorest v0.11.18 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/GuiaBolso/darwin v0.0.0-20191218124601-fd6d2aa3d244
 	github.com/Masterminds/squirrel v1.5.0
-	github.com/PuerkitoBio/goquery v1.6.1 // indirect
-	github.com/RoaringBitmap/roaring v0.6.0 // indirect
-	github.com/aead/chacha20poly1305 v0.0.0-20201124145622-1a5aba2a8b29 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210326052512-e2135f7c9c77
 	github.com/alexedwards/scs/mysqlstore v0.0.0-20210407073823-f445396108a4
 	github.com/alexedwards/scs/postgresstore v0.0.0-20210407073823-f445396108a4
-	github.com/alexedwards/scs/sqlite3store v0.0.0-20210407073823-f445396108a4
 	github.com/alexedwards/scs/v2 v2.4.0
-	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.38.35
-	github.com/blevesearch/bleve/v2 v2.0.3
+	github.com/aws/aws-sdk-go v1.40.43
 	github.com/boombuler/barcode v1.0.1
 	github.com/brianvoe/gofakeit/v5 v5.11.2
-	github.com/carolynvs/magex v0.5.0
-	github.com/cznic/ql v1.2.0 // indirect
-	github.com/emicklei/hazana v1.9.6
-	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/cors v1.2.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
+	github.com/go-redis/redis/v8 v8.11.3
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/google/wire v0.5.0
 	github.com/gorilla/securecookie v1.1.1
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/go-retryablehttp v0.7.0
-	github.com/hashicorp/vault/api v1.1.0
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
-	github.com/lib/pq v1.10.1
+	github.com/lib/pq v1.10.2
 	github.com/luna-duclos/instrumentedsql v1.1.3
-	github.com/magefile/mage v1.11.0
-	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/makiuchi-d/gozxing v0.0.0-20210324052758-57132e828831
-	github.com/mattn/go-sqlite3 v1.14.7
-	github.com/mikespook/gorbac v2.1.0+incompatible // indirect
-	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/moul/http2curl v1.0.0
 	github.com/mssola/user_agent v0.5.2
 	github.com/mxschmitt/playwright-go v0.1100.0
-	github.com/nats-io/nats.go v1.11.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
 	github.com/nleeper/goment v1.4.1
 	github.com/o1egl/paseto v1.0.0
-	github.com/pelletier/go-toml v1.9.0 // indirect
+	github.com/olivere/elastic/v7 v7.0.29
 	github.com/pquerna/otp v1.3.0
-	github.com/prometheus/common v0.23.0 // indirect
 	github.com/rs/zerolog v1.21.0
-	github.com/spf13/afero v1.6.0 // indirect
-	github.com/spf13/cast v1.3.1 // indirect
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.7.1
-	github.com/streadway/amqp v1.0.0
-	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/stripe/stripe-go/v72 v72.45.0
-	github.com/tkuchiki/go-timezone v0.2.2 // indirect
 	github.com/unrolled/secure v1.0.8
 	github.com/wagslane/go-password-validator v0.3.0
-	github.com/willf/bitset v1.1.11 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.19.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.19.0
 	go.opentelemetry.io/otel v0.19.0
@@ -209,23 +178,71 @@ require (
 	go.opentelemetry.io/otel/metric v0.19.0
 	go.opentelemetry.io/otel/sdk v0.19.0
 	go.opentelemetry.io/otel/trace v0.19.0
-	go.uber.org/ratelimit v0.2.0 // indirect
 	gocloud.dev v0.23.0
-	gocloud.dev/pubsub/kafkapubsub v0.23.0
-	gocloud.dev/pubsub/natspubsub v0.23.0
-	gocloud.dev/pubsub/rabbitpubsub v0.23.0
-	gocloud.dev/secrets/hashivault v0.23.0
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210505214959-0714010a04ed
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
-	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6 // indirect
 	golang.org/x/text v0.3.6
-	google.golang.org/api v0.46.0 // indirect
-	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
-	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/mikespook/gorbac.v2 v2.1.0
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+)
+
+require (
+	cloud.google.com/go v0.81.0 // indirect
+	cloud.google.com/go/storage v1.15.0 // indirect
+	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest v0.11.18 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.13 // indirect
+	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
+	github.com/Azure/go-autorest/logger v0.2.1 // indirect
+	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
+	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
+	github.com/aead/chacha20poly1305 v0.0.0-20170617001512-233f39982aeb // indirect
+	github.com/aead/poly1305 v0.0.0-20180717145839-3fee0db0b635 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
+	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
+	github.com/jstemmer/go-junit-report v0.9.1 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-ieproxy v0.0.1 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/prometheus/client_golang v1.9.0 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/common v0.15.0 // indirect
+	github.com/prometheus/procfs v0.2.0 // indirect
+	github.com/stretchr/objx v0.2.0 // indirect
+	github.com/tkuchiki/go-timezone v0.2.0 // indirect
+	go.opencensus.io v0.23.0 // indirect
+	go.opentelemetry.io/contrib v0.19.0 // indirect
+	go.opentelemetry.io/otel/sdk/export/metric v0.19.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v0.19.0 // indirect
+	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf // indirect
+	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
+	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6 // indirect
+	golang.org/x/tools v0.1.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	google.golang.org/api v0.46.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/genproto v0.0.0-20210506142907-4a47615972c2 // indirect
+	google.golang.org/grpc v1.37.0 // indirect
+	google.golang.org/protobuf v1.26.0 // indirect
+	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
 `, proj.OutputPath)
 }
@@ -249,9 +266,6 @@ func gitIgnore(project *models.Project) string {
 
 # Vim
 *.swp
-
-# Sqlite databases
-*.db
 
 # OSX
 .DS_Store
@@ -278,10 +292,6 @@ internal/services/frontend/_vendor_/*
 
 `
 
-	if project.SearchEnabled() {
-		output += "# bleve indices\n*.bleve\n"
-	}
-
 	return output
 }
 
@@ -306,27 +316,26 @@ before_script:
 
 coverage:
   stage: quality
-  image: golang:stretch
+  image: golang:1.17-stretch
   variables:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
-    - go run mage.go ensureMage
-    - mage vendor coverage
+    - make vendor coverage
 
 dependency-injection-check:
   stage: quality
-  image: golang:stretch
+  image: golang:1.17-stretch
   variables:
     GOPATH: "/go"
   script:
     - apt-get update -y && apt-get install -y make git gcc musl-dev
-    - go run mage.go ensureMage
-    - mage rewire
+    - go install github.com/google/wire/cmd/wire@latest
+    - make rewire
 
 golang-format-check:
   stage: quality
-  image: golang:stretch
+  image: golang:1.17-stretch
   variables:
     GOPATH: "/go"
   script:
@@ -335,112 +344,16 @@ golang-format-check:
 
 golang-lint:
   stage: quality
-  image: golangci/golangci-lint:latest # v1.18
-  variables:
-    GO111MODULE: "on"
+  image: golangci/golangci-lint:v1.42
   script:
     - go mod vendor
     - golangci-lint run --config=.golangci.yml --deadline=15m
-
-#integration_tests_sqlite:
-#  stage: integration-testing
-#  image: docker/compose:latest
-#  services:
-#    - docker:dind
-#  variables:
-#    GOPATH: "/go"
-#  script:
-#    - ls -Al environments/testing/config_files/integration-tests-sqlite.toml
-#    - ls -Al /go/src/%s/environments/testing/config_files/integration-tests-sqlite.toml
-#    - whoami
-#    - cat /go/src/%s/environments/testing/config_files/integration-tests-sqlite.toml
-#    - apk add --no-cache git make musl-dev go
-#    - go version
-#    - docker-compose --file environments/testing/compose_files/integration_tests/integration-tests-base.yaml --file environments/testing/compose_files/integration_tests/integration-tests-sqlite.yaml up --build --force-recreate --remove-orphans --renew-anon-volumes --always-recreate-deps --abort-on-container-exit
-
-#integration_tests_postgres:
-#  stage: integration-testing
-#  image: docker/compose:latest
-#  services:
-#    - docker:dind
-#  variables:
-#    GOPATH: "/go"
-#  script:
-#    - apk add --update make
-#    - docker-compose --file environments/testing/compose_files/integration_tests/integration-tests-base.yaml --file environments/testing/compose_files/integration_tests/integration-tests-postgres.yaml up --build --force-recreate --remove-orphans --renew-anon-volumes --always-recreate-deps --abort-on-container-exit
-
-#integration_tests_mariadb:
-#  stage: integration-testing
-#  image: docker/compose:latest
-#  services:
-#    - docker:dind
-#  variables:
-#    GOPATH: "/go"
-#  script:
-#    - apk add --update make
-#    - docker-compose --file environments/testing/compose_files/integration_tests/integration-tests-base.yaml --file environments/testing/compose_files/integration_tests/integration-tests-mariadb.yaml up --build --force-recreate --remove-orphans --renew-anon-volumes --always-recreate-deps --abort-on-container-exit
-
-#frontend-selenium-tests:
-#  stage: integration-testing
-#  image: docker/compose:latest
-#  services:
-#    - docker:dind
-#  script:
-#    - apk add --update make
-#    - docker-compose --file environments/testing/compose_files/frontend-tests.yaml up --build --force-recreate --remove-orphans --renew-anon-volumes --always-recreate-deps --abort-on-container-exit
-
-# daily load tests
-
-daily-load_tests_postgres:on-schedule:
-  stage: load-testing
-  image: docker:latest
-  services:
-    - docker:dind
-  variables:
-    GOPATH: "/go"
-    LOADTEST_RUN_TIME: "10m"
-  script:
-    - apk add --update --no-cache py-pip openssl python3-dev libffi-dev openssl-dev gcc libc-dev make
-    - pip install docker-compose
-    - make load_tests_postgres
-  only:
-    - schedules
-
-daily-load_tests_mariadb:on-schedule:
-  stage: load-testing
-  image: docker:latest
-  services:
-    - docker:dind
-  variables:
-    GOPATH: "/go"
-    LOADTEST_RUN_TIME: "10m"
-  script:
-    - apk add --update --no-cache py-pip openssl python3-dev libffi-dev openssl-dev gcc libc-dev make
-    - pip install docker-compose
-    - make load_tests_mariadb
-  only:
-    - schedules
-
-daily-load_tests_sqlite:on-schedule:
-  stage: load-testing
-  image: docker:latest
-  services:
-    - docker:dind
-  variables:
-    GOPATH: "/go"
-    LOADTEST_RUN_TIME: "10m"
-  script:
-    - apk add --update --no-cache py-pip openssl python3-dev libffi-dev openssl-dev gcc libc-dev make
-    - pip install docker-compose
-    - make load_tests_sqlite
-  only:
-    - schedules
-`, ciPath, ciBuildPath, ciPath, projRoot, projRoot, projRoot)
+`, ciPath, ciBuildPath, ciPath, projRoot)
 
 	return f
 }
 
-func golancCILintDotYAML(project *models.Project) string {
+func golangCILintDotYAML(project *models.Project) string {
 	projRoot := project.OutputPath
 	f := fmt.Sprintf(`# https://github.com/golangci/golangci-lint/blob/507703b444d95d8c89961bebeedfb22f61cde67c/pkg/config/config.go
 
@@ -671,7 +584,6 @@ linters:
     - gocyclo          # Computes and checks the cyclomatic complexity of functions
     - godot            # Check if comments end in a period
     - godox            # Tool for detection of FIXME, TODO and other comment keywords
-    - goerr113         # Golang linter to check the errors handling expressions
     - gofmt            # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
     # - gofumpt          # Gofumpt checks whether code was gofumpt-ed.
     - goheader         # Checks is file header matches to pattern
@@ -710,6 +622,7 @@ linters:
     # - wsl              # Whitespace Linter - Forces you to use empty lines!
 
   disable:
+    - goerr113         # Golang linter to check the errors handling expressions
     - exhaustivestruct # Checks if all struct's fields are initialized
     - gci              # control package import order and make it always deterministic.
     - gochecknoinits   # Checks that no init functions are present in Go code
@@ -783,10 +696,6 @@ issues:
       linters:
         - gomnd
 
-    - path: internal/audit/
-      linters:
-        - gosec
-
     - path: internal/services/
       linters:
         - wsl
@@ -809,15 +718,11 @@ issues:
       linters:
         - gomnd
 
-    - path: internal/database/querybuilding/mariadb/migrations.go
+    - path: internal/database/querybuilding/mysql/migrations.go
       linters:
         - gomnd
 
     - path: internal/database/querybuilding/postgres/migrations.go
-      linters:
-        - gomnd
-
-    - path: internal/database/querybuilding/sqlite/migrations.go
       linters:
         - gomnd
 
@@ -916,880 +821,4 @@ issues:
   #`, projRoot)
 
 	return f
-}
-
-func mageDotGo(proj *models.Project) string {
-	return `// +build ignore
-
-package main
-
-import (
-	"os"
-
-	"github.com/magefile/mage/mage"
-)
-
-// This file allows someone to run mage commands without mage installed by running ` + "`" + `go run mage.go TARGET` + "`" + `.
-// See https://magefile.org/zeroinstall/
-func main() { os.Exit(mage.Main()) }
-`
-}
-
-func magefileDotGo(proj *models.Project) string {
-	return fmt.Sprintf(`// +build mage
-
-package main
-
-import (
-	"errors"
-	"fmt"
-	"io"
-	"io/fs"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"strings"
-
-	"%s/internal/observability/logging"
-
-	"github.com/carolynvs/magex/pkg"
-	"github.com/magefile/mage/mg"
-	"github.com/magefile/mage/sh"
-)
-
-const (
-	// common terms and tools
-	_go      = "go"
-	npm      = "npm"
-	docker   = "docker"
-	vendor   = "vendor"
-	_install = "install"
-	run      = "run"
-
-	artifactsDir = "artifacts"
-
-	thisRepo     = "%s"
-	localAddress = "http://localhost:8888"
-)
-`, proj.OutputPath, proj.OutputPath) + `
-var (
-	cwd string
-	debug,
-	letHang,
-	verbose bool
-	containerRunner = docker
-	logger          logging.Logger
-
-	Aliases = map[string]interface{}{
-		"run":                Dev,
-		"loud":               Verbose,
-		"fmt":                Format,
-		"integration-tests":  IntegrationTests,
-		"lintegration-tests": LintegrationTests,
-	}
-	_ = Aliases
-)
-
-type Backend mg.Namespace
-
-type containerRunSpec struct {
-	imageName,
-	imageVersion string
-	imageArgs []string
-	runArgs   []string
-}
-
-func init() {
-	logger = logging.ProvideLogger(logging.Config{Provider: logging.ProviderZerolog, Level: logging.InfoLevel})
-
-	if debug {
-		logger.SetLevel(logging.DebugLevel)
-	}
-
-	var err error
-	if cwd, err = os.Getwd(); err != nil {
-		logger.Error(err, "determining current working directory")
-		panic(err)
-	}
-
-	if !strings.HasSuffix(cwd, thisRepo) {
-		panic("location invalid!")
-	}
-}
-
-// bool vars
-
-// Enables debug mode.
-func Debug() {
-	debug = true
-	logger.SetLevel(logging.DebugLevel)
-	logger.Debug("debug logger activated")
-}
-
-// Enables verbose mode.
-func Verbose() {
-	verbose = true
-	logger.Debug("verbose output activated")
-}
-
-// Enables integration test instances to continue running after the tests complete.
-func LetHang() {
-	letHang = true
-	logger.Debug("let hang activated")
-}
-
-// helpers
-
-func runFunc(outLoud bool) func(string, ...string) error {
-	var runCmd = sh.Run
-	if outLoud || verbose {
-		runCmd = sh.RunV
-	}
-
-	return runCmd
-}
-
-func runGoCommand(verbose bool, arguments ...string) error {
-	if err := runFunc(verbose)(_go, arguments...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func freshArtifactsDir() error {
-	if err := os.RemoveAll(filepath.Join(cwd, artifactsDir)); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(filepath.Join(cwd, artifactsDir), fs.ModePerm); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(filepath.Join(cwd, artifactsDir, "search_indices"), fs.ModePerm); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func validateDBProvider(dbProvider string) error {
-	switch strings.TrimSpace(strings.ToLower(dbProvider)) {
-	case sqlite, mariadb, postgres:
-		return nil
-	default:
-		return fmt.Errorf("invalid database provider: %q", dbProvider)
-	}
-}
-
-func doesNotMatch(input string, matcher func(string, string) bool, exclusions ...string) bool {
-	included := true
-
-	for _, exclusion := range exclusions {
-		if !included {
-			break
-		}
-		included = !matcher(input, exclusion)
-	}
-
-	return included
-}
-
-func doesNotStartWith(input string, exclusions ...string) bool {
-	return doesNotMatch(input, strings.HasPrefix, exclusions...)
-}
-
-func doesNotEndWith(input string, exclusions ...string) bool {
-	return doesNotMatch(input, strings.HasSuffix, exclusions...)
-}
-
-func PrintTestPackages() error {
-	packages, err := determineTestablePackages()
-	if err != nil {
-		return err
-	}
-
-	for _, x := range packages {
-		logger.Info(x)
-	}
-
-	return nil
-}
-
-func determineTestablePackages() ([]string, error) {
-	var out []string
-
-	err := filepath.Walk(".",
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			included := doesNotStartWith(
-				path,
-				".",
-				".git",
-				".idea",
-				"cmd",
-				artifactsDir,
-				"development",
-				"environments",
-				"tests",
-				vendor,
-			) && doesNotEndWith(path, "mock", "testutil", "fakes")
-
-			if info.IsDir() && included {
-				entries, err := fs.ReadDir(os.DirFS(path), ".")
-				if err != nil {
-					return err
-				}
-
-				var goFilesPresent bool
-				for _, entry := range entries {
-					if strings.HasSuffix(entry.Name(), ".go") {
-						goFilesPresent = true
-					}
-				}
-
-				if goFilesPresent {
-					out = append(out, filepath.Join(thisRepo, path))
-				}
-			}
-
-			return nil
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func runContainer(outLoud bool, runSpec containerRunSpec) error {
-	containerRunArgs := append([]string{run}, runSpec.runArgs...)
-	containerRunArgs = append(containerRunArgs, fmt.Sprintf("%s:%s", runSpec.imageName, runSpec.imageVersion))
-	containerRunArgs = append(containerRunArgs, runSpec.imageArgs...)
-
-	var runCmd = sh.Run
-	if outLoud {
-		runCmd = sh.RunV
-	}
-
-	return runCmd(containerRunner, containerRunArgs...)
-}
-
-func runCompose(composeFiles ...string) error {
-	fullCommand := []string{}
-	for _, f := range composeFiles {
-		if f == "" {
-			return errors.New("empty filepath provided to docker-compose")
-		}
-		fullCommand = append(fullCommand, "--file", f)
-	}
-
-	fullCommand = append(fullCommand,
-		"up",
-		"--build",
-		"--force-recreate",
-		"--remove-orphans",
-		"--renew-anon-volumes",
-		"--always-recreate-deps",
-	)
-
-	if !letHang {
-		fullCommand = append(fullCommand, "--abort-on-container-exit")
-	}
-
-	return sh.RunV("docker-compose", fullCommand...)
-}
-
-// tool ensurers
-
-// Install mage if necessary.
-func EnsureMage() error {
-	return pkg.EnsureMage("v1.11.0")
-}
-
-func ensureDependencyInjector() error {
-	present, checkErr := pkg.IsCommandAvailable("wire", "", "")
-	if checkErr != nil {
-		return checkErr
-	}
-
-	if !present {
-		return runGoCommand(false, _install, "github.com/google/wire/cmd/wire")
-	}
-
-	return nil
-}
-
-func ensureGoimports() error {
-	present, checkErr := pkg.IsCommandAvailable("goimports", "", "")
-	if checkErr != nil {
-		return checkErr
-	}
-
-	if !present {
-		return runGoCommand(false, "get", "golang.org/x/tools/cmd/goimports")
-	}
-
-	return nil
-}
-
-func ensureFieldalignment() error {
-	present, checkErr := pkg.IsCommandAvailable("fieldalignment", "", "")
-	if checkErr != nil {
-		return checkErr
-	}
-
-	if !present {
-		return runGoCommand(false, _install, "golang.org/x/tools/...")
-	}
-
-	return nil
-}
-
-func ensureLineCounter() error {
-	present, checkErr := pkg.IsCommandAvailable("scc", "3.0.0", "--version")
-	if checkErr != nil {
-		return checkErr
-	}
-
-	if !present {
-		return runGoCommand(false, _install, "github.com/boyter/scc")
-	}
-
-	return nil
-}
-
-func checkForDocker() error {
-	present, checkErr := pkg.IsCommandAvailable(docker, "20.10.5", ` + "`" + `--format="{{.Client.Version}}"` + "`" + `)
-	if checkErr != nil {
-		return checkErr
-	}
-
-	if !present {
-		return fmt.Errorf("%s is not installed", docker)
-	}
-
-	return nil
-}
-
-// Install all auxiliary dev tools.
-func EnsureDevTools() error {
-	if err := ensureDependencyInjector(); err != nil {
-		return err
-	}
-
-	if err := ensureFieldalignment(); err != nil {
-		return err
-	}
-
-	if err := ensureLineCounter(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// tool invokers
-
-func fixFieldAlignment() {
-	ensureFieldalignment()
-
-	sh.Run("fieldalignment", "-fix", "./...")
-}
-
-func runGoimports() error {
-	ensureGoimports()
-
-	return sh.Run("goimports", "-w", "-local", thisRepo, ".")
-}
-
-// dependency stuff
-
-// Generate the dependency injected build file.
-func Wire() error {
-	if err := ensureDependencyInjector(); err != nil {
-		return err
-	}
-
-	return sh.RunV("wire", "gen", filepath.Join(thisRepo, "internal", "build", "server"))
-}
-
-// Delete existing dependency injected build file and regenerate it.
-func Rewire() error {
-	os.Remove("internal/build/server/wire_gen.go")
-
-	return Wire()
-}
-
-// Set up the Go vendor directory.
-func Vendor() error {
-	const mod = "mod"
-
-	if _, err := os.ReadFile("go.mod"); os.IsNotExist(err) {
-		if initErr := runGoCommand(false, mod, "init"); initErr != nil {
-			return initErr
-		}
-
-		if tidyErr := runGoCommand(false, mod, "tidy"); tidyErr != nil {
-			return tidyErr
-		}
-	}
-
-	return runGoCommand(true, mod, vendor)
-}
-
-func downloadAndSaveFile(uri, path string) {
-	resp, err := http.Get(uri)
-	if err != nil {
-		logger.Error(err, "fetching file: fetching response from server")
-		return
-	}
-
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		logger.Error(err, "fetching file: reading response from server")
-		return
-	}
-
-	if err = ioutil.WriteFile(path, content, 0644); err != nil {
-		logger.Error(err, "fetching file: writing content to disk")
-		return
-	}
-}
-
-// Delete existing dependency store and re-establish it for the backend.
-func (Backend) Revendor() error {
-	if err := os.Remove("go.sum"); err != nil {
-		return err
-	}
-
-	if err := os.RemoveAll(vendor); err != nil {
-		return err
-	}
-
-	if err := Vendor(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// meta stuff
-
-// Produce line count report
-func LineCount() error {
-	logger.Debug("lineCount called")
-	if err := ensureLineCounter(); err != nil {
-		logger.Debug("error ensuring line counter")
-		return err
-	}
-
-	if err := sh.RunV(
-		"scc", "",
-		"--include-ext", _go,
-		"--exclude-dir", vendor); err != nil {
-		logger.Debug("error fetching line count")
-		return err
-	}
-
-	logger.Debug("fetched line count")
-	return nil
-}
-
-// Quality
-
-func formatBackend() error {
-	var goFiles []string
-
-	err := filepath.Walk(".",
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if strings.HasSuffix(info.Name(), ".go") {
-				goFiles = append(goFiles, path)
-			}
-
-			return nil
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	return sh.Run("gofmt", append([]string{"-s", "-w"}, goFiles...)...)
-}
-
-// Format the backend code.
-func Format() error {
-	if err := formatBackend(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func checkBackendFormatting() error {
-	badFiles, err := sh.Output("gofmt", "-l", ".")
-	if err != nil {
-		return err
-	}
-
-	if len(badFiles) > 0 {
-		return errors.New(badFiles)
-	}
-
-	return nil
-}
-
-// Check to see if the backend is formatted correctly.
-func CheckFormatting() error {
-	if err := checkBackendFormatting(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func dockerLint(outLoud bool) error {
-	const (
-		dockerLintImage        = "openpolicyagent/conftest"
-		dockerLintImageVersion = "v0.21.0"
-	)
-
-	var dockerfiles []string
-
-	err := filepath.Walk(".",
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if strings.HasSuffix(info.Name(), ".Dockerfile") {
-				dockerfiles = append(dockerfiles, path)
-			}
-
-			return nil
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	dockerLintCmd := containerRunSpec{
-		runArgs: []string{
-			"--rm",
-			"--volume",
-			fmt.Sprintf("%s:%s", cwd, cwd),
-			fmt.Sprintf("--workdir=%s", cwd),
-		},
-		imageName:    dockerLintImage,
-		imageVersion: dockerLintImageVersion,
-		imageArgs: append([]string{
-			"test",
-			"--policy",
-			"docker_security.rego",
-		}, dockerfiles...),
-	}
-
-	return runContainer(outLoud, dockerLintCmd)
-}
-
-// Lint the available dockerfiles.
-func DockerLint() error {
-	return dockerLint(true)
-}
-
-// Lint the backend code.
-func Lint() error {
-	const (
-		lintImage        = "golangci/golangci-lint"
-		lintImageVersion = "latest"
-	)
-
-	logger.Info("running some quick fixers")
-	fixFieldAlignment()
-	runGoimports()
-
-	logger.Info("linting...")
-	if err := dockerLint(verbose); err != nil {
-		return err
-	}
-
-	if err := sh.Run(containerRunner, "pull", lintImage); err != nil {
-		return err
-	}
-
-	lintCmd := containerRunSpec{
-		runArgs: []string{
-			"--rm",
-			"--volume",
-			fmt.Sprintf("%s:%s", cwd, cwd),
-			fmt.Sprintf("--workdir=%s", cwd),
-		},
-		imageName:    lintImage,
-		imageVersion: lintImageVersion,
-		imageArgs: []string{
-			"golangci-lint",
-			run,
-			"--config=.golangci.yml",
-			"./...",
-		},
-	}
-
-	if err := runContainer(true, lintCmd); err != nil {
-		return errors.New("backend lint failed")
-	}
-
-	logger.Info(":thumbsup: - lint passed!")
-
-	return nil
-}
-
-func backendCoverage() error {
-	if err := freshArtifactsDir(); err != nil {
-		return err
-	}
-
-	coverageFileOutputPath := filepath.Join(artifactsDir, "coverage.out")
-
-	packagesToTest, err := determineTestablePackages()
-	if err != nil {
-		return err
-	}
-
-	testCommand := append([]string{
-		"test",
-		fmt.Sprintf("-coverprofile=%s", coverageFileOutputPath),
-		"-covermode=atomic",
-		"-race",
-	}, packagesToTest...)
-
-	if err = runGoCommand(false, testCommand...); err != nil {
-		return err
-	}
-
-	coverCommand := []string{
-		"tool",
-		"cover",
-		fmt.Sprintf("-func=%s/coverage.out", artifactsDir),
-	}
-
-	results, err := sh.Output(_go, coverCommand...)
-	if err != nil {
-		return err
-	}
-
-	// byte array jesus please forgive me
-	rawCoveragePercentage := strings.TrimSpace(string([]byte(results)[len(results)-6 : len(results)]))
-
-	fmt.Printf("\n\nCOVERAGE: %s\n\n", rawCoveragePercentage)
-
-	return nil
-}
-
-// Coverage generates a coverage report for the backend code.
-func Coverage() error {
-	return backendCoverage()
-}
-
-// Testing
-
-func backendUnitTests(outLoud, quick bool) error {
-	packagesToTest, err := determineTestablePackages()
-	if err != nil {
-		return err
-	}
-
-	var commandStartArgs []string
-	if quick {
-		commandStartArgs = []string{"test", "-cover", "-race", "-failfast"}
-	} else {
-		commandStartArgs = []string{"test", "-count", "5", "-race"}
-	}
-
-	fullCommand := append(commandStartArgs, packagesToTest...)
-	if err = runGoCommand(outLoud, fullCommand...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Run backend unit tests
-func (Backend) UnitTests() error {
-	return backendUnitTests(true, false)
-}
-
-// Run unit tests but exit upon first failure.
-func Quicktest() error {
-	if err := backendUnitTests(true, true); err != nil {
-		return err
-	}
-
-	logger.Info(":thumbsup: - unit tests passed!")
-
-	return nil
-}
-
-const (
-	mariadb  = "mariadb"
-	postgres = "postgres"
-	sqlite   = "sqlite"
-)
-
-// Run a specific integration test.
-func IntegrationTest(dbProvider string) error {
-	dbProvider = strings.TrimSpace(strings.ToLower(dbProvider))
-
-	if err := validateDBProvider(dbProvider); err != nil {
-		return nil
-	}
-
-	err := runCompose(
-		"environments/testing/compose_files/integration_tests/integration-tests-base.yaml",
-		fmt.Sprintf("environments/testing/compose_files/integration_tests/integration-tests-%s.yaml", dbProvider),
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Run integration tests.
-func IntegrationTests() error {
-	if err := IntegrationTest(sqlite); err != nil {
-		return err
-	}
-	if err := IntegrationTest(postgres); err != nil {
-		return err
-	}
-	if err := IntegrationTest(mariadb); err != nil {
-		return err
-	}
-
-	logger.Info(":thumbsup: - integration tests passed!")
-
-	return nil
-}
-
-// Run the integration tests and then the linter.
-func LintegrationTests() error {
-	if err := IntegrationTests(); err != nil {
-		return err
-	}
-
-	if err := Lint(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func LoadTest(dbProvider string) error {
-	dbProvider = strings.TrimSpace(strings.ToLower(dbProvider))
-
-	if err := validateDBProvider(dbProvider); err != nil {
-		return nil
-	}
-
-	if err := runCompose("environments/testing/compose_files/load_tests/load-tests-base.yaml", fmt.Sprintf("environments/testing/compose_files/load_tests/load-tests-%s.yaml", dbProvider)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Run load tests.
-func LoadTests() error {
-	if err := LoadTest(sqlite); err != nil {
-		return err
-	}
-
-	if err := LoadTest(postgres); err != nil {
-		return err
-	}
-
-	if err := LoadTest(mariadb); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Run the browser-driven tests locally.
-func LocalBrowserTests() error {
-	os.Setenv("TARGET_ADDRESS", "http://localhost:8888")
-
-	if err := runGoCommand(true, "test", "-v", path.Join(thisRepo, "tests", "frontend")); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Development
-
-// Generate frontend templates
-func FrontendTemplates() error {
-	return runGoCommand(false, "run", fmt.Sprintf("%s/cmd/tools/template_gen", thisRepo))
-}
-
-// Generate configuration files.
-func Configs() error {
-	return runGoCommand(true, run, "cmd/tools/config_gen/main.go")
-}
-
-// Dev runs the service in dev mode locally.
-func Dev() error {
-	if err := freshArtifactsDir(); err != nil {
-		return err
-	}
-
-	if err := FrontendTemplates(); err != nil {
-		return err
-	}
-
-	if err := runCompose("environments/local/docker-compose.yaml"); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Create test users in a running instance of the service.
-func ScaffoldUsers(count int) error {
-	fullArgs := []string{
-		run,
-		filepath.Join(thisRepo, "/cmd/tools/data_scaffolder"),
-		fmt.Sprintf("--url=%s", localAddress),
-		fmt.Sprintf("--user-count=%d", count),
-		fmt.Sprintf("--data-count=%d", count),
-		"--debug",
-	}
-
-	if count == 1 {
-		fullArgs = append(fullArgs, "--single-user-mode")
-	}
-
-	if err := runGoCommand(true, fullArgs...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Create a test user in a running instance of the service.
-func ScaffoldUser() error {
-	return ScaffoldUsers(1)
-}
-`
 }

@@ -19,44 +19,38 @@ I'm honestly not interested in feature ideas/pull requests/complaints/suggestion
 
 NAFF is primarily meant to generate CRUD code for a number of custom data types. The idea is you think of what your individual database tables might look like as plain objects, and write your input package accordingly.
 
-I'm gonna write a blog post about this eventually, but the long and short of it is: I have an irrational distaste towards so-called "batteries included" web frameworks, and ORMS (almost equally).
+I may write a blog post about this one day, but the long and short of it is: I have an irrational distaste towards so-called "batteries included" web frameworks, and ORMS (almost equally).
 
-The goal for NAFF is to generate well-tested, fleshed-out web server repositories that don't have these sorts of dependencies.
-
-NAFF doesn't just generate primary application logic, it also generates:
+The goal for NAFF is to generate well-tested, capable service repositories. As such, NAFF doesn't just generate primary application logic, it also generates:
 
 - the Makefile and all relevant targets
 - A service client
 - Unit tests with 90+% code coverage
 - Integration tests for all databases
-- Load tests for all databases
-- Frontend (browser-driven) tests for multiple browsers
+- Setup for browser-driven tests for multiple browsers
 - Mandatory user 2FA
-- OAuth2 authentication
+- PASETO authentication
 - Database migrations/querying code
 - All dependency injection code
 - Dockerfiles
 - Docker-compose files
 - Routing code
-- CI scripts
-- a very very basic frontend in Svelte
+- GitLab CI scripts
 - Telemetry (tracing/logging/metrics collection)
-- Configuration parsing/rendering
+- Secure configuration parsing/rendering
 - Prometheus and Grafana configuration files
-- Fairly strict linter configuration
-- Webhook/Websocket support via [https://gitlab.com/verygoodsoftwarenotvirus/newsman](Newsman)
+- Fairly strict linter configuration and code that adheres to it
 
 NAFF has support for multiple database providers. Currently those are:
 
 - PostgreSQL
-- Sqlite3
-- MariaDB
+- MySQL
 
 Each of these may be (de)activated to your liking.
 
 ## usage
 
-Start by defining any arbitrary Go package with some types in it. For instance, say I have a Go package `gitlab.com/verygoodsoftwarenotvirus/addressbook`, with a file `types.go` with the following:
+Start by defining any arbitrary Go package with some types in it. For instance, say I have a Go package `vcsproviderofchoice.here/verygoodsoftwarenotvirus/addressbook`, with a file `types.go` with the following:
 
 ```go
 package addressbook
@@ -70,7 +64,7 @@ type Friend struct {
 }
 ```
 
-Running `naff gen gitlab.com/verygoodsoftwarenotvirus/addressbook` will trigger a series of prompts from the CLI, and then it will generate code.
+Running `naff gen vcsproviderofchoice.here/verygoodsoftwarenotvirus/addressbook` will trigger a series of prompts from the CLI, and then it will generate code.
 
 NAFF writes code only on clean slates, and as such will nuke the output directory from orbit. So if I tell NAFF to write output to some precious path, I'm going to have a bad time.
 

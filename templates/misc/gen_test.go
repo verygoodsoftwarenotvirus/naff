@@ -650,7 +650,7 @@ issues:
   # new-from-patch: path/to/patch/file
   #
 `
-		actual := golancCILintDotYAML(project)
+		actual := golangCILintDotYAML(project)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
