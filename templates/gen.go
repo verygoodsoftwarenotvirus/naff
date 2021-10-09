@@ -9,6 +9,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
 	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
+	buildworker "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/worker"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
 	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
@@ -55,7 +56,6 @@ import (
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
 	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
 	encodedqrcodegeneratorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/encoded_qr_code_generator"
-	indexinitializercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/index_initializer"
 	templategencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/template_gen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
@@ -83,13 +83,13 @@ func RenderProject(proj *naffmodels.Project) {
 		"configgen":                 configgencmd.RenderPackage,
 		"datascaffoldercmd":         datascaffoldercmd.RenderPackage,
 		"encodedqrcodegeneratorcmd": encodedqrcodegeneratorcmd.RenderPackage,
-		"indexinitializercmd":       indexinitializercmd.RenderPackage,
 		"composefiles":              composefiles.RenderPackage,
 		"deployfiles":               providerconfigs.RenderPackage,
 		"dockerfiles":               dockerfiles.RenderPackage,
 		"authentication":            authentication.RenderPackage,
 		"authorization":             internalauth.RenderPackage,
 		"buildserver":               buildserver.RenderPackage,
+		"buildworker":               buildworker.RenderPackage,
 		"config":                    config.RenderPackage,
 		"database":                  database.RenderPackage,
 		"dbconfig":                  dbconfig.RenderPackage,

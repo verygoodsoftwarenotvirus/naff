@@ -61,11 +61,14 @@ func runTojenForFile(filename, pkg string) (string, error) {
 }
 
 func main() {
-	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/workers",
+	allPackages := map[string]bool{
+		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/workers": true,
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/workers": true,
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/queriers/mysql": true,
+		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/queriers/postgres": true,
 	}
 
-	for _, pkg := range allPackages {
+	for pkg, _ := range allPackages {
 		err := doTheThingForPackage(filepath.Base(pkg), pkg)
 		if err != nil {
 			log.Fatal(err)

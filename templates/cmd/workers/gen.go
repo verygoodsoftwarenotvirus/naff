@@ -12,20 +12,13 @@ import (
 const (
 	packageName = "workers"
 
-	basePackagePath = "internal/workers"
+	basePackagePath = "cmd/workers"
 )
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
-		"pre_archives_worker.go":      preArchivesWorkerDotGo(proj),
-		"pre_archives_worker_test.go": preArchivesWorkerTestDotGo(proj),
-		"pre_updates_worker.go":       preUpdatesWorkerDotGo(proj),
-		"pre_updates_worker_test.go":  preUpdatesWorkerTestDotGo(proj),
-		"pre_writes_worker.go":        preWritesWorkerDotGo(proj),
-		"pre_writes_worker_test.go":   preWritesWorkerTestDotGo(proj),
-		"data_changes_worker.go":      dataChangesWorkerDotGo(proj),
-		"data_changes_worker_test.go": dataChangesWorkerTestDotGo(proj),
+		"main.go": mainDotGo(proj),
 	}
 
 	//for _, typ := range types {
