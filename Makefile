@@ -28,7 +28,7 @@ line_count:
 
 ensure-goimports:
 ifndef $(shell command -v goimports 2> /dev/null)
-	$(shell GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports)
+	$(shell GO111MODULE=off go install golang.org/x/tools/cmd/goimports@latest)
 endif
 
 .PHONY: vendor-clean

@@ -4,7 +4,7 @@ NAFF is a code generation tool. It stands for:
 
 &emsp;**N**ot<br>
 &emsp;**A**nother<br>
-&emsp;**F**([aceoru]{2,3})king<br>
+&emsp;**F**`([aceoru]{2,3})king`<br>
 &emsp;**F**ramework<br>
 
 ## selfishware

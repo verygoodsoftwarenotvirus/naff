@@ -37,7 +37,7 @@ func initializeLocalSecretManager(ctx context.Context) secrets.SecretManager {
 
 	cfg := &secrets.Config{
 		Provider: secrets.ProviderLocal,
-		Key:      os.Getenv("{{ uppercase projectName }}_SERVICE_LOCAL_SECRET_STORE_KEY"),
+		Key:      os.Getenv("{{ uppercase projectName }}_SERVER_LOCAL_CONFIG_STORE_KEY"),
 	}
 
 	k, err := secrets.ProvideSecretKeeper(ctx, cfg)
@@ -105,7 +105,7 @@ func main() {
 	ctx, initSpan := tracing.StartSpan(ctx)
 
 	// build our server struct.
-	srv, err := server.Build(ctx, cfg, logger)
+	srv, err := server.Build(ctx, logger, cfg)
 	if err != nil {
 		logger.Fatal(fmt.Errorf("initializing HTTP server: %w", err))
 	}
