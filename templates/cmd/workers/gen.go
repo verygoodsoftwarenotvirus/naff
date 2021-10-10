@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	packageName = "workers"
+	packageName = "main"
 
 	basePackagePath = "cmd/workers"
 )

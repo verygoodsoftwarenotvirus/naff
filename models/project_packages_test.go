@@ -208,7 +208,7 @@ func TestProject_InternalConfigV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/config"
-		actual := p.ConfigPackage()
+		actual := p.InternalConfigPackage()
 
 		assert.Equal(t, expected, actual)
 	})
@@ -219,7 +219,7 @@ func TestProject_InternalConfigV1Package(T *testing.T) {
 		p := buildTestProjectForPathTests()
 
 		expected := "github.com/verygoodsoftwarenotvirus/example/internal/config/fart"
-		actual := p.ConfigPackage(examplePathTestInput)
+		actual := p.InternalConfigPackage(examplePathTestInput)
 
 		assert.Equal(t, expected, actual)
 	})

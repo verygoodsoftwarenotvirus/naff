@@ -805,7 +805,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 		jen.ID("jsonPluckQuery"),
 		jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 		jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-		utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.IDf("%sID", uvn)),
+		utils.ConditionalCode(dbvendor.SingularPackageName() == "mysql", jen.IDf("%sID", uvn)),
 		jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
 	)
 

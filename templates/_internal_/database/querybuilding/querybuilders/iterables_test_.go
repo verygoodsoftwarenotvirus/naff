@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -966,7 +967,7 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 	).
 		From("audit_log")
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		qb = qb.Where(squirrel.Expr(iterableIDKey))
 	} else {
 		qb = qb.Where(squirrel.Eq{iterableIDKey: whateverValue})
@@ -990,13 +991,13 @@ func buildTestVendor_BuildGetAuditLogEntriesForSomethingQuery(proj *models.Proje
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		func() jen.Code {
-			if dbvendor.SingularPackageName() == "mariadb" {
+			if dbvendor.SingularPackageName() == "mysql" {
 				return jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(query), jen.IDf("example%s", sn).Dot("ID"))
 			}
 			return jen.ID("expectedQuery").Assign().Lit(query)
 		}(),
 		func() jen.Code {
-			if dbvendor.SingularPackageName() == "mariadb" {
+			if dbvendor.SingularPackageName() == "mysql" {
 				return jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 			}
 			return jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(

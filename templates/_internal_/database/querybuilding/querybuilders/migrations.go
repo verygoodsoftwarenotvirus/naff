@@ -17,7 +17,7 @@ func migrationsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen
 
 	utils.AddImports(proj, code, false)
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		code.Add(buildBuildCreationTriggerScript()...)
 	}
 
@@ -820,7 +820,7 @@ func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) jen.C
 		migrations = makePostgresMigrations(proj)
 	case "sqlite":
 		migrations = makeSqliteMigrations(proj)
-	case "mariadb", "maria_db":
+	case "mysql", "maria_db":
 		migrations = makeMariaDBMigrations(proj)
 	}
 
@@ -842,7 +842,7 @@ func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) jen.C
 func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	dbcn := dbvendor.SingularCommonName()
 	dbvsn := dbvendor.Singular()
-	isMariaDB := dbvendor.RouteName() == "mariadb" || dbvendor.RouteName() == "maria_db"
+	isMariaDB := dbvendor.RouteName() == "mysql" || dbvendor.RouteName() == "maria_db"
 
 	var dialectName string
 	if !isMariaDB {

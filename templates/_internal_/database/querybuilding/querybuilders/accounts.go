@@ -399,14 +399,14 @@ func buildBuildGetAuditLogEntriesForAccountQuery(proj *models.Project, dbvendor 
 				jen.ID("jsonPluckQuery"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-				utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.ID("accountID")),
+				utils.ConditionalCode(dbvendor.SingularPackageName() == "mysql", jen.ID("accountID")),
 				jen.Qual(proj.InternalAuditPackage(), "AccountAssignmentKey"),
 			),
 			jen.Newline(),
 			jen.Return().ID("b").Dot("buildQuery").Callln(
 				jen.ID("span"),
 				func() jen.Code {
-					if dbvendor.SingularPackageName() == "mariadb" {
+					if dbvendor.SingularPackageName() == "mysql" {
 						return jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 							Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
 							Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("accountIDKey"))).

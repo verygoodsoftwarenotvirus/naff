@@ -14,7 +14,7 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Type().Defs(
 			jen.ID("PreUpdatesWorker").Struct(
-				jen.ID("logger").ID("logging").Dot("Logger"),
+				jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 				jen.ID("tracer").ID("tracing").Dot("Tracer"),
 				jen.ID("encoder").ID("encoding").Dot("ClientEncoder"),
 				jen.ID("postUpdatesPublisher").ID("publishers").Dot("Publisher"),
@@ -28,7 +28,7 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ProvidePreUpdatesWorker provides a PreUpdatesWorker."),
 		jen.Newline(),
-		jen.Func().ID("ProvidePreUpdatesWorker").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").ID("logging").Dot("Logger"), jen.ID("client").Op("*").Qual("net/http", "Client"), jen.ID("dataManager").ID("database").Dot("DataManager"), jen.ID("postUpdatesPublisher").ID("publishers").Dot("Publisher"), jen.ID("searchIndexLocation").ID("search").Dot("IndexPath"), jen.ID("searchIndexProvider").ID("search").Dot("IndexManagerProvider")).Params(jen.Op("*").ID("PreUpdatesWorker"), jen.ID("error")).Body(
+		jen.Func().ID("ProvidePreUpdatesWorker").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"), jen.ID("client").Op("*").Qual("net/http", "Client"), jen.ID("dataManager").ID("database").Dot("DataManager"), jen.ID("postUpdatesPublisher").ID("publishers").Dot("Publisher"), jen.ID("searchIndexLocation").ID("search").Dot("IndexPath"), jen.ID("searchIndexProvider").ID("search").Dot("IndexManagerProvider")).Params(jen.Op("*").ID("PreUpdatesWorker"), jen.ID("error")).Body(
 			jen.Var().Defs(
 				jen.ID("name").Op("=").Lit("pre_updates"),
 			),
@@ -46,7 +46,7 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.Lit("setting up items search index manager: %w"),
 					jen.ID("err"),
 				))),
-			jen.ID("w").Op(":=").Op("&").ID("PreUpdatesWorker").Valuesln(jen.ID("logger").Op(":").ID("logging").Dot("EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
+			jen.ID("w").Op(":=").Op("&").ID("PreUpdatesWorker").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
 				jen.Lit("topic"),
 				jen.ID("name"),
 			), jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").Op(":").ID("encoding").Dot("ProvideClientEncoder").Call(

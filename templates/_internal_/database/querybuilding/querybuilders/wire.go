@@ -14,7 +14,7 @@ func wireDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File 
 	utils.AddImports(proj, code, false)
 
 	suffix := "DB"
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		suffix = "Connection"
 	}
 

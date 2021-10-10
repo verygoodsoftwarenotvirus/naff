@@ -14,7 +14,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Type().Defs(
 			jen.ID("DataChangesWorker").Struct(
-				jen.ID("logger").ID("logging").Dot("Logger"),
+				jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 				jen.ID("tracer").ID("tracing").Dot("Tracer"),
 				jen.ID("encoder").ID("encoding").Dot("ClientEncoder"),
 			),
@@ -25,9 +25,9 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ProvideDataChangesWorker provides a DataChangesWorker."),
 		jen.Newline(),
-		jen.Func().ID("ProvideDataChangesWorker").Params(jen.ID("logger").ID("logging").Dot("Logger")).Params(jen.Op("*").ID("DataChangesWorker")).Body(
+		jen.Func().ID("ProvideDataChangesWorker").Params(jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.Op("*").ID("DataChangesWorker")).Body(
 			jen.ID("name").Op(":=").Lit("post_writes"),
-			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(jen.ID("logger").Op(":").ID("logging").Dot("EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").Op(":").ID("encoding").Dot("ProvideClientEncoder").Call(
+			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").Op(":").ID("encoding").Dot("ProvideClientEncoder").Call(
 				jen.ID("logger"),
 				jen.ID("encoding").Dot("ContentTypeJSON"),
 			)),

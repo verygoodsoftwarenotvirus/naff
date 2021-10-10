@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -531,7 +532,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAPIClientQuery(proj *models.Proje
 	).
 		From("audit_log")
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		queryBuilder = queryBuilder.Where(squirrel.Expr(apiClientIDKey))
 	} else {
 		queryBuilder = queryBuilder.Where(squirrel.Eq{apiClientIDKey: whateverValue})
@@ -544,7 +545,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAPIClientQuery(proj *models.Proje
 	expectedQueryDecl := jen.ID("expectedQuery").Assign().Lit(expectedQuery)
 	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAPIClient").Dot("ID"))
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleAPIClient").Dot("ID"))
 		expectedArgs = jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 	}

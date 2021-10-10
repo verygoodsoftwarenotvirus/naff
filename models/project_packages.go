@@ -46,7 +46,7 @@ func (p *Project) InternalAuditPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"audit"}, parts...)...)
 }
 
-func (p *Project) ConfigPackage(parts ...string) string {
+func (p *Project) InternalConfigPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"config"}, parts...)...)
 }
 
@@ -96,6 +96,14 @@ func (p *Project) InternalEventsPackage(parts ...string) string {
 
 func (p *Project) InternalMessageQueuePackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"messagequeue"}, parts...)...)
+}
+
+func (p *Project) InternalMessageQueuePublishersPackage(parts ...string) string {
+	return p.InternalMessageQueuePackage(append([]string{"publishers"}, parts...)...)
+}
+
+func (p *Project) InternalMessageQueueConsumersPackage(parts ...string) string {
+	return p.InternalMessageQueuePackage(append([]string{"consumers"}, parts...)...)
 }
 
 func (p *Project) InternalMessageQueueConfigPackage(parts ...string) string {
@@ -156,4 +164,8 @@ func (p *Project) ObservabilityPackage(parts ...string) string {
 
 func (p *Project) ConstantKeysPackage() string {
 	return p.ObservabilityPackage("keys")
+}
+
+func (p *Project) InternalWorkersPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"workers"}, parts...)...)
 }

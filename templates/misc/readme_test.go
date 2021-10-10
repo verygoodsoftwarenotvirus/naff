@@ -67,7 +67,7 @@ It's a good idea to run ` + "`" + `make quicktest lintegration-tests` + "`" + ` 
 │   └── v1
 │       ├── client         // dbclient, wraps all querier calls in tracing and log statements
 │       └── queriers       // where all the supported databases actually get queried
-│           ├── mariadb
+│           ├── mysql
 │           ├── postgres
 │           └── sqlite
 ├── deploy

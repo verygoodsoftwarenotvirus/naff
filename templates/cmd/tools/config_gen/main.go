@@ -38,7 +38,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.Comment("database providers."),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.ID("postgres").Equals().Lit("postgres")),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.ID("mariadb").Equals().Lit("mariadb")),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.ID("mysql").Equals().Lit("mysql")),
 			jen.Newline(),
 			jen.Comment("test user stuff."),
 			jen.ID("defaultPassword").Equals().Lit("password"),
@@ -128,7 +128,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("encryptAndSaveConfig").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("outputPath").String(),
-			jen.ID("cfg").PointerTo().Qual(proj.ConfigPackage(), "InstanceConfig")).Params(jen.ID("error")).Body(
+			jen.ID("cfg").PointerTo().Qual(proj.InternalConfigPackage(), "InstanceConfig")).Params(jen.ID("error")).Body(
 			jen.ID("sm").Assign().ID("initializeLocalSecretManager").Call(jen.ID("ctx")),
 			jen.List(jen.ID("output"), jen.ID("err")).Assign().ID("sm").Dot("Encrypt").Call(
 				jen.ID("ctx"),
@@ -167,8 +167,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("postgres"),
 				jen.ID("devPostgresDBConnDetails"),
 			)),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("environments/testing/config_files/integration-tests-mariadb.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
-				jen.ID("mariadb"),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("environments/testing/config_files/integration-tests-mysql.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
+				jen.ID("mysql"),
 				jen.ID("devMariaDBConnDetails"),
 			)),
 		),
@@ -234,8 +234,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("localDevelopmentConfig").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
-			jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
-				jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
+				jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
 					jen.ID("RunMode").MapAssign().ID("developmentEnv"),
 				),
@@ -282,7 +282,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
 					jen.ID("Provider").MapAssign().Lit("bleve"),
 				),
-				jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
+				jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
@@ -319,8 +319,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("frontendTestsConfig").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
-			jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
-				jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(
+			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
+				jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
 					jen.ID("Debug").MapAssign().ID("false"),
 					jen.ID("RunMode").MapAssign().ID("developmentEnv"),
 				),
@@ -355,7 +355,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
 					jen.ID("Provider").MapAssign().Lit("bleve"),
 				),
-				jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
+				jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
@@ -392,12 +392,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("ctx").Qual("context", "Context"),
 				jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
 				jen.ID("startupDeadline").Assign().Qual("time", "Minute"),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.If(jen.ID("dbVendor").IsEqualTo().ID("mysql")).Body(
 					jen.ID("startupDeadline").Equals().Lit(5).PointerTo().Qual("time", "Minute"),
 				)),
 				jen.Newline(),
-				jen.ID("cfg").Assign().AddressOf().Qual(proj.ConfigPackage(), "InstanceConfig").Valuesln(
-					jen.ID("Meta").MapAssign().Qual(proj.ConfigPackage(), "MetaSettings").Valuesln(
+				jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
+					jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
 						jen.ID("Debug").MapAssign().ID("false"),
 						jen.ID("RunMode").MapAssign().ID("testingEnv"),
 					),
@@ -444,7 +444,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
 						jen.ID("Provider").MapAssign().Lit("bleve"),
 					),
-					jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
+					jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 						append([]jen.Code{
 							jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 								jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(

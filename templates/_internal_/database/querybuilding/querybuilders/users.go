@@ -664,7 +664,7 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 				jen.ID("jsonPluckQuery"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-				utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.ID("userID")),
+				utils.ConditionalCode(dbvendor.SingularPackageName() == "mysql", jen.ID("userID")),
 				jen.Qual(proj.InternalAuditPackage(), "UserAssignmentKey"),
 			),
 			jen.Newline(),
@@ -672,7 +672,7 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 				jen.ID("jsonPluckQuery"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 				jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-				utils.ConditionalCode(dbvendor.SingularPackageName() == "mariadb", jen.ID("userID")),
+				utils.ConditionalCode(dbvendor.SingularPackageName() == "mysql", jen.ID("userID")),
 				jen.Qual(proj.InternalAuditPackage(), "ActorAssignmentKey"),
 			),
 			jen.Newline(),
@@ -682,13 +682,13 @@ func buildBuildGetAuditLogEntriesForUserQuery(proj *models.Project, dbvendor wor
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
 					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Or").Valuesln(
 					func() jen.Code {
-						if dbvendor.SingularPackageName() == "mariadb" {
+						if dbvendor.SingularPackageName() == "mysql" {
 							return jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("userIDKey"))
 						}
 						return jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("userIDKey").Op(":").ID("userID"))
 					}(),
 					func() jen.Code {
-						if dbvendor.SingularPackageName() == "mariadb" {
+						if dbvendor.SingularPackageName() == "mysql" {
 							return jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("performedByIDKey"))
 						}
 						return jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("performedByIDKey").Op(":").ID("userID"))

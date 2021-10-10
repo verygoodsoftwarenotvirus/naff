@@ -497,7 +497,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAccountQuery(proj *models.Project
 	).
 		From("audit_log")
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		qb = qb.Where(squirrel.Expr(accountIDKey))
 	} else {
 		qb = qb.Where(squirrel.Eq{accountIDKey: whateverValue})
@@ -508,12 +508,12 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAccountQuery(proj *models.Project
 	expectedQuery, _ := buildQuery(qb)
 
 	expectedQueryDecl := jen.ID("expectedQuery").Assign().Lit(expectedQuery)
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleAccount").Dot("ID"))
 	}
 
 	expectedArgsDecl := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ID"))
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		expectedArgsDecl = jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 	}
 

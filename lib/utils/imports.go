@@ -86,7 +86,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		proj.InternalMessageQueuePackage():       "messagequeue",
 		proj.InternalAuthenticationPackage():     "authentication",
 		proj.InternalAuthorizationPackage():      "authorization",
-		proj.ConfigPackage():                     "config",
+		proj.InternalConfigPackage():             "config",
 		proj.EncodingPackage():                   "encoding",
 		proj.MetricsPackage():                    "metrics",
 		proj.InternalTracingPackage():            "tracing",

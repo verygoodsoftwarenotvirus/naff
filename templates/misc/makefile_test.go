@@ -122,7 +122,7 @@ frontend-tests:
 ## DELETE ME
 
 .PHONY: gamut
-gamut: revendor rewire config_files quicktest lint integration-tests-postgres integration-tests-sqlite integration-tests-mariadb frontend-tests
+gamut: revendor rewire config_files quicktest lint integration-tests-postgres integration-tests-sqlite integration-tests-mysql frontend-tests
 
 ## Integration tests
 
@@ -130,7 +130,7 @@ gamut: revendor rewire config_files quicktest lint integration-tests-postgres in
 lintegration-tests: integration-tests lint
 
 .PHONY: integration-tests
-integration-tests: integration-tests-sqlite integration-tests-postgres integration-tests-mariadb
+integration-tests: integration-tests-sqlite integration-tests-postgres integration-tests-mysql
 
 .PHONY: integration-tests-
 integration-tests-%:
@@ -159,7 +159,7 @@ integration-coverage: $(ARTIFACTS_DIR) vendor
 ## Load tests
 
 .PHONY: load-tests
-load-tests: load-tests-sqlite load-tests-postgres load-tests-mariadb
+load-tests: load-tests-sqlite load-tests-postgres load-tests-mysql
 
 .PHONY: load-tests-
 load-tests-%:

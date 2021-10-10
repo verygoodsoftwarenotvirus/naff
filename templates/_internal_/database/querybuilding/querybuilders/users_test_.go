@@ -864,7 +864,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForUserQuery(proj *models.Project, d
 	).
 		From("audit_log")
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		queryBuilder = queryBuilder.Where(squirrel.Or{squirrel.Expr(userIDKey), squirrel.Expr(performedByIDKey)})
 	} else {
 		queryBuilder = queryBuilder.Where(squirrel.Or{squirrel.Eq{userIDKey: whateverValue}, squirrel.Eq{performedByIDKey: whateverValue}})
@@ -877,7 +877,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForUserQuery(proj *models.Project, d
 	expectedQueryDecl := jen.ID("expectedQuery").Assign().Lit(expectedQuery)
 	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"))
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"))
 		expectedArgs = jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 	}

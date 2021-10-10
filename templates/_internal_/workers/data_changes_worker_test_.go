@@ -18,7 +18,7 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.ID("logging").Dot("NewZerologLogger").Call()),
+					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -36,7 +36,7 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.ID("logging").Dot("NewZerologLogger").Call()),
+					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -55,7 +55,7 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 				jen.Lit("invalid input"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
-					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.ID("logging").Dot("NewZerologLogger").Call()),
+					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),

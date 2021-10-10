@@ -50,8 +50,8 @@ func Test_getDatabasePalabra(T *testing.T) {
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb", func(t *testing.T) {
-		dbName := "mariadb"
+	T.Run("mysql", func(t *testing.T) {
+		dbName := "mysql"
 
 		expected := `MariaDB`
 		actual := getDatabasePalabra(dbName).Singular()
@@ -133,14 +133,14 @@ services:
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb", func(t *testing.T) {
+	T.Run("mysql", func(t *testing.T) {
 		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-		dbName := getDatabasePalabra("mariadb")
+		dbName := getDatabasePalabra("mysql")
 
 		expected := `version: "3.3"
 services:
     database:
-        image: "mariadb:latest"
+        image: "mysql:latest"
         environment:
             MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
             MYSQL_DATABASE: 'whatever'
@@ -160,7 +160,7 @@ services:
             - database
         build:
             context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
+            dockerfile: 'environments/testing/dockerfiles/integration-server-mysql.Dockerfile'
     test:
         environment:
             TARGET_ADDRESS: 'http://whatever-server:8888'

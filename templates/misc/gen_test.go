@@ -159,7 +159,7 @@ integration-tests-postgres:
     - pip install docker-compose
     - make integration-tests-postgres
 
-integration-tests-mariadb:
+integration-tests-mysql:
   stage: integration-testing
   image: docker:latest
   services:
@@ -170,7 +170,7 @@ integration-tests-mariadb:
     - apk add --update --no-cache py-pip openssl python3-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make integration-tests-mariadb
+    - make integration-tests-mysql
 
 integration-tests-sqlite:
   stage: integration-testing
@@ -213,7 +213,7 @@ load-tests-postgres:
   except:
     - schedules
 
-load-tests-mariadb:
+load-tests-mysql:
   stage: load-testing
   image: docker:latest
   services:
@@ -225,7 +225,7 @@ load-tests-mariadb:
     - apk add --update --no-cache py-pip openssl python3-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make load-tests-mariadb
+    - make load-tests-mysql
   except:
     - schedules
 
@@ -263,7 +263,7 @@ daily-load-tests-postgres:on-schedule:
   only:
     - schedules
 
-daily-load-tests-mariadb:on-schedule:
+daily-load-tests-mysql:on-schedule:
   stage: load-testing
   image: docker:latest
   services:
@@ -275,7 +275,7 @@ daily-load-tests-mariadb:on-schedule:
     - apk add --update --no-cache py-pip openssl python3-dev libffi-dev
       openssl-dev gcc libc-dev make
     - pip install docker-compose
-    - make load-tests-mariadb
+    - make load-tests-mysql
   only:
     - schedules
 

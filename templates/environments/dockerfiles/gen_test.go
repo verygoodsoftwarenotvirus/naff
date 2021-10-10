@@ -258,7 +258,7 @@ ENTRYPOINT ["/binary"]
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
 
-	T.Run("mariadb", func(t *testing.T) {
+	T.Run("mysql", func(t *testing.T) {
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 		binaryName := "binary"
 
@@ -292,7 +292,7 @@ RUN chown appuser /home/appuser
 WORKDIR /home/appuser
 USER appuser
 
-COPY environments/testing/config_files/integration-tests-mariadb.toml /etc/config.toml
+COPY environments/testing/config_files/integration-tests-mysql.toml /etc/config.toml
 COPY --from=build-stage /binary /binary
 COPY --from=frontend-build-stage /app/public /frontend
 

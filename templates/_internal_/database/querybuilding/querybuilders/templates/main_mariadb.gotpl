@@ -1,4 +1,4 @@
-package mariadb
+package mysql
 
 import (
 	"database/sql"
@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	loggerName = "mariadb"
-	driverName = "wrapped-mariadb-driverName"
+	loggerName = "mysql"
+	driverName = "wrapped-mysql-driverName"
 
 	// columnCountQueryTemplate is a generic counter query used in a few query builders.
 	columnCountQueryTemplate = `COUNT(%s.id)`

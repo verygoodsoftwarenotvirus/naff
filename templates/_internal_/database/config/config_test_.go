@@ -77,7 +77,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for mariadb"),
+					jen.Lit("standard for mysql"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -153,7 +153,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for mariadb"),
+					jen.Lit("standard for mysql"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -214,7 +214,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for mariadb"),
+					jen.Lit("standard for mysql"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -265,7 +265,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for mariadb"),
+					jen.Lit("standard for mysql"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
@@ -350,7 +350,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for mariadb"),
+					jen.Lit("standard for mysql"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),

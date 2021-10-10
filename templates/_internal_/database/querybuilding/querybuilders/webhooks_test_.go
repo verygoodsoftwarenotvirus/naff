@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -452,7 +453,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForWebhookQuery(proj *models.Project
 	).
 		From("audit_log")
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		queryBuilder = queryBuilder.Where(squirrel.Expr(webhookKey))
 	} else {
 		queryBuilder = queryBuilder.Where(squirrel.Eq{webhookKey: whateverValue})
@@ -465,7 +466,7 @@ func buildTestSqlite_BuildGetAuditLogEntriesForWebhookQuery(proj *models.Project
 	expectedQueryDecl := jen.ID("expectedQuery").Assign().Lit(expectedQuery)
 	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleWebhook").Dot("ID"))
 
-	if dbvendor.SingularPackageName() == "mariadb" {
+	if dbvendor.SingularPackageName() == "mysql" {
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleWebhook").Dot("ID"))
 		expectedArgs = jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 	}
