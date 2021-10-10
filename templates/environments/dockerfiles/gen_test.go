@@ -33,7 +33,7 @@ func Test_formattingDotDockerfile(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
-		expected := `FROM golang:stretch
+		expected := `FROM golang:1.17-stretch
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -66,7 +66,7 @@ ADD frontend/v1 .
 RUN npm install && npm run build
 
 # build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -102,7 +102,7 @@ func Test_frontendTestDotDockerfile(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
-		expected := `FROM golang:stretch
+		expected := `FROM golang:1.17-stretch
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -125,7 +125,7 @@ func Test_integrationCoverageServerDotDockerfile(T *testing.T) {
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
 		expected := `# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -173,7 +173,7 @@ func Test_buildIntegrationServerDotDockerfile(T *testing.T) {
 		binaryName := "binary"
 
 		expected := `# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -208,7 +208,7 @@ COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/binary"]
 `
-		actual := buildIntegrationServerDotDockerfile("postgres")(projRoot, binaryName)
+		actual := buildIntegrationServerDotDockerfile(projRoot, binaryName)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -218,7 +218,7 @@ ENTRYPOINT ["/binary"]
 		binaryName := "binary"
 
 		expected := `# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -253,7 +253,7 @@ COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/binary"]
 `
-		actual := buildIntegrationServerDotDockerfile("sqlite")(projRoot, binaryName)
+		actual := buildIntegrationServerDotDockerfile(projRoot, binaryName)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -263,7 +263,7 @@ ENTRYPOINT ["/binary"]
 		binaryName := "binary"
 
 		expected := `# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -298,7 +298,7 @@ COPY --from=frontend-build-stage /app/public /frontend
 
 ENTRYPOINT ["/binary"]
 `
-		actual := buildIntegrationServerDotDockerfile("mariadb")(projRoot, binaryName)
+		actual := buildIntegrationServerDotDockerfile(projRoot, binaryName)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})
@@ -312,7 +312,7 @@ func Test_frontendTestsServerDotDockerfile(T *testing.T) {
 		binaryName := "binary"
 
 		expected := `# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
 
@@ -359,7 +359,7 @@ func Test_integrationTestsDotDockerfile(T *testing.T) {
 	T.Run("obligatory", func(t *testing.T) {
 		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
 
-		expected := `FROM golang:stretch
+		expected := `FROM golang:1.17-stretch
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
@@ -373,38 +373,6 @@ ENTRYPOINT [ "go", "test", "-v", "-failfast", "gitlab.com/verygoodsoftwarenotvir
 # ENTRYPOINT [ "go", "test", "-v", "gitlab.com/verygoodsoftwarenotvirus/example/tests/v1/integration", "-run", "InsertTestNameHere" ]
 `
 		actual := integrationTestsDotDockerfile(projRoot, "")
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
-func Test_loadTestsDotDockerfile(T *testing.T) {
-	T.Parallel()
-
-	T.Run("obligatory", func(t *testing.T) {
-		projRoot := "gitlab.com/verygoodsoftwarenotvirus/example"
-
-		expected := `# build stage
-FROM golang:stretch AS build-stage
-
-WORKDIR /go/src/gitlab.com/verygoodsoftwarenotvirus/example
-
-RUN apt-get update -y && apt-get install -y make git gcc musl-dev
-
-ADD . .
-
-RUN go build -o /loadtester gitlab.com/verygoodsoftwarenotvirus/example/tests/v1/load
-
-# final stage
-FROM debian:stable
-
-COPY --from=build-stage /loadtester /loadtester
-
-ENV DOCKER=true
-
-ENTRYPOINT ["/loadtester"]
-`
-		actual := loadTestsDotDockerfile(projRoot, "")
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

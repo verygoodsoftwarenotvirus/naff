@@ -2,8 +2,6 @@ package models
 
 import (
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -15,6 +13,9 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
@@ -33,8 +34,7 @@ const (
 	notEditable  = "!editable"
 
 	Postgres validDatabase = "Postgres"
-	MariaDB  validDatabase = "MariaDB"
-	Sqlite   validDatabase = "Sqlite"
+	MySQL    validDatabase = "MySQL"
 )
 
 type depWrapper struct {
@@ -44,14 +44,12 @@ type depWrapper struct {
 var (
 	validDatabaseMap = map[validDatabase]struct{}{
 		Postgres: {},
-		Sqlite:   {},
-		MariaDB:  {},
+		MySQL:    {},
 	}
 
 	nameToValidDBMap = map[string]validDatabase{
 		string(Postgres): Postgres,
-		string(Sqlite):   Sqlite,
-		string(MariaDB):  MariaDB,
+		string(MySQL):    MySQL,
 	}
 )
 
@@ -516,8 +514,7 @@ func CompleteSurvey(
 	sourceModels,
 	outputPackage string,
 	postgresEnabled,
-	sqliteEnabled,
-	mariaDBEnabled bool,
+	mysqlEnabled bool,
 ) (*Project, error) {
 	// the questions to ask
 	questions := []*survey.Question{}
@@ -576,7 +573,7 @@ func CompleteSurvey(
 
 	dbOptions := []string{}
 	supportedDBs := []string{}
-	addOther := postgresEnabled || sqliteEnabled || mariaDBEnabled
+	addOther := postgresEnabled || mysqlEnabled
 
 	if d := string(Postgres); true {
 		if !postgresEnabled {
@@ -586,16 +583,8 @@ func CompleteSurvey(
 		}
 	}
 
-	if d := string(Sqlite); true {
-		if !sqliteEnabled {
-			dbOptions = append(dbOptions, d)
-		} else {
-			supportedDBs = append(supportedDBs, d)
-		}
-	}
-
-	if d := string(MariaDB); true {
-		if !mariaDBEnabled {
+	if d := string(MySQL); true {
+		if !mysqlEnabled {
 			dbOptions = append(dbOptions, d)
 		} else {
 			supportedDBs = append(supportedDBs, d)

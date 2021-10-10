@@ -146,9 +146,8 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					constants.LoggerVar().Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.Newline(),
 					jen.For(jen.List(jen.Underscore(), jen.ID("provider")).Assign().Range().Index().String().Values(
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Lit("sqlite")),
 						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Lit("postgres")),
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Lit("mariadb")),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("mariadb")),
 					)).Body(
 						jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Valuesln(
 							jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(

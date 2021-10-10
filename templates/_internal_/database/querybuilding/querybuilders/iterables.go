@@ -2,6 +2,7 @@ package querybuilders
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -811,7 +812,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 	keyUsage := jen.Null()
 
 	switch dbvendor.Singular() {
-	case string(models.MariaDB):
+	case string(models.MySQL):
 		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
 	case string(models.Postgres), string(models.Sqlite):
 		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))

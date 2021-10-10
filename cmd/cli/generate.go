@@ -30,8 +30,7 @@ var (
 	outputPackage string
 
 	postgresEnabled,
-	sqliteEnabled,
-	mariaDBEnabled bool
+	mysqlEnabled bool
 
 	// generateCmd represents the generate command
 	generateCmd = &cobra.Command{
@@ -103,8 +102,7 @@ and run:
 				sourceModels,
 				outputPackage,
 				postgresEnabled,
-				sqliteEnabled,
-				mariaDBEnabled,
+				mysqlEnabled,
 			)
 			if err != nil {
 				return err
@@ -131,7 +129,7 @@ func init() {
 
 	generateCmd.Flags().BoolVarP(&postgresEnabled, "enable-postgres", "", false, "enable postgres support")
 	generateCmd.Flags().BoolVarP(&sqliteEnabled, "enable-sqlite", "", false, "enable sqlite support")
-	generateCmd.Flags().BoolVarP(&mariaDBEnabled, "enable-mariadb", "", false, "enable mariadb support")
+	generateCmd.Flags().BoolVarP(&mysqlEnabled, "enable-mariadb", "", false, "enable mariadb support")
 
 	rootCmd.AddCommand(generateCmd)
 }

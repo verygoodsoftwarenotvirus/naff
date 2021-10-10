@@ -75,32 +75,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for sqlite"),
-					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-						jen.ID("t").Dot("Parallel").Call(),
-						jen.Newline(),
-						jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-						jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(jen.ID("Provider").Op(":").ID("SqliteProvider"), jen.ID("ConnectionDetails").Op(":").Lit("example_connection_string")),
-						jen.Newline(),
-						jen.List(jen.ID("db"), jen.ID("err")).Op(":=").ID("ProvideDatabaseConnection").Call(
-							jen.ID("logger"),
-							jen.ID("cfg"),
-						),
-						jen.Qual(constants.AssertionLibrary, "NotNil").Call(
-							jen.ID("t"),
-							jen.ID("db"),
-						),
-						jen.Qual(constants.AssertionLibrary, "NoError").Call(
-							jen.ID("t"),
-							jen.ID("err"),
-						),
-					),
-				),
-			),
-			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
 					jen.Lit("standard for mariadb"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
@@ -176,28 +151,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for sqlite"),
-					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-						jen.ID("t").Dot("Parallel").Call(),
-						jen.Newline(),
-						jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(jen.ID("Provider").Op(":").ID("SqliteProvider"), jen.ID("ConnectionDetails").Op(":").Lit("example_connection_string")),
-						jen.Newline(),
-						jen.List(jen.ID("pf"), jen.ID("err")).Op(":=").ID("cfg").Dot("ProvideDatabasePlaceholderFormat").Call(),
-						jen.Qual(constants.AssertionLibrary, "NotNil").Call(
-							jen.ID("t"),
-							jen.ID("pf"),
-						),
-						jen.Qual(constants.AssertionLibrary, "NoError").Call(
-							jen.ID("t"),
-							jen.ID("err"),
-						),
-					),
-				),
-			),
-			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
 					jen.Lit("standard for mariadb"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
@@ -258,23 +212,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for sqlite"),
-					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-						jen.ID("t").Dot("Parallel").Call(),
-						jen.Newline(),
-						jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(jen.ID("Provider").Op(":").ID("SqliteProvider"), jen.ID("ConnectionDetails").Op(":").Lit("example_connection_string")),
-						jen.Newline(),
-						jen.Qual(constants.AssertionLibrary, "NotEmpty").Call(
-							jen.ID("t"),
-							jen.ID("cfg").Dot("ProvideJSONPluckQuery").Call(),
-						),
-					),
-				),
-			),
-			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
 					jen.Lit("standard for mariadb"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
@@ -325,23 +263,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for sqlite"),
-					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-						jen.ID("t").Dot("Parallel").Call(),
-						jen.Newline(),
-						jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(jen.ID("Provider").Op(":").ID("SqliteProvider"), jen.ID("ConnectionDetails").Op(":").Lit("example_connection_string")),
-						jen.Newline(),
-						jen.Qual(constants.AssertionLibrary, "NotEmpty").Call(
-							jen.ID("t"),
-							jen.ID("cfg").Dot("ProvideCurrentUnixTimestampQuery").Call(),
-						),
-					),
-				),
-			),
-			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
 					jen.Lit("standard for mariadb"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
@@ -426,33 +348,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-				jen.ID("T").Dot("Run").Call(
-					jen.Lit("standard for sqlite"),
-					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-						jen.ID("t").Dot("Parallel").Call(),
-						jen.Newline(),
-						jen.ID("cookieConfig").Op(":=").Qual(proj.AuthServicePackage(), "CookieConfig").Values(),
-						jen.ID("cfg").Op(":=").ID("Config").Valuesln(jen.ID("Provider").Op(":").ID("SqliteProvider"), jen.ID("ConnectionDetails").Op(":").Lit("example_connection_string")),
-						jen.Newline(),
-						jen.List(jen.ID("sessionManager"), jen.ID("err")).Op(":=").ID("ProvideSessionManager").Call(
-							jen.ID("cookieConfig"),
-							jen.ID("cfg"),
-							jen.Op("&").Qual("database/sql", "DB").Values(),
-						),
-						jen.Qual(constants.AssertionLibrary, "NotNil").Call(
-							jen.ID("t"),
-							jen.ID("sessionManager"),
-						),
-						jen.Qual(constants.AssertionLibrary, "NoError").Call(
-							jen.ID("t"),
-							jen.ID("err"),
-						),
-					),
-				),
-			),
-			jen.Newline(),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 				jen.ID("T").Dot("Run").Call(
 					jen.Lit("standard for mariadb"),
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(

@@ -112,7 +112,7 @@ before_script:
 
 formatting:
   stage: quality
-  image: golang:stretch
+  image: golang:1.17-stretch
   variables:
     GOPATH: "/go"
   script:
@@ -121,7 +121,7 @@ formatting:
 
 coverage:
   stage: quality
-  image: golang:stretch
+  image: golang:1.17-stretch
   variables:
     GOPATH: "/go"
   script:

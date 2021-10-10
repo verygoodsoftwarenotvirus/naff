@@ -16,8 +16,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Comment("PostgresProvider is the string used to refer to postgres.").Newline().ID("PostgresProvider").Op("=").Lit("postgres")),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Comment("MariaDBProvider is the string used to refer to mariaDB.").Newline().ID("MariaDBProvider").Op("=").Lit("mariadb")),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Comment("SqliteProvider is the string used to refer to sqlite.").Newline().ID("SqliteProvider").Op("=").Lit("sqlite")),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Comment("MariaDBProvider is the string used to refer to mariaDB.").Newline().ID("MariaDBProvider").Op("=").Lit("mariadb")),
 			jen.Newline(),
 			jen.Comment("DefaultMetricsCollectionInterval is the default amount of time we wait between database metrics queries."),
 			jen.ID("DefaultMetricsCollectionInterval").Op("=").Lit(2).Op("*").Qual("time", "Second"),
@@ -69,8 +68,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.Op("&").ID("cfg").Dot("Provider"),
 					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "In").Call(
 						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.ID("PostgresProvider")),
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.ID("MariaDBProvider")),
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.ID("SqliteProvider")),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.ID("MariaDBProvider")),
 					),
 				),
 				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
@@ -96,19 +94,11 @@ func configDotGo(proj *models.Project) *jen.File {
 							jen.ID("cfg").Dot("ConnectionDetails"),
 						)),
 				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 					jen.Case(jen.ID("MariaDBProvider")).Body(
 						jen.Return().Qual(proj.QuerybuildingPackage("mariadb"), "ProvideMariaDBConnection").Call(
 							jen.ID("logger"),
 							jen.ID("cfg").Dot("ConnectionDetails"),
-						)),
-				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-					jen.Case(jen.ID("SqliteProvider")).Body(
-						jen.Return().Qual(proj.QuerybuildingPackage("sqlite"), "ProvideSqliteDB").Call(
-							jen.ID("logger"),
-							jen.ID("cfg").Dot("ConnectionDetails"),
-							jen.ID("cfg").Dot("MetricsCollectionInterval"),
 						)),
 				),
 				jen.Default().Body(
@@ -130,10 +120,9 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.Case(jen.ID("PostgresProvider")).Body(
 						jen.Return().List(jen.Qual(constants.SQLGenerationLibrary, "Dollar"), jen.ID("nil"))),
 				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite) || proj.DatabaseIsEnabled(models.MariaDB),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 					jen.Case(
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.ID("MariaDBProvider")),
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.ID("SqliteProvider")),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.ID("MariaDBProvider")),
 					).Body(
 						jen.Return().List(jen.Qual(constants.SQLGenerationLibrary, "Question"), jen.ID("nil"))),
 				),
@@ -156,13 +145,9 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.Case(jen.ID("PostgresProvider")).Body(
 						jen.Return().RawString(`%s.%s->'%s'`)),
 				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 					jen.Case(jen.ID("MariaDBProvider")).Body(
 						jen.Return().RawString(`JSON_CONTAINS(%s.%s, '%d', '$.%s')`)),
-				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-					jen.Case(jen.ID("SqliteProvider")).Body(
-						jen.Return().RawString(`json_extract(%s.%s, '$.%s')`)),
 				),
 				jen.Default().Body(
 					jen.Return().Lit("")),
@@ -179,13 +164,9 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.Case(jen.ID("PostgresProvider")).Body(
 						jen.Return().RawString(`extract(epoch FROM NOW())`)),
 				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 					jen.Case(jen.ID("MariaDBProvider")).Body(
 						jen.Return().RawString(`UNIX_TIMESTAMP()`)),
-				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-					jen.Case(jen.ID("SqliteProvider")).Body(
-						jen.Return().RawString(`(strftime('%s','now'))`)),
 				),
 				jen.Default().Body(
 					jen.Return().Lit("")),
@@ -212,13 +193,9 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.Case(jen.ID("PostgresProvider")).Body(
 						jen.ID("sessionManager").Dot("Store").Op("=").Qual("github.com/alexedwards/scs/postgresstore", "New").Call(jen.ID("db"))),
 				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL),
 					jen.Case(jen.ID("MariaDBProvider")).Body(
 						jen.ID("sessionManager").Dot("Store").Op("=").Qual("github.com/alexedwards/scs/mysqlstore", "New").Call(jen.ID("db"))),
-				),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite),
-					jen.Case(jen.ID("SqliteProvider")).Body(
-						jen.ID("sessionManager").Dot("Store").Op("=").Qual("github.com/alexedwards/scs/sqlite3store", "New").Call(jen.ID("db"))),
 				),
 				jen.Default().Body(
 					jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(

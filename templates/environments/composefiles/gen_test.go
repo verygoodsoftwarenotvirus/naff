@@ -1,9 +1,10 @@
 package composefiles
 
 import (
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 	"os"
 	"testing"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models/testprojects"
 
@@ -171,121 +172,6 @@ services:
         container_name: 'mariadb_integration_tests'
 `
 		actual := integrationTestsDotYAML(exampleProjectName, dbName)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-}
-
-func Test_loadTestsDotYAML(T *testing.T) {
-	T.Parallel()
-
-	T.Run("postgres", func(t *testing.T) {
-		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-		dbName := getDatabasePalabra("postgres")
-
-		expected := `---
-version: '3.3'
-services:
-    database:
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: 'whatever'
-            POSTGRES_PASSWORD: 'hunter2'
-            POSTGRES_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 2345:5432
-    load-tests:
-        environment:
-            TARGET_ADDRESS: 'http://whatever-server:8888'
-        links:
-            - whatever-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    whatever-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        links:
-            - database
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-postgres.Dockerfile'
-`
-		actual := loadTestsDotYAML(exampleProjectName, dbName)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-
-	T.Run("sqlite", func(t *testing.T) {
-		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-		dbName := getDatabasePalabra("sqlite")
-
-		expected := `version: '3.3'
-services:
-    load-tests:
-        environment:
-            TARGET_ADDRESS: 'http://whatever-server:8888'
-        links:
-            - whatever-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    whatever-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-sqlite.Dockerfile'
-`
-		actual := loadTestsDotYAML(exampleProjectName, dbName)
-
-		assert.Equal(t, expected, actual, "expected and actual output do not match")
-	})
-
-	T.Run("mariadb", func(t *testing.T) {
-		exampleProjectName := wordsmith.FromSingularPascalCase("Whatever")
-		dbName := getDatabasePalabra("mariadb")
-
-		expected := `version: '3.3'
-services:
-    database:
-        image: mariadb:latest
-        environment:
-            MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
-            MYSQL_DATABASE: 'whatever'
-            MYSQL_PASSWORD: 'hunter2'
-            MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-            MYSQL_USER: 'dbuser'
-        logging:
-            driver: none
-        ports:
-            - 3306:3306
-    load-tests:
-        environment:
-            TARGET_ADDRESS: 'http://whatever-server:8888'
-        links:
-            - whatever-server
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/load-tests.Dockerfile'
-    whatever-server:
-        environment:
-            CONFIGURATION_FILEPATH: '/etc/config.toml'
-        ports:
-            - 80:8888
-        links:
-            - database
-        build:
-            context: '../../../../'
-            dockerfile: 'environments/testing/dockerfiles/integration-server-mariadb.Dockerfile'
-`
-		actual := loadTestsDotYAML(exampleProjectName, dbName)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

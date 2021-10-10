@@ -61,8 +61,7 @@ func BuildTodoApp() *models.Project {
 	}
 
 	p.EnableDatabase(models.Postgres)
-	p.EnableDatabase(models.Sqlite)
-	p.EnableDatabase(models.MariaDB)
+	p.EnableDatabase(models.MySQL)
 
 	return p
 }
@@ -278,8 +277,7 @@ func BuildEveryTypeApp() *models.Project {
 	}
 
 	p.EnableDatabase(models.Postgres)
-	p.EnableDatabase(models.Sqlite)
-	p.EnableDatabase(models.MariaDB)
+	p.EnableDatabase(models.MySQL)
 
 	return p
 }
@@ -595,8 +593,7 @@ func BuildForumsApp() *models.Project {
 	}
 
 	p.EnableDatabase(models.Postgres)
-	p.EnableDatabase(models.Sqlite)
-	p.EnableDatabase(models.MariaDB)
+	p.EnableDatabase(models.MySQL)
 
 	return p
 }

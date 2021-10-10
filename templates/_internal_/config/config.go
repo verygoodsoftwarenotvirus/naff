@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -275,10 +276,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("shouldCreateTestUser").Assign().ID("cfg").Dot("Meta").Dot("RunMode").Op("!=").ID("ProductionRunMode"),
 			jen.Newline(),
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("cfg").Dot("Database").Dot("Provider")))).Body(
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Case(jen.Lit("sqlite")).Body(
-					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "sqlite"), "ProvideSqlite").Call(constants.LoggerVar()),
-				)),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Case(jen.Lit("mariadb")).Body(
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Case(jen.Lit("mariadb")).Body(
 					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "mariadb"), "ProvideMariaDB").Call(constants.LoggerVar()),
 				)),
 				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Case(jen.Lit("postgres")).Body(

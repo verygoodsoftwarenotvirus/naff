@@ -38,8 +38,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.Comment("database providers."),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.ID("postgres").Equals().Lit("postgres")),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.ID("sqlite").Equals().Lit("sqlite")),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.ID("mariadb").Equals().Lit("mariadb")),
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.ID("mariadb").Equals().Lit("mariadb")),
 			jen.Newline(),
 			jen.Comment("test user stuff."),
 			jen.ID("defaultPassword").Equals().Lit("password"),
@@ -168,11 +167,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("postgres"),
 				jen.ID("devPostgresDBConnDetails"),
 			)),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Sqlite), jen.Lit("environments/testing/config_files/integration-tests-sqlite.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
-				jen.ID("sqlite"),
-				jen.ID("devSqliteConnDetails"),
-			)),
-			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.Lit("environments/testing/config_files/integration-tests-mariadb.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
+			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("environments/testing/config_files/integration-tests-mariadb.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
 				jen.ID("mariadb"),
 				jen.ID("devMariaDBConnDetails"),
 			)),
@@ -405,7 +400,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Return().Func().Params(jen.ID("ctx").Qual("context", "Context"),
 				jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
 				jen.ID("startupDeadline").Assign().Qual("time", "Minute"),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MariaDB), jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.If(jen.ID("dbVendor").IsEqualTo().ID("mariadb")).Body(
 					jen.ID("startupDeadline").Equals().Lit(5).PointerTo().Qual("time", "Minute"),
 				)),
 				jen.Newline(),

@@ -34,7 +34,6 @@ func RenderPackage(proj *models.Project) error {
 		"wire_test.go":          wireTestDotGo(proj),
 		"accounts.go":           accountsDotGo(proj),
 		"api_clients_test.go":   apiClientsTestDotGo(proj),
-		"billing.go":            billingDotGo(proj),
 		"helpers_test.go":       helpersTestDotGo(proj),
 		"static_assets.go":      staticAssetsDotGo(proj),
 		"users_test.go":         usersTestDotGo(proj),
@@ -44,7 +43,6 @@ func RenderPackage(proj *models.Project) error {
 		"wire.go":               wireDotGo(proj),
 		"users.go":              usersDotGo(proj),
 		"auth_test.go":          authTestDotGo(proj),
-		"billing_test.go":       billingTestDotGo(proj),
 		"i18n.go":               i18NDotGo(proj),
 		"static_assets_test.go": staticAssetsTestDotGo(proj),
 		"http_routes_test.go":   httpRoutesTestDotGo(proj),
@@ -298,13 +296,6 @@ func apiClientsTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, apiClientsTestTemplate, nil)
 }
 
-//go:embed billing.gotpl
-var billingTemplate string
-
-func billingDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, billingTemplate, nil)
-}
-
 //go:embed helpers_test.gotpl
 var helpersTestTemplate string
 
@@ -366,13 +357,6 @@ var authTestTemplate string
 
 func authTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, authTestTemplate, nil)
-}
-
-//go:embed billing_test.gotpl
-var billingTestTemplate string
-
-func billingTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, billingTestTemplate, nil)
 }
 
 //go:embed i18n.gotpl

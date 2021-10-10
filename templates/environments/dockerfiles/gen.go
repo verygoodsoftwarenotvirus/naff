@@ -14,10 +14,11 @@ import (
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(projRoot, binaryName string) string{
 		"environments/local/Dockerfile":                                     developmentDotDockerfile,
+		"environments/local/workers.Dockerfile":                             developmentWorkersDotDockerfile,
+		"environments/testing/dockerfiles/workers.Dockerfile":               testingWorkersDotDockerfile,
 		"environments/testing/dockerfiles/formatting.Dockerfile":            formattingDotDockerfile,
 		"environments/testing/dockerfiles/frontend-tests-server.Dockerfile": frontendTestsServerDotDockerfile,
 		"environments/testing/dockerfiles/integration-tests.Dockerfile":     integrationTestsDotDockerfile,
-		"environments/testing/dockerfiles/load-tests.Dockerfile":            loadTestsDotDockerfile,
 		"environments/testing/dockerfiles/integration-server.Dockerfile":    buildIntegrationServerDotDockerfile,
 	}
 
@@ -45,7 +46,7 @@ func RenderPackage(project *models.Project) error {
 }
 
 func formattingDotDockerfile(projRoot, _ string) string {
-	return fmt.Sprintf(`FROM golang:stretch
+	return fmt.Sprintf(`FROM golang:1.17-stretch
 
 WORKDIR /go/src/%s
 
@@ -57,9 +58,46 @@ CMD if [ $(gofmt -l . | grep -Ev '^vendor\/' | head -c1 | wc -c) -ne 0 ]; then e
 `, projRoot)
 }
 
+func developmentWorkersDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`# build stage
+FROM golang:1.17-stretch
+
+WORKDIR /go/src/%s
+
+RUN	apt-get update && apt-get install -y \
+	--no-install-recommends \
+	entr \
+	&& rm -rf /var/lib/apt/lists/*
+ENV ENTR_INOTIFY_WORKAROUND=true
+
+ENTRYPOINT echo "please wait for workers to start" && sleep 15 && find . -type f \( -iname "*.go*" ! -iname "*_test.go" \) | entr -r go run %s/cmd/workers
+`, projRoot, projRoot)
+}
+
+func testingWorkersDotDockerfile(projRoot, _ string) string {
+	return fmt.Sprintf(`# build stage
+FROM golang:1.17-stretch AS build-stage
+
+WORKDIR /go/src/%s
+
+RUN apt-get update -y && apt-get install -y make git gcc musl-dev
+
+COPY . .
+
+RUN go build -trimpath -o /workers -v %s/cmd/workers
+
+# final stage
+FROM debian:bullseye
+
+COPY --from=build-stage /workers /workers
+
+ENTRYPOINT ["/workers"]
+`, projRoot, projRoot)
+}
+
 func developmentDotDockerfile(projRoot, binaryName string) string {
 	return fmt.Sprintf(`# build stage
-FROM golang:stretch
+FROM golang:1.17-stretch
 
 WORKDIR /go/src/%s
 
@@ -74,7 +112,7 @@ ENTRYPOINT echo "please wait for server to start" && find . -type f \( -iname "*
 }
 
 func frontendTestDotDockerfile(projRoot, _ string) string {
-	return fmt.Sprintf(`FROM golang:stretch
+	return fmt.Sprintf(`FROM golang:1.17-stretch
 
 WORKDIR /go/src/%s
 
@@ -88,7 +126,7 @@ ENTRYPOINT [ "go", "test", "-v", "-failfast", "-parallel=1", "%s/tests/v1/fronte
 
 func integrationCoverageServerDotDockerfile(projRoot, _ string) string {
 	return fmt.Sprintf(`# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/%s
 
@@ -126,7 +164,7 @@ ENTRYPOINT ["/integration-server", "-test.coverprofile=/home/integration-coverag
 
 func buildIntegrationServerDotDockerfile(projRoot, binaryName string) string {
 	return fmt.Sprintf(`# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/%s
 
@@ -134,8 +172,7 @@ RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 COPY . .
 
-# we need the `+"`"+`-tags json1`+"`"+` so sqlite can support JSON columns.
-RUN go build -tags json1 -trimpath -o /%s -v %s/cmd/server
+RUN go build -trimpath -o /%s -v %s/cmd/server
 
 # final stage
 FROM debian:stretch
@@ -148,7 +185,7 @@ ENTRYPOINT ["/%s"]
 
 func frontendTestsServerDotDockerfile(projRoot, binaryName string) string {
 	return fmt.Sprintf(`# build stage
-FROM golang:stretch AS build-stage
+FROM golang:1.17-stretch AS build-stage
 
 WORKDIR /go/src/%s
 
@@ -175,40 +212,17 @@ ENTRYPOINT ["/%s"]
 }
 
 func integrationTestsDotDockerfile(projRoot, _ string) string {
-	return fmt.Sprintf(`FROM golang:stretch
+	return fmt.Sprintf(`FROM golang:1.17-stretch
 
 RUN apt-get update -y && apt-get install -y make git gcc musl-dev
 
 WORKDIR /go/src/%s
 
 COPY . .
-
-ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/integration" ]
 
 # to debug a specific test:
-# ENTRYPOINT [ "go", "test", "-parallel", "1", "-v", "-failfast", "%s/tests/integration", "-run", "InsertTestNameHere" ]
+# ENTRYPOINT [ "go", "test", "-parallel", "1", "-v", "-failfast", "%s/tests/integration", "-run", "TestIntegration/TestSomething" ]
+
+ENTRYPOINT [ "go", "test", "-v", "-failfast", "%s/tests/integration" ]
 `, projRoot, projRoot, projRoot)
-}
-
-func loadTestsDotDockerfile(projRoot, _ string) string {
-	return fmt.Sprintf(`# build stage
-FROM golang:stretch AS build-stage
-
-WORKDIR /go/src/%s
-
-RUN apt-get update -y && apt-get install -y make git gcc musl-dev
-
-COPY . .
-
-RUN go build -o /loadtester %s/tests/load
-
-# final stage
-FROM debian:stretch
-
-COPY --from=build-stage /loadtester /loadtester
-
-ENV DOCKER=true
-
-ENTRYPOINT ["/loadtester"]
-`, projRoot, projRoot)
 }

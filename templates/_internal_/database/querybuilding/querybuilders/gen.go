@@ -17,7 +17,7 @@ const (
 
 func buildMariaDBWord() wordsmith.SuperPalabra {
 	return &wordsmith.ManualWord{
-		SingularStr:                           "MariaDB",
+		SingularStr:                           "MySQL",
 		PluralStr:                             "MariaDBs",
 		RouteNameStr:                          "mariadb",
 		KebabNameStr:                          "mariadb",
@@ -42,7 +42,7 @@ func RenderPackage(proj *models.Project) error {
 		var dbvendor wordsmith.SuperPalabra
 
 		switch rawDBvendor {
-		case string(models.MariaDB):
+		case string(models.MySQL):
 			dbvendor = buildMariaDBWord()
 		case string(models.Postgres), string(models.Sqlite):
 			dbvendor = wordsmith.FromSingularPascalCase(rawDBvendor)
