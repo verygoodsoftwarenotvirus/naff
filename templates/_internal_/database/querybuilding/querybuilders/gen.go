@@ -56,7 +56,7 @@ func RenderPackage(proj *models.Project) error {
 		}
 
 		for path, file := range files {
-			if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, dbvendor.RouteName(), path), file); err != nil {
+			if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, dbvendor.RouteName(), path), file, true); err != nil {
 				return err
 			}
 		}

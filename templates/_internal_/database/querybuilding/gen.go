@@ -4,10 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"path/filepath"
 	"strings"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -30,7 +31,7 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}

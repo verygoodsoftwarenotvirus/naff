@@ -18,6 +18,7 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]*jen.File{
+		"doc.go":                      docDotGo(proj),
 		"pre_archives_worker.go":      preArchivesWorkerDotGo(proj),
 		"pre_archives_worker_test.go": preArchivesWorkerTestDotGo(proj),
 		"pre_updates_worker.go":       preUpdatesWorkerDotGo(proj),
@@ -27,11 +28,6 @@ func RenderPackage(proj *models.Project) error {
 		"data_changes_worker.go":      dataChangesWorkerDotGo(proj),
 		"data_changes_worker_test.go": dataChangesWorkerTestDotGo(proj),
 	}
-
-	//for _, typ := range types {
-	//	files[fmt.Sprintf("%s.go", typ.Name.PluralRouteName)] = itemsDotGo(typ)
-	//	files[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName)] = itemsTestDotGo(typ)
-	//}
 
 	for path, file := range files {
 		if err := utils.RenderGoFile(proj, filepath.Join(basePackagePath, path), file); err != nil {

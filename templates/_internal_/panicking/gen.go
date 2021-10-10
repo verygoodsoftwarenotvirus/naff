@@ -15,26 +15,18 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
-		"mock.go":          mockDotGo(proj),
 		"panicker.go":      panickerDotGo(proj),
 		"standard.go":      standardDotGo(proj),
 		"standard_test.go": standardTestDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-//go:embed mock.gotpl
-var mockTemplate string
-
-func mockDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mockTemplate, nil)
 }
 
 //go:embed panicker.gotpl

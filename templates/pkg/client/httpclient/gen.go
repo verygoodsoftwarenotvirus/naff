@@ -3,8 +3,9 @@ package httpclient
 import (
 	_ "embed"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -23,7 +24,6 @@ func RenderPackage(proj *models.Project) error {
 		"roundtripper_paseto.go":      roundtripperPasetoDotGo(proj),
 		"webhooks_test.go":            webhooksTestDotGo(proj),
 		"admin_test.go":               adminTestDotGo(proj),
-		"audit_log_test.go":           auditLogTestDotGo(proj),
 		"helpers_test.go":             helpersTestDotGo(proj),
 		"auth.go":                     authDotGo(proj),
 		"roundtripper_cookie.go":      roundtripperCookieDotGo(proj),
@@ -48,13 +48,13 @@ func RenderPackage(proj *models.Project) error {
 		"roundtripper_base_test.go":   roundtripperBaseTestDotGo(proj),
 		"errors.go":                   errorsDotGo(proj),
 		"helpers.go":                  helpersDotGo(proj),
-		"audit_log.go":                auditLogDotGo(proj),
 		"client_test.go":              clientTestDotGo(proj),
 		"webhooks.go":                 webhooksDotGo(proj),
+		"websockets.go":               websocketsDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -101,13 +101,6 @@ var adminTestTemplate string
 
 func adminTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, adminTestTemplate, nil)
-}
-
-//go:embed audit_log_test.gotpl
-var auditLogTestTemplate string
-
-func auditLogTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogTestTemplate, nil)
 }
 
 //go:embed helpers_test.gotpl
@@ -278,13 +271,6 @@ func helpersDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, helpersTemplate, nil)
 }
 
-//go:embed audit_log.gotpl
-var auditLogTemplate string
-
-func auditLogDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogTemplate, nil)
-}
-
 //go:embed client_test.gotpl
 var clientTestTemplate string
 
@@ -297,4 +283,11 @@ var webhooksTemplate string
 
 func webhooksDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, webhooksTemplate, nil)
+}
+
+//go:embed websockets.gotpl
+var websocketsTemplate string
+
+func websocketsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, websocketsTemplate, nil)
 }

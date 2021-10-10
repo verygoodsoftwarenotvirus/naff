@@ -36,11 +36,9 @@ func RenderPackage(proj *models.Project) error {
 		"validators_test.go":              validatorsTestDotGo(proj),
 		"webhook_test.go":                 webhookTestDotGo(proj),
 		"account_user_membership_test.go": accountUserMembershipTestDotGo(proj),
-		"audit_log_entry.go":              auditLogEntryDotGo(proj),
 		"admin.go":                        adminDotGo(proj),
 		"admin_test.go":                   adminTestDotGo(proj),
 		"api_client.go":                   apiClientDotGo(proj),
-		"audit_log_entry_test.go":         auditLogEntryTestDotGo(proj),
 		"auth.go":                         authDotGo(proj),
 		"auth_test.go":                    authTestDotGo(proj),
 		"account.go":                      accountDotGo(proj),
@@ -48,16 +46,20 @@ func RenderPackage(proj *models.Project) error {
 		"main_test.go":                    mainTestDotGo(proj),
 		"query_filter.go":                 queryFilterDotGo(proj),
 		"user.go":                         userDotGo(proj),
+		"websocket.go":                    websocketsDotGo(proj),
 		"account_user_membership.go":      accountUserMembershipDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
 
-	jenFiles := map[string]*jen.File{}
+	jenFiles := map[string]*jen.File{
+		"events.go": eventsDotGo(proj),
+	}
+
 	for _, typ := range proj.DataTypes {
 		jenFiles[fmt.Sprintf("%s.go", typ.Name.RouteName())] = iterableDotGo(proj, typ)
 		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.RouteName())] = iterableTestDotGo(proj, typ)
@@ -128,6 +130,13 @@ func validatorsTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, validatorsTestTemplate, nil)
 }
 
+//go:embed websockets.gotpl
+var websocketsTemplate string
+
+func websocketsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, websocketsTemplate, nil)
+}
+
 //go:embed webhook_test.gotpl
 var webhookTestTemplate string
 
@@ -140,13 +149,6 @@ var accountUserMembershipTestTemplate string
 
 func accountUserMembershipTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, accountUserMembershipTestTemplate, nil)
-}
-
-//go:embed audit_log_entry.gotpl
-var auditLogEntryTemplate string
-
-func auditLogEntryDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogEntryTemplate, nil)
 }
 
 //go:embed admin.gotpl
@@ -168,13 +170,6 @@ var apiClientTemplate string
 
 func apiClientDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, apiClientTemplate, nil)
-}
-
-//go:embed audit_log_entry_test.gotpl
-var auditLogEntryTestTemplate string
-
-func auditLogEntryTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogEntryTestTemplate, nil)
 }
 
 //go:embed auth.gotpl

@@ -3,8 +3,9 @@ package requests
 import (
 	_ "embed"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -19,30 +20,30 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
-		"webhooks_test.go":          webhooksTestDotGo(proj),
-		"admin.go":                  adminDotGo(proj),
-		"api_clients.go":            apiClientsDotGo(proj),
-		"builder.go":                builderDotGo(proj),
-		"paseto_test.go":            pasetoTestDotGo(proj),
-		"test_helpers_test.go":      testHelpersTestDotGo(proj),
-		"users.go":                  usersDotGo(proj),
-		"accounts.go":               accountsDotGo(proj),
-		"accounts_test.go":          accountsTestDotGo(proj),
-		"admin_test.go":             adminTestDotGo(proj),
-		"audit_log_entries_test.go": auditLogEntriesTestDotGo(proj),
-		"auth_test.go":              authTestDotGo(proj),
-		"errors.go":                 errorsDotGo(proj),
-		"paseto.go":                 pasetoDotGo(proj),
-		"users_test.go":             usersTestDotGo(proj),
-		"webhooks.go":               webhooksDotGo(proj),
-		"api_clients_test.go":       apiClientsTestDotGo(proj),
-		"audit_log_entries.go":      auditLogEntriesDotGo(proj),
-		"auth.go":                   authDotGo(proj),
-		"builder_test.go":           builderTestDotGo(proj),
+		"accounts.go":          accountsDotGo(proj),
+		"accounts_test.go":     accountsTestDotGo(proj),
+		"api_clients.go":       apiClientsDotGo(proj),
+		"api_clients_test.go":  apiClientsTestDotGo(proj),
+		"auth.go":              authDotGo(proj),
+		"admin.go":             adminDotGo(proj),
+		"builder.go":           builderDotGo(proj),
+		"paseto_test.go":       pasetoTestDotGo(proj),
+		"test_helpers_test.go": testHelpersTestDotGo(proj),
+		"users.go":             usersDotGo(proj),
+		"admin_test.go":        adminTestDotGo(proj),
+		"auth_test.go":         authTestDotGo(proj),
+		"errors.go":            errorsDotGo(proj),
+		"paseto.go":            pasetoDotGo(proj),
+		"users_test.go":        usersTestDotGo(proj),
+		"builder_test.go":      builderTestDotGo(proj),
+		"webhooks.go":          webhooksDotGo(proj),
+		"webhooks_test.go":     webhooksTestDotGo(proj),
+		"websockets.go":        websocketsDotGo(proj),
+		"websockets_test.go":   websocketsTestDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -61,6 +62,20 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	return nil
+}
+
+//go:embed websockets.gotpl
+var websocketsTemplate string
+
+func websocketsDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, websocketsTemplate, nil)
+}
+
+//go:embed websockets_test.gotpl
+var websocketsTestTemplate string
+
+func websocketsTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, websocketsTestTemplate, nil)
 }
 
 //go:embed webhooks_test.gotpl
@@ -133,13 +148,6 @@ func adminTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, adminTestTemplate, nil)
 }
 
-//go:embed audit_log_entries_test.gotpl
-var auditLogEntriesTestTemplate string
-
-func auditLogEntriesTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogEntriesTestTemplate, nil)
-}
-
 //go:embed auth_test.gotpl
 var authTestTemplate string
 
@@ -180,13 +188,6 @@ var apiClientsTestTemplate string
 
 func apiClientsTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, apiClientsTestTemplate, nil)
-}
-
-//go:embed audit_log_entries.gotpl
-var auditLogEntriesTemplate string
-
-func auditLogEntriesDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogEntriesTemplate, nil)
 }
 
 //go:embed auth.gotpl

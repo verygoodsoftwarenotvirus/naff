@@ -25,17 +25,16 @@ func RenderPackage(proj *models.Project) error {
 		"webhooks_test.go":    webhooksTestDotGo(proj),
 		"auth_test.go":        authTestDotGo(proj),
 		"doc.go":              docDotGo(proj),
-		"helpers_test.go":     helpersTestDotGo(proj),
+		"helpers.go":          helpersDotGo(proj),
 		"suite_test.go":       suiteTestDotGo(proj),
 		"accounts_test.go":    accountsTestDotGo(proj),
 		"api_clients_test.go": apiClientsTestDotGo(proj),
 		"admin_test.go":       adminTestDotGo(proj),
-		"audit_log_test.go":   auditLogTestDotGo(proj),
 		"frontend_test.go":    frontendTestDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -96,10 +95,10 @@ func docDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, docTemplate, nil)
 }
 
-//go:embed helpers_test.gotpl
+//go:embed helpers.gotpl
 var helpersTestTemplate string
 
-func helpersTestDotGo(proj *models.Project) string {
+func helpersDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, helpersTestTemplate, nil)
 }
 
@@ -129,13 +128,6 @@ var adminTestTemplate string
 
 func adminTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, adminTestTemplate, nil)
-}
-
-//go:embed audit_log_test.gotpl
-var auditLogTestTemplate string
-
-func auditLogTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogTestTemplate, nil)
 }
 
 //go:embed frontend_test.gotpl

@@ -3,12 +3,13 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -39,7 +40,6 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 
 	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
 
-	file.ImportAlias(proj.AuditServicePackage(), "auditservice")
 	file.ImportAlias(proj.APIClientsServicePackage(), "apiclientsservice")
 	file.ImportAlias(proj.AccountsServicePackage(), "accountsservice")
 	file.ImportAlias(proj.AdminServicePackage(), "adminservice")
@@ -47,6 +47,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(proj.FrontendServicePackage(), "frontendservice")
 	file.ImportAlias(proj.UsersServicePackage(), "usersservice")
 	file.ImportAlias(proj.WebhooksServicePackage(), "webhooksservice")
+	file.ImportAlias(proj.WebsocketsServicePackage(), "websocketsservice")
 
 	for _, typ := range proj.DataTypes {
 		pn := typ.Name.PackageName()
@@ -66,39 +67,39 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
 
 	file.ImportNames(map[string]string{
-		"context":                            "context",
-		"fmt":                                "fmt",
-		"net/http":                           "http",
-		"net/http/httputil":                  "httputil",
-		"path":                               "path",
-		"path/filepath":                      "filepath",
-		"errors":                             "errors",
-		"net/url":                            "url",
-		"strings":                            "strings",
-		"time":                               "time",
-		"bytes":                              "bytes",
-		"encoding/json":                      "json",
-		"io":                                 "io",
-		"io/ioutil":                          "ioutil",
-		"reflect":                            "reflect",
-		proj.InternalAuthenticationPackage(): "authentication",
-		proj.InternalAuthorizationPackage():  "authorization",
-		proj.ConfigPackage():                 "config",
-		proj.EncodingPackage():               "encoding",
-		proj.MetricsPackage():                "metrics",
-		proj.InternalTracingPackage():        "tracing",
-		proj.InternalSearchPackage():         "search",
-		proj.InternalSecretsPackage():        "secrets",
-		proj.InternalEventsPackage():         "events",
-		proj.InternalSearchPackage("bleve"):  "bleve",
-		proj.DatabasePackage("queriers", "mariadb"):        "mariadb",
+		"context":                                "context",
+		"fmt":                                    "fmt",
+		"net/http":                               "http",
+		"net/http/httputil":                      "httputil",
+		"path":                                   "path",
+		"path/filepath":                          "filepath",
+		"errors":                                 "errors",
+		"net/url":                                "url",
+		"strings":                                "strings",
+		"time":                                   "time",
+		"bytes":                                  "bytes",
+		"encoding/json":                          "json",
+		"io":                                     "io",
+		"io/ioutil":                              "ioutil",
+		"reflect":                                "reflect",
+		proj.InternalMessageQueueConfigPackage(): "msgconfig",
+		proj.InternalMessageQueuePackage():       "messagequeue",
+		proj.InternalAuthenticationPackage():     "authentication",
+		proj.InternalAuthorizationPackage():      "authorization",
+		proj.ConfigPackage():                     "config",
+		proj.EncodingPackage():                   "encoding",
+		proj.MetricsPackage():                    "metrics",
+		proj.InternalTracingPackage():            "tracing",
+		proj.InternalSearchPackage():             "search",
+		proj.InternalSecretsPackage():            "secrets",
+		proj.InternalEventsPackage():             "events",
+		proj.InternalSearchPackage("elasticsearch"):        "elasticsearch",
+		proj.DatabasePackage("queriers", "mysql"):          "mysql",
 		proj.DatabasePackage("queriers", "postgres"):       "postgres",
-		proj.DatabasePackage("queriers", "sqlite"):         "sqlite",
 		proj.TypesPackage():                                "types",
 		proj.TypesPackage("fakes"):                         "fakes",
 		proj.TestsPackage("frontend"):                      "frontend",
 		proj.TestsPackage("integration"):                   "integration",
-		proj.TestsPackage("load"):                          "load",
 		proj.InternalLoggingPackage():                      "logging",
 		proj.InternalLoggingPackage("zerolog"):             "zerolog",
 		constants.RBACLibrary:                              "gorbac",
@@ -116,12 +117,12 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 		"github.com/boombuler/barcode":                     "barcode",
 		"github.com/nicksnyder/go-i18n/v2/i18n":            "i18n",
 		"github.com/emicklei/hazana":                       "hazana",
-		"github.com/go-chi/chi":                            "chi",
+		"github.com/go-chi/chi/v5":                         "chi",
 		"github.com/blevesearch/bleve/v2/analysis/lang/en": "en",
 		"github.com/blevesearch/bleve/v2/mapping":          "mapping",
 		"github.com/blevesearch/bleve/v2/search/searcher":  "searcher",
 		constants.SearchLibrary:                            "bleve",
-		"github.com/go-chi/chi/middleware":                 "middleware",
+		"github.com/go-chi/chi/v5/middleware":              "middleware",
 		"github.com/go-chi/cors":                           "cors",
 		constants.DependencyInjectionPkg:                   "wire",
 		"github.com/gorilla/securecookie":                  "securecookie",

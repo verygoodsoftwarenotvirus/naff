@@ -22,18 +22,16 @@ func RenderPackage(proj *models.Project) error {
 		"account_data_manager.go":                 accountDataManagerDotGo(proj),
 		"account_user_membership_data_manager.go": accountUserMembershipDataManagerDotGo(proj),
 		"admin_user_data_manager.go":              adminUserDataManagerDotGo(proj),
-		"auth_audit_manager.go":                   authAuditManagerDotGo(proj),
 		"api_client_data_manager.go":              apiClientDataManagerDotGo(proj),
 		"users_service.go":                        usersServiceDotGo(proj),
 		"webhook_data_manager.go":                 webhookDataManagerDotGo(proj),
-		"audit_log_entry_data_manager.go":         auditLogEntryDataManagerDotGo(proj),
 		"auth_service.go":                         authServiceDotGo(proj),
 		"user_data_manager.go":                    userDataManagerDotGo(proj),
 		"doc.go":                                  docDotGo(proj),
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -74,13 +72,6 @@ func adminUserDataManagerDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, adminUserDataManagerTemplate, nil)
 }
 
-//go:embed auth_audit_manager.gotpl
-var authAuditManagerTemplate string
-
-func authAuditManagerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, authAuditManagerTemplate, nil)
-}
-
 //go:embed api_client_data_manager.gotpl
 var apiClientDataManagerTemplate string
 
@@ -100,13 +91,6 @@ var webhookDataManagerTemplate string
 
 func webhookDataManagerDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, webhookDataManagerTemplate, nil)
-}
-
-//go:embed audit_log_entry_data_manager.gotpl
-var auditLogEntryDataManagerTemplate string
-
-func auditLogEntryDataManagerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogEntryDataManagerTemplate, nil)
 }
 
 //go:embed auth_service.gotpl

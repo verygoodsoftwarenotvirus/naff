@@ -284,10 +284,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 				),
 				jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
-						jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("Enabled").MapAssign().ID("true"),
-						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
 								jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
@@ -361,10 +357,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 				),
 				jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
-						jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("Enabled").MapAssign().ID("true"),
-						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
 								jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
@@ -454,10 +446,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 					),
 					jen.ID("Services").MapAssign().Qual(proj.ConfigPackage(), "ServicesConfigurations").Valuesln(
 						append([]jen.Code{
-							jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
-								jen.ID("Debug").MapAssign().ID("false"),
-								jen.ID("Enabled").MapAssign().ID("true"),
-							),
 							jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 								jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
 									jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),

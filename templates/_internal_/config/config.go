@@ -48,7 +48,6 @@ func configDotGo(proj *models.Project) *jen.File {
 	serviceConfigurations = append(serviceConfigurations,
 		jen.ID("Auth").Qual(proj.AuthServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Auth"), false)),
 		jen.ID("Webhooks").Qual(proj.WebhooksServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Webhook"), true)),
-		jen.ID("AuditLog").Qual(proj.AuditServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("AuditLog"), false)),
 		jen.ID("Frontend").Qual(proj.FrontendServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Frontend"), false)),
 	)
 
@@ -69,7 +68,6 @@ func configDotGo(proj *models.Project) *jen.File {
 				jen.ID("Uploads").Qual(proj.UploadsPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Upload"), true)),
 				jen.ID("Observability").Qual(proj.ObservabilityPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Observability"), false)),
 				jen.ID("Routing").Qual(proj.RoutingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Routing"), false)),
-				jen.ID("Capitalism").Qual(proj.CapitalismPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Capitalism"), false)),
 				jen.ID("Meta").ID("MetaSettings").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Meta"), false)),
 				jen.ID("Database").Qual(proj.DatabasePackage("config"), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Database"), false)),
 				jen.ID("Services").ID("ServicesConfigurations").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Service"), true)),

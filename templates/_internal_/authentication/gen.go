@@ -19,15 +19,12 @@ func RenderPackage(proj *models.Project) error {
 		"authenticator_test.go": authenticatorTestDotGoString(proj),
 		"doc.go":                docDotGoString(proj),
 		"wire.go":               wireDotGoString(proj),
-		"mock_authenticator.go": mockAuthenticatorDotGoString(proj),
-		"config.go":             configDotGoString(proj),
-		"config_test.go":        configTestDotGoString(proj),
 		"argon2.go":             argon2DotGoString(proj),
 		"argon2_test.go":        argon2TestDotGoString(proj),
 	}
 
 	for path, file := range stringFiles {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -61,27 +58,6 @@ var wireTemplate string
 
 func wireDotGoString(proj *models.Project) string {
 	return models.RenderCodeFile(proj, wireTemplate, nil)
-}
-
-//go:embed mock/mock_authenticator.gotpl
-var mockAuthenticatorTemplate string
-
-func mockAuthenticatorDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, mockAuthenticatorTemplate, nil)
-}
-
-//go:embed config.gotpl
-var configTemplate string
-
-func configDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTemplate, nil)
-}
-
-//go:embed config_test.gotpl
-var configTestTemplate string
-
-func configTestDotGoString(proj *models.Project) string {
-	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed argon2.gotpl

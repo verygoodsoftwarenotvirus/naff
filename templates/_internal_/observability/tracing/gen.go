@@ -29,12 +29,10 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	stringFiles := map[string]string{
-		"tracer_test.go":                    tracerTestDotGo(proj),
 		"caller.go":                         callerDotGo(proj),
 		"config_test.go":                    configTestDotGo(proj),
 		"span_manager.go":                   spanManagerDotGo(proj),
 		"spans_test.go":                     spansTestDotGo(proj),
-		"tracer.go":                         tracerDotGo(proj),
 		"caller_test.go":                    callerTestDotGo(proj),
 		"instrumented_span_wrapper.go":      instrumentedSpanWrapperDotGo(proj),
 		"instrumented_span_wrapper_test.go": instrumentedSpanWrapperTestDotGo(proj),
@@ -44,22 +42,19 @@ func RenderPackage(proj *models.Project) error {
 		"spans.go":                          spansDotGo(proj),
 		"instrumentedsql_test.go":           instrumentedsqlTestDotGo(proj),
 		"span_manager_test.go":              spanManagerTestDotGo(proj),
+		"tracer.go":                         tracerDotGo(proj),
+		"tracer_test.go":                    tracerTestDotGo(proj),
+		"transport.go":                      transportDotGo(proj),
+		"transport_test.go":                 transportTestDotGo(proj),
 	}
 
 	for path, file := range stringFiles {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-//go:embed tracer_test.gotpl
-var tracerTestTemplate string
-
-func tracerTestDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, tracerTestTemplate, nil)
 }
 
 //go:embed caller.gotpl
@@ -88,13 +83,6 @@ var spansTestTemplate string
 
 func spansTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, spansTestTemplate, nil)
-}
-
-//go:embed tracer.gotpl
-var tracerTemplate string
-
-func tracerDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, tracerTemplate, nil)
 }
 
 //go:embed caller_test.gotpl
@@ -158,4 +146,32 @@ var spanManagerTestTemplate string
 
 func spanManagerTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, spanManagerTestTemplate, nil)
+}
+
+//go:embed tracer.gotpl
+var tracerTemplate string
+
+func tracerDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, tracerTemplate, nil)
+}
+
+//go:embed tracer_test.gotpl
+var tracerTestTemplate string
+
+func tracerTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, tracerTestTemplate, nil)
+}
+
+//go:embed transport.gotpl
+var transportTemplate string
+
+func transportDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, transportTemplate, nil)
+}
+
+//go:embed transport_test.gotpl
+var transportTestTemplate string
+
+func transportTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, transportTestTemplate, nil)
 }

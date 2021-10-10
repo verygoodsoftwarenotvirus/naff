@@ -3,8 +3,9 @@ package fakes
 import (
 	_ "embed"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"path/filepath"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -19,8 +20,7 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
-		"audit_log_entry.go":         auditLogEntryDotGo(proj),
-		"delegated_client.go":        delegatedClientDotGo(proj),
+		"api_client.go":              delegatedClientDotGo(proj),
 		"fake.go":                    fakeDotGo(proj),
 		"query_filter.go":            queryFilterDotGo(proj),
 		"account.go":                 accountDotGo(proj),
@@ -33,7 +33,7 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -53,14 +53,7 @@ func RenderPackage(proj *models.Project) error {
 	return nil
 }
 
-//go:embed audit_log_entry.gotpl
-var auditLogEntryTemplate string
-
-func auditLogEntryDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, auditLogEntryTemplate, nil)
-}
-
-//go:embed delegated_client.gotpl
+//go:embed api_client.gotpl
 var delegatedClientTemplate string
 
 func delegatedClientDotGo(proj *models.Project) string {

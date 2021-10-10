@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -227,23 +228,6 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 							Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "UpdateUserStatusPermission"))).
 							Dotln("Post").Call(jen.Lit("/users/status"),
 							jen.ID("s").Dot("adminService").Dot("UserReputationChangeHandler"),
-						),
-						jen.Newline(),
-						jen.ID("adminRouter").Dot("Route").Call(jen.Lit("/audit_log"),
-							jen.Func().Params(jen.ID("auditRouter").ID("routing").Dot("Router")).Body(
-								jen.ID("entryIDRouteParam").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AuditServicePackage(), "LogEntryURIParamKey")),
-								jen.ID("auditRouter").
-									Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadAllAuditLogEntriesPermission"))).
-									Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dot("auditService").Dot("ListHandler")),
-								jen.ID("auditRouter").Dot("Route").Call(
-									jen.ID("entryIDRouteParam"),
-									jen.Func().Params(jen.ID("singleEntryRouter").ID("routing").Dot("Router")).Body(
-										jen.ID("singleEntryRouter").
-											Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadAllAuditLogEntriesPermission"))).
-											Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dot("auditService").Dot("ReadHandler")),
-									),
-								),
-							),
 						),
 					),
 					),

@@ -16,6 +16,7 @@ const (
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
 		"config.go":              configDotGo(proj),
+		"config_test.go":         configTestDotGo(proj),
 		"logging.go":             loggingDotGo(proj),
 		"logging_test.go":        loggingTestDotGo(proj),
 		"noop_logger.go":         noopLoggerDotGo(proj),
@@ -24,7 +25,7 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -37,6 +38,13 @@ var configTemplate string
 
 func configDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, configTemplate, nil)
+}
+
+//go:embed config_test.gotpl
+var configTestTemplate string
+
+func configTestDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, configTestTemplate, nil)
 }
 
 //go:embed logging.gotpl

@@ -17,6 +17,7 @@ func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
 		"wire.go":              wireDotGo(proj),
 		"doc.go":               docDotGo(proj),
+		"config.go":            configDotGo(proj),
 		"http_helpers_test.go": httpHelpersTestDotGo(proj),
 		"http_routes.go":       httpRoutesDotGo(proj),
 		"http_routes_test.go":  httpRoutesTestDotGo(proj),
@@ -25,7 +26,7 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
@@ -45,6 +46,13 @@ var docTemplate string
 
 func docDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, docTemplate, nil)
+}
+
+//go:embed config.gotpl
+var configTemplate string
+
+func configDotGo(proj *models.Project) string {
+	return models.RenderCodeFile(proj, configTemplate, nil)
 }
 
 //go:embed http_helpers_test.gotpl

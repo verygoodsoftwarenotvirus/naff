@@ -13,9 +13,6 @@ func configTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	serviceConfigs := []jen.Code{
-		jen.ID("AuditLog").MapAssign().Qual(proj.AuditServicePackage(), "Config").Valuesln(
-			jen.ID("Enabled").MapAssign().ID("true"),
-		),
 		jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 			jen.ID("Cookies").MapAssign().Qual(proj.AuthServicePackage(), "CookieConfig").Valuesln(
 				jen.ID("Name").MapAssign().Litf("%s_cookie", proj.Name.RouteName()),

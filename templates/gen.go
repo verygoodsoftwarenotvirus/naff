@@ -30,7 +30,9 @@ import (
 	mockmetrics "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/metrics/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/observability/tracing"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking"
+	mockpanicking "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/panicking/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random"
+	mockrandom "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/random/mock"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/chi"
 	mockrouting "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/routing/mock"
@@ -106,7 +108,9 @@ func RenderProject(proj *naffmodels.Project) {
 		"mockmetrics":               mockmetrics.RenderPackage,
 		"tracing":                   tracing.RenderPackage,
 		"panicking":                 panicking.RenderPackage,
+		"mockpanicking":             mockpanicking.RenderPackage,
 		"random":                    random.RenderPackage,
+		"mockrandom":                mockrandom.RenderPackage,
 		"routing":                   routing.RenderPackage,
 		"chi":                       chi.RenderPackage,
 		"mockrouting":               mockrouting.RenderPackage,

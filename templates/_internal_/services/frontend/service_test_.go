@@ -68,7 +68,6 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 			jen.ID("usersService"),
 			jen.ID("dataManager"),
 			jen.ID("rpm"),
-			jen.Qual(proj.CapitalismPackage(), "NewMockPaymentManager").Call(),
 		),
 		jen.Newline(),
 		jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(

@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,6 +11,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 const (
@@ -379,7 +380,7 @@ func RenderGoFile(proj *models.Project, path string, file *jen.File) error {
 }
 
 // RenderStringFile renders a jen file object.
-func RenderStringFile(proj *models.Project, path, file string) error {
+func RenderStringFile(proj *models.Project, path, file string, isGoFile bool) error {
 	fp := BuildTemplatePath(proj.OutputPath, path)
 
 	if _, err := os.Stat(fp); os.IsNotExist(err) {
@@ -392,16 +393,18 @@ func RenderStringFile(proj *models.Project, path, file string) error {
 			return fmt.Errorf("error rendering file %q: %w", path, err)
 		}
 
-		if gie := RunGoimportsForFile(fp); gie != nil {
-			return fmt.Errorf("error rendering file %q: %w", path, gie)
-		}
+		if isGoFile {
+			if gie := RunGoimportsForFile(fp); gie != nil {
+				return fmt.Errorf("error rendering file %q: %w", path, gie)
+			}
 
-		if ferr := FindAndFixImportBlock(proj.OutputPath, fp); ferr != nil {
-			return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
-		}
+			if ferr := FindAndFixImportBlock(proj.OutputPath, fp); ferr != nil {
+				return fmt.Errorf("error sorting imports for file %q: %w", path, ferr)
+			}
 
-		if gfe := RunGoFormatForFile(fp); gfe != nil {
-			return fmt.Errorf("error formatting file %q: %w", path, gfe)
+			if gfe := RunGoFormatForFile(fp); gfe != nil {
+				return fmt.Errorf("error formatting file %q: %w", path, gfe)
+			}
 		}
 	} else {
 		return err

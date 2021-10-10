@@ -29,13 +29,14 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
 			return err
 		}
 	}
 
 	jenFiles := map[string]*jen.File{
-		"http_routes.go": httpRoutesDotGo(proj),
+		"http_routes.go":      httpRoutesDotGo(proj),
+		"http_routes_test.go": httpRoutesTestDotGo(proj),
 	}
 
 	for path, file := range jenFiles {

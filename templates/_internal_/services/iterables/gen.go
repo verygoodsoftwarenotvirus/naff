@@ -27,6 +27,7 @@ func RenderPackage(proj *models.Project) error {
 			fmt.Sprintf("%s/wire.go", pn):              wireDotGo(proj, typ),
 			fmt.Sprintf("%s/doc.go", pn):               docDotGo(proj, typ),
 			fmt.Sprintf("%s/config.go", pn):            configDotGo(proj, typ),
+			fmt.Sprintf("%s/config_test.go", pn):       configTestDotGo(proj, typ),
 			fmt.Sprintf("%s/http_routes_test.go", pn):  httpRoutesTestDotGo(proj, typ),
 		}
 

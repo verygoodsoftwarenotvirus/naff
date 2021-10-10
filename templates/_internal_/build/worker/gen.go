@@ -22,7 +22,7 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range stringFiles {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePrefix, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePrefix, path), file, true); err != nil {
 			return err
 		}
 	}

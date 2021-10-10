@@ -58,10 +58,6 @@ func (p *Project) StoragePackage() string {
 	return p.InternalPackage("storage")
 }
 
-func (p *Project) CapitalismPackage(parts ...string) string {
-	return p.InternalPackage(append([]string{"capitalism"}, parts...)...)
-}
-
 func (p *Project) RoutingPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"routing"}, parts...)...)
 }
@@ -98,8 +94,12 @@ func (p *Project) InternalEventsPackage(parts ...string) string {
 	return p.InternalPackage(append([]string{"events"}, parts...)...)
 }
 
-func (p *Project) InternalPubSubPackage(parts ...string) string {
-	return p.InternalPackage(append([]string{"events"}, parts...)...)
+func (p *Project) InternalMessageQueuePackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"messagequeue"}, parts...)...)
+}
+
+func (p *Project) InternalMessageQueueConfigPackage(parts ...string) string {
+	return p.InternalPackage(append([]string{"messagequeue", "config"}, parts...)...)
 }
 
 func (p *Project) InternalImagesPackage() string {
@@ -108,10 +108,6 @@ func (p *Project) InternalImagesPackage() string {
 
 func (p *Project) ServicePackage(service string) string {
 	return p.InternalPackage(append([]string{"services"}, service)...)
-}
-
-func (p *Project) AuditServicePackage() string {
-	return p.ServicePackage("audit")
 }
 
 func (p *Project) AuthServicePackage() string {
@@ -140,6 +136,10 @@ func (p *Project) AccountsServicePackage() string {
 
 func (p *Project) WebhooksServicePackage() string {
 	return p.ServicePackage("webhooks")
+}
+
+func (p *Project) WebsocketsServicePackage() string {
+	return p.ServicePackage("websockets")
 }
 
 func (p *Project) TestsPackage(parts ...string) string {

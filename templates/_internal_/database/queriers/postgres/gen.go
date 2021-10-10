@@ -41,7 +41,17 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for path, file := range files {
-		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file); err != nil {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, true); err != nil {
+			return err
+		}
+	}
+
+	migrations := map[string]string{
+		"migrations/00001_initial.sql": baseMigrationDotSQL(proj),
+	}
+
+	for path, file := range migrations {
+		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, false); err != nil {
 			return err
 		}
 	}
@@ -60,6 +70,13 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	return nil
+}
+
+//go:embed migrations/00001_initial.sql
+var baseMigration string
+
+func baseMigrationDotSQL(proj *models.Project) string {
+	return models.RenderCodeFile(proj, baseMigration, nil)
 }
 
 //go:embed accounts.gotpl

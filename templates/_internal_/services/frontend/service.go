@@ -134,7 +134,6 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			jen.ID("usersService").ID("UsersService"),
 			jen.ID("dataStore").Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
-			jen.ID("paymentManager").Qual(proj.CapitalismPackage(), "PaymentManager"),
 		).Params(jen.ID("Service")).Body(
 			jen.ID("svc").Assign().AddressOf().ID("service").Valuesln(serviceInitFields...),
 			jen.Newline(),

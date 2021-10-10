@@ -1,27 +1,29 @@
-package authentication
+package mockauthn
 
 import (
 	"context"
 
 	"github.com/stretchr/testify/mock"
+
+	{{ projectImport "internal/authentication" }}
 )
 
-var _ Authenticator = (*MockAuthenticator)(nil)
+var _ authentication.Authenticator = (*Authenticator)(nil)
 
-// MockAuthenticator is a mock Authenticator.
-type MockAuthenticator struct {
+// Authenticator is a mock Authenticator.
+type Authenticator struct {
 	mock.Mock
 }
 
 // ValidateLogin satisfies our authenticator interface.
-func (m *MockAuthenticator) ValidateLogin(ctx context.Context, hash, password, totpSecret, totpCode string) (bool, error) {
+func (m *Authenticator) ValidateLogin(ctx context.Context, hash, password, totpSecret, totpCode string) (bool, error) {
 	args := m.Called(ctx, hash, password, totpSecret, totpCode)
 
 	return args.Bool(0), args.Error(1)
 }
 
 // HashPassword satisfies our authenticator interface.
-func (m *MockAuthenticator) HashPassword(ctx context.Context, password string) (string, error) {
+func (m *Authenticator) HashPassword(ctx context.Context, password string) (string, error) {
 	args := m.Called(ctx, password)
 	return args.String(0), args.Error(1)
 }
