@@ -7,6 +7,7 @@ import (
 
 	naffmodels "gitlab.com/verygoodsoftwarenotvirus/naff/models"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication"
+	internalmockauthentication "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication/mock"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
 	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
 	buildworker "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/worker"
@@ -89,6 +90,7 @@ func RenderProject(proj *naffmodels.Project) {
 		"deployfiles":               providerconfigs.RenderPackage,
 		"dockerfiles":               dockerfiles.RenderPackage,
 		"authentication":            authentication.RenderPackage,
+		"authenticationmock":        internalmockauthentication.RenderPackage,
 		"authorization":             internalauth.RenderPackage,
 		"buildserver":               buildserver.RenderPackage,
 		"buildworker":               buildworker.RenderPackage,

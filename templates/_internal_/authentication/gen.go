@@ -63,7 +63,7 @@ func wireDotGoString(proj *models.Project) string {
 	return models.RenderCodeFile(proj, wireTemplate, nil)
 }
 
-//go:embed mock_authenticator.gotpl
+//go:embed mock/mock_authenticator.gotpl
 var mockAuthenticatorTemplate string
 
 func mockAuthenticatorDotGoString(proj *models.Project) string {
