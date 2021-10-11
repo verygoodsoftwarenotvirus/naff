@@ -89,12 +89,6 @@ func buildCreatorConfigs(types []models.DataType) []jen.Code {
 					jen.ID("FormName").Op(":").Lit("client_id"),
 					jen.ID("StructFieldName").Op(":").Lit("ClientID"),
 					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
-				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("external ID"),
-					jen.ID("FormName").Op(":").Lit("external_id"),
-					jen.ID("StructFieldName").Op(":").Lit("ExternalID"),
-					jen.ID("InputType").Op(":").Lit("text"),
 					jen.ID("Required").Op(":").ID("true"),
 				),
 			),

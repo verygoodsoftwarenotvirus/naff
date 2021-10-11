@@ -62,23 +62,6 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 				),
 			),
 		),
-		jen.Lit("internal/services/frontend/templates/partials/generated/editors/account_subscription_plan_editor.gotpl").Op(":").Valuesln(
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
-				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("FormName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
-				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("price"),
-					jen.ID("FormName").Op(":").Lit("price"),
-					jen.ID("StructFieldName").Op(":").Lit("Price"),
-					jen.ID("InputType").Op(":").Lit("numeric"),
-					jen.ID("Required").Op(":").ID("true"),
-				),
-			),
-		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/editors/api_client_editor.gotpl").Op(":").Valuesln(
 			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
 				jen.Valuesln(
@@ -93,13 +76,6 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 					jen.ID("StructFieldName").Op(":").Lit("ClientID"),
 					jen.ID("InputType").Op(":").Lit("text"),
 					jen.ID("Required").Op(":").ID("true")),
-				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("external ID"),
-					jen.ID("FormName").Op(":").Lit("external_id"),
-					jen.ID("StructFieldName").Op(":").Lit("ExternalID"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
-				),
 			),
 		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/editors/webhook_editor.gotpl").Op(":").Valuesln(

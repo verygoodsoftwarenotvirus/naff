@@ -70,7 +70,6 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("Columns").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
-				jen.Lit("External ID"),
 				jen.Lit("Client ID"),
 				jen.Lit("Belongs To User"),
 				jen.Lit("Created On"),
@@ -78,7 +77,6 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("CellFields").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
-				jen.Lit("ExternalID"),
 				jen.Lit("ClientID"),
 				jen.Lit("BelongsToUser"),
 				jen.Lit("CreatedOn"),
@@ -94,14 +92,12 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("Columns").Op(":").Index().String().Valuesln(
 				jen.Lit("ID"),
 				jen.Lit("Name"),
-				jen.Lit("External ID"),
 				jen.Lit("Belongs To User"),
 				jen.Lit("Last Updated On"),
 				jen.Lit("Created On"),
 			),
 			jen.ID("CellFields").Op(":").Index().String().Valuesln(
 				jen.Lit("Name"),
-				jen.Lit("ExternalID"),
 				jen.Lit("BelongsToUser"),
 			),
 			jen.ID("RowDataFieldName").Op(":").Lit("Accounts"),

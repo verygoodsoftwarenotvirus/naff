@@ -12,24 +12,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	searchIndices := []jen.Code{
-		jen.Comment("search index paths."),
-	}
-	defaultSearchIndexCount := len(searchIndices)
-	for _, typ := range proj.DataTypes {
-		if typ.SearchEnabled {
-			searchIndices = append(searchIndices, jen.IDf("default%sSearchIndexPath", typ.Name.Plural()).Equals().Litf("%s.bleve", typ.Name.PluralRouteName()))
-		}
-	}
-
 	code.Add(
 		jen.Const().Defs(
 			jen.ID("defaultPort").Equals().Lit(8888),
 			jen.ID("defaultCookieDomain").Equals().Lit("localhost"),
 			jen.ID("debugCookieSecret").Equals().Lit("HEREISA32CHARSECRETWHICHISMADEUP"),
-			jen.ID("devSqliteConnDetails").Equals().Lit("/tmp/db"),
-			jen.ID("devMariaDBConnDetails").Equals().Litf("dbuser:hunter2@tcp(database:3306)/%s", proj.Name.RouteName()),
-			jen.ID("devPostgresDBConnDetails").Equals().Litf("postgres://dbuser:hunter2@database:5432/%s?sslmode=disable", proj.Name.RouteName()),
+			jen.ID("devMySQLConnDetails").Equals().Litf("dbuser:hunter2@tcp(mysqldatabase:3306)/%s", proj.Name.RouteName()),
+			jen.ID("devPostgresDBConnDetails").Equals().Litf("postgres://dbuser:hunter2@pgdatabase:5432/%s?sslmode=disable", proj.Name.RouteName()),
 			jen.ID("defaultCookieName").Equals().Qual(proj.AuthServicePackage(), "DefaultCookieName"),
 			jen.Newline(),
 			jen.Comment("run modes."),
@@ -44,17 +33,23 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("defaultPassword").Equals().Lit("password"),
 			jen.Newline(),
 			func() jen.Code {
-				if len(searchIndices) > defaultSearchIndexCount {
-					return jen.Null().Add(utils.IntersperseWithNewlines(searchIndices, true)...)
+				if proj.SearchEnabled() {
+					return jen.ID("localElasticsearchLocation").Equals().Lit("http://elasticsearch:9200")
 				}
 				return jen.Null()
 			}(),
+			jen.Newline(),
+			jen.Comment("message provider topics"),
+			jen.ID("preWritesTopicName").Equals().Lit("pre_writes"),
+			jen.ID("preUpdatesTopicName").Equals().Lit("pre_updates"),
+			jen.ID("preArchivesTopicName").Equals().Lit("pre_archives"),
 			jen.Newline(),
 			jen.ID("pasetoSecretSize").Equals().Lit(32),
 			jen.ID("maxAttempts").Equals().Lit(50),
 			jen.ID("defaultPASETOLifetime").Equals().Lit(1).PointerTo().Qual("time", "Minute"),
 			jen.Newline(),
 			jen.ID("contentTypeJSON").Equals().Lit("application/json"),
+			jen.ID("workerQueueAddress").Equals().Lit("worker_queue:6379"),
 		),
 		jen.Newline(),
 	)
@@ -87,7 +82,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("Provider").MapAssign().Lit("jaeger"),
 				jen.ID("SpanCollectionProbability").MapAssign().Lit(1),
 				jen.ID("Jaeger").MapAssign().AddressOf().Qual(proj.InternalTracingPackage(), "JaegerConfig").Valuesln(
-					jen.ID("CollectorEndpoint").MapAssign().Lit("http://tracing-server:14268/api/traces"),
+					jen.ID("CollectorEndpoint").MapAssign().Lit("http://localhost:14268/api/traces"),
 					jen.ID("ServiceName").MapAssign().Litf("%s_service", proj.Name.RouteName()),
 				),
 			),
@@ -169,7 +164,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			)),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("environments/testing/config_files/integration-tests-mysql.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
 				jen.ID("mysql"),
-				jen.ID("devMariaDBConnDetails"),
+				jen.ID("devMySQLConnDetails"),
 			)),
 		),
 		jen.Newline(),
@@ -219,10 +214,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 		serviceConfigs = append(serviceConfigs, jen.ID(typ.Name.Plural()).MapAssign().Qual(proj.ServicePackage(typ.Name.PackageName()), "Config").Valuesln(
 			func() jen.Code {
 				if typ.SearchEnabled {
-					return jen.ID("SearchIndexPath").MapAssign().Qual("fmt", "Sprintf").Call(jen.Lit("/search_indices/%s"), jen.IDf("default%sSearchIndexPath", typ.Name.Plural()))
+					return jen.ID("SearchIndexPath").MapAssign().ID("localElasticsearchLocation")
 				}
 				return jen.Null()
 			}(),
+			jen.ID("Async").MapAssign().ID("true"),
+			jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+			jen.ID("PreUpdatesTopicName").MapAssign().ID("preUpdatesTopicName"),
+			jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 			jen.ID("Logging").MapAssign().Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
 				jen.ID("Name").MapAssign().Lit(typ.Name.PluralRouteName()),
 				jen.ID("Level").MapAssign().Qual(proj.InternalLoggingPackage(), "InfoLevel"),
@@ -242,6 +241,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("Encoding").MapAssign().Qual(proj.EncodingPackage(), "Config").Valuesln(
 					jen.ID("ContentType").MapAssign().ID("contentTypeJSON"),
 				),
+				jen.ID("Events").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "Config").Valuesln(
+					jen.ID("Provider").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "ProviderRedis"),
+					jen.ID("RedisConfig").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "RedisConfig").Valuesln(
+						jen.ID("QueueAddress").MapAssign().ID("workerQueueAddress"),
+					),
+				),
 				jen.ID("Server").MapAssign().ID("localServer"),
 				jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
@@ -249,7 +254,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
 					jen.ID("Provider").MapAssign().ID("postgres"),
 					jen.ID("ConnectionDetails").MapAssign().ID("devPostgresDBConnDetails"),
-					jen.ID("MetricsCollectionInterval").MapAssign().Qual("time", "Second"),
 					jen.ID("CreateTestUser").MapAssign().AddressOf().Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
 						jen.ID("Username").MapAssign().Lit("username"),
 						jen.ID("Password").MapAssign().ID("defaultPassword"),
@@ -280,10 +284,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
-					jen.ID("Provider").MapAssign().Lit("bleve"),
+					jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
 				),
 				jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
+						jen.ID("Accounts").MapAssign().Qual(proj.AccountsServicePackage(), "Config").Valuesln(
+							jen.ID("Async").MapAssign().True(),
+							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
 								jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
@@ -298,8 +306,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("Enabled").MapAssign().ID("false"),
+							jen.ID("Async").MapAssign().ID("true"),
+							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+							jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
+						),
+						jen.ID("Websockets").MapAssign().Qual(proj.WebsocketsServicePackage(), "Config").Valuesln(
+							jen.ID("Logging").MapAssign().Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
+								jen.ID("Name").MapAssign().Lit("webhook"),
+								jen.ID("Level").MapAssign().Qual(proj.InternalLoggingPackage(), "InfoLevel"),
+								jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"),
+							),
 						),
 					},
 						serviceConfigs...,
@@ -327,6 +343,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("Encoding").MapAssign().Qual(proj.EncodingPackage(), "Config").Valuesln(
 					jen.ID("ContentType").MapAssign().ID("contentTypeJSON"),
 				),
+				jen.ID("Events").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "Config").Valuesln(
+					jen.ID("Provider").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "ProviderRedis"),
+					jen.ID("RedisConfig").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "RedisConfig").Valuesln(
+						jen.ID("QueueAddress").MapAssign().ID("workerQueueAddress"),
+					),
+				),
 				jen.ID("Server").MapAssign().ID("localServer"),
 				jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
@@ -334,7 +356,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Provider").MapAssign().ID("postgres"),
 					jen.ID("ConnectionDetails").MapAssign().ID("devPostgresDBConnDetails"),
 					jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
-					jen.ID("MetricsCollectionInterval").MapAssign().Qual("time", "Second"),
 				),
 				jen.ID("Observability").MapAssign().Qual(proj.ObservabilityPackage(), "Config").Valuesln(
 					jen.ID("Metrics").MapAssign().Qual(proj.MetricsPackage(), "Config").Valuesln(
@@ -353,10 +374,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 					),
 				),
 				jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
-					jen.ID("Provider").MapAssign().Lit("bleve"),
+					jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
 				),
 				jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
+						jen.ID("Accounts").MapAssign().Qual(proj.AccountsServicePackage(), "Config").Valuesln(
+							jen.ID("Async").MapAssign().True(),
+							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 							jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
 								jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
@@ -371,8 +396,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("Enabled").MapAssign().ID("false"),
+							jen.ID("Async").MapAssign().ID("true"),
+							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+							jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
+						),
+						jen.ID("Websockets").MapAssign().Qual(proj.WebsocketsServicePackage(), "Config").Valuesln(
+							jen.ID("Logging").MapAssign().Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
+								jen.ID("Name").MapAssign().Lit("webhook"),
+								jen.ID("Level").MapAssign().Qual(proj.InternalLoggingPackage(), "InfoLevel"),
+								jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"),
+							),
 						),
 					}, serviceConfigs...)...,
 				),
@@ -401,6 +434,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("Debug").MapAssign().ID("false"),
 						jen.ID("RunMode").MapAssign().ID("testingEnv"),
 					),
+					jen.ID("Events").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "Config").Valuesln(
+						jen.ID("Provider").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "ProviderRedis"),
+						jen.ID("RedisConfig").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "RedisConfig").Valuesln(
+							jen.ID("QueueAddress").MapAssign().ID("workerQueueAddress"),
+						),
+					),
 					jen.ID("Encoding").MapAssign().Qual(proj.EncodingPackage(), "Config").Valuesln(
 						jen.ID("ContentType").MapAssign().ID("contentTypeJSON"),
 					),
@@ -414,7 +453,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("RunMigrations").MapAssign().ID("true"),
 						jen.ID("Provider").MapAssign().ID("dbVendor"),
 						jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
-						jen.ID("MetricsCollectionInterval").MapAssign().Lit(2).PointerTo().Qual("time", "Second"),
 						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.ID("dbDetails")),
 						jen.ID("CreateTestUser").MapAssign().AddressOf().Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
 							jen.ID("Username").MapAssign().Lit("exampleUser"),
@@ -442,10 +480,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 					),
 					jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
-						jen.ID("Provider").MapAssign().Lit("bleve"),
+						jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
 					),
 					jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 						append([]jen.Code{
+							jen.ID("Accounts").MapAssign().Qual(proj.AccountsServicePackage(), "Config").Valuesln(
+								jen.ID("Async").MapAssign().True(),
+								jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+							),
 							jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
 								jen.ID("PASETO").MapAssign().Qual(proj.AuthServicePackage(), "PASETOConfig").Valuesln(
 									jen.ID("Issuer").MapAssign().Litf("%s_service", proj.Name.RouteName()),
@@ -466,8 +508,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 							),
 							jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 							jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-								jen.ID("Debug").MapAssign().ID("true"),
-								jen.ID("Enabled").MapAssign().ID("false"),
+								jen.ID("Async").MapAssign().ID("true"),
+								jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
+								jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
+							),
+							jen.ID("Websockets").MapAssign().Qual(proj.WebsocketsServicePackage(), "Config").Valuesln(
+								jen.ID("Logging").MapAssign().Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
+									jen.ID("Name").MapAssign().Lit("webhook"),
+									jen.ID("Level").MapAssign().Qual(proj.InternalLoggingPackage(), "InfoLevel"),
+									jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"),
+								),
 							),
 						}, serviceConfigs...)...,
 					),
