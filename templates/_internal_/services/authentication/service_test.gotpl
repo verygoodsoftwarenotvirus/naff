@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	{{ projectImport "internal/authentication" }}
+	mockauthn {{ projectImport "internal/authentication/mock" }}
 	{{ projectImport "internal/encoding" }}
 	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "internal/routing/chi" }}
@@ -34,14 +34,12 @@ func buildTestService(t *testing.T) *service {
 				Lifetime:     time.Hour,
 			},
 		},
-		&authentication.MockAuthenticator{},
+		&mockauthn.Authenticator{},
 		&mocktypes.UserDataManager{},
-		&mocktypes.AuditLogEntryDataManager{},
 		&mocktypes.APIClientDataManager{},
 		&mocktypes.AccountUserMembershipDataManager{},
 		scs.New(),
 		encoderDecoder,
-		chi.NewRouteParamManager(),
 	)
 	require.NoError(t, err)
 
@@ -64,14 +62,12 @@ func TestProvideService(T *testing.T) {
 					SigningKey: "BLAHBLAHBLAHPRETENDTHISISSECRET!",
 				},
 			},
-			&authentication.MockAuthenticator{},
+			&mockauthn.Authenticator{},
 			&mocktypes.UserDataManager{},
-			&mocktypes.AuditLogEntryDataManager{},
 			&mocktypes.APIClientDataManager{},
 			&mocktypes.AccountUserMembershipDataManager{},
 			scs.New(),
 			encoderDecoder,
-			chi.NewRouteParamManager(),
 		)
 
 		assert.NotNil(t, s)
@@ -91,14 +87,12 @@ func TestProvideService(T *testing.T) {
 					SigningKey: "BLAHBLAHBLAH",
 				},
 			},
-			&authentication.MockAuthenticator{},
+			&mockauthn.Authenticator{},
 			&mocktypes.UserDataManager{},
-			&mocktypes.AuditLogEntryDataManager{},
 			&mocktypes.APIClientDataManager{},
 			&mocktypes.AccountUserMembershipDataManager{},
 			scs.New(),
 			encoderDecoder,
-			chi.NewRouteParamManager(),
 		)
 
 		assert.Nil(t, s)

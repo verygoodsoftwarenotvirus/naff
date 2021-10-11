@@ -7,6 +7,7 @@ import (
 	"time"
 
 	{{ projectImport "internal/authentication" }}
+	mockauthn {{ projectImport "internal/authentication/mock" }}
 	{{ projectImport "pkg/types" }}
 	mocktypes {{ projectImport "pkg/types/mock" }}
 	testutils {{ projectImport "tests/utils" }}
@@ -173,7 +174,7 @@ func TestAuthenticationService_validateLogin(T *testing.T) {
 
 		helper := buildTestHelper(t)
 
-		authenticator := &authentication.MockAuthenticator{}
+		authenticator := &mockauthn.Authenticator{}
 		authenticator.On(
 			"ValidateLogin",
 			testutils.ContextMatcher,
@@ -196,7 +197,7 @@ func TestAuthenticationService_validateLogin(T *testing.T) {
 
 		helper := buildTestHelper(t)
 
-		authenticator := &authentication.MockAuthenticator{}
+		authenticator := &mockauthn.Authenticator{}
 		authenticator.On(
 			"ValidateLogin",
 			testutils.ContextMatcher,
@@ -221,7 +222,7 @@ func TestAuthenticationService_validateLogin(T *testing.T) {
 
 		expectedErr := errors.New("arbitrary")
 
-		authenticator := &authentication.MockAuthenticator{}
+		authenticator := &mockauthn.Authenticator{}
 		authenticator.On(
 			"ValidateLogin",
 			testutils.ContextMatcher,
@@ -244,7 +245,7 @@ func TestAuthenticationService_validateLogin(T *testing.T) {
 
 		helper := buildTestHelper(t)
 
-		authenticator := &authentication.MockAuthenticator{}
+		authenticator := &mockauthn.Authenticator{}
 		authenticator.On(
 			"ValidateLogin",
 			testutils.ContextMatcher,

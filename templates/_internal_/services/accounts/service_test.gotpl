@@ -1,10 +1,12 @@
 package accounts
 
 import (
+    "errors"
 	"net/http"
 	"testing"
 
 	mockencoding {{ projectImport "internal/encoding/mock" }}
+	mockpublishers {{ projectImport "internal/messagequeue/publishers/mock" }}
 	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "internal/observability/metrics" }}
 	mockmetrics {{ projectImport "internal/observability/metrics/mock" }}
@@ -16,45 +18,93 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+
 func buildTestService() *service {
 	return &service{
+		async:                        true,
 		logger:                       logging.NewNoopLogger(),
 		accountCounter:               &mockmetrics.UnitCounter{},
 		accountDataManager:           &mocktypes.AccountDataManager{},
 		accountMembershipDataManager: &mocktypes.AccountUserMembershipDataManager{},
-		accountIDFetcher:             func(req *http.Request) uint64 { return 0 },
+		accountIDFetcher:             func(req *http.Request) string { return "" },
 		encoderDecoder:               mockencoding.NewMockEncoderDecoder(),
 		tracer:                       tracing.NewTracer("test"),
 	}
 }
 
-func TestProvideAccountsService(t *testing.T) {
-	t.Parallel()
+func TestProvideAccountsService(T *testing.T) {
+	T.Parallel()
 
-	var ucp metrics.UnitCounterProvider = func(counterName, description string) metrics.UnitCounter {
-		return &mockmetrics.UnitCounter{}
-	}
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
 
-	l := logging.NewNoopLogger()
+		var ucp metrics.UnitCounterProvider = func(counterName, description string) metrics.UnitCounter {
+			return &mockmetrics.UnitCounter{}
+		}
 
-	rpm := mockrouting.NewRouteParamManager()
-	rpm.On(
-		"BuildRouteParamIDFetcher",
-		mock.IsType(l), AccountIDURIParamKey, "account").Return(func(*http.Request) uint64 { return 0 })
-	rpm.On(
-		"BuildRouteParamIDFetcher",
-		mock.IsType(l), UserIDURIParamKey, "user").Return(func(*http.Request) uint64 { return 0 })
+		rpm := mockrouting.NewRouteParamManager()
+		rpm.On(
+			"BuildRouteParamStringIDFetcher",
+			AccountIDURIParamKey,
+		).Return(func(*http.Request) string { return "" })
+		rpm.On(
+			"BuildRouteParamStringIDFetcher",
+			UserIDURIParamKey,
+		).Return(func(*http.Request) string { return "" })
 
-	s := ProvideService(
-		logging.NewNoopLogger(),
-		&mocktypes.AccountDataManager{},
-		&mocktypes.AccountUserMembershipDataManager{},
-		mockencoding.NewMockEncoderDecoder(),
-		ucp,
-		rpm,
-	)
+		cfg := Config{
+			PreWritesTopicName: "pre-writes",
+		}
 
-	assert.NotNil(t, s)
+		pp := &mockpublishers.ProducerProvider{}
+		pp.On("ProviderPublisher", cfg.PreWritesTopicName).Return(&mockpublishers.Publisher{}, nil)
 
-	mock.AssertExpectationsForObjects(t, rpm)
+		s, err := ProvideService(
+			logging.NewNoopLogger(),
+			cfg,
+			&mocktypes.AccountDataManager{},
+			&mocktypes.AccountUserMembershipDataManager{},
+			mockencoding.NewMockEncoderDecoder(),
+			ucp,
+			rpm,
+			pp,
+		)
+
+		assert.NotNil(t, s)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, rpm, pp)
+	})
+
+	T.Run("with error providing publisher", func(t *testing.T) {
+		t.Parallel()
+
+		var ucp metrics.UnitCounterProvider = func(counterName, description string) metrics.UnitCounter {
+			return &mockmetrics.UnitCounter{}
+		}
+
+		rpm := mockrouting.NewRouteParamManager()
+		cfg := Config{
+			PreWritesTopicName: "pre-writes",
+		}
+
+		pp := &mockpublishers.ProducerProvider{}
+		pp.On("ProviderPublisher", cfg.PreWritesTopicName).Return(&mockpublishers.Publisher{}, errors.New("blah"))
+
+		s, err := ProvideService(
+			logging.NewNoopLogger(),
+			cfg,
+			&mocktypes.AccountDataManager{},
+			&mocktypes.AccountUserMembershipDataManager{},
+			mockencoding.NewMockEncoderDecoder(),
+			ucp,
+			rpm,
+			pp,
+		)
+
+		assert.Nil(t, s)
+		assert.Error(t, err)
+
+		mock.AssertExpectationsForObjects(t, rpm, pp)
+	})
 }

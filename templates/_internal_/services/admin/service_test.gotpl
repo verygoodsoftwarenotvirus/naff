@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	mockauthn {{ projectImport "internal/authentication/mock" }}
 	{{ projectImport "internal/authentication" }}
 	{{ projectImport "internal/encoding" }}
 	{{ projectImport "internal/observability/logging" }}
@@ -24,15 +25,15 @@ func buildTestService(t *testing.T) *service {
 
 	rpm := mockrouting.NewRouteParamManager()
 	rpm.On(
-		"BuildRouteParamIDFetcher",
-		mock.IsType(logging.NewNoopLogger()), UserIDURIParamKey, "user").Return(func(*http.Request) uint64 { return 0 })
+		"BuildRouteParamStringIDFetcher",
+		UserIDURIParamKey,
+	).Return(func(*http.Request) string { return "" })
 
 	s := ProvideService(
 		logger,
 		&authservice.Config{Cookies: authservice.CookieConfig{SigningKey: "BLAHBLAHBLAHPRETENDTHISISSECRET!"}},
-		&authentication.MockAuthenticator{},
+		&mockauthn.Authenticator{},
 		&mocktypes.AdminUserDataManager{},
-		&mocktypes.AuditLogEntryDataManager{},
 		scs.New(),
 		encoding.ProvideServerEncoderDecoder(logger, encoding.ContentTypeJSON),
 		rpm,
@@ -56,15 +57,15 @@ func TestProvideAdminService(T *testing.T) {
 
 		rpm := mockrouting.NewRouteParamManager()
 		rpm.On(
-			"BuildRouteParamIDFetcher",
-			mock.IsType(logging.NewNoopLogger()), UserIDURIParamKey, "user").Return(func(*http.Request) uint64 { return 0 })
+			"BuildRouteParamStringIDFetcher",
+			UserIDURIParamKey,
+		).Return(func(*http.Request) string { return "" })
 
 		s := ProvideService(
 			logger,
 			&authservice.Config{Cookies: authservice.CookieConfig{SigningKey: "BLAHBLAHBLAHPRETENDTHISISSECRET!"}},
-			&authentication.MockAuthenticator{},
+			&mockauthn.Authenticator{},
 			&mocktypes.AdminUserDataManager{},
-			&mocktypes.AuditLogEntryDataManager{},
 			scs.New(),
 			encoding.ProvideServerEncoderDecoder(logger, encoding.ContentTypeJSON),
 			rpm,

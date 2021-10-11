@@ -15,6 +15,7 @@ import (
 	{{ projectImport "internal/observability/logging" }}
 
 	mockencoding {{ projectImport "internal/encoding/mock" }}
+	mockpublishers {{ projectImport "internal/messagequeue/publishers/mock" }}
 	mockmetrics {{ projectImport "internal/observability/metrics/mock" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
@@ -156,7 +157,7 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -165,7 +166,6 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 			"CreateAccount",
 			testutils.ContextMatcher,
 			mock.IsType(&types.AccountCreationInput{}),
-			helper.exampleUser.ID,
 		).Return(helper.exampleAccount, nil)
 		helper.service.accountDataManager = accountDataManager
 
@@ -190,7 +190,7 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -208,7 +208,7 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -227,7 +227,7 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -246,7 +246,7 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -255,7 +255,6 @@ func TestAccountsService_CreateHandler(T *testing.T) {
 			"CreateAccount",
 			testutils.ContextMatcher,
 			mock.IsType(&types.AccountCreationInput{}),
-			helper.exampleUser.ID,
 		).Return((*types.Account)(nil), errors.New("blah"))
 		helper.service.accountDataManager = accountDataManager
 
@@ -395,7 +394,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -403,13 +402,13 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		accountDataManager.On(
 			"GetAccount",
 			testutils.ContextMatcher,
-			helper.exampleAccount.ID, helper.exampleUser.ID,
+			helper.exampleAccount.ID,
+			helper.exampleUser.ID,
 		).Return(helper.exampleAccount, nil)
 		accountDataManager.On(
 			"UpdateAccount",
 			testutils.ContextMatcher,
-			mock.IsType(&types.Account{}), helper.exampleUser.ID,
-			mock.IsType([]*types.FieldChangeSummary{}),
+			mock.IsType(&types.Account{}),
 		).Return(nil)
 		helper.service.accountDataManager = accountDataManager
 
@@ -430,7 +429,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -448,7 +447,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -467,7 +466,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -486,7 +485,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -515,7 +514,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -544,7 +543,7 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleCreationInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -555,13 +554,13 @@ func TestAccountsService_UpdateHandler(T *testing.T) {
 		accountDataManager.On(
 			"GetAccount",
 			testutils.ContextMatcher,
-			helper.exampleAccount.ID, helper.exampleUser.ID,
+			helper.exampleAccount.ID,
+			helper.exampleUser.ID,
 		).Return(helper.exampleAccount, nil)
 		accountDataManager.On(
 			"UpdateAccount",
 			testutils.ContextMatcher,
-			mock.IsType(&types.Account{}), helper.exampleUser.ID,
-			mock.IsType([]*types.FieldChangeSummary{}),
+			mock.IsType(&types.Account{}),
 		).Return(errors.New("blah"))
 		helper.service.accountDataManager = accountDataManager
 
@@ -586,7 +585,6 @@ func TestAccountsService_ArchiveHandler(T *testing.T) {
 			"ArchiveAccount",
 			testutils.ContextMatcher,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 			helper.exampleUser.ID,
 		).Return(nil)
 		helper.service.accountDataManager = accountDataManager
@@ -636,7 +634,6 @@ func TestAccountsService_ArchiveHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleAccount.ID,
 			helper.exampleUser.ID,
-			helper.exampleUser.ID,
 		).Return(sql.ErrNoRows)
 		helper.service.accountDataManager = accountDataManager
 
@@ -665,7 +662,6 @@ func TestAccountsService_ArchiveHandler(T *testing.T) {
 			"ArchiveAccount",
 			testutils.ContextMatcher,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 			helper.exampleUser.ID,
 		).Return(errors.New("blah"))
 		helper.service.accountDataManager = accountDataManager
@@ -699,7 +695,37 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		require.NoError(t, err)
+		require.NotNil(t, helper.req)
+
+		mockEventProducer := &mockpublishers.Publisher{}
+		mockEventProducer.On(
+			"Publish",
+			testutils.ContextMatcher,
+			mock.MatchedBy(testutils.PreWriteMessageMatcher),
+		).Return(nil)
+		helper.service.preWritesPublisher = mockEventProducer
+
+		helper.service.AddMemberHandler(helper.res, helper.req)
+
+		assert.Equal(t, http.StatusAccepted, helper.res.Code)
+
+		mock.AssertExpectationsForObjects(t, mockEventProducer)
+	})
+
+	T.Run("standard without async", func(t *testing.T) {
+		t.Parallel()
+
+		helper := buildTestHelper(t)
+		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
+		helper.service.async = false
+
+		exampleInput := fakes.BuildFakeAddUserToAccountInput()
+		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
+
+		var err error
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -707,8 +733,7 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		accountMembershipDataManager.On(
 			"AddUserToAccount",
 			testutils.ContextMatcher,
-			exampleInput,
-			helper.exampleUser.ID,
+			mock.IsType(&types.AddUserToAccountInput{}),
 		).Return(nil)
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
 
@@ -729,7 +754,7 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -747,7 +772,7 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -766,7 +791,7 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -775,7 +800,7 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, helper.res.Code)
 	})
 
-	T.Run("with error writing to database", func(t *testing.T) {
+	T.Run("with error publishing to event queue", func(t *testing.T) {
 		t.Parallel()
 
 		helper := buildTestHelper(t)
@@ -785,7 +810,37 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		require.NoError(t, err)
+		require.NotNil(t, helper.req)
+
+		mockEventProducer := &mockpublishers.Publisher{}
+		mockEventProducer.On(
+			"Publish",
+			testutils.ContextMatcher,
+			mock.MatchedBy(testutils.PreWriteMessageMatcher),
+		).Return(errors.New("blah"))
+		helper.service.preWritesPublisher = mockEventProducer
+
+		helper.service.AddMemberHandler(helper.res, helper.req)
+
+		assert.Equal(t, http.StatusInternalServerError, helper.res.Code)
+
+		mock.AssertExpectationsForObjects(t, mockEventProducer)
+	})
+
+	T.Run("without async and with error adding user", func(t *testing.T) {
+		t.Parallel()
+
+		helper := buildTestHelper(t)
+		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
+		helper.service.async = false
+
+		exampleInput := fakes.BuildFakeAddUserToAccountInput()
+		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
+
+		var err error
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -793,8 +848,7 @@ func TestAccountsService_AddMemberHandler(T *testing.T) {
 		accountMembershipDataManager.On(
 			"AddUserToAccount",
 			testutils.ContextMatcher,
-			exampleInput,
-			helper.exampleUser.ID,
+			mock.IsType(&types.AddUserToAccountInput{}),
 		).Return(errors.New("blah"))
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
 
@@ -819,7 +873,7 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -829,7 +883,6 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleUser.ID,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 			exampleInput,
 		).Return(nil)
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
@@ -848,7 +901,7 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -867,7 +920,7 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -887,7 +940,7 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -906,7 +959,7 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -916,7 +969,6 @@ func TestAccountsService_ModifyMemberPermissionsHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleUser.ID,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 			exampleInput,
 		).Return(errors.New("blah"))
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
@@ -942,7 +994,7 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -951,7 +1003,6 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 			"TransferAccountOwnership",
 			testutils.ContextMatcher,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 			exampleInput,
 		).Return(nil)
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
@@ -970,7 +1021,7 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 		helper.service.encoderDecoder = encoding.ProvideServerEncoderDecoder(logging.NewNoopLogger(), encoding.ContentTypeJSON)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(nil))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -989,7 +1040,7 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -1009,7 +1060,7 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -1028,7 +1079,7 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 		jsonBytes := helper.service.encoderDecoder.MustEncode(helper.ctx, exampleInput)
 
 		var err error
-		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://{{ route_fmt projectName }}.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
+		helper.req, err = http.NewRequestWithContext(helper.ctx, http.MethodPost, "https://todo.verygoodsoftwarenotvirus.ru", bytes.NewReader(jsonBytes))
 		require.NoError(t, err)
 		require.NotNil(t, helper.req)
 
@@ -1037,7 +1088,6 @@ func TestAccountsService_TransferAccountOwnershipHandler(T *testing.T) {
 			"TransferAccountOwnership",
 			testutils.ContextMatcher,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 			exampleInput,
 		).Return(errors.New("blah"))
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
@@ -1066,8 +1116,6 @@ func TestAccountsService_RemoveMemberHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleUser.ID,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
-			exampleReason,
 		).Return(nil)
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
 
@@ -1117,8 +1165,6 @@ func TestAccountsService_RemoveMemberHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleUser.ID,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
-			exampleReason,
 		).Return(errors.New("blah"))
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
 
@@ -1152,7 +1198,6 @@ func TestAccountsService_MarkAsDefaultAccountHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleUser.ID,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 		).Return(nil)
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
 
@@ -1197,7 +1242,6 @@ func TestAccountsService_MarkAsDefaultAccountHandler(T *testing.T) {
 			testutils.ContextMatcher,
 			helper.exampleUser.ID,
 			helper.exampleAccount.ID,
-			helper.exampleUser.ID,
 		).Return(errors.New("blah"))
 		helper.service.accountMembershipDataManager = accountMembershipDataManager
 
@@ -1214,119 +1258,5 @@ func TestAccountsService_MarkAsDefaultAccountHandler(T *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, helper.res.Code)
 
 		mock.AssertExpectationsForObjects(t, accountMembershipDataManager, encoderDecoder)
-	})
-}
-
-func TestAccountsService_AuditEntryHandler(T *testing.T) {
-	T.Parallel()
-
-	T.Run("standard", func(t *testing.T) {
-		t.Parallel()
-
-		helper := buildTestHelper(t)
-
-		exampleAuditLogEntries := fakes.BuildFakeAuditLogEntryList().Entries
-
-		accountDataManager := &mocktypes.AccountDataManager{}
-		accountDataManager.On(
-			"GetAuditLogEntriesForAccount",
-			testutils.ContextMatcher,
-			helper.exampleAccount.ID,
-		).Return(exampleAuditLogEntries, nil)
-		helper.service.accountDataManager = accountDataManager
-
-		encoderDecoder := mockencoding.NewMockEncoderDecoder()
-		encoderDecoder.On(
-			"RespondWithData",
-			testutils.ContextMatcher,
-			testutils.HTTPResponseWriterMatcher,
-			mock.IsType([]*types.AuditLogEntry{}),
-		).Return()
-		helper.service.encoderDecoder = encoderDecoder
-
-		helper.service.AuditEntryHandler(helper.res, helper.req)
-
-		assert.Equal(t, http.StatusOK, helper.res.Code)
-
-		mock.AssertExpectationsForObjects(t, accountDataManager, encoderDecoder)
-	})
-
-	T.Run("with error retrieving session context data", func(t *testing.T) {
-		t.Parallel()
-
-		helper := buildTestHelper(t)
-		helper.service.sessionContextDataFetcher = testutils.BrokenSessionContextDataFetcher
-
-		encoderDecoder := mockencoding.NewMockEncoderDecoder()
-		encoderDecoder.On(
-			"EncodeErrorResponse",
-			testutils.ContextMatcher,
-			testutils.HTTPResponseWriterMatcher,
-			"unauthenticated",
-			http.StatusUnauthorized,
-		).Return()
-		helper.service.encoderDecoder = encoderDecoder
-
-		helper.service.AuditEntryHandler(helper.res, helper.req)
-
-		assert.Equal(t, http.StatusUnauthorized, helper.res.Code)
-
-		mock.AssertExpectationsForObjects(t, encoderDecoder)
-	})
-
-	T.Run("with sql.ErrNoRows", func(t *testing.T) {
-		t.Parallel()
-
-		helper := buildTestHelper(t)
-
-		accountDataManager := &mocktypes.AccountDataManager{}
-		accountDataManager.On(
-			"GetAuditLogEntriesForAccount",
-			testutils.ContextMatcher,
-			helper.exampleAccount.ID,
-		).Return([]*types.AuditLogEntry(nil), sql.ErrNoRows)
-		helper.service.accountDataManager = accountDataManager
-
-		encoderDecoder := mockencoding.NewMockEncoderDecoder()
-		encoderDecoder.On(
-			"EncodeNotFoundResponse",
-			testutils.ContextMatcher,
-			testutils.HTTPResponseWriterMatcher,
-		).Return()
-		helper.service.encoderDecoder = encoderDecoder
-
-		helper.service.AuditEntryHandler(helper.res, helper.req)
-
-		assert.Equal(t, http.StatusNotFound, helper.res.Code)
-
-		mock.AssertExpectationsForObjects(t, accountDataManager, encoderDecoder)
-	})
-
-	T.Run("with error reading from database", func(t *testing.T) {
-		t.Parallel()
-
-		helper := buildTestHelper(t)
-
-		accountDataManager := &mocktypes.AccountDataManager{}
-		accountDataManager.On(
-			"GetAuditLogEntriesForAccount",
-			testutils.ContextMatcher,
-			helper.exampleAccount.ID,
-		).Return([]*types.AuditLogEntry(nil), errors.New("blah"))
-		helper.service.accountDataManager = accountDataManager
-
-		encoderDecoder := mockencoding.NewMockEncoderDecoder()
-		encoderDecoder.On(
-			"EncodeUnspecifiedInternalServerErrorResponse",
-			testutils.ContextMatcher,
-			testutils.HTTPResponseWriterMatcher,
-		).Return()
-		helper.service.encoderDecoder = encoderDecoder
-
-		helper.service.AuditEntryHandler(helper.res, helper.req)
-
-		assert.Equal(t, http.StatusInternalServerError, helper.res.Code)
-
-		mock.AssertExpectationsForObjects(t, accountDataManager, encoderDecoder)
 	})
 }
