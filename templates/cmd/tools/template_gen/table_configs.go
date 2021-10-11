@@ -48,7 +48,7 @@ func buildBasicTableTemplateConfig() []jen.Code {
 
 func buildBuildBasicTableTemplate() []jen.Code {
 	return []jen.Code{
-		jen.Func().ID("buildBasicTableTemplate").Params(jen.ID("cfg").PointerTo().ID("basicTableTemplateConfig")).Params(jen.ID("string")).Body(
+		jen.Func().ID("buildBasicTableTemplate").Params(jen.ID("cfg").PointerTo().ID("basicTableTemplateConfig")).Params(jen.String()).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
 			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicTableTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
@@ -177,7 +177,7 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 	}
 
 	return []jen.Code{
-		jen.Var().ID("tableConfigs").Equals().Map(jen.ID("string")).PointerTo().ID("basicTableTemplateConfig").Valuesln(tableConfigs...),
+		jen.Var().ID("tableConfigs").Equals().Map(jen.String()).PointerTo().ID("basicTableTemplateConfig").Valuesln(tableConfigs...),
 		jen.Newline(),
 	}
 }

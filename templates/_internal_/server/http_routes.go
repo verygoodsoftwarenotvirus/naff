@@ -119,7 +119,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("buildNumericIDURLChunk").Params(jen.ID("key").ID("string")).Params(jen.ID("string")).Body(
+		jen.Func().ID("buildNumericIDURLChunk").Params(jen.ID("key").String()).Params(jen.String()).Body(
 			jen.Return().Qual("fmt", "Sprintf").Call(
 				jen.ID("root").Op("+").ID("numericIDPattern"),
 				jen.ID("key"),

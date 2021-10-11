@@ -150,12 +150,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Type().ID("configFunc").Func().Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filePath").ID("string")).Params(jen.ID("error")),
+		jen.Type().ID("configFunc").Func().Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("filePath").String()).Params(jen.ID("error")),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Var().ID("files").Equals().Map(jen.ID("string")).ID("configFunc").Valuesln(
+		jen.Var().ID("files").Equals().Map(jen.String()).ID("configFunc").Valuesln(
 			jen.Lit("environments/local/service.config").MapAssign().ID("localDevelopmentConfig"),
 			jen.Lit("environments/testing/config_files/frontend-tests.config").MapAssign().ID("frontendTestsConfig"),
 			utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Lit("environments/testing/config_files/integration-tests-postgres.config").MapAssign().ID("buildIntegrationTestForDBImplementation").Call(
@@ -180,7 +180,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("mustHashPass").Params(jen.ID("password").ID("string")).Params(jen.ID("string")).Body(
+		jen.Func().ID("mustHashPass").Params(jen.ID("password").String()).Params(jen.String()).Body(
 			jen.List(jen.ID("hashed"), jen.ID("err")).Assign().Qual(proj.InternalAuthenticationPackage(), "ProvideArgon2Authenticator").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()).
 				Dotln("HashPassword").Call(jen.Qual("context", "Background").Call(), jen.ID("password")),
 			jen.Newline(),
@@ -232,7 +232,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("localDevelopmentConfig").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
+			jen.ID("filePath").String()).Params(jen.ID("error")).Body(
 			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
 				jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
 					jen.ID("Debug").MapAssign().ID("true"),
@@ -334,7 +334,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("frontendTestsConfig").Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
+			jen.ID("filePath").String()).Params(jen.ID("error")).Body(
 			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
 				jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
 					jen.ID("Debug").MapAssign().ID("false"),
@@ -421,9 +421,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbVendor"), jen.ID("dbDetails")).ID("string")).Params(jen.ID("configFunc")).Body(
+		jen.Func().ID("buildIntegrationTestForDBImplementation").Params(jen.List(jen.ID("dbVendor"), jen.ID("dbDetails")).String()).Params(jen.ID("configFunc")).Body(
 			jen.Return().Func().Params(jen.ID("ctx").Qual("context", "Context"),
-				jen.ID("filePath").ID("string")).Params(jen.ID("error")).Body(
+				jen.ID("filePath").String()).Params(jen.ID("error")).Body(
 				jen.ID("startupDeadline").Assign().Qual("time", "Minute"),
 				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.If(jen.ID("dbVendor").IsEqualTo().ID("mysql")).Body(
 					jen.ID("startupDeadline").Equals().Lit(5).PointerTo().Qual("time", "Minute"),

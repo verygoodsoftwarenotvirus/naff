@@ -98,8 +98,8 @@ func migrateDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("initMigration").ID("string"),
-			jen.ID("itemsMigration").ID("string"),
+			jen.ID("initMigration").String(),
+			jen.ID("itemsMigration").String(),
 			jen.ID("migrations").Op("=").Index().ID("darwin").Dot("Migration").Valuesln(jen.Valuesln(jen.ID("Version").Op(":").Lit(0.01), jen.ID("Description").Op(":").Lit("basic infrastructural tables"), jen.ID("Script").Op(":").ID("initMigration")), jen.Valuesln(jen.ID("Version").Op(":").Lit(0.02), jen.ID("Description").Op(":").Lit("create items table"), jen.ID("Script").Op(":").ID("itemsMigration"))),
 		),
 		jen.Newline(),

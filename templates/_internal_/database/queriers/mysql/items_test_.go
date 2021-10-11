@@ -12,7 +12,7 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Func().ID("buildMockRowsFromItems").Params(jen.ID("includeCounts").ID("bool"), jen.ID("filteredCount").ID("uint64"), jen.ID("items").Op("...").Op("*").ID("types").Dot("Item")).Params(jen.Op("*").ID("sqlmock").Dot("Rows")).Body(
+		jen.Func().ID("buildMockRowsFromItems").Params(jen.ID("includeCounts").ID("bool"), jen.ID("filteredCount").Uint64(), jen.ID("items").Op("...").Op("*").ID("types").Dot("Item")).Params(jen.Op("*").ID("sqlmock").Dot("Rows")).Body(
 			jen.ID("columns").Op(":=").ID("itemsTableColumns"),
 			jen.If(jen.ID("includeCounts")).Body(
 				jen.ID("columns").Op("=").ID("append").Call(
@@ -96,7 +96,7 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
-					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().ID("string").Valuesln(jen.Lit("exists"))).Dot("AddRow").Call(jen.ID("true"))),
+					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().String().Valuesln(jen.Lit("exists"))).Dot("AddRow").Call(jen.ID("true"))),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("ItemExists").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleItemID"),
@@ -348,9 +348,9 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("exampleCount").Op(":=").ID("uint64").Call(jen.Lit(123)),
+					jen.ID("exampleCount").Op(":=").Uint64().Call(jen.Lit(123)),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getAllItemsCountQuery"))).Dot("WithArgs").Call().Dot("WillReturnRows").Call(jen.ID("newCountDBRowResponse").Call(jen.ID("uint64").Call(jen.Lit(123)))),
+					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getAllItemsCountQuery"))).Dot("WithArgs").Call().Dot("WillReturnRows").Call(jen.ID("newCountDBRowResponse").Call(jen.Uint64().Call(jen.Lit(123)))),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetTotalItemCount").Call(jen.ID("ctx")),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
@@ -603,7 +603,7 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
 					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID")),
 					jen.Var().Defs(
-						jen.ID("exampleIDs").Index().ID("string"),
+						jen.ID("exampleIDs").Index().String(),
 					),
 					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID("exampleItemList").Dot("Items")).Body(
 						jen.ID("exampleArgs").Op("=").ID("append").Call(
@@ -700,7 +700,7 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
 					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID")),
 					jen.Var().Defs(
-						jen.ID("exampleIDs").Index().ID("string"),
+						jen.ID("exampleIDs").Index().String(),
 					),
 					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID("exampleItemList").Dot("Items")).Body(
 						jen.ID("exampleArgs").Op("=").ID("append").Call(
@@ -747,7 +747,7 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
 					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID")),
 					jen.Var().Defs(
-						jen.ID("exampleIDs").Index().ID("string"),
+						jen.ID("exampleIDs").Index().String(),
 					),
 					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID("exampleItemList").Dot("Items")).Body(
 						jen.ID("exampleArgs").Op("=").ID("append").Call(

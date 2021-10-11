@@ -35,6 +35,7 @@ func (c *Config) SetupJaeger() (func(), error) {
 			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(c.SpanCollectionProbability)),
 			sdktrace.WithResource(resource.NewWithAttributes(
 				attribute.String("exporter", "jaeger"),
+				attribute.String("service.name", c.Jaeger.ServiceName),
 			)),
 		),
 	)

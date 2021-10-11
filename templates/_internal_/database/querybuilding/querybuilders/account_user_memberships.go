@@ -258,7 +258,7 @@ func buildBuildModifyUserPermissionsQuery(proj *models.Project, dbvendor wordsmi
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildModifyUserPermissionsQuery").Params(jen.ID("ctx").Qual("context", "Context"),
 			jen.List(jen.ID("userID"), jen.ID("accountID")).Uint64(),
-			jen.ID("newRoles").Index().ID("string")).Params(jen.ID("query").String(),
+			jen.ID("newRoles").Index().String()).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),

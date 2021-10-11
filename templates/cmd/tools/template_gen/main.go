@@ -12,7 +12,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Var().ID("defaultTemplateFuncMap").Equals().Map(jen.ID("string")).Interface().Values(),
+		jen.Var().ID("defaultTemplateFuncMap").Equals().Map(jen.String()).Interface().Values(),
 		jen.Newline(),
 	)
 
@@ -24,7 +24,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 func buildWriteFile() []jen.Code {
 	return []jen.Code{
-		jen.Func().ID("writeFile").Params(jen.List(jen.ID("path"), jen.ID("out")).ID("string")).Params(jen.ID("error")).Body(
+		jen.Func().ID("writeFile").Params(jen.List(jen.ID("path"), jen.ID("out")).String()).Params(jen.ID("error")).Body(
 			jen.ID("containingDir").Assign().Qual("path/filepath", "Dir").Call(jen.ID("path")),
 			jen.Newline(),
 			jen.If(jen.ID("err").Assign().Qual("os", "MkdirAll").Call(jen.ID("containingDir"), jen.Octal(777)), jen.ID("err").Op("!=").ID("nil")).Body(

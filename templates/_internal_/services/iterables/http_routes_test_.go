@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -33,7 +34,7 @@ func buildTestParseBool(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Func().ID("TestParseBool").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("expectations").Assign().Map(jen.ID("string")).ID("bool").Valuesln(jen.Lit("1").Op(":").ID("true"), jen.ID("t").Dot("Name").Call().Op(":").ID("false"), jen.Lit("true").Op(":").ID("true"), jen.Lit("troo").Op(":").ID("false"), jen.Lit("t").Op(":").ID("true"), jen.Lit("false").Op(":").ID("false")),
+			jen.ID("expectations").Assign().Map(jen.String()).ID("bool").Valuesln(jen.Lit("1").Op(":").ID("true"), jen.ID("t").Dot("Name").Call().Op(":").ID("false"), jen.Lit("true").Op(":").ID("true"), jen.Lit("troo").Op(":").ID("false"), jen.Lit("t").Op(":").ID("true"), jen.Lit("false").Op(":").ID("false")),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("input"), jen.ID("expected")).Assign().Range().ID("expectations")).Body(
 				jen.Qual(constants.AssertionLibrary, "Equal").Call(

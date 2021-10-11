@@ -14,10 +14,11 @@ func wireDotGo(proj *models.Project) *jen.File {
 
 	serviceConfigLines := []jen.Code{
 		jen.New(jen.PointerTo().ID("ServicesConfigurations")),
-		jen.Lit("AuditLog"),
 		jen.Lit("Auth"),
 		jen.Lit("Frontend"),
 		jen.Lit("Webhooks"),
+		jen.Lit("Websockets"),
+		jen.Lit("Accounts"),
 	}
 	for _, typ := range proj.DataTypes {
 		serviceConfigLines = append(serviceConfigLines, jen.Lit(typ.Name.Plural()))
@@ -32,11 +33,11 @@ func wireDotGo(proj *models.Project) *jen.File {
 					jen.New(jen.PointerTo().ID("InstanceConfig")),
 					jen.Lit("Database"),
 					jen.Lit("Observability"),
-					jen.Lit("Capitalism"),
 					jen.Lit("Meta"),
 					jen.Lit("Encoding"),
 					jen.Lit("Uploads"),
 					jen.Lit("Search"),
+					jen.Lit("Events"),
 					jen.Lit("Server"),
 					jen.Lit("Services"),
 				),

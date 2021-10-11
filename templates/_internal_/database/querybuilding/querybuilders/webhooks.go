@@ -78,7 +78,7 @@ func buildBuildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wordsmith
 	lines := []jen.Code{
 		jen.Comment("BuildGetAllWebhooksCountQuery returns a query which would return the count of webhooks regardless of ownership."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllWebhooksCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllWebhooksCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.String()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),

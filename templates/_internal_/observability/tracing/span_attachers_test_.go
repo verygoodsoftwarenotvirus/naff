@@ -168,48 +168,6 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("TestAttachAuditLogEntryIDToSpan").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
-					jen.Newline(),
-					jen.ID("AttachAuditLogEntryIDToSpan").Call(
-						jen.ID("span"),
-						jen.Lit(123),
-					),
-				),
-			),
-		),
-		jen.Newline(),
-	)
-
-	code.Add(
-		jen.Func().ID("TestAttachAuditLogEntryEventTypeToSpan").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
-					jen.Newline(),
-					jen.ID("AttachAuditLogEntryEventTypeToSpan").Call(
-						jen.ID("span"),
-						jen.ID("t").Dot("Name").Call(),
-					),
-				),
-			),
-		),
-		jen.Newline(),
-	)
-
-	code.Add(
 		jen.Func().ID("TestAttachAccountIDToSpan").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -222,7 +180,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachAccountIDToSpan").Call(
 						jen.ID("span"),
-						jen.Lit(123),
+						jen.Lit("123"),
 					),
 				),
 			),
@@ -243,29 +201,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachRequestingUserIDToSpan").Call(
 						jen.ID("span"),
-						jen.Lit(123),
-					),
-				),
-			),
-		),
-		jen.Newline(),
-	)
-
-	code.Add(
-		jen.Func().ID("TestAttachChangeSummarySpan").Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
-					jen.Newline(),
-					jen.ID("AttachChangeSummarySpan").Call(
-						jen.ID("span"),
-						jen.ID("t").Dot("Name").Call(),
-						jen.Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary").Valuesln(jen.Valuesln(jen.ID("OldValue").Op(":").Lit("blah"), jen.ID("NewValue").Op(":").Lit("butt"))),
+						jen.Lit("123"),
 					),
 				),
 			),
@@ -286,7 +222,13 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachSessionContextDataToSpan").Call(
 						jen.ID("span"),
-						jen.AddressOf().Qual(proj.TypesPackage(), "SessionContextData").Valuesln(jen.ID("AccountPermissions").Op(":").ID("nil"), jen.ID("Requester").Op(":").Qual(proj.TypesPackage(), "RequesterInfo").Valuesln(jen.ID("ServicePermissions").Op(":").Qual(proj.InternalPackage("authorization"), "NewServiceRolePermissionChecker").Call(jen.Qual(proj.InternalPackage("authorization"), "ServiceUserRole").Dot("String").Call())), jen.ID("ActiveAccountID").Op(":").Lit(0)),
+						jen.AddressOf().Qual(proj.TypesPackage(), "SessionContextData").Valuesln(
+							jen.ID("AccountPermissions").Op(":").ID("nil"),
+							jen.ID("Requester").Op(":").Qual(proj.TypesPackage(), "RequesterInfo").Valuesln(
+								jen.ID("ServicePermissions").Op(":").Qual(proj.InternalPackage("authorization"), "NewServiceRolePermissionChecker").Call(jen.Qual(proj.InternalPackage("authorization"), "ServiceUserRole").Dot("String").Call()),
+							),
+							jen.ID("ActiveAccountID").Op(":").Lit(""),
+						),
 					),
 				),
 			),
@@ -307,7 +249,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachAPIClientDatabaseIDToSpan").Call(
 						jen.ID("span"),
-						jen.Lit(123),
+						jen.Lit("123"),
 					),
 				),
 			),
@@ -371,7 +313,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachUserIDToSpan").Call(
 						jen.ID("span"),
-						jen.Lit(123),
+						jen.Lit("123"),
 					),
 				),
 			),
@@ -413,7 +355,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachWebhookIDToSpan").Call(
 						jen.ID("span"),
-						jen.Lit(123),
+						jen.Lit("123"),
 					),
 				),
 			),
@@ -513,7 +455,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(jen.ID("Header").Op(":").Map(jen.ID("string")).Index().String().Values()),
+					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(jen.ID("Header").Op(":").Map(jen.String()).Index().String().Values()),
 					jen.ID("res").Dot("Header").Dot("Set").Call(
 						jen.ID("t").Dot("Name").Call(),
 						jen.Lit("blah"),
@@ -665,7 +607,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 						jen.Newline(),
 						jen.IDf("Attach%sIDToSpan", typ.Name.Singular()).Call(
 							jen.ID("span"),
-							jen.Lit(123),
+							jen.Lit("123"),
 						),
 					),
 				),

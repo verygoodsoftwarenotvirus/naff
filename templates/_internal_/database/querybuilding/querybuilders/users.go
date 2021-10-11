@@ -44,7 +44,7 @@ func buildBuildUserHasStatusQuery(proj *models.Project, dbvendor wordsmith.Super
 	lines := []jen.Code{
 		jen.Comment("BuildUserHasStatusQuery returns a SQL query (and argument) for retrieving a user by their database ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUserHasStatusQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("statuses").Op("...").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUserHasStatusQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("statuses").Op("...").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -176,7 +176,7 @@ func buildBuildGetUserByUsernameQuery(proj *models.Project, dbvendor wordsmith.S
 	lines := []jen.Code{
 		jen.Comment("BuildGetUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetUserByUsernameQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetUserByUsernameQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("username").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -220,7 +220,7 @@ func buildBuildSearchForUserByUsernameQuery(proj *models.Project, dbvendor words
 	lines := []jen.Code{
 		jen.Comment("BuildSearchForUserByUsernameQuery returns a SQL query (and argument) for retrieving a user by their username."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildSearchForUserByUsernameQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("usernameQuery").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildSearchForUserByUsernameQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("usernameQuery").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -268,7 +268,7 @@ func buildBuildGetAllUsersCountQuery(proj *models.Project, dbvendor wordsmith.Su
 		jen.Newline(),
 		jen.Comment("to a given filter's criteria."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllUsersCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("query").ID("string")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllUsersCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("query").String()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -515,7 +515,7 @@ func buildBuildUpdateUserPasswordQuery(proj *models.Project, dbvendor wordsmith.
 	lines := []jen.Code{
 		jen.Comment("BuildUpdateUserPasswordQuery returns a SQL query (and arguments) that would update the given user's passwords."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserPasswordQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("newHash").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserPasswordQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("newHash").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -556,7 +556,7 @@ func buildBuildUpdateUserTwoFactorSecretQuery(proj *models.Project, dbvendor wor
 	lines := []jen.Code{
 		jen.Comment("BuildUpdateUserTwoFactorSecretQuery returns a SQL query (and arguments) that would update a given user's two factor secret."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserTwoFactorSecretQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("newSecret").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildUpdateUserTwoFactorSecretQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("userID").Uint64(), jen.ID("newSecret").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),

@@ -367,7 +367,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("mockDB"),
 						),
 						jen.Newline(),
-						jen.ID("mockDB").Dot("ExpectQuery").Call(jen.Lit("SELECT VERSION()")).Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().ID("string").Values(jen.Lit("version"))).Dot("AddRow").Call(jen.Lit("1.2.3"))),
+						jen.ID("mockDB").Dot("ExpectQuery").Call(jen.Lit("SELECT VERSION()")).Dot("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("version"))).Dot("AddRow").Call(jen.Lit("1.2.3"))),
 						jen.Newline(),
 						jen.List(jen.ID("sessionManager"), jen.ID("err")).Op(":=").ID("ProvideSessionManager").Call(
 							jen.ID("cookieConfig"),

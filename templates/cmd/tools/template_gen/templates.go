@@ -31,7 +31,7 @@ func buildMergeFuncMaps() []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("mergeFuncMaps").Params(jen.List(jen.ID("a"),
 			jen.ID("b")).Qual("text/template", "FuncMap")).Params(jen.Qual("text/template", "FuncMap")).Body(
-			jen.ID("out").Assign().Map(jen.ID("string")).Interface().Values(),
+			jen.ID("out").Assign().Map(jen.String()).Interface().Values(),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("k"),
 				jen.ID("v")).Assign().Range().ID("a")).Body(

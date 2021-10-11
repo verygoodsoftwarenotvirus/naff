@@ -298,7 +298,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 		jen.Newline(),
 		jen.Comment("This query only gets generated once, and is otherwise returned from cache."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.String()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),

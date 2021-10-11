@@ -27,7 +27,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().ID("initializeLocalSecretManager").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("envVarKey").ID("string")).Params(jen.Qual(proj.InternalSecretsPackage(), "SecretManager")).Body(
+		jen.Func().ID("initializeLocalSecretManager").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("envVarKey").String()).Params(jen.Qual(proj.InternalSecretsPackage(), "SecretManager")).Body(
 			jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			jen.Newline(),
 			jen.ID("cfg").Op(":=").Op("&").Qual(proj.InternalSecretsPackage(), "Config").Valuesln(
@@ -90,7 +90,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.Var().ID("cfg").Op("*").Qual(proj.InternalConfigPackage(), "InstanceConfig"),
-			jen.If(jen.ID("err").Op("=").ID("sm").Dot("Decrypt").Call(jen.ID("ctx"), jen.ID("string").Call(jen.ID("configBytes")), jen.Op("&").ID("cfg")), jen.ID("err").Op("!=").ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Body(
+			jen.If(jen.ID("err").Op("=").ID("sm").Dot("Decrypt").Call(jen.ID("ctx"), jen.String().Call(jen.ID("configBytes")), jen.Op("&").ID("cfg")), jen.ID("err").Op("!=").ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),

@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -66,7 +67,7 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(
 		jen.Comment("parseBool differs from strconv.ParseBool in that it returns false by default."),
 		jen.Newline(),
-		jen.Func().ID("parseBool").Params(jen.ID("str").ID("string")).Params(jen.ID("bool")).Body(
+		jen.Func().ID("parseBool").Params(jen.ID("str").String()).Params(jen.ID("bool")).Body(
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("str")))).Body(
 				jen.Case(jen.Lit("1"), jen.Lit("t"), jen.Lit("true")).Body(
 					jen.Return().ID("true")),

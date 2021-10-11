@@ -18,7 +18,6 @@ func RenderPackage(proj *models.Project) error {
 		"doc.go":         docDotGo(proj),
 		"config.go":      configDotGo(proj),
 		"config_test.go": configTestDotGo(proj),
-		"errors.go":      errorsDotGo(proj),
 		"search.go":      searchDotGo(proj),
 	}
 
@@ -50,13 +49,6 @@ var configTestTemplate string
 
 func configTestDotGo(proj *models.Project) string {
 	return models.RenderCodeFile(proj, configTestTemplate, nil)
-}
-
-//go:embed errors.gotpl
-var errorsTemplate string
-
-func errorsDotGo(proj *models.Project) string {
-	return models.RenderCodeFile(proj, errorsTemplate, nil)
 }
 
 //go:embed search.gotpl

@@ -24,7 +24,7 @@ func buildBuildBasicCreatorTemplate() []jen.Code {
 		jen.Newline(),
 		jen.Var().ID("basicCreatorTemplateSrc").String(),
 		jen.Newline(),
-		jen.Func().ID("buildBasicCreatorTemplate").Params(jen.ID("cfg").PointerTo().ID("basicCreatorTemplateConfig")).Params(jen.ID("string")).Body(
+		jen.Func().ID("buildBasicCreatorTemplate").Params(jen.ID("cfg").PointerTo().ID("basicCreatorTemplateConfig")).Params(jen.String()).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
 			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicCreatorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
@@ -152,7 +152,7 @@ func buildCreatorConfigs(types []models.DataType) []jen.Code {
 	}
 
 	return []jen.Code{
-		jen.Var().ID("creatorConfigs").Equals().Map(jen.ID("string")).PointerTo().ID("basicCreatorTemplateConfig").Valuesln(
+		jen.Var().ID("creatorConfigs").Equals().Map(jen.String()).PointerTo().ID("basicCreatorTemplateConfig").Valuesln(
 			iterableCreatorConfigs...,
 		),
 		jen.Newline(),

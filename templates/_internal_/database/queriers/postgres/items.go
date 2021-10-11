@@ -14,7 +14,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Var().Defs(
 			jen.ID("_").ID("types").Dot("ItemDataManager").Op("=").Parens(jen.Op("*").ID("SQLQuerier")).Call(jen.ID("nil")),
-			jen.ID("itemsTableColumns").Op("=").Index().ID("string").Valuesln(jen.Lit("items.id"), jen.Lit("items.name"), jen.Lit("items.details"), jen.Lit("items.created_on"), jen.Lit("items.last_updated_on"), jen.Lit("items.archived_on"), jen.Lit("items.belongs_to_account")),
+			jen.ID("itemsTableColumns").Op("=").Index().String().Valuesln(jen.Lit("items.id"), jen.Lit("items.name"), jen.Lit("items.details"), jen.Lit("items.created_on"), jen.Lit("items.last_updated_on"), jen.Lit("items.archived_on"), jen.Lit("items.belongs_to_account")),
 		),
 		jen.Newline(),
 	)
@@ -22,7 +22,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("scanItem takes a database Scanner (i.e. *sql.Row) and scans the result into an item struct."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("scanItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").ID("database").Dot("Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").Op("*").ID("types").Dot("Item"), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).ID("uint64"), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("scanItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").ID("database").Dot("Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").Op("*").ID("types").Dot("Item"), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
@@ -52,7 +52,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("scanItems takes some database rows and turns them into a slice of items."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("scanItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").ID("database").Dot("ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("items").Index().Op("*").ID("types").Dot("Item"), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).ID("uint64"), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("scanItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").ID("database").Dot("ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("items").Index().Op("*").ID("types").Dot("Item"), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
 			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
@@ -103,7 +103,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ItemExists fetches whether an item exists from the database."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("ItemExists").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("accountID")).ID("string")).Params(jen.ID("exists").ID("bool"), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("ItemExists").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("accountID")).String()).Params(jen.ID("exists").ID("bool"), jen.ID("err").ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
@@ -169,7 +169,7 @@ AND items.id = $2
 	code.Add(
 		jen.Comment("GetItem fetches an item from the database."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("accountID")).ID("string")).Params(jen.Op("*").ID("types").Dot("Item"), jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("accountID")).String()).Params(jen.Op("*").ID("types").Dot("Item"), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
@@ -228,7 +228,7 @@ AND items.id = $2
 	code.Add(
 		jen.Comment("GetTotalItemCount fetches the count of items from the database that meet a particular filter."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetTotalItemCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("uint64"), jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetTotalItemCount").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Uint64(), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
@@ -253,7 +253,7 @@ AND items.id = $2
 	code.Add(
 		jen.Comment("GetItems fetches a list of items from the database that meet a particular filter."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").ID("string"), jen.ID("filter").Op("*").ID("types").Dot("QueryFilter")).Params(jen.ID("x").Op("*").ID("types").Dot("ItemList"), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetItems").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").String(), jen.ID("filter").Op("*").ID("types").Dot("QueryFilter")).Params(jen.ID("x").Op("*").ID("types").Dot("ItemList"), jen.ID("err").ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
@@ -345,7 +345,7 @@ AND items.id IN ($2,$3,$4)
 	code.Add(
 		jen.Comment("GetItemsWithIDs fetches items from the database within a given set of IDs."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetItemsWithIDs").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").ID("string"), jen.ID("limit").ID("uint8"), jen.ID("ids").Index().ID("string")).Params(jen.Index().Op("*").ID("types").Dot("Item"), jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("GetItemsWithIDs").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").String(), jen.ID("limit").ID("uint8"), jen.ID("ids").Index().String()).Params(jen.Index().Op("*").ID("types").Dot("Item"), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
@@ -361,7 +361,7 @@ AND items.id IN ($2,$3,$4)
 			),
 			jen.If(jen.ID("limit").Op("==").Lit(0)).Body(
 				jen.ID("limit").Op("=").ID("uint8").Call(jen.ID("types").Dot("DefaultLimit"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValues").Call(jen.Map(jen.ID("string")).Interface().Valuesln(jen.Lit("limit").Op(":").ID("limit"), jen.Lit("id_count").Op(":").ID("len").Call(jen.ID("ids")))),
+			jen.ID("logger").Op("=").ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("limit").Op(":").ID("limit"), jen.Lit("id_count").Op(":").ID("len").Call(jen.ID("ids")))),
 			jen.ID("query").Op(":=").Qual("fmt", "Sprintf").Call(
 				jen.ID("getItemsWithIDsQuery"),
 				jen.ID("joinIDs").Call(jen.ID("ids")),
@@ -510,7 +510,7 @@ AND items.id IN ($2,$3,$4)
 	code.Add(
 		jen.Comment("ArchiveItem archives an item from the database by its ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("accountID")).ID("string")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("ArchiveItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("itemID"), jen.ID("accountID")).String()).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),

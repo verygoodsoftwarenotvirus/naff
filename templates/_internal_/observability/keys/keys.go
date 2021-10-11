@@ -22,12 +22,6 @@ func keysDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			append([]jen.Code{
-				jen.Comment("AuditLogEntryIDKey is the standard key for referring to an audit log entry ID."),
-				jen.ID("AuditLogEntryIDKey").Equals().Lit("audit_log_entry.id"),
-				jen.Comment("AuditLogEntryEventTypeKey is the standard key for referring to an audit log event type."),
-				jen.ID("AuditLogEntryEventTypeKey").Equals().Lit("audit_log_entry.event_type"),
-				jen.Comment("AuditLogEntryContextKey is the standard key for referring to an audit log event type."),
-				jen.ID("AuditLogEntryContextKey").Equals().Lit("audit_log_entry.context"),
 				jen.Comment("AccountSubscriptionPlanIDKey is the standard key for referring to an account subscription plan ID."),
 				jen.ID("AccountSubscriptionPlanIDKey").Equals().Lit("account_subscription_plan.id"),
 				jen.Comment("PermissionsKey is the standard key for referring to an account user membership ID."),

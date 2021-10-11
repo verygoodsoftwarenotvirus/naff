@@ -2,6 +2,7 @@ package mock
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -123,7 +124,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 	lines := []jen.Code{
 		jen.Commentf("BuildGetAll%sCountQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.String()).Body(
 			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(jen.ID("ctx")),
 			jen.Newline(),
 			jen.Return().ID("returnArgs").Dot("String").Call(jen.Lit(0)),

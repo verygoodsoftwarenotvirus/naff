@@ -37,7 +37,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Comment("Config represents our database configuration."),
 			jen.ID("Config").Struct(
 				jen.ID("CreateTestUser").Op("*").Qual(proj.TypesPackage(), "TestUserCreationConfig").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("CreateTestUser"), false)),
-				jen.ID("Provider").ID("string").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Provider"), false)),
+				jen.ID("Provider").String().Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Provider"), false)),
 				jen.ID("ConnectionDetails").Qual(proj.DatabasePackage(), "ConnectionDetails").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("ConnectionDetails"), false)),
 				jen.ID("MetricsCollectionInterval").Qual("time", "Duration").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("MetricsCollectionInterval"), false)),
 				jen.ID("Debug").ID("bool").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Debug"), false)),
@@ -139,7 +139,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ProvideJSONPluckQuery provides a query for extracting a value out of a JSON dictionary for a given database."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("Config")).ID("ProvideJSONPluckQuery").Params().Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("Config")).ID("ProvideJSONPluckQuery").Params().Params(jen.String()).Body(
 			jen.Switch(jen.ID("cfg").Dot("Provider")).Body(
 				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres),
 					jen.Case(jen.ID("PostgresProvider")).Body(
@@ -158,7 +158,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ProvideCurrentUnixTimestampQuery provides a database implementation dependent on the configuration."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("cfg").Op("*").ID("Config")).ID("ProvideCurrentUnixTimestampQuery").Params().Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("cfg").Op("*").ID("Config")).ID("ProvideCurrentUnixTimestampQuery").Params().Params(jen.String()).Body(
 			jen.Switch(jen.ID("cfg").Dot("Provider")).Body(
 				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres),
 					jen.Case(jen.ID("PostgresProvider")).Body(

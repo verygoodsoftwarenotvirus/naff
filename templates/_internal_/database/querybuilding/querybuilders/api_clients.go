@@ -67,7 +67,7 @@ func buildBuildGetAPIClientByClientIDQuery(proj *models.Project, dbvendor wordsm
 	lines := []jen.Code{
 		jen.Comment("BuildGetAPIClientByClientIDQuery returns a SQL query which requests a given API client by its database ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAPIClientByClientIDQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").ID("string")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAPIClientByClientIDQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("clientID").String()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -103,7 +103,7 @@ func buildBuildGetAllAPIClientsCountQuery(proj *models.Project, dbvendor wordsmi
 		jen.Newline(),
 		jen.Comment("in the database, regardless of ownership."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllAPIClientsCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAllAPIClientsCountQuery").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.String()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),

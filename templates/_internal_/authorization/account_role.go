@@ -12,11 +12,6 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	interfaceMethods := []jen.Code{}
-	for _, typ := range proj.DataTypes {
-		interfaceMethods = append(interfaceMethods, jen.IDf("CanSeeAuditLogEntriesFor%s", typ.Name.Plural()).Params().Params(jen.ID("bool")))
-	}
-
 	code.Add(
 		jen.Type().Defs(
 			jen.Comment("AccountRole describes a role a user has for an Account context."),
@@ -24,25 +19,20 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.Comment("AccountRolePermissionsChecker checks permissions for one or more account Roles."),
 			jen.ID("AccountRolePermissionsChecker").Interface(
-				append([]jen.Code{
-					jen.ID("HasPermission").Params(jen.ID("Permission")).Params(jen.ID("bool")),
-					jen.Newline(),
-					jen.ID("CanUpdateAccounts").Params().Params(jen.ID("bool")),
-					jen.ID("CanDeleteAccounts").Params().Params(jen.ID("bool")),
-					jen.ID("CanAddMemberToAccounts").Params().Params(jen.ID("bool")),
-					jen.ID("CanRemoveMemberFromAccounts").Params().Params(jen.ID("bool")),
-					jen.ID("CanTransferAccountToNewOwner").Params().Params(jen.ID("bool")),
-					jen.ID("CanCreateWebhooks").Params().Params(jen.ID("bool")),
-					jen.ID("CanSeeWebhooks").Params().Params(jen.ID("bool")),
-					jen.ID("CanUpdateWebhooks").Params().Params(jen.ID("bool")),
-					jen.ID("CanArchiveWebhooks").Params().Params(jen.ID("bool")),
-					jen.ID("CanCreateAPIClients").Params().Params(jen.ID("bool")),
-					jen.ID("CanSeeAPIClients").Params().Params(jen.ID("bool")),
-					jen.ID("CanDeleteAPIClients").Params().Params(jen.ID("bool")),
-					jen.ID("CanSeeAuditLogEntriesForWebhooks").Params().Params(jen.ID("bool")),
-				},
-					interfaceMethods...,
-				)...,
+				jen.ID("HasPermission").Params(jen.ID("Permission")).Params(jen.ID("bool")),
+				jen.Newline(),
+				jen.ID("CanUpdateAccounts").Params().Params(jen.ID("bool")),
+				jen.ID("CanDeleteAccounts").Params().Params(jen.ID("bool")),
+				jen.ID("CanAddMemberToAccounts").Params().Params(jen.ID("bool")),
+				jen.ID("CanRemoveMemberFromAccounts").Params().Params(jen.ID("bool")),
+				jen.ID("CanTransferAccountToNewOwner").Params().Params(jen.ID("bool")),
+				jen.ID("CanCreateWebhooks").Params().Params(jen.ID("bool")),
+				jen.ID("CanSeeWebhooks").Params().Params(jen.ID("bool")),
+				jen.ID("CanUpdateWebhooks").Params().Params(jen.ID("bool")),
+				jen.ID("CanArchiveWebhooks").Params().Params(jen.ID("bool")),
+				jen.ID("CanCreateAPIClients").Params().Params(jen.ID("bool")),
+				jen.ID("CanSeeAPIClients").Params().Params(jen.ID("bool")),
+				jen.ID("CanDeleteAPIClients").Params().Params(jen.ID("bool")),
 			),
 		),
 		jen.Newline(),
@@ -70,7 +60,7 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Type().ID("accountRoleCollection").Struct(jen.ID("Roles").Index().ID("string")),
+		jen.Type().ID("accountRoleCollection").Struct(jen.ID("Roles").Index().String()),
 		jen.Newline(),
 	)
 
@@ -83,13 +73,13 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("NewAccountRolePermissionChecker returns a new checker for a set of Roles."),
 		jen.Newline(),
-		jen.Func().ID("NewAccountRolePermissionChecker").Params(jen.ID("roles").Op("...").ID("string")).Params(jen.ID("AccountRolePermissionsChecker")).Body(
+		jen.Func().ID("NewAccountRolePermissionChecker").Params(jen.ID("roles").Op("...").String()).Params(jen.ID("AccountRolePermissionsChecker")).Body(
 			jen.Return().AddressOf().ID("accountRoleCollection").Valuesln(jen.ID("Roles").Op(":").ID("roles"))),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().Params(jen.ID("r").ID("AccountRole")).ID("String").Params().Params(jen.ID("string")).Body(
+		jen.Func().Params(jen.ID("r").ID("AccountRole")).ID("String").Params().Params(jen.String()).Body(
 			jen.Switch(jen.ID("r")).Body(
 				jen.Case(jen.ID("AccountMemberRole")).Body(
 					jen.Return().ID("accountMemberRoleName")),
@@ -243,30 +233,6 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 			)),
 		jen.Newline(),
 	)
-
-	code.Add(
-		jen.Comment("CanSeeAuditLogEntriesForWebhooks returns whether a user can view webhook audit log entries or not."),
-		jen.Newline(),
-		jen.Func().Params(jen.ID("r").ID("accountRoleCollection")).ID("CanSeeAuditLogEntriesForWebhooks").Params().Params(jen.ID("bool")).Body(
-			jen.Return().ID("hasPermission").Call(
-				jen.ID("ReadWebhooksAuditLogEntriesPermission"),
-				jen.ID("r").Dot("Roles").Op("..."),
-			)),
-		jen.Newline(),
-	)
-
-	for _, typ := range proj.DataTypes {
-		code.Add(
-			jen.Commentf("CanSeeAuditLogEntriesFor%s returns whether a user can view %s audit log entries or not.", typ.Name.Plural(), typ.Name.SingularCommonName()),
-			jen.Newline(),
-			jen.Func().Params(jen.ID("r").ID("accountRoleCollection")).IDf("CanSeeAuditLogEntriesFor%s", typ.Name.Plural()).Params().Params(jen.ID("bool")).Body(
-				jen.Return().ID("hasPermission").Call(
-					jen.IDf("Read%sAuditLogEntriesPermission", typ.Name.Plural()),
-					jen.ID("r").Dot("Roles").Op("..."),
-				)),
-			jen.Newline(),
-		)
-	}
 
 	return code
 }

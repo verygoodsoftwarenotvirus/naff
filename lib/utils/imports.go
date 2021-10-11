@@ -55,8 +55,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	}
 
 	file.ImportAlias(proj.TestUtilsPackage(), "testutils")
-
-	file.ImportAlias("gitlab.com/verygoodsoftwarenotvirus/newsman/mock", "mocknewsman")
+	file.ImportAlias(proj.InternalMessageQueueConfigPackage(), "msgconfig")
 
 	file.ImportAlias("github.com/go-ozzo/ozzo-validation/v4", "validation")
 	file.ImportAlias(constants.FakeLibrary, "fake")
@@ -67,32 +66,31 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
 
 	file.ImportNames(map[string]string{
-		"context":                                "context",
-		"fmt":                                    "fmt",
-		"net/http":                               "http",
-		"net/http/httputil":                      "httputil",
-		"path":                                   "path",
-		"path/filepath":                          "filepath",
-		"errors":                                 "errors",
-		"net/url":                                "url",
-		"strings":                                "strings",
-		"time":                                   "time",
-		"bytes":                                  "bytes",
-		"encoding/json":                          "json",
-		"io":                                     "io",
-		"io/ioutil":                              "ioutil",
-		"reflect":                                "reflect",
-		proj.InternalMessageQueueConfigPackage(): "msgconfig",
-		proj.InternalMessageQueuePackage():       "messagequeue",
-		proj.InternalAuthenticationPackage():     "authentication",
-		proj.InternalAuthorizationPackage():      "authorization",
-		proj.InternalConfigPackage():             "config",
-		proj.EncodingPackage():                   "encoding",
-		proj.MetricsPackage():                    "metrics",
-		proj.InternalTracingPackage():            "tracing",
-		proj.InternalSearchPackage():             "search",
-		proj.InternalSecretsPackage():            "secrets",
-		proj.InternalEventsPackage():             "events",
+		"context":                            "context",
+		"fmt":                                "fmt",
+		"net/http":                           "http",
+		"net/http/httputil":                  "httputil",
+		"path":                               "path",
+		"path/filepath":                      "filepath",
+		"errors":                             "errors",
+		"net/url":                            "url",
+		"strings":                            "strings",
+		"time":                               "time",
+		"bytes":                              "bytes",
+		"encoding/json":                      "json",
+		"io":                                 "io",
+		"io/ioutil":                          "ioutil",
+		"reflect":                            "reflect",
+		proj.InternalMessageQueuePackage():   "messagequeue",
+		proj.InternalAuthenticationPackage(): "authentication",
+		proj.InternalAuthorizationPackage():  "authorization",
+		proj.InternalConfigPackage():         "config",
+		proj.EncodingPackage():               "encoding",
+		proj.MetricsPackage():                "metrics",
+		proj.InternalTracingPackage():        "tracing",
+		proj.InternalSearchPackage():         "search",
+		proj.InternalSecretsPackage():        "secrets",
+		proj.InternalEventsPackage():         "events",
 		proj.InternalSearchPackage("elasticsearch"):        "elasticsearch",
 		proj.DatabasePackage("queriers", "mysql"):          "mysql",
 		proj.DatabasePackage("queriers", "postgres"):       "postgres",

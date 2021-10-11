@@ -68,7 +68,6 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("postgres"),
-							jen.ID("MetricsCollectionInterval").MapAssign().Lit(2).PointerTo().Qual("time", "Second"),
 							jen.ID("Debug").MapAssign().ID("true"),
 							jen.ID("RunMigrations").MapAssign().ID("true"),
 							jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.Lit("postgres://username:passwords@host/table")),
@@ -144,7 +143,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.For(jen.List(jen.Underscore(), jen.ID("provider")).Assign().Range().Index().String().Values(
 						utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Lit("postgres")),
-						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("mariadb")),
+						utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Lit("mysql")),
 					)).Body(
 						jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Valuesln(
 							jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
@@ -156,7 +155,6 @@ func configTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("err")).Assign().ID("ProvideDatabaseClient").Call(
 							jen.ID("ctx"),
 							constants.LoggerVar(),
-							jen.AddressOf().Qual("database/sql", "DB").Values(),
 							jen.ID("cfg"),
 						),
 						jen.Qual(constants.AssertionLibrary, "NotNil").Call(
@@ -167,33 +165,6 @@ func configTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("t"),
 							jen.ID("err"),
 						),
-					),
-				),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with nil *sql.DB"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-					constants.LoggerVar().Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Values(),
-					jen.Newline(),
-					jen.List(jen.ID("x"),
-						jen.ID("err")).Assign().ID("ProvideDatabaseClient").Call(
-						jen.ID("ctx"),
-						constants.LoggerVar(),
-						jen.ID("nil"),
-						jen.ID("cfg"),
-					),
-					jen.Qual(constants.AssertionLibrary, "Nil").Call(
-						jen.ID("t"),
-						jen.ID("x"),
-					),
-					jen.Qual(constants.AssertionLibrary, "Error").Call(
-						jen.ID("t"),
-						jen.ID("err"),
 					),
 				),
 			),
@@ -216,7 +187,6 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("err")).Assign().ID("ProvideDatabaseClient").Call(
 						jen.ID("ctx"),
 						constants.LoggerVar(),
-						jen.AddressOf().Qual("database/sql", "DB").Values(),
 						jen.ID("cfg"),
 					),
 					jen.Qual(constants.AssertionLibrary, "Nil").Call(

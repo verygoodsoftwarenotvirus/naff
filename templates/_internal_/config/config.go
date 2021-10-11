@@ -23,31 +23,30 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("TestingRunMode").ID("runMode").Equals().Lit("testing"),
 			jen.Comment("ProductionRunMode is the run mode for a production environment."),
 			jen.ID("ProductionRunMode").ID("runMode").Equals().Lit("production"),
-			jen.Comment("DefaultRunMode is the default run mode."),
-			jen.ID("DefaultRunMode").Equals().ID("DevelopmentRunMode"),
-			jen.Comment("DefaultStartupDeadline is the default amount of time we allow for server startup."),
-			jen.ID("DefaultStartupDeadline").Equals().Qual("time", "Minute"),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("errNilDatabaseConnection").Equals().Qual("errors", "New").Call(jen.Lit("nil DB connection provided")),
 			jen.ID("errNilConfig").Equals().Qual("errors", "New").Call(jen.Lit("nil config provided")),
 			jen.ID("errInvalidDatabaseProvider").Equals().Qual("errors", "New").Call(jen.Lit("invalid database provider")),
 		),
 		jen.Newline(),
 	)
 
-	serviceConfigurations := []jen.Code{}
+	serviceConfigurations := []jen.Code{
+		jen.Underscore().Struct(),
+	}
 	for _, typ := range proj.DataTypes {
 		serviceConfigurations = append(serviceConfigurations, jen.ID(typ.Name.Plural()).Qual(proj.ServicePackage(typ.Name.PackageName()), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase(typ.Name.Singular()), true)))
 	}
 
 	serviceConfigurations = append(serviceConfigurations,
-		jen.ID("Auth").Qual(proj.AuthServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Auth"), false)),
+		jen.ID("Websockets").Qual(proj.WebsocketsServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Websocket"), true)),
 		jen.ID("Webhooks").Qual(proj.WebhooksServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Webhook"), true)),
+		jen.ID("Accounts").Qual(proj.AccountsServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Account"), true)),
+		jen.ID("Auth").Qual(proj.AuthServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Auth"), false)),
 		jen.ID("Frontend").Qual(proj.FrontendServicePackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Frontend"), false)),
 	)
 
@@ -63,13 +62,15 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.Comment("InstanceConfig configures an instance of the service. It is composed of all the other setting structs."),
 			jen.ID("InstanceConfig").Struct(
+				jen.Underscore().Struct(),
+				jen.ID("Events").Qual(proj.InternalMessageQueueConfigPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Events"), false)),
 				jen.ID("Search").Qual(proj.InternalSearchPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Search"), false)),
 				jen.ID("Encoding").Qual(proj.EncodingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Encoding"), false)),
 				jen.ID("Uploads").Qual(proj.UploadsPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Upload"), true)),
 				jen.ID("Observability").Qual(proj.ObservabilityPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Observability"), false)),
 				jen.ID("Routing").Qual(proj.RoutingPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Routing"), false)),
-				jen.ID("Meta").ID("MetaSettings").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Meta"), false)),
 				jen.ID("Database").Qual(proj.DatabasePackage("config"), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Database"), false)),
+				jen.ID("Meta").ID("MetaSettings").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Meta"), false)),
 				jen.ID("Services").ID("ServicesConfigurations").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Service"), true)),
 				jen.ID("Server").Qual(proj.HTTPServerPackage(), "Config").Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Server"), false)),
 			),
@@ -136,14 +137,6 @@ func configDotGo(proj *models.Project) *jen.File {
 			),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Capitalism").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().Qual("fmt", "Errorf").Call(
-				jen.Lit("error validating Capitalism portion of config: %w"),
-				jen.ID("err"),
-			),
-		),
-		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
@@ -180,14 +173,6 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating HTTPServer portion of config: %w"),
-				jen.ID("err"),
-			),
-		),
-		jen.Newline(),
-		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Services").Dot("AuditLog").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().Qual("fmt", "Errorf").Call(
-				jen.Lit("error validating AuditLog portion of config: %w"),
 				jen.ID("err"),
 			),
 		),
@@ -252,33 +237,25 @@ func configDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("ProvideDatabaseClient").Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			constants.LoggerVar().Qual(proj.InternalLoggingPackage(), "Logger"),
-			jen.ID("rawDB").PointerTo().Qual("database/sql", "DB"),
 			jen.ID("cfg").PointerTo().ID("InstanceConfig"),
 		).Params(
 			jen.Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("error"),
 		).Body(
-			jen.If(jen.ID("rawDB").IsEqualTo().ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"),
-					jen.ID("errNilDatabaseConnection"),
-				),
-			),
-			jen.Newline(),
 			jen.If(jen.ID("cfg").IsEqualTo().ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"),
 					jen.ID("errNilConfig"),
 				),
 			),
 			jen.Newline(),
-			jen.Var().ID("qb").Qual(proj.DatabasePackage("querybuilding"), "SQLQueryBuilder"),
 			jen.ID("shouldCreateTestUser").Assign().ID("cfg").Dot("Meta").Dot("RunMode").Op("!=").ID("ProductionRunMode"),
 			jen.Newline(),
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("cfg").Dot("Database").Dot("Provider")))).Body(
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Case(jen.Lit("mariadb")).Body(
-					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "mariadb"), "ProvideMariaDB").Call(constants.LoggerVar()),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Case(jen.Qual(proj.DatabasePackage("config"), "MySQLProvider")).Body(
+					jen.Return().Qual(proj.DatabaseQueriersPackage("mysql"), "ProvideDatabaseClient").Call(constants.CtxVar(), constants.LoggerVar(), jen.AddressOf().ID("cfg").Dot("Database"), jen.ID("shouldCreateTestUser")),
 				)),
-				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Case(jen.Lit("postgres")).Body(
-					jen.ID("qb").Equals().Qual(proj.DatabasePackage("querybuilding", "postgres"), "ProvidePostgres").Call(constants.LoggerVar()),
+				utils.ConditionalCode(proj.DatabaseIsEnabled(models.Postgres), jen.Case(jen.Qual(proj.DatabasePackage("config"), "PostgresProvider")).Body(
+					jen.Return().Qual(proj.DatabaseQueriersPackage("postgres"), "ProvideDatabaseClient").Call(constants.CtxVar(), constants.LoggerVar(), jen.AddressOf().ID("cfg").Dot("Database"), jen.ID("shouldCreateTestUser")),
 				)),
 				jen.Default().Body(
 					jen.Return().List(jen.ID("nil"),
@@ -289,15 +266,6 @@ func configDotGo(proj *models.Project) *jen.File {
 						),
 					),
 				),
-			),
-			jen.Newline(),
-			jen.Return().Qual(proj.DatabasePackage("querier"), "ProvideDatabaseClient").Call(
-				jen.ID("ctx"),
-				constants.LoggerVar(),
-				jen.ID("rawDB"),
-				jen.AddressOf().ID("cfg").Dot("Database"),
-				jen.ID("qb"),
-				jen.ID("shouldCreateTestUser"),
 			),
 		),
 		jen.Newline(),

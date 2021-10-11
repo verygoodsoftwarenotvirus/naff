@@ -44,6 +44,9 @@ func (cf *CodeFile) TemplateFunctions() map[string]interface{} {
 		"outputPath": func() string {
 			return cf.proj.OutputPath
 		},
+		"here": func() string {
+			return fmt.Sprintf("%s/", cf.proj.OutputPath)
+		},
 		"generated": func(s string) string {
 			return cf.generated[s]
 		},
