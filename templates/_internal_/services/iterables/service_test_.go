@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"fmt"
+
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -23,7 +24,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Return().AddressOf().ID("service").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 				jen.IDf("%sCounter", uvn).Op(":").AddressOf().Qual(proj.MetricsPackage("mock"), "UnitCounter").Values(),
 				jen.IDf("%sDataManager", uvn).Op(":").AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.IDf("%sIDFetcher", uvn).Op(":").Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0)),
+				jen.IDf("%sIDFetcher", uvn).Op(":").Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Zero()),
 				jen.ID("encoderDecoder").Op(":").Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 				func() jen.Code {
 					if typ.SearchEnabled {
@@ -57,7 +58,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
 				jen.Qual(proj.ServicePackage(dep.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", tsn)),
 				jen.Lit(trn),
-			).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
+			).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Zero())),
 		)
 	}
 
@@ -67,7 +68,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Qual(constants.MockPkg, "IsType").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()),
 			jen.IDf("%sIDURIParamKey", sn),
 			jen.Lit(rn),
-		).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Lit(0))),
+		).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).SingleLineBody(jen.Return().Zero())),
 	)
 
 	bodyLines = append(bodyLines,

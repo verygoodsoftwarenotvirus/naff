@@ -240,7 +240,7 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnRows").Call(jen.ID("buildMockRowsFromItems").Call(
 						jen.ID("false"),
-						jen.Lit(0),
+						jen.Zero(),
 						jen.ID("exampleItem"),
 					)),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetItem").Call(
@@ -448,8 +448,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("filter").Op(":=").Parens(jen.Op("*").ID("types").Dot("QueryFilter")).Call(jen.ID("nil")),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
-					jen.ID("exampleItemList").Dot("Page").Op("=").Lit(0),
-					jen.ID("exampleItemList").Dot("Limit").Op("=").Lit(0),
+					jen.ID("exampleItemList").Dot("Page").Op("=").Zero(),
+					jen.ID("exampleItemList").Dot("Limit").Op("=").Zero(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("c").Dot("buildListQuery").Call(
@@ -623,13 +623,13 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("query"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("exampleArgs")).Op("...")).Dot("WillReturnRows").Call(jen.ID("buildMockRowsFromItems").Call(
 						jen.ID("false"),
-						jen.Lit(0),
+						jen.Zero(),
 						jen.ID("exampleItemList").Dot("Items").Op("..."),
 					)),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetItemsWithIDs").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
-						jen.Lit(0),
+						jen.Zero(),
 						jen.ID("exampleIDs"),
 					),
 					jen.ID("assert").Dot("NoError").Call(

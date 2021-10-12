@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAdmin(t *testing.T) {

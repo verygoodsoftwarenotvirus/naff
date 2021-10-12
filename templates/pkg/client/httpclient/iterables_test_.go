@@ -2,11 +2,12 @@ package httpclient
 
 import (
 	"fmt"
+	"path"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
-	"path"
 )
 
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
@@ -16,7 +17,6 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	code.Add(buildSuiteStruct(proj, typ)...)
 
-	code.Add(buildTestClientSomethingExists(proj, typ)...)
 	code.Add(buildTestClientGetSomething(proj, typ)...)
 	code.Add(buildTestClientGetListOfSomething(proj, typ)...)
 
@@ -27,7 +27,6 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildTestClientCreateSomething(proj, typ)...)
 	code.Add(buildTestClientUpdateSomething(proj, typ)...)
 	code.Add(buildTestClientArchiveSomething(proj, typ)...)
-	code.Add(buildTestClientGetAuditLogForSomething(proj, typ)...)
 
 	return code
 }
@@ -93,10 +92,10 @@ func buildSomethingSpecificFormatString(proj *models.Project, typ models.DataTyp
 	parts := []string{"api", "v1"}
 
 	for _, owner := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, owner.Name.PluralRouteName(), "%d")
+		parts = append(parts, owner.Name.PluralRouteName(), "%s")
 	}
 
-	parts = append(parts, typ.Name.PluralRouteName(), "%d")
+	parts = append(parts, typ.Name.PluralRouteName(), "%s")
 
 	return fmt.Sprintf("/%s", path.Join(parts...))
 }
@@ -110,7 +109,7 @@ func buildGetSomethingArgs(proj *models.Project, typ models.DataType, includeCtx
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == skipIndex {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -203,7 +202,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
-					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
+					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.EmptyString())...,
 				),
 				jen.Newline(),
 				jen.Qual(constants.AssertionLibrary, "Error").Call(
@@ -354,7 +353,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", sn).Call(
-					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
+					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.EmptyString())...,
 				),
 				jen.Newline(),
 				jen.Qual(constants.MustAssertPkg, "Nil").Call(
@@ -439,7 +438,7 @@ func buildListOfSomethingFormatString(proj *models.Project, typ models.DataType)
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
 	parts = append(parts, typ.Name.PluralRouteName())
@@ -466,7 +465,7 @@ func buildListOfSomethingArgsWithoutIndex(proj *models.Project, typ models.DataT
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -629,7 +628,7 @@ func buildSearchSomethingFormatString(proj *models.Project, typ models.DataType)
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
 	parts = append(parts, typ.Name.PluralRouteName(), "search")
@@ -642,7 +641,7 @@ func buildSearchSomethingFormatArgs(proj *models.Project, typ models.DataType, i
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -658,7 +657,7 @@ func buildSearchSomethingArgs(proj *models.Project, typ models.DataType, index i
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -671,7 +670,7 @@ func buildSearchSomethingArgs(proj *models.Project, typ models.DataType, index i
 	}
 
 	parts = append(parts,
-		jen.Lit(0),
+		jen.Zero(),
 	)
 
 	return parts
@@ -852,7 +851,7 @@ func buildCreateSomethingFormatString(proj *models.Project, typ models.DataType)
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
 	parts = append(parts, typ.Name.PluralRouteName())
@@ -895,7 +894,7 @@ func buildCreateSomethingArgsWithoutIndex(proj *models.Project, typ models.DataT
 
 	for i, dep := range owners {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else if i != len(owners)-1 {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -930,8 +929,8 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
-				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().Lit(0)),
+				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInput", sn).Call(),
+				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().EmptyString()),
 				func() jen.Code {
 					if typ.BelongsToStruct != nil {
 						return jen.ID("exampleInput").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID("s").Dotf("example%sID", typ.BelongsToStruct.Singular())
@@ -945,13 +944,13 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("c"), jen.Underscore()).Assign().ID("buildTestClientWithJSONResponse").Call(
 					jen.ID("t"),
 					jen.ID("spec"),
-					jen.ID("s").Dotf("example%s", sn),
+					jen.AddressOf().Qual(proj.TypesPackage(), "PreWriteResponse").Values(jen.ID("ID").MapAssign().ID("s").Dotf("example%s", sn).Dot("ID")),
 				),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.Qual(constants.MustAssertPkg, "NotNil").Call(
+				jen.Qual(constants.MustAssertPkg, "NotEmpty").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -962,7 +961,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.Qual(constants.AssertionLibrary, "Equal").Call(
 					jen.ID("t"),
-					jen.ID("s").Dotf("example%s", sn),
+					jen.ID("s").Dotf("example%s", sn).Dot("ID"),
 					jen.ID("actual"),
 				),
 			),
@@ -975,8 +974,8 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 			subtestLines := []jen.Code{
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
-				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().Lit(0)),
+				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInput", sn).Call(),
+				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().EmptyString()),
 				func() jen.Code {
 					if typ.BelongsToStruct != nil {
 						return jen.ID("exampleInput").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().ID("s").Dotf("example%sID", typ.BelongsToStruct.Singular())
@@ -989,7 +988,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, i, true)...,
 				),
-				jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
+				jen.Qual(constants.AssertionLibrary, "Empty").Call(jen.ID("t"), jen.ID("actual")),
 				jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.ID("err")),
 			}
 
@@ -1017,7 +1016,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 						jen.ID("nil"),
 					)...,
 				),
-				jen.Qual(constants.AssertionLibrary, "Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Empty").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1034,12 +1033,12 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
-				jen.ID("exampleInput").Assign().AddressOf().ID("types").Dotf("%sCreationInput", sn).Values(),
+				jen.ID("exampleInput").Assign().AddressOf().ID("types").Dotf("%sCreationRequestInput", sn).Values(),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.Qual(constants.AssertionLibrary, "Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Empty").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1055,14 +1054,14 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInputFrom%s", sn, sn).Call(jen.ID("s").Dotf("example%s", sn)),
+				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInputFrom%s", sn, sn).Call(jen.ID("s").Dotf("example%s", sn)),
 				jen.Newline(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.Qual(constants.AssertionLibrary, "Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Empty").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1078,13 +1077,13 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInputFrom%s", sn, sn).Call(jen.ID("s").Dotf("example%s", sn)),
+				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInputFrom%s", sn, sn).Call(jen.ID("s").Dotf("example%s", sn)),
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClientThatWaitsTooLong").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
 				),
-				jen.Qual(constants.AssertionLibrary, "Nil").Call(
+				jen.Qual(constants.AssertionLibrary, "Empty").Call(
 					jen.ID("t"),
 					jen.ID("actual"),
 				),
@@ -1123,7 +1122,7 @@ func buildUpdateSomethingArgsWithoutIndex(proj *models.Project, typ models.DataT
 	owners := proj.FindOwnerTypeChain(typ)
 	for i, dep := range owners {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else if i != len(owners)-1 {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -1327,7 +1326,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
 				jen.Newline(),
 				jen.ID("err").Assign().ID("c").Dotf("Archive%s", sn).Call(
-					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.Zero())...,
+					append(buildGetSomethingArgs(proj, typ, true, false, -1), jen.EmptyString())...,
 				),
 				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
@@ -1386,10 +1385,10 @@ func buildAuditSomethingFormatString(proj *models.Project, typ models.DataType) 
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
-	parts = append(parts, typ.Name.PluralRouteName(), "%d", "audit")
+	parts = append(parts, typ.Name.PluralRouteName(), "%s", "audit")
 
 	return fmt.Sprintf("/%s", path.Join(parts...))
 }
@@ -1399,7 +1398,7 @@ func buildAuditSomethingFormatArgs(proj *models.Project, typ models.DataType, in
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -1419,7 +1418,7 @@ func buildAuditSomethingArgs(proj *models.Project, typ models.DataType, index in
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.ID("s").Dotf("example%sID", dep.Name.Singular()))
 		}
@@ -1428,7 +1427,7 @@ func buildAuditSomethingArgs(proj *models.Project, typ models.DataType, index in
 	if includeSelf {
 		parts = append(parts, jen.ID("s").Dotf("example%s", typ.Name.Singular()).Dot("ID"))
 	} else {
-		parts = append(parts, jen.Zero())
+		parts = append(parts, jen.EmptyString())
 	}
 
 	return parts

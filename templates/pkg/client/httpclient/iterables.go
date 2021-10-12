@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -13,7 +14,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", dep.Name.UnexportedVarName()).IsEqualTo().Zero()).Body(
+			jen.If(jen.IDf("%sID", dep.Name.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
 				jen.Return(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", dep.Name.Singular())), jen.IDf("%sID", dep.Name.UnexportedVarName())),
@@ -24,7 +25,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
 				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -41,7 +42,6 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildSomethingExists(proj, typ)...)
 	code.Add(buildGetSomething(proj, typ)...)
 
 	if typ.SearchEnabled {
@@ -52,7 +52,6 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
 	code.Add(buildArchiveSomething(proj, typ)...)
-	code.Add(buildGetAuditLogForSomething(proj, typ)...)
 
 	return code
 }
@@ -67,9 +66,9 @@ func buildParamsForHTTPClientExistenceMethod(p *models.Project, typ models.DataT
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
 		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
-		params = append(params, jen.List(listParams...).Uint64())
+		params = append(params, jen.List(listParams...).String())
 	} else {
-		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).String())
 	}
 
 	return params
@@ -138,7 +137,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
-					jen.Lit(fmt.Sprintf("checking existence for %s", scn)+" #%d"),
+					jen.Lit(fmt.Sprintf("checking existence for %s", scn)+" %s"),
 					jen.IDf("%sID", uvn),
 				),
 			),
@@ -197,13 +196,13 @@ func buildParamsForHTTPClientRetrievalMethod(p *models.Project, typ models.DataT
 		}
 		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 		if !call {
-			params = append(params, jen.List(listParams...).Uint64())
+			params = append(params, jen.List(listParams...).String())
 		} else {
 			params = append(params, listParams...)
 		}
 	} else {
 		if !call {
-			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
+			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).String())
 		} else {
 			params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 		}
@@ -288,7 +287,7 @@ func buildSearchSomethingParams(proj *models.Project, typ models.DataType) []jen
 		idParams = append(idParams, jen.IDf("%sID", owner.Name.UnexportedVarName()))
 	}
 	if len(idParams) > 0 {
-		params = append(params, jen.List(idParams...).Uint64())
+		params = append(params, jen.List(idParams...).String())
 	}
 
 	params = append(params,
@@ -339,7 +338,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID("ErrEmptyQueryProvided")),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("limit").IsEqualTo().Lit(0)).Body(
+		jen.If(jen.ID("limit").IsEqualTo().Zero()).Body(
 			jen.ID("limit").Equals().Lit(20)),
 		jen.Newline(),
 		jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
@@ -424,7 +423,7 @@ func buildParamsForHTTPClientMethodThatFetchesAList(p *models.Project, typ model
 		for _, pt := range parents {
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
-		params = append(params, jen.List(listParams...).Uint64())
+		params = append(params, jen.List(listParams...).String())
 	}
 
 	params = append(params, jen.ID(constants.FilterVarName).PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
@@ -507,7 +506,7 @@ func buildIDBoilerplateForCreation(proj *models.Project, typ models.DataType, in
 	for i, dep := range owners {
 		if i != len(owners)-1 {
 			lines = append(lines,
-				jen.If(jen.IDf("%sID", dep.Name.UnexportedVarName()).IsEqualTo().Zero()).Body(
+				jen.If(jen.IDf("%sID", dep.Name.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
 					func() jen.Code {
 						if returnVal != nil {
 							return jen.Return(returnVal, jen.ID("ErrInvalidIDProvided"))
@@ -525,7 +524,7 @@ func buildIDBoilerplateForCreation(proj *models.Project, typ models.DataType, in
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
 				func() jen.Code {
 					if returnVal != nil {
 						return jen.Return(returnVal, jen.ID("ErrInvalidIDProvided"))
@@ -556,11 +555,11 @@ func buildParamsForHTTPClientCreateMethod(p *models.Project, typ models.DataType
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
 		if len(listParams) > 0 {
-			params = append(params, jen.List(listParams...).Uint64())
+			params = append(params, jen.List(listParams...).String())
 		}
 	}
 
-	params = append(params, jen.ID("input").PointerTo().Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", typ.Name.Singular())))
+	params = append(params, jen.ID("input").PointerTo().Qual(p.TypesPackage(), fmt.Sprintf("%sCreationRequestInput", typ.Name.Singular())))
 
 	return params
 }
@@ -590,7 +589,6 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
-	uvn := typ.Name.UnexportedVarName()
 
 	lines := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("c").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -605,7 +603,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	lines = append(lines,
 		jen.If(jen.ID("input").IsEqualTo().ID("nil")).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.EmptyString(),
 				jen.ID("ErrNilInputProvided"),
 			),
 		),
@@ -613,7 +611,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.If(jen.ID("err").Assign().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.EmptyString(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -628,7 +626,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.EmptyString(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -638,15 +636,15 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Var().ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.Var().ID("pwr").PointerTo().Qual(proj.TypesPackage(), "PreWriteResponse"),
 		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.AddressOf().ID(uvn),
+			jen.AddressOf().ID("pwr"),
 		),
 			jen.ID("err").Op("!=").ID("nil")).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.EmptyString(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -656,7 +654,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID(uvn), jen.ID("nil")),
+		jen.Return().List(jen.ID("pwr").Dot("ID"), jen.ID("nil")),
 	)
 
 	return []jen.Code{
@@ -664,7 +662,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Newline(),
 		jen.Func().Params(jen.ID("c").PointerTo().ID("Client")).IDf("Create%s", sn).Params(
 			buildParamsForHTTPClientCreateMethod(proj, typ)...,
-		).Params(jen.PointerTo().Qual(proj.TypesPackage(), sn), jen.ID("error")).Body(
+		).Params(jen.String(), jen.ID("error")).Body(
 			lines...,
 		),
 		jen.Newline(),
@@ -683,7 +681,7 @@ func buildParamsForHTTPClientUpdateMethod(p *models.Project, typ models.DataType
 		listParams = listParams[:len(listParams)-1]
 
 		if len(listParams) > 0 {
-			params = append(params, jen.List(listParams...).Uint64())
+			params = append(params, jen.List(listParams...).String())
 		}
 	}
 
@@ -761,7 +759,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
-				jen.Lit(fmt.Sprintf("updating %s", scn)+" #%d"),
+				jen.Lit(fmt.Sprintf("updating %s", scn)+" %s"),
 				jen.ID(uvn).Dot("ID"),
 			)),
 		jen.Newline(),
@@ -790,9 +788,9 @@ func buildParamsForHTTPClientArchiveMethod(p *models.Project, typ models.DataTyp
 			listParams = append(listParams, jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		}
 		listParams = append(listParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
-		params = append(params, jen.List(listParams...).Uint64())
+		params = append(params, jen.List(listParams...).String())
 	} else {
-		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).Uint64())
+		params = append(params, jen.IDf("%sID", typ.Name.UnexportedVarName()).String())
 	}
 
 	return params
@@ -855,7 +853,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
-				jen.Lit(fmt.Sprintf("archiving %s", scn)+" #%d"),
+				jen.Lit(fmt.Sprintf("archiving %s", scn)+" %s"),
 				jen.IDf("%sID", uvn),
 			)),
 		jen.Newline(),
@@ -885,7 +883,7 @@ func buildAuditSomethingParams(proj *models.Project, typ models.DataType) []jen.
 	}
 	idParams = append(idParams, jen.IDf("%sID", typ.Name.UnexportedVarName()))
 
-	params = append(params, jen.List(idParams...).Uint64())
+	params = append(params, jen.List(idParams...).String())
 
 	return params
 }

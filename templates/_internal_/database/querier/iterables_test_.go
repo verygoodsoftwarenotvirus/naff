@@ -2,6 +2,7 @@ package querier
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -473,7 +474,7 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
 			jen.ID("false"),
-			jen.Lit(0),
+			jen.Zero(),
 			jen.IDf("example%s", sn),
 		)),
 		jen.Newline(),
@@ -761,7 +762,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("secondFakeArgs")).Spread()).
 						Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
 						jen.ID("false"),
-						jen.Lit(0),
+						jen.Zero(),
 						jen.IDf("example%sList", sn).Dot(pn).Spread(),
 					)),
 					jen.Newline(),
@@ -1178,8 +1179,8 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.ID("nil")),
 				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, false, -1), false)...),
 				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
-				jen.IDf("example%sList", sn).Dot("Page").Equals().Lit(0),
-				jen.IDf("example%sList", sn).Dot("Limit").Equals().Lit(0),
+				jen.IDf("example%sList", sn).Dot("Page").Equals().Zero(),
+				jen.IDf("example%sList", sn).Dot("Limit").Equals().Zero(),
 				jen.Newline(),
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
@@ -1236,7 +1237,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 					jen.ID("ctx"),
-					jen.Lit(0),
+					jen.Zero(),
 					jen.ID("filter"),
 				),
 				jen.Qual(constants.AssertionLibrary, "Error").Call(
@@ -1412,7 +1413,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
 			jen.ID("false"),
-			jen.Lit(0),
+			jen.Zero(),
 			jen.IDf("example%sList", sn).Dot(pn).Spread(),
 		)),
 		jen.Newline(),
@@ -1479,7 +1480,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					jen.Newline(),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
 						jen.ID("ctx"),
-						jen.Lit(0),
+						jen.Zero(),
 						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
 						jen.ID("defaultLimit"),
 						jen.ID("exampleIDs"),
@@ -1530,7 +1531,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 							}
 							return jen.Null()
 						}(),
-						jen.Lit(0),
+						jen.Zero(),
 						jen.ID("defaultLimit"),
 						jen.ID("exampleIDs"),
 					),
@@ -1605,7 +1606,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
 					jen.ID("false"),
-					jen.Lit(0),
+					jen.Zero(),
 					jen.IDf("example%sList", sn).Dot(pn).Spread(),
 				)),
 				jen.Newline(),
@@ -1618,7 +1619,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 						return jen.Null()
 					}(),
 					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
-					jen.Lit(0),
+					jen.Zero(),
 					jen.ID("exampleIDs"),
 				),
 				jen.Qual(constants.AssertionLibrary, "NoError").Call(
@@ -1934,7 +1935,7 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Create%s", sn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
-						jen.Lit(0),
+						jen.Zero(),
 					),
 					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
@@ -2274,7 +2275,7 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 						jen.ID("c").Dotf("Update%s", sn).Call(
 							jen.ID("ctx"),
 							jen.IDf("example%s", sn),
-							jen.Lit(0),
+							jen.Zero(),
 							jen.ID("nil"),
 						),
 					),
@@ -3061,7 +3062,7 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 					jen.Newline(),
 					jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("GetAuditLogEntriesFor%s", sn).Call(
 						jen.ID("ctx"),
-						jen.Lit(0),
+						jen.Zero(),
 					),
 					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),

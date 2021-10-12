@@ -2,6 +2,7 @@ package integration
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -388,7 +389,7 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 		jen.Commentf("create %s", pcn),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
-		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
 			jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
@@ -507,7 +508,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 			return jen.Null()
 		}(),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
-		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
 			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 			jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s %d"),
@@ -606,7 +607,7 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 			return jen.Null()
 		}(),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
-		jen.For(jen.ID("i").Assign().Lit(0), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
 			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 			jen.IDf("example%sInput", sn).Dot("Name").Equals().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s %d"),

@@ -90,7 +90,7 @@ func buildBuildSomethingExistsQuery(proj *models.Project, typ models.DataType) [
 				buildDBQuerierSingletonQueryMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -109,7 +109,7 @@ func buildBuildGetSomethingQuery(proj *models.Project, typ models.DataType) []je
 				buildDBQuerierSingletonQueryMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -127,7 +127,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAll%sCountQuery", pn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.String()).Body(
 			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(jen.ID("ctx")),
 			jen.Newline(),
-			jen.Return().ID("returnArgs").Dot("String").Call(jen.Lit(0)),
+			jen.Return().ID("returnArgs").Dot("String").Call(jen.Zero()),
 		),
 		jen.Newline(),
 	}
@@ -149,7 +149,7 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 				jen.ID("endID"),
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -211,7 +211,7 @@ func buildBuildGetSomethingsQuery(proj *models.Project, typ models.DataType) []j
 				buildDBQuerierListRetrievalQueryBuildingMethodArgs(proj, typ)...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -259,7 +259,7 @@ func buildBuildGetSomethingsWithIDsQuery(proj *models.Project, typ models.DataTy
 				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("restrictToAccount")),
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -279,7 +279,7 @@ func buildBuildCreateSomethingQuery(proj *models.Project, typ models.DataType) [
 				jen.ID("input"),
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -300,7 +300,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 				jen.IDf("%sID", uvn),
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -320,7 +320,7 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType) [
 				jen.ID("input"),
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}
@@ -375,7 +375,7 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType) 
 				buildDBQuerierArchiveQueryMethodArgs(typ)...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Lit(0)), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
+			jen.Return().List(jen.ID("returnArgs").Dot("String").Call(jen.Zero()), jen.ID("returnArgs").Dot("Get").Call(jen.Lit(1)).Assert(jen.Index().Interface())),
 		),
 		jen.Newline(),
 	}

@@ -319,7 +319,7 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.ID("nil"),
 				jen.Lit(""),
 				jen.Qual(proj.QuerybuildingPackage(), "UsersTableColumns"),
-				jen.Lit(0),
+				jen.Zero(),
 				jen.ID("false"),
 				jen.ID("filter"),
 			),

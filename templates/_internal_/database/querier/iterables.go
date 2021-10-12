@@ -2,6 +2,7 @@ package querier
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -65,7 +66,7 @@ func buildScanSomethingRow(proj *models.Project, typ models.DataType) []jen.Code
 			),
 			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Spread()), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+				jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -104,15 +105,15 @@ func buildScanListOfSomethingRows(proj *models.Project, typ models.DataType) []j
 					jen.ID("includeCounts"),
 				),
 				jen.If(jen.ID("scanErr").DoesNotEqual().ID("nil")).Body(
-					jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.ID("scanErr")),
+					jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("scanErr")),
 				),
 				jen.Newline(),
 				jen.If(jen.ID("includeCounts")).Body(
-					jen.If(jen.ID("filteredCount").IsEqualTo().Lit(0)).Body(
+					jen.If(jen.ID("filteredCount").IsEqualTo().Zero()).Body(
 						jen.ID("filteredCount").Equals().ID("fc"),
 					),
 					jen.Newline(),
-					jen.If(jen.ID("totalCount").IsEqualTo().Lit(0)).Body(
+					jen.If(jen.ID("totalCount").IsEqualTo().Zero()).Body(
 						jen.ID("totalCount").Equals().ID("tc"),
 					)),
 				jen.Newline(),
@@ -126,7 +127,7 @@ func buildScanListOfSomethingRows(proj *models.Project, typ models.DataType) []j
 				jen.ID("ctx"),
 				jen.ID("rows"),
 			), jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+				jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -156,7 +157,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if includeType {
 		lines = append(lines,
-			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Lit(0)).Body(
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().Zero()).Body(
 				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
@@ -167,7 +168,7 @@ func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType b
 
 	if typ.RestrictedToAccountAtSomeLevel(proj) {
 		lines = append(lines,
-			jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
+			jen.If(jen.ID("accountID").IsEqualTo().Zero()).Body(
 				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID")),
@@ -326,7 +327,7 @@ func buildGetAllSomethingCount(proj *models.Project, typ models.DataType) []jen.
 				jen.Litf("fetching count of %s", pcn),
 			),
 			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-				jen.Return().List(jen.Lit(0), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+				jen.Return().List(jen.Zero(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
@@ -558,7 +559,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 	bodyLines = append(bodyLines, buildIDBoilerplateForIDsQuery(proj, typ, jen.Nil())...)
 
 	bodyLines = append(bodyLines,
-		utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(
+		utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().Zero()).Body(
 			jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 		)),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID"))),
@@ -567,7 +568,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 			jen.ID("accountID"),
 		)),
 		jen.Newline(),
-		jen.If(jen.ID("limit").IsEqualTo().Lit(0)).Body(
+		jen.If(jen.ID("limit").IsEqualTo().Zero()).Body(
 			jen.ID("limit").Equals().ID("uint8").Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 		),
 		jen.Newline(),
@@ -684,7 +685,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided")),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("createdByUser").IsEqualTo().Lit(0)).Body(
+			jen.If(jen.ID("createdByUser").IsEqualTo().Zero()).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
 			jen.Newline(),
@@ -797,7 +798,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.Return().ID("ErrNilInputProvided"),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("changedByUser").IsEqualTo().Lit(0)).Body(
+			jen.If(jen.ID("changedByUser").IsEqualTo().Zero()).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
 			jen.Newline(),
@@ -908,17 +909,17 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			jen.Newline(),
 			jen.ID(constants.LoggerVarName).Assign().ID("q").Dot(constants.LoggerVarName),
 			jen.Newline(),
-			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
+			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Zero()).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
 			jen.Newline(),
-			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().Lit(0)).Body(jen.Return().ID("ErrInvalidIDProvided"))),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().Zero()).Body(jen.Return().ID("ErrInvalidIDProvided"))),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID"))),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("accountID"))),
 			jen.Newline(),
-			jen.If(jen.ID("archivedBy").IsEqualTo().Lit(0)).Body(
+			jen.If(jen.ID("archivedBy").IsEqualTo().Zero()).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),
 			),
 			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "RequesterIDKey"), jen.ID("archivedBy")),
@@ -1023,7 +1024,7 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 			jen.Newline(),
 			jen.ID(constants.LoggerVarName).Assign().ID("q").Dot(constants.LoggerVarName),
 			jen.Newline(),
-			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Lit(0)).Body(
+			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Zero()).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided")),
 			),
 			constants.LoggerVar().Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(

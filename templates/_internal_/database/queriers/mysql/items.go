@@ -38,7 +38,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 					jen.Op("&").ID("totalCount"),
 				)),
 			jen.If(jen.ID("err").Op("=").ID("scan").Dot("Scan").Call(jen.ID("targetVars").Op("...")), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.ID("observability").Dot("PrepareError").Call(
+				jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -66,11 +66,11 @@ func itemsDotGo(proj *models.Project) *jen.File {
 					jen.ID("includeCounts"),
 				),
 				jen.If(jen.ID("scanErr").Op("!=").ID("nil")).Body(
-					jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.ID("scanErr"))),
+					jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
 				jen.If(jen.ID("includeCounts")).Body(
-					jen.If(jen.ID("filteredCount").Op("==").Lit(0)).Body(
+					jen.If(jen.ID("filteredCount").Op("==").Zero()).Body(
 						jen.ID("filteredCount").Op("=").ID("fc")),
-					jen.If(jen.ID("totalCount").Op("==").Lit(0)).Body(
+					jen.If(jen.ID("totalCount").Op("==").Zero()).Body(
 						jen.ID("totalCount").Op("=").ID("tc")),
 				),
 				jen.ID("items").Op("=").ID("append").Call(
@@ -82,7 +82,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 				jen.ID("ctx"),
 				jen.ID("rows"),
 			), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Lit(0), jen.Lit(0), jen.ID("observability").Dot("PrepareError").Call(
+				jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -239,7 +239,7 @@ AND items.id = ?
 				jen.Lit("fetching count of items"),
 			),
 			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.Lit(0), jen.ID("observability").Dot("PrepareError").Call(
+				jen.Return().List(jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -360,7 +360,7 @@ AND items.id IN (?,?,?)
 			),
 			jen.If(jen.ID("ids").Op("==").ID("nil")).Body(
 				jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided"))),
-			jen.If(jen.ID("limit").Op("==").Lit(0)).Body(
+			jen.If(jen.ID("limit").Op("==").Zero()).Body(
 				jen.ID("limit").Op("=").ID("uint8").Call(jen.ID("types").Dot("DefaultLimit"))),
 			jen.ID("logger").Op("=").ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("limit").Op(":").ID("limit"), jen.Lit("id_count").Op(":").ID("len").Call(jen.ID("ids")))),
 			jen.ID("query").Op(":=").Qual("fmt", "Sprintf").Call(

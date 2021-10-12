@@ -2,6 +2,7 @@ package mock
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -32,13 +33,11 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	code.Add(buildSomethingExists(proj, typ)...)
 	code.Add(buildGetSomething(proj, typ)...)
 	code.Add(buildGetAllSomethingsCount(proj, typ)...)
-	code.Add(buildGetAllSomethings(proj, typ)...)
 	code.Add(buildGetListOfSomething(proj, typ)...)
 	code.Add(buildGetSomethingsWithIDs(proj, typ)...)
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
 	code.Add(buildArchiveSomething(typ)...)
-	code.Add(buildGetAuditLogEntriesForSomething(proj, typ)...)
 
 	return code
 }
@@ -85,15 +84,14 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildGetAllSomethingsCount(proj *models.Project, typ models.DataType) []jen.Code {
+func buildGetAllSomethingsCount(_ *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
-	pn := n.Plural()
 
 	lines := []jen.Code{
-		jen.Commentf("GetAll%sCount is a mock function.", pn),
+		jen.Commentf("GetTotal%sCount is a mock function.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAll%sCount", pn).Params(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetTotal%sCount", sn).Params(
 			constants.CtxParam(),
 		).Params(jen.Uint64(), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar()),
@@ -168,12 +166,12 @@ func buildGetListOfSomethingFromIDsParams(typ models.DataType) []jen.Code {
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).String())
 	}
 
 	params = append(params,
 		jen.ID("limit").Uint8(),
-		jen.ID("ids").Index().Uint64(),
+		jen.ID("ids").Index().String(),
 	)
 
 	return params
@@ -305,7 +303,7 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 	lines := []jen.Code{
 		jen.Commentf("GetAuditLogEntriesFor%s is a mock function.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAuditLogEntriesFor%s", sn).Params(constants.CtxParam(), jen.IDf("%sID", n.UnexportedVarName()).Uint64()).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"), jen.Error()).Body(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sDataManager", sn)).IDf("GetAuditLogEntriesFor%s", sn).Params(constants.CtxParam(), jen.IDf("%sID", n.UnexportedVarName()).String()).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"), jen.Error()).Body(
 			jen.ID("args").Assign().ID("m").Dot("Called").Call(constants.CtxVar(), jen.IDf("%sID", n.UnexportedVarName())),
 			jen.Return().List(
 				jen.ID("args").Dot("Get").Call(jen.Zero()).Assert(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry")),

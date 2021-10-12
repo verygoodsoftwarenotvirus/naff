@@ -33,13 +33,10 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(proj.InternalRoutingPackage("mock"), "mockrouting")
 	file.ImportAlias(proj.InternalSearchPackage("mock"), "mocksearch")
 	file.ImportAlias(proj.MetricsPackage("mock"), "mockmetrics")
-
 	file.ImportAlias(proj.DatabasePackage("config"), "dbconfig")
 	file.ImportAlias(proj.DatabasePackage("client"), "dbclient")
 	file.ImportAlias(proj.TypesPackage("mock"), "mocktypes")
-
 	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
-
 	file.ImportAlias(proj.APIClientsServicePackage(), "apiclientsservice")
 	file.ImportAlias(proj.AccountsServicePackage(), "accountsservice")
 	file.ImportAlias(proj.AdminServicePackage(), "adminservice")
@@ -62,8 +59,8 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 
 	// databases
 	file.ImportAlias("github.com/lib/pq", "postgres")
-	file.ImportAlias("github.com/mattn/go-sqlite3", "sqlite")
 	file.ImportName("github.com/go-sql-driver/mysql", "mysql")
+	file.ImportName("github.com/segmentio/ksuid", "ksuid")
 
 	file.ImportNames(map[string]string{
 		"context":                            "context",

@@ -12,7 +12,11 @@ import (
 
 func main() {
 	allPackages := []string{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/observability/tracing",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/types/fakes",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/types/mock",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/types",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/client/httpclient/requests",
+		"gitlab.com/verygoodsoftwarenotvirus/todo/pkg/client/httpclient",
 	}
 
 	for _, pkg := range allPackages {

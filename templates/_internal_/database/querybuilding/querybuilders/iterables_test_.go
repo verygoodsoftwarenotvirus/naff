@@ -596,7 +596,7 @@ func buildTestVendor_BuildGetSomethingsWithIDsQuery(proj *models.Project, typ mo
 				}
 				return jen.Null()
 			}(),
-			jen.ID("exampleIDs").Index(jen.Lit(0)),
+			jen.ID("exampleIDs").Index(jen.Zero()),
 			jen.ID("exampleIDs").Index(jen.Lit(1)),
 			jen.ID("exampleIDs").Index(jen.Lit(2)),
 		),

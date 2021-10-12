@@ -14,7 +14,7 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("dummyIDFetcher").Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).Body(
-			jen.Return().Lit(0)),
+			jen.Return().Zero()),
 		jen.Newline(),
 	)
 

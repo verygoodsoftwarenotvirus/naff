@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestBuilder_BuildUserReputationUpdateInputRequest(T *testing.T) {

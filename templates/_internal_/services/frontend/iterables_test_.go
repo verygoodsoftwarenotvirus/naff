@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -350,7 +351,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.Newline(),
 					jen.ID("res").Assign().AddressOf().Qual(proj.TestUtilsPackage(), "MockHTTPResponseWriter").Values(),
 					jen.ID("res").Dot("On").Call(jen.Lit("Write"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(
-						jen.Lit(0),
+						jen.Zero(),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.Newline(),
@@ -377,7 +378,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.Newline(),
 					jen.ID("res").Assign().AddressOf().Qual(proj.TestUtilsPackage(), "MockHTTPResponseWriter").Values(),
 					jen.ID("res").Dot("On").Call(jen.Lit("Write"), jen.Qual(constants.MockPkg, "Anything")).Dot("Return").Call(
-						jen.Lit(0),
+						jen.Zero(),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.Newline(),
@@ -447,7 +448,7 @@ func buildTestServiceParseFormEncodedSomethingCreationInput(proj *models.Project
 					jen.Newline(),
 					jen.ID("badBody").Assign().AddressOf().Qual(proj.TestUtilsPackage(), "MockReadCloser").Values(),
 					jen.ID("badBody").Dot("On").Call(jen.Lit("Read"), jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().ID("byte").Values())).Dot("Return").Call(
-						jen.Lit(0),
+						jen.Zero(),
 						jen.Qual("errors", "New").Call(jen.Lit("blah")),
 					),
 					jen.Newline(),
@@ -1285,7 +1286,7 @@ func buildTestServiceParseFormEncodedSomethingUpdateInput(proj *models.Project, 
 		jen.Newline(),
 		jen.ID("badBody").Assign().AddressOf().Qual(proj.TestUtilsPackage(), "MockReadCloser").Values(),
 		jen.ID("badBody").Dot("On").Call(jen.Lit("Read"), jen.Qual(constants.MockPkg, "IsType").Call(jen.Index().ID("byte").Values())).Dot("Return").Call(
-			jen.Lit(0),
+			jen.Zero(),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.Newline(),

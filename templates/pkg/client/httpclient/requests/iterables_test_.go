@@ -2,8 +2,9 @@ package requests
 
 import (
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"path"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -15,7 +16,6 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTestBuilder_BuildSomethingExistsRequest(proj, typ)...)
 	code.Add(buildTestBuilder_BuildGetSomethingRequest(proj, typ)...)
 	code.Add(buildTestBuilder_BuildGetListOfSomethingsRequest(proj, typ)...)
 
@@ -26,7 +26,6 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildTestBuilder_BuildCreateSomethingRequest(proj, typ)...)
 	code.Add(buildTestBuilder_BuildUpdateSomethingRequest(proj, typ)...)
 	code.Add(buildTestBuilder_BuildArchiveSomethingRequest(proj, typ)...)
-	code.Add(buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj, typ)...)
 
 	return code
 }
@@ -66,7 +65,7 @@ func buildSomethingGeneralArgsWithoutIndex(proj *models.Project, typ models.Data
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -75,7 +74,7 @@ func buildSomethingGeneralArgsWithoutIndex(proj *models.Project, typ models.Data
 	if index != -1 {
 		parts = append(parts, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 	} else {
-		parts = append(parts, jen.Zero())
+		parts = append(parts, jen.EmptyString())
 	}
 
 	return parts
@@ -85,10 +84,10 @@ func buildSomethingSpecificFormatString(proj *models.Project, typ models.DataTyp
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
-	parts = append(parts, typ.Name.PluralRouteName(), "%d")
+	parts = append(parts, typ.Name.PluralRouteName(), "%s")
 
 	return fmt.Sprintf("/%s", path.Join(parts...))
 }
@@ -410,7 +409,7 @@ func buildListOfSomethingFormatString(proj *models.Project, typ models.DataType)
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
 	parts = append(parts, typ.Name.PluralRouteName())
@@ -449,7 +448,7 @@ func buildListOfSomethingArgsWithoutIndex(proj *models.Project, typ models.DataT
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -587,7 +586,7 @@ func buildSearchSomethingFormatString(proj *models.Project, typ models.DataType)
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
 	parts = append(parts, typ.Name.PluralRouteName(), "search")
@@ -600,7 +599,7 @@ func buildSearchSomethingFormatArgs(proj *models.Project, typ models.DataType, i
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -614,7 +613,7 @@ func buildSearchSomethingCallArgs(proj *models.Project, typ models.DataType, ind
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -632,7 +631,7 @@ func buildSearchSomethingRequestBuilderArgs(proj *models.Project, typ models.Dat
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -776,7 +775,7 @@ func buildCreateSomethingFormatString(proj *models.Project, typ models.DataType)
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
 	parts = append(parts, typ.Name.PluralRouteName())
@@ -822,7 +821,7 @@ func buildCreateSomethingArgsWithoutIndex(proj *models.Project, typ models.DataT
 
 	for i, dep := range owners {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else if i != len(owners)-1 {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -857,7 +856,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 	firstSubtest = append(firstSubtest, buildPrerequisiteIDsWithoutIndexOrSelf(proj, typ, -1)...)
 
 	firstSubtest = append(firstSubtest,
-		jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
+		jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInput", sn).Call(),
 		jen.Newline(),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			specArgs...,
@@ -899,7 +898,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 			subtest = append(subtest, buildPrerequisiteIDsWithoutIndexOrSelf(proj, typ, i)...)
 
 			subtest = append(subtest,
-				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
+				jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInput", sn).Call(),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 					buildCreateSomethingArgsWithoutIndex(proj, typ, i, true)...,
@@ -952,7 +951,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 			append(
 				buildCreateSomethingArgsWithoutIndex(proj, typ, -1, false),
-				jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values(),
+				jen.AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationRequestInput", sn)).Values(),
 			)...,
 		),
 		jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
@@ -987,7 +986,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 	invalidBuilderSubtest = append(invalidBuilderSubtest, buildPrerequisiteIDsWithoutIndexOrSelf(proj, typ, -1)...)
 
 	invalidBuilderSubtest = append(invalidBuilderSubtest,
-		jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationInput", sn).Call(),
+		jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sCreationRequestInput", sn).Call(),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildCreate%sRequest", sn).Call(
 			buildCreateSomethingArgsWithoutIndex(proj, typ, -1, true)...,
@@ -1037,7 +1036,7 @@ func buildUpdateSomethingArgsWithoutIndex(proj *models.Project, typ models.DataT
 	owners := proj.FindOwnerTypeChain(typ)
 	for i, dep := range owners {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else if i != len(owners)-1 {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -1346,10 +1345,10 @@ func buildAuditSomethingFormatString(proj *models.Project, typ models.DataType) 
 	parts := []string{"api", "v1"}
 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		parts = append(parts, dep.Name.PluralRouteName(), "%d")
+		parts = append(parts, dep.Name.PluralRouteName(), "%s")
 	}
 
-	parts = append(parts, typ.Name.PluralRouteName(), "%d", "audit")
+	parts = append(parts, typ.Name.PluralRouteName(), "%s", "audit")
 
 	return fmt.Sprintf("/%s", path.Join(parts...))
 }
@@ -1361,7 +1360,7 @@ func buildAuditSomethingRequestBuilderArgs(proj *models.Project, typ models.Data
 
 	for i, dep := range proj.FindOwnerTypeChain(typ) {
 		if i == index {
-			parts = append(parts, jen.Zero())
+			parts = append(parts, jen.EmptyString())
 		} else {
 			parts = append(parts, jen.IDf("example%sID", dep.Name.Singular()))
 		}
@@ -1370,7 +1369,7 @@ func buildAuditSomethingRequestBuilderArgs(proj *models.Project, typ models.Data
 	if includeSelf {
 		parts = append(parts, jen.IDf("example%s", typ.Name.Singular()).Dot("ID"))
 	} else {
-		parts = append(parts, jen.Zero())
+		parts = append(parts, jen.EmptyString())
 	}
 
 	return parts

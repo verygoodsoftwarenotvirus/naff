@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	mockencoding {{ projectImport "internal/encoding/mock" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func Test_setSignatureForRequest(T *testing.T) {

@@ -1,9 +1,9 @@
 package fakes
 
 import (
-	{{ projectImport "pkg/types" }}
-
 	fake "github.com/brianvoe/gofakeit/v5"
+
+	{{ projectImport "pkg/types" }}
 )
 
 // BuildFleshedOutQueryFilter builds a fully fleshed out QueryFilter.

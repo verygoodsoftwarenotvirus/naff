@@ -104,7 +104,7 @@ func (typ DataType) buildGetSomethingParams(p *Project, includeAccountParam bool
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).String())
 	}
 
 	return params
@@ -123,9 +123,7 @@ func (typ DataType) buildArchiveSomethingParams() []jen.Code {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
-	lp = append(lp, jen.ID("archivedBy"))
-
-	params = append(params, jen.List(lp...).ID("uint64"))
+	params = append(params, jen.List(lp...).String())
 
 	return params
 }
@@ -182,7 +180,7 @@ func (typ DataType) BuildDBQuerierArchiveQueryMethodParams() []jen.Code {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
-	params = append(params, jen.List(lp...).ID("uint64"))
+	params = append(params, jen.List(lp...).String())
 
 	return params
 }
@@ -488,8 +486,6 @@ func (typ DataType) buildArchiveSomethingArgs() []jen.Code {
 		params = append(params, jen.ID("accountID"))
 	}
 
-	params = append(params, jen.ID("archivedBy"))
-
 	return params
 }
 
@@ -768,7 +764,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).String())
 	}
 
 	params = append(params,
@@ -791,7 +787,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsQueryBuilderParams(_ *Project)
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).String())
 	}
 
 	params = append(params,
@@ -859,7 +855,7 @@ func (typ DataType) buildGetListOfSomethingParams(p *Project, isModelsPackage bo
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).String())
 	}
 
 	if !isModelsPackage {
@@ -900,7 +896,7 @@ func (typ DataType) BuildDBQuerierListRetrievalQueryBuildingMethodParams(p *Proj
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).String())
 	}
 
 	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").Op("*").Qual(p.TypesPackage(), "QueryFilter"))
@@ -915,12 +911,10 @@ func (typ DataType) buildCreateSomethingParams(p *Project, isModelsPackage bool)
 
 	sn := typ.Name.Singular()
 	if isModelsPackage {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").IDf("%sCreationInput", sn))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").IDf("%sDatabaseCreationInput", sn))
 	} else {
-		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)))
+		params = append(params, jen.ID(creationObjectVarName).Op("*").Qual(p.TypesPackage(), fmt.Sprintf("%sDatabaseCreationInput", sn)))
 	}
-
-	params = append(params, jen.ID("createdByUser").Uint64())
 
 	return params
 }
@@ -955,7 +949,7 @@ func (typ DataType) BuildDBQuerierCreationQueryBuildingMethodParams(p *Project, 
 }
 
 func (typ DataType) buildCreateSomethingArgs() []jen.Code {
-	params := []jen.Code{ctxVar(), jen.ID(creationObjectVarName), jen.ID("createdByUser")}
+	params := []jen.Code{ctxVar(), jen.ID(creationObjectVarName)}
 
 	return params
 }
@@ -1042,15 +1036,9 @@ func (typ DataType) buildUpdateSomethingParams(p *Project, updatedVarName string
 
 	sn := typ.Name.Singular()
 	if isModelsPackage {
-		params = append(params,
-			jen.ID(updatedVarName).Op("*").ID(sn),
-			jen.ID("changedByUser").Uint64(), jen.ID("changes").Index().PointerTo().ID("FieldChangeSummary"),
-		)
+		params = append(params, jen.ID(updatedVarName).Op("*").ID(sn))
 	} else {
-		params = append(params,
-			jen.ID(updatedVarName).Op("*").Qual(p.TypesPackage(), sn),
-			jen.ID("changedByUser").Uint64(), jen.ID("changes").Index().PointerTo().Qual(p.TypesPackage(), "FieldChangeSummary"),
-		)
+		params = append(params, jen.ID(updatedVarName).Op("*").Qual(p.TypesPackage(), sn))
 	}
 
 	return params
@@ -1101,7 +1089,7 @@ func (typ DataType) buildUpdateSomethingArgsWithExampleVars(p *Project, updatedV
 }
 
 func (typ DataType) buildUpdateSomethingArgs(updatedVarName string) []jen.Code {
-	params := []jen.Code{ctxVar(), jen.ID(updatedVarName), jen.ID("changedByUser"), jen.ID("changes")}
+	params := []jen.Code{ctxVar(), jen.ID(updatedVarName)}
 
 	return params
 }

@@ -1,13 +1,13 @@
-package mock
+package mocktypes
 
 import (
 	"context"
 	"net/http"
 
+	"github.com/stretchr/testify/mock"
+
 	{{ projectImport "internal/authorization" }}
 	{{ projectImport "pkg/types" }}
-
-	"github.com/stretchr/testify/mock"
 )
 
 var _ types.AuthService = (*AuthService)(nil)

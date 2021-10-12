@@ -2,6 +2,7 @@ package fakes
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
@@ -21,8 +22,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	fakeFields := []jen.Code{
-		jen.ID("ID").MapAssign().Uint64().Call(jen.Qual(constants.FakeLibrary, "Uint32").Call()),
-		jen.ID("ExternalID").MapAssign().Qual(constants.FakeLibrary, "UUID").Call(),
+		jen.ID("ID").MapAssign().Qual("github.com/segmentio/ksuid", "New").Call().Dot("String").Call(),
 	}
 
 	for _, field := range typ.Fields {
@@ -38,7 +38,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	fakeFields = append(fakeFields,
 		func() jen.Code {
 			if typ.BelongsToAccount {
-				return jen.ID("BelongsToAccount").MapAssign().Qual(constants.FakeLibrary, "Uint64").Call()
+				return jen.ID("BelongsToAccount").MapAssign().Qual(constants.FakeLibrary, "UUID").Call()
 			}
 			return jen.Null()
 		}(),
@@ -58,7 +58,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 		jen.Func().IDf("BuildFake%sList", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Body(
 			jen.Var().ID("examples").Index().PointerTo().Qual(proj.TypesPackage(), sn),
-			jen.For(jen.ID("i").Assign().Lit(0),
+			jen.For(jen.ID("i").Assign().Zero(),
 				jen.ID("i").Op("<").ID("exampleQuantity"),
 				jen.ID("i").Op("++")).Body(
 				jen.ID("examples").Equals().ID("append").Call(
@@ -93,34 +93,36 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	code.Add(
-		jen.Commentf("BuildFake%sUpdateInput builds a faked %sUpdateInput from %s.", sn, sn, scnwp),
+		jen.Commentf("BuildFake%sUpdateRequestInput builds a faked %sUpdateRequestInput from %s.", sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sUpdateInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
+		jen.Func().IDf("BuildFake%sUpdateRequestInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn))).Body(
 			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
-			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(updateVals...),
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Valuesln(updateVals...),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Commentf("BuildFake%sUpdateInputFrom%s builds a faked %sUpdateInput from %s.", sn, sn, sn, scnwp),
+		jen.Commentf("BuildFake%sUpdateRequestInputFrom%s builds a faked %sUpdateRequestInput from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sUpdateInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
-			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(updateVals...)),
+		jen.Func().IDf("BuildFake%sUpdateRequestInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Valuesln(updateVals...)),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Commentf("BuildFake%sCreationInput builds a faked %sCreationInput.", sn, sn),
+		jen.Commentf("BuildFake%sCreationRequestInput builds a faked %sCreationRequestInput.", sn, sn),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sCreationInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Body(
+		jen.Func().IDf("BuildFake%sCreationRequestInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationRequestInput", sn))).Body(
 			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
-			jen.Return().IDf("BuildFake%sCreationInputFrom%s", sn, sn).Call(jen.ID(uvn)),
+			jen.Return().IDf("BuildFake%sCreationRequestInputFrom%s", sn, sn).Call(jen.ID(uvn)),
 		),
 		jen.Newline(),
 	)
 
-	creationVals := []jen.Code{}
+	creationVals := []jen.Code{
+		jen.ID("ID").MapAssign().ID(uvn).Dot("ID"),
+	}
 	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
 			creationVals = append(creationVals, jen.ID(field.Name.Singular()).MapAssign().ID(uvn).Dot(field.Name.Singular()))
@@ -136,10 +138,28 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	code.Add(
-		jen.Commentf("BuildFake%sCreationInputFrom%s builds a faked %sCreationInput from %s.", sn, sn, sn, scnwp),
+		jen.Commentf("BuildFake%sCreationRequestInputFrom%s builds a faked %sCreationRequestInput from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("BuildFake%sCreationInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Body(
-			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Valuesln(creationVals...)),
+		jen.Func().IDf("BuildFake%sCreationRequestInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationRequestInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationRequestInput", sn)).Valuesln(creationVals...)),
+		jen.Newline(),
+	)
+
+	code.Add(
+		jen.Commentf("BuildFake%sDatabaseCreationInput builds a faked %sDatabaseCreationInput.", sn, sn),
+		jen.Newline(),
+		jen.Func().IDf("BuildFake%sDatabaseCreationInput", sn).Params().Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sDatabaseCreationInput", sn))).Body(
+			jen.ID(uvn).Assign().IDf("BuildFake%s", sn).Call(),
+			jen.Return().IDf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn).Call(jen.ID(uvn)),
+		),
+		jen.Newline(),
+	)
+
+	code.Add(
+		jen.Commentf("BuildFake%sDatabaseCreationInputFrom%s builds a faked %sDatabaseCreationInput from %s.", sn, sn, sn, scnwp),
+		jen.Newline(),
+		jen.Func().IDf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn).Params(jen.ID(uvn).PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sDatabaseCreationInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sDatabaseCreationInput", sn)).Valuesln(creationVals...)),
 		jen.Newline(),
 	)
 

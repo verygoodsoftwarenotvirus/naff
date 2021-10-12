@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strconv"
 
 	{{ projectImport "internal/encoding" }}
 	{{ projectImport "internal/observability" }}
@@ -17,7 +16,7 @@ import (
 )
 
 const (
-	clientName = "{{ route_fmt projectName }}_client_v1"
+	clientName = "{{ lowercase projectName }}_client_v1"
 )
 
 // Builder is a client for interacting with v1 of our HTTP API.
@@ -28,10 +27,6 @@ type Builder struct {
 
 	encoder  encoding.ClientEncoder
 	panicker panicking.Panicker
-}
-
-func id(x uint64) string {
-	return strconv.FormatUint(x, 10)
 }
 
 // NewBuilder builds a new API client for us.

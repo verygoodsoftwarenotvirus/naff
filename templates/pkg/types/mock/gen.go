@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	packageName = "mock"
+	packageName = "mocktypes"
 
 	basePackagePath = "pkg/types/mock"
 )
