@@ -21,13 +21,11 @@ const (
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{
-		"external_id_generator.go":      externalIDGeneratorDotGo(proj),
-		"mock_external_id_generator.go": mockExternalIDGeneratorDotGo(proj),
-		"query_builders.go":             queryBuildersDotGo(proj),
-		"query_constants.go":            queryConstantsDotGo(proj),
-		"query_filter_test.go":          queryFilterTestDotGo(proj),
-		"query_filters.go":              queryFiltersDotGo(proj),
-		"column_lists.go":               columnListsDotGo(proj),
+		"query_builders.go":    queryBuildersDotGo(proj),
+		"query_constants.go":   queryConstantsDotGo(proj),
+		"query_filter_test.go": queryFilterTestDotGo(proj),
+		"query_filters.go":     queryFiltersDotGo(proj),
+		"column_lists.go":      columnListsDotGo(proj),
 	}
 
 	for path, file := range files {

@@ -2,8 +2,9 @@ package types
 
 import (
 	"fmt"
-	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"strings"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
 	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -16,18 +17,21 @@ func iterableDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(buildSomethingConstantDefinitions(proj, typ)...)
+	code.Add(buildInitFunc(typ)...)
 	code.Add(buildSomethingTypeDefinitions(proj, typ)...)
 	code.Add(buildSomethingUpdate(typ)...)
 	code.Add(buildSomethingCreationInputValidateWithContext(typ)...)
+	code.Add(buildSomethingDatabaseCreationInputValidateWithContext(typ)...)
+	code.Add(buildSomethingDatabaseCreationInputFromSomething(typ)...)
 	code.Add(buildSomethingUpdateInputValidateWithContext(typ)...)
 
 	return code
 }
 
-func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType) []jen.Code {
+func buildSomethingConstantDefinitions(_ *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
-	pn := n.Plural()
-	pcn := n.PluralCommonName()
+	sn := n.Singular()
+	scnwp := n.SingularCommonNameWithPrefix()
 
 	lines := []jen.Code{}
 
@@ -35,11 +39,27 @@ func buildSomethingConstantDefinitions(proj *models.Project, typ models.DataType
 		lines = append(
 			lines,
 			jen.Const().Defs(
-				jen.Commentf("%sSearchIndexName is the name of the index used to search through %s.", pn, pcn),
-				jen.IDf("%sSearchIndexName", pn).Qual(proj.InternalSearchPackage(), "IndexName").Equals().Lit(typ.Name.PluralRouteName()),
+				jen.Commentf("%sDataType indicates an event is related to %s.", sn, scnwp),
+				jen.IDf("%sDataType", sn).ID("dataType").Equals().Lit(typ.Name.RouteName()),
 			),
 			jen.Newline(),
 		)
+	}
+
+	return lines
+}
+
+func buildInitFunc(typ models.DataType) []jen.Code {
+	n := typ.Name
+	sn := n.Singular()
+
+	lines := []jen.Code{
+		jen.Func().ID("init").Params().Body(
+			jen.Qual("encoding/gob", "Register").Call(jen.New(jen.ID(sn))),
+			jen.Qual("encoding/gob", "Register").Call(jen.New(jen.IDf("%sList", sn))),
+			jen.Qual("encoding/gob", "Register").Call(jen.New(jen.IDf("%sCreationRequestInput", sn))),
+			jen.Qual("encoding/gob", "Register").Call(jen.New(jen.IDf("%sUpdateRequestInput", sn))),
+		),
 	}
 
 	return lines
@@ -59,6 +79,8 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 		jen.Newline(),
 		jen.Commentf("%sList represents a list of %s.", sn, pcn),
 		jen.IDf("%sList", sn).Struct(
+			jen.Underscore().Struct(),
+			jen.Newline(),
 			jen.ID("Pagination"),
 			jen.ID(pn).Index().PointerTo().ID(sn).Tag(jsonTag(puvn)),
 		),
@@ -66,11 +88,14 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 
 	lines = append(lines,
 		jen.Newline(),
-		jen.Commentf("%sCreationInput represents what a user could set as input for creating %s.", sn, pcn),
-		jen.IDf("%sCreationInput", sn).Struct(buildCreateModelStructFields(typ)...),
+		jen.Commentf("%sCreationRequestInput represents what a user could set as input for creating %s.", sn, pcn),
+		jen.IDf("%sCreationRequestInput", sn).Struct(buildCreateModelStructFields(typ)...),
 		jen.Newline(),
-		jen.Commentf("%sUpdateInput represents what a user could set as input for updating %s.", sn, pcn),
-		jen.IDf("%sUpdateInput", sn).Struct(buildUpdateModelStructFields(typ)...),
+		jen.Commentf("%sDatabaseCreationInput represents what a user could set as input for creating %s.", sn, pcn),
+		jen.IDf("%sDatabaseCreationInput", sn).Struct(buildDatabaseCreationStructFields(typ)...),
+		jen.Newline(),
+		jen.Commentf("%sUpdateRequestInput represents what a user could set as input for updating %s.", sn, pcn),
+		jen.IDf("%sUpdateRequestInput", sn).Struct(buildUpdateModelStructFields(typ)...),
 		jen.Newline(),
 		jen.Commentf("%sDataManager describes a structure capable of storing %s permanently.", sn, pcn),
 		jen.IDf("%sDataManager", sn).Interface(buildInterfaceMethods(proj, typ)...),
@@ -86,19 +111,11 @@ func buildSomethingTypeDefinitions(proj *models.Project, typ models.DataType) []
 				}
 				return jen.Null()
 			}(),
-			jen.ID("AuditEntryHandler").Params(
-				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-			),
 			jen.ID("ListHandler").Params(
 				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			),
 			jen.ID("CreateHandler").Params(
-				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
-				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
-			),
-			jen.ID("ExistenceHandler").Params(
 				jen.ID(constants.ResponseVarName).Qual("net/http", "ResponseWriter"),
 				jen.ID(constants.RequestVarName).PointerTo().Qual("net/http", "Request"),
 			),
@@ -141,19 +158,11 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 	sn := n.Singular()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	updateLines := []jen.Code{
-		jen.Var().ID("out").Index().PointerTo().ID("FieldChangeSummary"),
-		jen.Newline(),
-	}
-	for _, field := range typ.Fields {
+	updateLines := []jen.Code{}
+	for i, field := range typ.Fields {
 		fsn := field.Name.Singular()
 
 		conditionBodyLines := []jen.Code{
-			jen.ID("out").Equals().ID("append").Call(
-				jen.ID("out"),
-				jen.AddressOf().ID("FieldChangeSummary").Valuesln(jen.ID("FieldName").Op(":").Lit(fsn), jen.ID("OldValue").Op(":").ID("x").Dot(fsn), jen.ID("NewValue").Op(":").ID("input").Dot(fsn)),
-			),
-			jen.Newline(),
 			jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 		}
 
@@ -164,14 +173,14 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
 						conditionBodyLines...,
 					),
-					jen.Newline(),
+					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			} else {
 				updateLines = append(updateLines,
 					jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
 						conditionBodyLines...,
 					),
-					jen.Newline(),
+					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			}
 		case "bool":
@@ -180,14 +189,14 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
 						conditionBodyLines...,
 					),
-					jen.Newline(),
+					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			} else {
 				updateLines = append(updateLines,
 					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
 						conditionBodyLines...,
 					),
-					jen.Newline(),
+					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			}
 		case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
@@ -197,7 +206,7 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().Zero().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
 						conditionBodyLines...,
 					),
-					jen.Newline(),
+					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			} else {
 				updateLines = append(
@@ -205,25 +214,20 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 					jen.If(jen.ID("input").Dot(fsn).Op("!=").Zero().Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
 						conditionBodyLines...,
 					),
-					jen.Newline(),
+					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			}
 		default:
 			panic(fmt.Sprintf("unknown type! %q", field.Type))
 		}
 	}
-	updateLines = append(updateLines,
-		jen.Newline(),
-		jen.Return().ID("out"),
-	)
 
 	lines := []jen.Code{
-		jen.Commentf("Update merges an %sUpdateInput with %s.", sn, scnwp),
+		jen.Commentf("Update merges an %sUpdateRequestInput with %s.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateInput", sn)).Params(jen.Index().PointerTo().ID("FieldChangeSummary")).Body(
+		jen.Func().Params(jen.ID("x").PointerTo().ID(sn)).ID("Update").Params(jen.ID("input").PointerTo().IDf("%sUpdateRequestInput", sn)).Params().Body(
 			updateLines...,
 		),
-		jen.Newline(),
 	}
 
 	return lines
@@ -231,8 +235,9 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 
 func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	out := []jen.Code{
-		jen.ID("ID").Uint64().Tag(jsonTag("id")),
-		jen.ID("ExternalID").String().Tag(jsonTag("externalID")),
+		jen.Underscore().Struct(),
+		jen.Newline(),
+		jen.ID("ID").String().Tag(jsonTag("id")),
 	}
 
 	for _, field := range typ.Fields {
@@ -250,17 +255,20 @@ func buildBaseModelStructFields(typ models.DataType) []jen.Code {
 	)
 
 	if typ.BelongsToAccount {
-		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("belongsToAccount")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).String().Tag(jsonTag("belongsToAccount")))
 	}
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).String().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
 	}
 
 	return out
 }
 
 func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
-	var out []jen.Code
+	out := []jen.Code{
+		jen.Underscore().Struct(),
+		jen.Newline(),
+	}
 
 	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
@@ -273,17 +281,21 @@ func buildUpdateModelStructFields(typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToAccount {
-		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).String().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).String().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
 	}
 
 	return out
 }
 
 func buildCreateModelStructFields(typ models.DataType) []jen.Code {
-	var out []jen.Code
+	out := []jen.Code{
+		jen.Underscore().Struct(),
+		jen.Newline(),
+		jen.ID("ID").String().Tag(jsonTag("")),
+	}
 
 	for _, field := range typ.Fields {
 		if field.ValidForCreationInput {
@@ -296,10 +308,37 @@ func buildCreateModelStructFields(typ models.DataType) []jen.Code {
 	}
 
 	if typ.BelongsToStruct != nil {
-		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).Uint64().Tag(jsonTag("-")))
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).String().Tag(jsonTag("-")))
 	}
 	if typ.BelongsToAccount {
-		out = append(out, jen.ID(constants.UserOwnershipFieldName).Uint64().Tag(jsonTag("-")))
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).String().Tag(jsonTag("-")))
+	}
+
+	return out
+}
+
+func buildDatabaseCreationStructFields(typ models.DataType) []jen.Code {
+	out := []jen.Code{
+		jen.Underscore().Struct(),
+		jen.Newline(),
+		jen.ID("ID").String().Tag(jsonTag("id")),
+	}
+
+	for _, field := range typ.Fields {
+		if field.ValidForCreationInput {
+			if field.IsPointer {
+				out = append(out, jen.ID(field.Name.Singular()).PointerTo().ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
+			} else {
+				out = append(out, jen.ID(field.Name.Singular()).ID(field.Type).Tag(jsonTag(field.Name.UnexportedVarName())))
+			}
+		}
+	}
+
+	if typ.BelongsToStruct != nil {
+		out = append(out, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).String().Tag(jsonTag(fmt.Sprintf("belongsTo%s", typ.BelongsToStruct.Singular()))))
+	}
+	if typ.BelongsToAccount {
+		out = append(out, jen.ID(constants.UserOwnershipFieldName).String().Tag(jsonTag("belongsToAccount")))
 	}
 
 	return out
@@ -315,12 +354,7 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 	interfaceMethods := []jen.Code{
 		jen.IDf("%sExists", sn).Params(typ.BuildInterfaceDefinitionExistenceMethodParams(proj)...).Params(jen.Bool(), jen.Error()),
 		jen.IDf("Get%s", sn).Params(typ.BuildInterfaceDefinitionRetrievalMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
-		jen.IDf("GetAll%sCount", pn).Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
-		jen.IDf("GetAll%s", pn).Params(
-			constants.CtxParam(),
-			jen.ID("resultChannel").Chan().Index().PointerTo().ID(sn),
-			jen.ID("bucketSize").Uint16(),
-		).Params(jen.Error()),
+		jen.IDf("GetTotal%sCount", sn).Params(constants.CtxParam()).Params(jen.Uint64(), jen.Error()),
 		jen.IDf("Get%s", pn).Params(typ.BuildInterfaceDefinitionListRetrievalMethodParams(proj)...).Params(jen.PointerTo().IDf("%sList", sn), jen.Error()),
 		jen.IDf("Get%sWithIDs", pn).Params(getWithIDsParams...).Params(jen.Index().PointerTo().ID(sn), jen.Error()),
 	}
@@ -329,7 +363,6 @@ func buildInterfaceMethods(proj *models.Project, typ models.DataType) []jen.Code
 		jen.IDf("Create%s", sn).Params(typ.BuildInterfaceDefinitionCreationMethodParams(proj)...).Params(jen.PointerTo().ID(sn), jen.Error()),
 		jen.IDf("Update%s", sn).Params(typ.BuildInterfaceDefinitionUpdateMethodParams(proj, "updated")...).Params(jen.Error()),
 		jen.IDf("Archive%s", sn).Params(typ.BuildInterfaceDefinitionArchiveMethodParams()...).Params(jen.Error()),
-		jen.IDf("GetAuditLogEntriesFor%s", sn).Params(typ.BuildInterfaceDefinitionAuditLogEntryRetrievalMethodParams()...).Params(jen.Index().PointerTo().ID("AuditLogEntry"), jen.Error()),
 	)
 
 	return interfaceMethods
@@ -418,12 +451,12 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 	}
 
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationRequestInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Newline(),
-		jen.Commentf("ValidateWithContext validates a %sCreationInput.", sn),
+		jen.Commentf("ValidateWithContext validates a %sCreationRequestInput.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sCreationInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sCreationRequestInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
 				validationFields...,
 			)),
@@ -431,6 +464,75 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 	}
 
 	return lines
+}
+
+func buildSomethingDatabaseCreationInputValidateWithContext(typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	validationFields := []jen.Code{
+		jen.ID("ctx"),
+		jen.ID("x"),
+		jen.Qual(constants.ValidationLibrary, "Field").Call(
+			jen.AddressOf().ID("x").Dot("ID"),
+			jen.Qual(constants.ValidationLibrary, "Required"),
+		),
+	}
+	for _, field := range typ.Fields {
+		if field.Type == "bool" {
+			continue
+		}
+		validationFields = append(validationFields,
+			jen.Qual(constants.ValidationLibrary, "Field").Call(
+				jen.AddressOf().ID("x").Dot(field.Name.Singular()),
+				jen.Qual(constants.ValidationLibrary, "Required"),
+			),
+		)
+	}
+
+	if typ.BelongsToAccount {
+		validationFields = append(validationFields, jen.Qual(constants.ValidationLibrary, "Field").Call(jen.AddressOf().ID("x").Dot(constants.AccountOwnershipFieldName), jen.Qual(constants.ValidationLibrary, "Required")))
+	}
+
+	lines := []jen.Code{
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sDatabaseCreationInput", sn)).Call(jen.ID("nil")),
+		jen.Newline(),
+		jen.Newline(),
+		jen.Commentf("ValidateWithContext validates a %sDatabaseCreationInput.", sn),
+		jen.Newline(),
+		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sDatabaseCreationInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
+				validationFields...,
+			)),
+		jen.Newline(),
+	}
+
+	return lines
+}
+
+func buildSomethingDatabaseCreationInputFromSomething(typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+
+	lines := []jen.Code{
+		jen.ID("x").Assign().AddressOf().IDf("%sDatabaseCreationInput", sn).Values(),
+		jen.Newline(),
+	}
+
+	for _, field := range typ.Fields {
+		lines = append(lines, jen.ID("x").Dot(field.Name.Singular()).Equals().ID("input").Dot(field.Name.Singular()))
+	}
+
+	lines = append(lines,
+		jen.Newline(),
+		jen.Return(jen.ID("x")),
+	)
+
+	return []jen.Code{
+		jen.Commentf("%sDatabaseCreationInputFrom%sCreationInput creates a DatabaseCreationInput from a CreationInput.", sn, sn),
+		jen.Newline(),
+		jen.Func().IDf("%sDatabaseCreationInputFrom%sCreationInput", sn, sn).Params(jen.ID("input").PointerTo().IDf("%sCreationRequestInput", sn)).Params(jen.PointerTo().IDf("%sDatabaseCreationInput", sn)).Body(
+			lines...,
+		),
+	}
 }
 
 func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Code {
@@ -453,12 +555,12 @@ func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Cod
 	}
 
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateRequestInput", sn)).Call(jen.ID("nil")),
 		jen.Newline(),
 		jen.Newline(),
-		jen.Commentf("ValidateWithContext validates a %sUpdateInput.", sn),
+		jen.Commentf("ValidateWithContext validates a %sUpdateRequestInput.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sUpdateInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("x").PointerTo().IDf("%sUpdateRequestInput", sn)).ID("ValidateWithContext").Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.ID("error")).Body(
 			jen.Return().Qual(constants.ValidationLibrary, "ValidateStructWithContext").Callln(
 				validationFields...,
 			)),

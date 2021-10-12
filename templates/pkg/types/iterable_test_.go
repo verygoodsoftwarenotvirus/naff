@@ -50,61 +50,20 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		)
 	}
 
-	code.Add(
-		jen.Func().IDf("Test%s_Update", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-					append([]jen.Code{
-						jen.ID("t").Dot("Parallel").Call(),
-						jen.Newline(),
-						jen.ID("x").Assign().AddressOf().ID(sn).Values(),
-						jen.Newline(),
-						jen.ID("updated").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(updateCols...),
-						jen.Newline(),
-						jen.ID("expected").Assign().Index().PointerTo().ID("FieldChangeSummary").Valuesln(
-							fieldChangeSummaries...,
-						),
-						jen.ID("actual").Assign().ID("x").Dot("Update").Call(jen.ID("updated")),
-						jen.Newline(),
-						jen.List(jen.ID("expectedJSONBytes"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("expected")),
-						jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.Err()),
-						jen.Newline(),
-						jen.List(jen.ID("actualJSONBytes"), jen.Err()).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("actual")),
-						jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.Err()),
-						jen.Newline(),
-						jen.List(jen.ID("expectedJSON"), jen.ID("actualJSON")).Assign().List(jen.String().Call(jen.ID("expectedJSONBytes")), jen.String().Call(jen.ID("actualJSONBytes"))),
-						jen.Newline(),
-						jen.Qual(constants.AssertionLibrary, "Equal").Call(
-							jen.ID("t"),
-							jen.ID("expectedJSON"),
-							jen.ID("actualJSON"),
-						),
-						jen.Newline(),
-					},
-						assertions...,
-					)...,
-				),
-			),
-		),
-		jen.Newline(),
-	)
-
 	fakeFields := []jen.Code{}
 	for _, field := range typ.Fields {
 		fakeFields = append(fakeFields, jen.ID(field.Name.Singular()).MapAssign().Add(utils.FakeFuncForType(field.Type, field.IsPointer)()))
 	}
 
 	code.Add(
-		jen.Func().IDf("Test%sCreationInput_Validate", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sCreationRequestInput_Validate", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("x").Assign().AddressOf().IDf("%sCreationInput", sn).Valuesln(
+					jen.ID("x").Assign().AddressOf().IDf("%sCreationRequestInput", sn).Valuesln(
 						fakeFields...,
 					),
 					jen.Newline(),
@@ -121,7 +80,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("x").Assign().AddressOf().IDf("%sCreationInput", sn).Values(),
+					jen.ID("x").Assign().AddressOf().IDf("%sCreationRequestInput", sn).Values(),
 					jen.Newline(),
 					jen.ID("actual").Assign().ID("x").Dot("ValidateWithContext").Call(jen.Qual("context", "Background").Call()),
 					jen.Qual(constants.AssertionLibrary, "Error").Call(
@@ -135,7 +94,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	)
 
 	code.Add(
-		jen.Func().IDf("Test%sUpdateInput_Validate", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
+		jen.Func().IDf("Test%sUpdateRequestInput_Validate", sn).Params(jen.ID("T").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -143,7 +102,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("x").Assign().AddressOf().IDf("%sUpdateInput", sn).Valuesln(
+					jen.ID("x").Assign().AddressOf().IDf("%sUpdateRequestInput", sn).Valuesln(
 						fakeFields...,
 					),
 					jen.Newline(),
@@ -160,7 +119,7 @@ func iterableTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("x").Assign().AddressOf().IDf("%sUpdateInput", sn).Values(),
+					jen.ID("x").Assign().AddressOf().IDf("%sUpdateRequestInput", sn).Values(),
 					jen.Newline(),
 					jen.ID("actual").Assign().ID("x").Dot("ValidateWithContext").Call(jen.Qual("context", "Background").Call()),
 					jen.Qual(constants.AssertionLibrary, "Error").Call(

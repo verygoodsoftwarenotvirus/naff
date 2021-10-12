@@ -74,7 +74,7 @@ $(EXAMPLE_OUTPUT_DIR):
 
 .PHONY: clean_todo
 clean_todo: clean_example_output $(EXAMPLE_OUTPUT_DIR)
-	PROJECT=todo OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) GOMAXPROCS=4 go run $(EXAMPLE_APP)
+	PROJECT=todo OUTPUT_DIR=$(EXAMPLE_OUTPUT_DIR) go run $(EXAMPLE_APP)
 
 .PHONY: clean_gamut
 clean_gamut: clean_example_output $(EXAMPLE_OUTPUT_DIR)

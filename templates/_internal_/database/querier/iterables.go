@@ -12,7 +12,6 @@ import (
 func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 	scanFields = []jen.Code{
 		jen.AddressOf().ID("x").Dot("ID"),
-		jen.AddressOf().ID("x").Dot("ExternalID"),
 	}
 
 	for _, field := range typ.Fields {

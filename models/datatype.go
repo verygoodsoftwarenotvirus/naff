@@ -769,7 +769,7 @@ func (typ DataType) BuildGetListOfSomethingFromIDsParams(p *Project) []jen.Code 
 
 	params = append(params,
 		jen.ID("limit").Uint8(),
-		jen.ID("ids").Index().Uint64(),
+		jen.ID("ids").Index().String(),
 	)
 
 	return params

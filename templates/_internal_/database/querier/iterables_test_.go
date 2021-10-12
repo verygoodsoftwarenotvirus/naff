@@ -61,7 +61,7 @@ func buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p *models.Project, typ 
 }
 
 func buildMockDBRowFields(varName string, typ models.DataType) []jen.Code {
-	fields := []jen.Code{jen.ID(varName).Dot("ID"), jen.ID(varName).Dot("ExternalID")}
+	fields := []jen.Code{jen.ID(varName).Dot("ID")}
 
 	for _, field := range typ.Fields {
 		fields = append(fields, jen.ID(varName).Dot(field.Name.Singular()))
@@ -1833,7 +1833,6 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-					jen.IDf("example%s", sn).Dot("ExternalID").Equals().Lit(""),
 					jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
@@ -1899,7 +1898,6 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-					jen.IDf("example%s", sn).Dot("ExternalID").Equals().Lit(""),
 					jen.Newline(),
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
@@ -1926,7 +1924,6 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-					jen.IDf("example%s", sn).Dot("ExternalID").Equals().Lit(""),
 					jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
@@ -1955,7 +1952,6 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-					jen.IDf("example%s", sn).Dot("ExternalID").Equals().Lit(""),
 					jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
@@ -2054,7 +2050,6 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-					jen.IDf("example%s", sn).Dot("ExternalID").Equals().Lit(""),
 					jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
@@ -2115,7 +2110,6 @@ func buildTestQuerier_CreateSomething(proj *models.Project, typ models.DataType)
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-					jen.IDf("example%s", sn).Dot("ExternalID").Equals().Lit(""),
 					jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
 					jen.ID("ctx").Assign().Qual("context", "Background").Call(),

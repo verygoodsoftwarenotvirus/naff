@@ -98,7 +98,7 @@ func buildInitializers(proj *models.Project) []jen.Code {
 						jen.ID("iterationLogger").Assign().ID("userLogger").Dot("WithValue").Call(jen.Lit("creating"), jen.Lit(typ.Name.PluralCommonName())).Dot("WithValue").Call(jen.Lit("iteration"), jen.ID("j")),
 						jen.Newline(),
 						jen.Commentf("create %s", typ.Name.SingularCommonName()),
-						jen.List(jen.IDf("created%sID", typ.Name.Singular()), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName())).Assign().ID("userClient").Dotf("Create%s", typ.Name.Singular()).Call(constants.CtxVar(), jen.Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", typ.Name.Singular())).Call()),
+						jen.List(jen.IDf("created%sID", typ.Name.Singular()), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName())).Assign().ID("userClient").Dotf("Create%s", typ.Name.Singular()).Call(constants.CtxVar(), jen.Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationRequestInput", typ.Name.Singular())).Call()),
 						jen.If(jen.IDf("%sCreationErr", typ.Name.UnexportedVarName()).DoesNotEqual().Nil()).Body(
 							jen.ID("quitter").Dot("ComplainAndQuit").Call(jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("creating %s ", typ.Name.SingularCommonName())+"#%d: %w"), jen.ID("j"), jen.IDf("%sCreationErr", typ.Name.UnexportedVarName()))),
 						),
