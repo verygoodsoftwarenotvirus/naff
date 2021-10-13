@@ -150,7 +150,6 @@ func buildExampleForumsListProject() *Project {
 	}
 
 	p.EnableDatabase(Postgres)
-	p.EnableDatabase(Sqlite)
 	p.EnableDatabase(MySQL)
 
 	return p

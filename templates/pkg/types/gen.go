@@ -23,6 +23,13 @@ func jsonTag(val string) map[string]string {
 	return map[string]string{"json": val}
 }
 
+func jsonTagOmittingEmpty(val string) map[string]string {
+	if val == "" {
+		val = "-"
+	}
+	return map[string]string{"json": fmt.Sprintf("%s,omitempty", val)}
+}
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	files := map[string]string{

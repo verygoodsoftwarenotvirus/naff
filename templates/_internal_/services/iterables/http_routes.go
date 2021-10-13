@@ -1032,7 +1032,7 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Newline(),
 			jen.ID("pam").Assign().AddressOf().Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 				jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
-				jen.ID("RelevantID").MapAssign().IDf("%sID", uvn),
+				jen.IDf("%sID", sn).MapAssign().IDf("%sID", uvn),
 				jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
 				jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
