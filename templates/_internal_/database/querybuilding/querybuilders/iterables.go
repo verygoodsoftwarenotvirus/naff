@@ -19,7 +19,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmit
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.Nil()),
 		jen.Newline(),
 	)
 
@@ -138,7 +138,7 @@ func buildDBQuerierExistenceQueryMethodParams(p *models.Project, typ models.Data
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).Uint64())
 	}
 
 	return params
@@ -224,7 +224,7 @@ func buildDBQuerierRetrievalQueryMethodParams(p *models.Project, typ models.Data
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).Uint64())
 	}
 
 	return params
@@ -315,7 +315,7 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().ID("nil"),
+				).MapAssign().Nil(),
 				)),
 			),
 		),
@@ -333,7 +333,7 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 		jen.Commentf("BuildGetBatchOf%sQuery returns a query that fetches every %s in the database within a bucketed range.", pn, scn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(),
+			jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64()).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
@@ -375,7 +375,7 @@ func buildDBQuerierListRetrievalQueryBuildingMethodParams(p *models.Project, typ
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).Uint64())
 	}
 
 	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
@@ -423,7 +423,7 @@ func buildBuildGetListOfSomethingQuery(proj *models.Project, typ models.DataType
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.InternalTracingPackage(), "AttachFilterToSpan").Call(jen.ID("span"), jen.ID("filter").Dot("Page"),
 					jen.ID("filter").Dot("Limit"),
 					jen.String().Call(jen.ID("filter").Dot("SortBy")),
@@ -676,7 +676,7 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType, d
 		jen.ID("currentUnixTimeQuery"),
 	).
 		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
-		jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
+		jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())).MapAssign().ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular())
@@ -734,7 +734,7 @@ func buildDBQuerierArchiveQueryMethodParams(typ models.DataType) []jen.Code {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
-	params = append(params, jen.List(lp...).ID("uint64"))
+	params = append(params, jen.List(lp...).Uint64())
 
 	return params
 }
@@ -779,7 +779,7 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType, 
 					jen.ID("currentUnixTimeQuery"),
 				).
 					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().ID("nil"),
+					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(),
 					func() jen.Code {
 						if typ.BelongsToStruct != nil {
 							return jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
@@ -822,7 +822,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 		jen.Commentf("BuildGetAuditLogEntriesFor%sQuery constructs a SQL query for fetching audit log entries relating to %s with a given ID.", sn, scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").String(),
+			jen.IDf("%sID", uvn).Uint64()).Params(jen.ID("query").String(),
 			jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),

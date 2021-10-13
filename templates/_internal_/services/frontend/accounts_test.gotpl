@@ -1,19 +1,18 @@
 package frontend
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	{{ projectImport "internal/database" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
 	testutils {{ projectImport "tests/utils" }}
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestService_fetchAccount(T *testing.T) {

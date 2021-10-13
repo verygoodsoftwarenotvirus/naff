@@ -36,7 +36,7 @@ func buildTestIDFetchers(proj *models.Project, typ models.DataType, includeType 
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
 		lines = append(lines,
 			jen.IDf("example%sID", dep.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-			jen.ID("s").Dot("service").Dotf("%sIDFetcher", dep.Name.UnexportedVarName()).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
+			jen.ID("s").Dot("service").Dotf("%sIDFetcher", dep.Name.UnexportedVarName()).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()).Body(
 				jen.Return(jen.IDf("example%sID", dep.Name.Singular())),
 			),
 			jen.Newline(),
@@ -58,7 +58,7 @@ func buildTestIDFetchers(proj *models.Project, typ models.DataType, includeType 
 				}
 				return jen.Null()
 			}(),
-			jen.ID("s").Dot("service").Dotf("%sIDFetcher", typ.Name.UnexportedVarName()).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()).Body(
+			jen.ID("s").Dot("service").Dotf("%sIDFetcher", typ.Name.UnexportedVarName()).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()).Body(
 				jen.Return(jen.IDf("example%s", typ.Name.Singular()).Dot("ID")),
 			),
 			jen.Newline(),
@@ -105,13 +105,13 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
-		).Dot("Return").Call(jen.IDf("example%s", sn), jen.ID("nil")),
+		).Dot("Return").Call(jen.IDf("example%s", sn), jen.Nil()),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("s").Dot("service").Dotf("fetch%s", sn).Call(
@@ -134,7 +134,7 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("s").Dot("service").Dotf("fetch%s", sn).Call(
@@ -161,7 +161,7 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -169,7 +169,7 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("s").Dot("service").Dotf("fetch%s", sn).Call(
@@ -221,7 +221,7 @@ func buildAttachSomethingCreationInputToRequest(proj *models.Project, typ models
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 		if !field.IsPointer {
-			createInputs = append(createInputs, jen.IDf("%sCreationInput%sFormKey", uvn, fsn).Op(":").Values(jen.ID("anyToString").Call(jen.ID("input").Dot(fsn))))
+			createInputs = append(createInputs, jen.IDf("%sCreationInput%sFormKey", uvn, fsn).MapAssign().Values(jen.ID("anyToString").Call(jen.ID("input").Dot(fsn))))
 		}
 	}
 
@@ -250,7 +250,7 @@ func buildAttachSomethingCreationInputToRequest(proj *models.Project, typ models
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("attach%sCreationInputToRequest", sn).Params(jen.ID("input").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn))).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
+		jen.Func().IDf("attach%sCreationInputToRequest", sn).Params(jen.ID("input").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sDatabaseCreationInput", sn))).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -279,7 +279,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 						jen.Qual("net/http", "MethodGet"),
 						jen.Litf("/%s", prn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("true")).Call(
@@ -303,7 +303,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 						jen.Qual("net/http", "MethodGet"),
 						jen.Litf("/%s", prn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("false")).Call(
@@ -322,14 +322,14 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.Newline(),
 					jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.ID("s").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+						jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					),
 					jen.Newline(),
 					jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 					jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 						jen.Qual("net/http", "MethodGet"),
 						jen.Litf("/%s", prn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("false")).Call(
@@ -358,7 +358,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 						jen.Qual("net/http", "MethodGet"),
 						jen.Litf("/%s", prn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("true")).Call(
@@ -385,7 +385,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 					jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 						jen.Qual("net/http", "MethodGet"),
 						jen.Litf("/%s", prn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("false")).Call(
@@ -415,7 +415,8 @@ func buildTestServiceParseFormEncodedSomethingCreationInput(proj *models.Project
 					jen.Newline(),
 					jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("expected").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInput", sn)).Call(),
+					jen.ID("expected").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sDatabaseCreationInput", sn)).Call(),
+					jen.ID("expected").Dot("ID").Equals().EmptyString(),
 					func() jen.Code {
 						if typ.BelongsToAccount {
 							return jen.ID("expected").Dot("BelongsToAccount").Equals().ID("s").Dot("exampleAccount").Dot("ID")
@@ -466,25 +467,6 @@ func buildTestServiceParseFormEncodedSomethingCreationInput(proj *models.Project
 					jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
 				),
 			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with invalid input"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
-					jen.Newline(),
-					jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)).Values(),
-					jen.ID("req").Assign().IDf("attach%sCreationInputToRequest", sn).Call(jen.ID("exampleInput")),
-					jen.Newline(),
-					jen.ID("actual").Assign().ID("s").Dot("service").Dotf("parseFormEncoded%sCreationInput", sn).Call(
-						jen.ID("s").Dot("ctx"),
-						jen.ID("req"),
-						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("s").Dot("sessionCtxData")),
-					),
-					jen.Qual(constants.AssertionLibrary, "Nil").Call(jen.ID("t"), jen.ID("actual")),
-				),
-			),
 		),
 		jen.Newline(),
 	}
@@ -506,7 +488,8 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 	firstSubtestLines = append(firstSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	firstSubtestLines = append(firstSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Dot("ID").Equals().EmptyString(),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().ID("s").Dot("sessionCtxData").Dot("ActiveAccountID")),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -517,10 +500,9 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 			jen.Litf("Create%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 			jen.ID("exampleInput"),
-			jen.ID("s").Dot("sessionCtxData").Dot("Requester").Dot("UserID"),
 		).Dot("Return").Call(
 			jen.IDf("example%s", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -548,9 +530,9 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 	secondSubtestLines = append(secondSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	secondSubtestLines = append(secondSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.ID("s").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 		),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -574,7 +556,7 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 	thirdSubtestLines = append(thirdSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	thirdSubtestLines = append(thirdSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().ID("s").Dot("sessionCtxData").Dot("ActiveAccountID")),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -588,7 +570,7 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 			jen.ID("s").Dot("sessionCtxData").Dot("Requester").Dot("UserID"),
 		).Dot("Return").Call(
 			jen.IDf("example%s", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -612,7 +594,8 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 	fourthSubtestLines = append(fourthSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	fourthSubtestLines = append(fourthSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Dot("ID").Equals().EmptyString(),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleInput").Dot("BelongsToAccount").Equals().ID("s").Dot("sessionCtxData").Dot("ActiveAccountID")),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -623,9 +606,8 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 			jen.Litf("Create%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 			jen.ID("exampleInput"),
-			jen.ID("s").Dot("sessionCtxData").Dot("Requester").Dot("UserID"),
 		).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -652,11 +634,6 @@ func buildTestServiceHandleSomethingCreationRequest(proj *models.Project, typ mo
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("with error fetching session context data"),
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(secondSubtestLines...),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with invalid input"),
-				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(thirdSubtestLines...),
 			),
 			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
@@ -707,7 +684,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(mockCallArgs...).Dot("Return").Call(
 			jen.IDf("example%s", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -715,7 +692,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("true")).Call(
@@ -742,7 +719,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(mockCallArgs...).Dot("Return").Call(
 			jen.IDf("example%s", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -750,7 +727,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("false")).Call(
@@ -769,14 +746,14 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 		),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("true")).Call(
@@ -800,7 +777,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.Newline(),
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(mockCallArgs...).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -809,7 +786,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("true")).Call(
@@ -895,14 +872,14 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 			mockCallArgs...,
 		).Dot("Return").Call(
 			jen.IDf("example%sList", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("s").Dot("service").Dotf("fetch%s", pn).Call(
@@ -928,7 +905,7 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("s").Dot("service").Dotf("fetch%s", pn).Call(
@@ -961,7 +938,7 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -969,7 +946,7 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("s").Dot("service").Dotf("fetch%s", pn).Call(
@@ -1052,7 +1029,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			mockCallArgs...,
 		).Dot("Return").Call(
 			jen.IDf("example%sList", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -1060,7 +1037,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("true")).Call(
@@ -1090,7 +1067,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			mockCallArgs...,
 		).Dot("Return").Call(
 			jen.IDf("example%sList", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -1098,7 +1075,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("false")).Call(
@@ -1116,14 +1093,14 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 		jen.Newline(),
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 		jen.ID("s").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 		),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("true")).Call(
@@ -1149,7 +1126,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockCallArgs...,
 		).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -1158,7 +1135,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("true")).Call(
@@ -1210,7 +1187,7 @@ func buildAttachSomethingUpdateInputToRequest(proj *models.Project, typ models.D
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 		if !field.IsPointer {
-			updateInputs = append(updateInputs, jen.IDf("%sUpdateInput%sFormKey", uvn, fsn).Op(":").Values(jen.ID("anyToString").Call(jen.ID("input").Dot(fsn))))
+			updateInputs = append(updateInputs, jen.IDf("%sUpdateInput%sFormKey", uvn, fsn).MapAssign().Values(jen.ID("anyToString").Call(jen.ID("input").Dot(fsn))))
 		}
 	}
 
@@ -1239,7 +1216,7 @@ func buildAttachSomethingUpdateInputToRequest(proj *models.Project, typ models.D
 	)
 
 	lines := []jen.Code{
-		jen.Func().IDf("attach%sUpdateInputToRequest", sn).Params(jen.ID("input").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
+		jen.Func().IDf("attach%sUpdateInputToRequest", sn).Params(jen.ID("input").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn))).Params(jen.PointerTo().Qual("net/http", "Request")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -1261,7 +1238,7 @@ func buildTestServiceParseFormEncodedSomethingUpdateInput(proj *models.Project, 
 	firstSubtestLines = append(firstSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	firstSubtestLines = append(firstSubtestLines,
-		jen.ID("expected").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("expected").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
 				return jen.ID("expected").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().Zero()
@@ -1309,7 +1286,7 @@ func buildTestServiceParseFormEncodedSomethingUpdateInput(proj *models.Project, 
 		jen.Newline(),
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 		jen.Newline(),
-		jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Values(),
+		jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Values(),
 		jen.Newline(),
 		jen.ID("req").Assign().IDf("attach%sUpdateInputToRequest", sn).Call(jen.ID("exampleInput")),
 		jen.Newline(),
@@ -1361,23 +1338,21 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	firstSubtestLines = append(firstSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	firstSubtestLines = append(firstSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockGetArgs...,
 		).Dot("Return").Call(
 			jen.IDf("example%s", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			jen.Litf("Update%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 			jen.IDf("example%s", sn),
-			jen.ID("s").Dot("sessionCtxData").Dot("Requester").Dot("UserID"),
-			jen.Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary").Call(jen.ID("nil")),
-		).Dot("Return").Call(jen.ID("nil")),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1403,10 +1378,10 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	secondSubtestLines = append(secondSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	secondSubtestLines = append(secondSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 		),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1425,7 +1400,7 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 		jen.Newline(),
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 		jen.Newline(),
-		jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Values(),
+		jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Values(),
 		jen.Newline(),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
@@ -1449,13 +1424,13 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	fourthSubtestLines = append(fourthSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	fourthSubtestLines = append(fourthSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockGetArgs...,
 		).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), sn)).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -1483,22 +1458,20 @@ func buildTestServiceHandleSomethingUpdateRequest(proj *models.Project, typ mode
 	fifthSubtestLines = append(fifthSubtestLines, buildTestIDFetchers(proj, typ, true)...)
 
 	fifthSubtestLines = append(fifthSubtestLines,
-		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+		jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 		jen.Newline(),
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockGetArgs...,
 		).Dot("Return").Call(
 			jen.IDf("example%s", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			jen.Litf("Update%s", sn),
 			jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 			jen.IDf("example%s", sn),
-			jen.ID("s").Dot("sessionCtxData").Dot("Requester").Dot("UserID"),
-			jen.Index().PointerTo().Qual(proj.TypesPackage(), "FieldChangeSummary").Call(jen.ID("nil")),
 		).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -1550,7 +1523,6 @@ func buildArchiveArgs(proj *models.Project, typ models.DataType) []jen.Code {
 	out = append(out,
 		jen.IDf("example%s", sn).Dot("ID"),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID("s").Dot("sessionCtxData").Dot("ActiveAccountID")),
-		jen.ID("s").Dot("sessionCtxData").Dot("Requester").Dot("UserID"),
 	)
 
 	return out
@@ -1580,14 +1552,14 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockArchiveArgs...,
-		).Dot("Return").Call(jen.ID("nil")),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockListArgs...,
 		).Dot("Return").Call(
 			jen.IDf("example%sList", sn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
@@ -1595,7 +1567,7 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodDelete"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("handle%sArchiveRequest", sn).Call(
@@ -1614,14 +1586,14 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+			jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 		),
 		jen.Newline(),
 		jen.ID("res").Assign().ID("httptest").Dot("NewRecorder").Call(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodDelete"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("handle%sArchiveRequest", sn).Call(
@@ -1652,7 +1624,7 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodDelete"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("handle%sArchiveRequest", sn).Call(
@@ -1679,13 +1651,13 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 		jen.ID("mockDB").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockArchiveArgs...,
-		).Dot("Return").Call(jen.ID("nil")),
+		).Dot("Return").Call(jen.Nil()),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
 		jen.Newline(),
 		jen.ID("mockDB").Dotf("%sDataManager", sn).Dot("On").Callln(
 			mockListArgs...,
 		).Dot("Return").Call(
-			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.ID("nil")),
+			jen.Parens(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn))).Call(jen.Nil()),
 			jen.Qual("errors", "New").Call(jen.Lit("blah")),
 		),
 		jen.ID("s").Dot("service").Dot("dataStore").Equals().ID("mockDB"),
@@ -1694,7 +1666,7 @@ func buildTestServiceHandleSomethingArchiveRequest(proj *models.Project, typ mod
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodDelete"),
 			jen.Litf("/%s", prn),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
 		jen.Newline(),
 		jen.ID("s").Dot("service").Dotf("handle%sArchiveRequest", sn).Call(

@@ -27,13 +27,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Lit(128),
 				jen.Lit(128),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Fatal").Call(jen.ID("err"))),
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.If(jen.ID("err").Equals().Qual("image/png", "Encode").Call(
 				jen.AddressOf().ID("b"),
 				jen.ID("bmp"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Qual("log", "Fatal").Call(jen.ID("err"))),
 			jen.Qual("log", "Println").Call(jen.Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s%s"),

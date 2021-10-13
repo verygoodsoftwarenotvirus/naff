@@ -38,7 +38,7 @@ func configDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Equals().Parens(jen.Op("*").ID("Config")).Call(jen.ID("nil")),
+		jen.Var().ID("_").Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Equals().Parens(jen.Op("*").ID("Config")).Call(jen.Nil()),
 		jen.Newline(),
 	)
 
@@ -63,7 +63,7 @@ func configDotGo(proj *models.Project) *jen.File {
 				jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Field").Call(
 					jen.Op("&").ID("cfg").Dot("CreateTestUser"),
 					jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "When").Call(
-						jen.ID("cfg").Dot("CreateTestUser").Op("!=").ID("nil"),
+						jen.ID("cfg").Dot("CreateTestUser").DoesNotEqual().Nil(),
 						jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Required"),
 					).Dot("Else").Call(jen.Qual("github.com/go-ozzo/ozzo-validation/v4", "Nil")),
 				),
@@ -94,7 +94,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("sessionManager").Dot("Store").Equals().ID("dm").Dot("ProvideSessionStore").Call(),
 			jen.Newline(),
-			jen.Return().List(jen.ID("sessionManager"), jen.ID("nil")),
+			jen.Return().List(jen.ID("sessionManager"), jen.Nil()),
 		),
 		jen.Newline(),
 	)

@@ -103,7 +103,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 			),
-			jen.If(jen.ID("err").DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -111,7 +111,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				constants.LoggerVar(),
 				jen.ID("k"),
 			),
-			jen.If(jen.ID("err").DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -129,7 +129,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 			),
-			jen.If(jen.ID("err").DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit("encrypting config: %v"),
 					jen.ID("err"),
@@ -184,7 +184,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("hashed"), jen.ID("err")).Assign().Qual(proj.InternalAuthenticationPackage(), "ProvideArgon2Authenticator").Call(jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call()).
 				Dotln("HashPassword").Call(jen.Qual("context", "Background").Call(), jen.ID("password")),
 			jen.Newline(),
-			jen.If(jen.ID("err").DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -200,7 +200,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("pasetoSecretSize"),
 			),
 			jen.If(jen.List(jen.Underscore(), jen.ID("err")).Assign().Qual("crypto/rand", "Read").Call(jen.ID("b")),
-				jen.ID("err").DoesNotEqual().ID("nil")).Body(
+				jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -275,9 +275,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("UploadFilenameKey").MapAssign().Lit("avatar"),
 						jen.ID("Provider").MapAssign().Lit("filesystem"),
 						jen.ID("BucketName").MapAssign().Lit("avatars"),
-						jen.ID("AzureConfig").MapAssign().ID("nil"),
-						jen.ID("GCSConfig").MapAssign().ID("nil"),
-						jen.ID("S3Config").MapAssign().ID("nil"),
+						jen.ID("AzureConfig").MapAssign().Nil(),
+						jen.ID("GCSConfig").MapAssign().Nil(),
+						jen.ID("S3Config").MapAssign().Nil(),
 						jen.ID("FilesystemConfig").MapAssign().AddressOf().Qual(proj.StoragePackage(), "FilesystemConfig").Valuesln(
 							jen.ID("RootDirectory").MapAssign().Lit("/avatars"),
 						),
@@ -474,9 +474,9 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("Storage").MapAssign().Qual(proj.StoragePackage(), "Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("memory"),
 							jen.ID("BucketName").MapAssign().Lit("avatars"),
-							jen.ID("AzureConfig").MapAssign().ID("nil"),
-							jen.ID("GCSConfig").MapAssign().ID("nil"),
-							jen.ID("S3Config").MapAssign().ID("nil"),
+							jen.ID("AzureConfig").MapAssign().Nil(),
+							jen.ID("GCSConfig").MapAssign().Nil(),
+							jen.ID("S3Config").MapAssign().Nil(),
 						),
 					),
 					jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
@@ -542,7 +542,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx"),
 					jen.ID("filePath"),
 				),
-					jen.ID("err").DoesNotEqual().ID("nil")).Body(
+					jen.ID("err").DoesNotEqual().Nil()).Body(
 					jen.Qual("log", "Fatalf").Call(
 						jen.Lit("error rendering %s: %v"),
 						jen.ID("filePath"),

@@ -113,7 +113,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("Build%sExistsRequest", sn).Call(
 			buildArgsForHTTPClientExistenceRequestBuildingMethod(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
 				jen.ID("false"),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -130,7 +130,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("ctx"),
 			jen.ID("req"),
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
 				jen.ID("false"),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -143,7 +143,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID("exists"), jen.ID("nil")),
+		jen.Return().List(jen.ID("exists"), jen.Nil()),
 	)
 
 	return []jen.Code{
@@ -232,9 +232,9 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", sn).Call(
 			buildArgsForHTTPClientRetrievalRequestBuildingMethod(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -250,9 +250,9 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("req"),
 			jen.AddressOf().ID(uvn),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -262,7 +262,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID(uvn), jen.ID("nil")),
+		jen.Return().List(jen.ID(uvn), jen.Nil()),
 	)
 
 	return []jen.Code{
@@ -334,7 +334,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	lines = append(lines,
 		jen.If(jen.ID("query").IsEqualTo().Lit("")).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.ID("ErrEmptyQueryProvided")),
 		),
 		jen.Newline(),
@@ -352,9 +352,9 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildSearch%sRequest", pn).Call(
 			buildSearchSomethingRequestBuildingArgs(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -370,9 +370,9 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("req"),
 			jen.AddressOf().ID(puvn),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
-				jen.ID("nil"),
+				jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -382,7 +382,7 @@ func buildSearchSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID(puvn), jen.ID("nil")),
+		jen.Return().List(jen.ID(puvn), jen.Nil()),
 	)
 
 	return []jen.Code{
@@ -456,8 +456,8 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildGet%sRequest", pn).Call(
 			buildArgsForHTTPClientListRequestMethod(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -473,8 +473,8 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			jen.ID("req"),
 			jen.AddressOf().ID(puvn),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"),
+			jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -484,7 +484,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID(puvn), jen.ID("nil")),
+		jen.Return().List(jen.ID(puvn), jen.Nil()),
 	)
 
 	return []jen.Code{
@@ -601,7 +601,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 	lines = append(lines, buildIDBoilerplateForCreation(proj, typ, false, jen.Nil())...)
 
 	lines = append(lines,
-		jen.If(jen.ID("input").IsEqualTo().ID("nil")).Body(
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Body(
 			jen.Return().List(
 				jen.EmptyString(),
 				jen.ID("ErrNilInputProvided"),
@@ -609,7 +609,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("input").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
 				jen.EmptyString(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -624,7 +624,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildCreate%sRequest", sn).Call(
 			buildArgsForHTTPClientCreateRequestBuildingMethod(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
 				jen.EmptyString(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -642,7 +642,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("req"),
 			jen.AddressOf().ID("pwr"),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
 				jen.EmptyString(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -654,7 +654,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID("pwr").Dot("ID"), jen.ID("nil")),
+		jen.Return().List(jen.ID("pwr").Dot("ID"), jen.Nil()),
 	)
 
 	return []jen.Code{
@@ -741,7 +741,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildUpdate%sRequest", sn).Call(
 			buildArgsForHTTPClientUpdateRequestBuildingMethod(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
@@ -754,7 +754,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("req"),
 			jen.AddressOf().ID(uvn),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
@@ -763,7 +763,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.ID(uvn).Dot("ID"),
 			)),
 		jen.Newline(),
-		jen.Return().ID("nil"),
+		jen.Return().Nil(),
 	)
 
 	return []jen.Code{
@@ -835,7 +835,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildArchive%sRequest", sn).Call(
 			buildArgsForHTTPClientArchiveRequestBuildingMethod(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
@@ -846,9 +846,9 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 		jen.If(jen.ID("err").Equals().ID("c").Dot("fetchAndUnmarshal").Call(
 			jen.ID("ctx"),
 			jen.ID("req"),
-			jen.ID("nil"),
+			jen.Nil(),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
@@ -857,7 +857,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 				jen.IDf("%sID", uvn),
 			)),
 		jen.Newline(),
-		jen.Return().ID("nil"),
+		jen.Return().Nil(),
 	)
 
 	return []jen.Code{
@@ -924,8 +924,8 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 		jen.List(jen.ID("req"), jen.ID("err")).Assign().ID("c").Dot("requestBuilder").Dotf("BuildGetAuditLogFor%sRequest", sn).Call(
 			buildAuditSomethingRequestBuildingArgs(proj, typ)...,
 		),
-		jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -941,8 +941,8 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 			jen.ID("req"),
 			jen.AddressOf().ID("entries"),
 		),
-			jen.ID("err").Op("!=").ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"),
+			jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -952,7 +952,7 @@ func buildGetAuditLogForSomething(proj *models.Project, typ models.DataType) []j
 			),
 		),
 		jen.Newline(),
-		jen.Return().List(jen.ID("entries"), jen.ID("nil")),
+		jen.Return().List(jen.ID("entries"), jen.Nil()),
 	)
 
 	return []jen.Code{

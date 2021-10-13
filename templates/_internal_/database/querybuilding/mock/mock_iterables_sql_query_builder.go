@@ -17,7 +17,7 @@ func mockIterablesSQLQueryBuilderDotGo(proj *models.Project, typ models.DataType
 	sn := typ.Name.Singular()
 
 	code.Add(
-		jen.Var().Underscore().Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Equals().Parens(jen.PointerTo().IDf("%sSQLQueryBuilder", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sSQLQueryBuilder", sn)).Equals().Parens(jen.PointerTo().IDf("%sSQLQueryBuilder", sn)).Call(jen.Nil()),
 		jen.Newline(),
 	)
 
@@ -57,7 +57,7 @@ func buildDBQuerierSingletonQueryMethodParams(p *models.Project, typ models.Data
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).Uint64())
 	}
 
 	return params
@@ -142,7 +142,7 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 	lines := []jen.Code{
 		jen.Commentf("BuildGetBatchOf%sQuery implements our interface.", pn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetBatchOf%sQuery", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"),
 				jen.ID("beginID"),
@@ -170,7 +170,7 @@ func buildDBQuerierListRetrievalQueryBuildingMethodParams(p *models.Project, typ
 	}
 
 	if len(lp) > 0 {
-		params = append(params, jen.List(lp...).ID("uint64"))
+		params = append(params, jen.List(lp...).Uint64())
 	}
 
 	params = append(params, jen.ID("includeArchived").Bool(), jen.ID("filter").PointerTo().Qual(p.TypesPackage(), "QueryFilter"))
@@ -294,7 +294,7 @@ func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ mod
 	lines := []jen.Code{
 		jen.Commentf("BuildGetAuditLogEntriesFor%sQuery implements our interface.", sn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", uvn).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("m").PointerTo().IDf("%sSQLQueryBuilder", sn)).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.IDf("%sID", uvn).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.ID("returnArgs").Assign().ID("m").Dot("Called").Call(
 				jen.ID("ctx"),
 				jen.IDf("%sID", uvn),
@@ -341,7 +341,7 @@ func buildDBQuerierArchiveQueryMethodParams(typ models.DataType) []jen.Code {
 		lp = append(lp, jen.ID("accountID"))
 	}
 
-	params = append(params, jen.List(lp...).ID("uint64"))
+	params = append(params, jen.List(lp...).Uint64())
 
 	return params
 }

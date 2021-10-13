@@ -25,7 +25,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.ID("nil"))),
+						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -61,7 +61,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.Qual("errors", "New").Call(jen.Lit("blah")))),
+						jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah")))),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -104,7 +104,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.ID("nil"))),
+						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -143,7 +143,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("ItemDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -155,23 +155,23 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
 						jen.ID("body").Dot("AttributableToAccountID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("postArchivesPublisher").Dot("On").Call(
 						jen.Lit("Publish"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("mock").Dot("MatchedBy").Call(jen.Func().Params(jen.ID("message").Op("*").ID("types").Dot("DataChangeMessage")).Params(jen.ID("bool")).Body(
 							jen.Return().ID("true"))),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("searchIndexManager").Dot("On").Call(
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("searchIndexManager"), jen.ID("nil"))),
+						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -211,7 +211,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("ItemDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -227,7 +227,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.ID("nil"))),
+						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -266,7 +266,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("ItemDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -278,7 +278,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
 						jen.ID("body").Dot("AttributableToAccountID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("searchIndexManager").Dot("On").Call(
 						jen.Lit("Delete"),
@@ -288,7 +288,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("searchIndexManager"), jen.ID("nil"))),
+						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -328,7 +328,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("ItemDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -340,7 +340,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
 						jen.ID("body").Dot("AttributableToAccountID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("postArchivesPublisher").Dot("On").Call(
 						jen.Lit("Publish"),
@@ -353,10 +353,10 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("searchIndexManager"), jen.ID("nil"))),
+						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -396,7 +396,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("WebhookDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("WebhookDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -408,17 +408,17 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
 						jen.ID("body").Dot("AttributableToAccountID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("postArchivesPublisher").Dot("On").Call(
 						jen.Lit("Publish"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("mock").Dot("MatchedBy").Call(jen.Func().Params(jen.ID("message").Op("*").ID("types").Dot("DataChangeMessage")).Params(jen.ID("bool")).Body(
 							jen.Return().ID("true"))),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.ID("nil"))),
+						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -457,7 +457,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("WebhookDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("WebhookDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -474,7 +474,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("searchIndexManager"), jen.ID("nil"))),
+						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -514,7 +514,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("WebhookDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("WebhookDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -526,7 +526,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dot("RelevantID"),
 						jen.ID("body").Dot("AttributableToAccountID"),
-					).Dot("Return").Call(jen.ID("nil")),
+					).Dot("Return").Call(jen.Nil()),
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("postArchivesPublisher").Dot("On").Call(
 						jen.Lit("Publish"),
@@ -536,7 +536,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.ID("nil"))),
+						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -579,7 +579,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("searchIndexLocation").Op(":=").ID("search").Dot("IndexPath").Call(jen.ID("t").Dot("Name").Call()),
 					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.ID("search").Dot("IndexPath"), jen.ID("search").Dot("IndexName"), jen.Op("...").String()).Params(jen.ID("search").Dot("IndexManager"), jen.ID("error")).Body(
-						jen.Return().List(jen.ID("nil"), jen.ID("nil"))),
+						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Call(
 						jen.ID("ctx"),
 						jen.ID("logger"),
@@ -597,7 +597,7 @@ func preArchivesWorkerTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("t"),
 						jen.ID("err"),
 					),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").Op(":").ID("types").Dot("UserMembershipDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreArchiveMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("UserMembershipDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),

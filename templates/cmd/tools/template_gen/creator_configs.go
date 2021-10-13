@@ -27,7 +27,7 @@ func buildBuildBasicCreatorTemplate() []jen.Code {
 		jen.Func().ID("buildBasicCreatorTemplate").Params(jen.ID("cfg").PointerTo().ID("basicCreatorTemplateConfig")).Params(jen.String()).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicCreatorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicCreatorTemplateSrc"), jen.Nil()).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -60,66 +60,66 @@ func determineFormType(t string) string {
 
 func buildCreatorConfigs(types []models.DataType) []jen.Code {
 	iterableCreatorConfigs := []jen.Code{
-		jen.Lit("internal/services/frontend/templates/partials/generated/creators/account_creator.gotpl").Op(":").Valuesln(
-			jen.ID("Title").Op(":").Lit("New Account"),
-			jen.ID("SubmissionURL").Op(":").Lit("/accounts/new/submit"),
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		jen.Lit("internal/services/frontend/templates/partials/generated/creators/account_creator.gotpl").MapAssign().Valuesln(
+			jen.ID("Title").MapAssign().Lit("New Account"),
+			jen.ID("SubmissionURL").MapAssign().Lit("/accounts/new/submit"),
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("FormName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("name"),
+					jen.ID("FormName").MapAssign().Lit("name"),
+					jen.ID("StructFieldName").MapAssign().Lit("Name"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 			),
 		),
-		jen.Lit("internal/services/frontend/templates/partials/generated/creators/api_client_creator.gotpl").Op(":").Valuesln(
-			jen.ID("Title").Op(":").Lit("New API Client"),
-			jen.ID("SubmissionURL").Op(":").Lit("/api_clients/new/submit"),
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		jen.Lit("internal/services/frontend/templates/partials/generated/creators/api_client_creator.gotpl").MapAssign().Valuesln(
+			jen.ID("Title").MapAssign().Lit("New API Client"),
+			jen.ID("SubmissionURL").MapAssign().Lit("/api_clients/new/submit"),
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("FormName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("name"),
+					jen.ID("FormName").MapAssign().Lit("name"),
+					jen.ID("StructFieldName").MapAssign().Lit("Name"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("client_id"),
-					jen.ID("FormName").Op(":").Lit("client_id"),
-					jen.ID("StructFieldName").Op(":").Lit("ClientID"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("client_id"),
+					jen.ID("FormName").MapAssign().Lit("client_id"),
+					jen.ID("StructFieldName").MapAssign().Lit("ClientID"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 			),
 		),
-		jen.Lit("internal/services/frontend/templates/partials/generated/creators/webhook_creator.gotpl").Op(":").Valuesln(
-			jen.ID("Title").Op(":").Lit("New Webhook"),
-			jen.ID("SubmissionURL").Op(":").Lit("/webhooks/new/submit"),
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		jen.Lit("internal/services/frontend/templates/partials/generated/creators/webhook_creator.gotpl").MapAssign().Valuesln(
+			jen.ID("Title").MapAssign().Lit("New Webhook"),
+			jen.ID("SubmissionURL").MapAssign().Lit("/webhooks/new/submit"),
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("name"),
+					jen.ID("StructFieldName").MapAssign().Lit("Name"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("Method"),
-					jen.ID("StructFieldName").Op(":").Lit("Method"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("Method"),
+					jen.ID("StructFieldName").MapAssign().Lit("Method"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("ContentType"),
-					jen.ID("StructFieldName").Op(":").Lit("ContentType"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("ContentType"),
+					jen.ID("StructFieldName").MapAssign().Lit("ContentType"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("URL"),
-					jen.ID("StructFieldName").Op(":").Lit("URL"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("URL"),
+					jen.ID("StructFieldName").MapAssign().Lit("URL"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 			),
 		),
@@ -130,21 +130,21 @@ func buildCreatorConfigs(types []models.DataType) []jen.Code {
 			if field.ValidForCreationInput {
 				fn := field.Name
 				formFieldValues = append(formFieldValues, jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit(fn.UnexportedVarName()),
-					jen.ID("FormName").Op(":").Lit(fn.UnexportedVarName()),
-					jen.ID("StructFieldName").Op(":").Lit(fn.Singular()),
-					jen.ID("InputType").Op(":").Lit(determineFormType(field.Type)),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit(fn.UnexportedVarName()),
+					jen.ID("FormName").MapAssign().Lit(fn.UnexportedVarName()),
+					jen.ID("StructFieldName").MapAssign().Lit(fn.Singular()),
+					jen.ID("InputType").MapAssign().Lit(determineFormType(field.Type)),
+					jen.ID("Required").MapAssign().ID("true"),
 				))
 			}
 		}
 
 		n := typ.Name
 
-		iterableCreatorConfigs = append(iterableCreatorConfigs, jen.Litf("internal/services/frontend/templates/partials/generated/creators/%s_creator.gotpl", n.RouteName()).Op(":").Valuesln(
-			jen.ID("Title").Op(":").Litf("New %s", n.Singular()),
-			jen.ID("SubmissionURL").Op(":").Litf("/%s/new/submit", n.PluralRouteName()),
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		iterableCreatorConfigs = append(iterableCreatorConfigs, jen.Litf("internal/services/frontend/templates/partials/generated/creators/%s_creator.gotpl", n.RouteName()).MapAssign().Valuesln(
+			jen.ID("Title").MapAssign().Litf("New %s", n.Singular()),
+			jen.ID("SubmissionURL").MapAssign().Litf("/%s/new/submit", n.PluralRouteName()),
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				formFieldValues...,
 			),
 		),

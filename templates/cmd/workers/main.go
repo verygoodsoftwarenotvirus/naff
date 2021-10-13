@@ -15,13 +15,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Const().Defs(
-			jen.ID("preWritesTopicName").Op("=").Lit("pre_writes"),
-			jen.ID("dataChangesTopicName").Op("=").Lit("data_changes"),
-			jen.ID("preUpdatesTopicName").Op("=").Lit("pre_updates"),
-			jen.ID("preArchivesTopicName").Op("=").Lit("pre_archives"),
+			jen.ID("preWritesTopicName").Equals().Lit("pre_writes"),
+			jen.ID("dataChangesTopicName").Equals().Lit("data_changes"),
+			jen.ID("preUpdatesTopicName").Equals().Lit("pre_updates"),
+			jen.ID("preArchivesTopicName").Equals().Lit("pre_archives"),
 			jen.Newline(),
-			jen.ID("configFilepathEnvVar").Op("=").Lit("CONFIGURATION_FILEPATH"),
-			jen.ID("configStoreEnvVarKey").Op("=").Litf("%s_WORKERS_LOCAL_CONFIG_STORE_KEY", strings.ToUpper(proj.Name.Singular())),
+			jen.ID("configFilepathEnvVar").Equals().Lit("CONFIGURATION_FILEPATH"),
+			jen.ID("configStoreEnvVarKey").Equals().Litf("%s_WORKERS_LOCAL_CONFIG_STORE_KEY", strings.ToUpper(proj.Name.Singular())),
 		),
 		jen.Newline(),
 	)
@@ -31,15 +31,15 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 			jen.Newline(),
 			jen.ID("cfg").Op(":=").Op("&").Qual(proj.InternalSecretsPackage(), "Config").Valuesln(
-				jen.ID("Provider").Op(":").Qual(proj.InternalSecretsPackage(), "ProviderLocal"),
-				jen.ID("Key").Op(":").Qual("os", "Getenv").Call(jen.ID("envVarKey")),
+				jen.ID("Provider").MapAssign().Qual(proj.InternalSecretsPackage(), "ProviderLocal"),
+				jen.ID("Key").MapAssign().Qual("os", "Getenv").Call(jen.ID("envVarKey")),
 			),
 			jen.Newline(),
 			jen.List(jen.ID("k"), jen.ID("err")).Op(":=").Qual(proj.InternalSecretsPackage(), "ProvideSecretKeeper").Call(
 				jen.ID("ctx"),
 				jen.ID("cfg"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -47,7 +47,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("logger"),
 				jen.ID("k"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -64,12 +64,12 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("main").Params().Body(
 			jen.Const().Defs(
-				jen.ID("addr").Op("=").Lit("worker_queue:6379"),
+				jen.ID("addr").Equals().Lit("worker_queue:6379"),
 			),
 			jen.Newline(),
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.Newline(),
-			jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "ProvideLogger").Call(jen.Qual(proj.InternalLoggingPackage(), "Config").Valuesln(jen.ID("Provider").Op(":").Qual(proj.InternalLoggingPackage(), "ProviderZerolog"))),
+			jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "ProvideLogger").Call(jen.Qual(proj.InternalLoggingPackage(), "Config").Valuesln(jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"))),
 			jen.Newline(),
 			jen.ID("logger").Dot("Info").Call(jen.Lit("starting workers...")),
 			jen.Newline(),
@@ -80,7 +80,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.List(jen.ID("configBytes"), jen.ID("err")).Op(":=").Qual("os", "ReadFile").Call(jen.ID("configFilepath")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -90,14 +90,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.Var().ID("cfg").Op("*").Qual(proj.InternalConfigPackage(), "InstanceConfig"),
-			jen.If(jen.ID("err").Op("=").ID("sm").Dot("Decrypt").Call(jen.ID("ctx"), jen.String().Call(jen.ID("configBytes")), jen.Op("&").ID("cfg")), jen.ID("err").Op("!=").ID("nil").Op("||").ID("cfg").Op("==").ID("nil")).Body(
+			jen.If(jen.ID("err").Equals().ID("sm").Dot("Decrypt").Call(jen.ID("ctx"), jen.String().Call(jen.ID("configBytes")), jen.Op("&").ID("cfg")), jen.ID("err").DoesNotEqual().Nil().Op("||").ID("cfg").Op("==").Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
-			jen.ID("cfg").Dot("Observability").Dot("Tracing").Dot("Jaeger").Dot("ServiceName").Op("=").Lit("workers"),
+			jen.ID("cfg").Dot("Observability").Dot("Tracing").Dot("Jaeger").Dot("ServiceName").Equals().Lit("workers"),
 			jen.Newline(),
 			jen.List(jen.ID("flushFunc"), jen.ID("initializeTracerErr")).Op(":=").ID("cfg").Dot("Observability").Dot("Tracing").Dot("Initialize").Call(jen.ID("logger")),
-			jen.If(jen.ID("initializeTracerErr").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("initializeTracerErr").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Error").Call(
 					jen.ID("initializeTracerErr"),
 					jen.Lit("initializing tracer"),
@@ -105,24 +105,24 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.Comment("if tracing is disabled, this will be nil"),
-			jen.If(jen.ID("flushFunc").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("flushFunc").DoesNotEqual().Nil()).Body(
 				jen.Defer().ID("flushFunc").Call(),
 			),
 			jen.Newline(),
-			jen.ID("cfg").Dot("Database").Dot("RunMigrations").Op("=").ID("false"),
+			jen.ID("cfg").Dot("Database").Dot("RunMigrations").Equals().ID("false"),
 			jen.Newline(),
 			jen.List(jen.ID("dataManager"), jen.ID("err")).Op(":=").Qual(proj.InternalConfigPackage(), "ProvideDatabaseClient").Call(
 				jen.ID("ctx"),
 				jen.ID("logger"),
 				jen.ID("cfg"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err"))),
 			jen.Newline(),
 			jen.ID("pcfg").Op(":=").Op("&").Qual(proj.InternalMessageQueueConfigPackage(), "Config").Valuesln(
-				jen.ID("Provider").Op(":").Qual(proj.InternalMessageQueueConfigPackage(), "ProviderRedis"),
-				jen.ID("RedisConfig").Op(":").Qual(proj.InternalMessageQueueConfigPackage(), "RedisConfig").Valuesln(
-					jen.ID("QueueAddress").Op(":").ID("addr"),
+				jen.ID("Provider").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "ProviderRedis"),
+				jen.ID("RedisConfig").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "RedisConfig").Valuesln(
+					jen.ID("QueueAddress").MapAssign().ID("addr"),
 				),
 			),
 			jen.Newline(),
@@ -135,7 +135,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("logger"),
 				jen.ID("pcfg"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -147,21 +147,21 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("dataChangesTopicName"),
 				jen.ID("postWritesWorker").Dot("HandleMessage"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
 			jen.Go().ID("postWritesConsumer").Dot("Consume").Call(
-				jen.ID("nil"),
-				jen.ID("nil"),
+				jen.Nil(),
+				jen.Nil(),
 			),
 			jen.Newline(),
 			jen.Comment("pre-writes worker"),
 			jen.Newline(),
-			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(jen.ID("Timeout").Op(":").Lit(5).Op("*").Qual("time", "Second")),
+			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(jen.ID("Timeout").MapAssign().Lit(5).Op("*").Qual("time", "Second")),
 			jen.Newline(),
 			jen.List(jen.ID("postWritesPublisher"), jen.ID("err")).Op(":=").ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("dataChangesTopicName")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -174,7 +174,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Lit("http://elasticsearch:9200"),
 				jen.Qual(proj.InternalSearchPackage("elasticsearch"), "NewIndexManager"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err"))),
 			jen.Newline(),
 			jen.List(jen.ID("preWritesConsumer"), jen.ID("err")).Op(":=").ID("consumerProvider").Dot("ProviderConsumer").Call(
@@ -182,19 +182,19 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("preWritesTopicName"),
 				jen.ID("preWritesWorker").Dot("HandleMessage"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
 			jen.Go().ID("preWritesConsumer").Dot("Consume").Call(
-				jen.ID("nil"),
-				jen.ID("nil"),
+				jen.Nil(),
+				jen.Nil(),
 			),
 			jen.Newline(),
 			jen.Comment("pre-updates worker"),
 			jen.Newline(),
 			jen.List(jen.ID("postUpdatesPublisher"), jen.ID("err")).Op(":=").ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("dataChangesTopicName")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err"))),
 			jen.Newline(),
 			jen.List(jen.ID("preUpdatesWorker"), jen.ID("err")).Op(":=").Qual(proj.InternalWorkersPackage(), "ProvidePreUpdatesWorker").Call(
@@ -206,7 +206,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Lit("http://elasticsearch:9200"),
 				jen.Qual(proj.InternalSearchPackage("elasticsearch"), "NewIndexManager"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err"))),
 			jen.Newline(),
 			jen.List(jen.ID("preUpdatesConsumer"), jen.ID("err")).Op(":=").ID("consumerProvider").Dot("ProviderConsumer").Call(
@@ -214,19 +214,19 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("preUpdatesTopicName"),
 				jen.ID("preUpdatesWorker").Dot("HandleMessage"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
 			jen.Go().ID("preUpdatesConsumer").Dot("Consume").Call(
-				jen.ID("nil"),
-				jen.ID("nil"),
+				jen.Nil(),
+				jen.Nil(),
 			),
 			jen.Newline(),
 			jen.Comment("pre-archives worker"),
 			jen.Newline(),
 			jen.List(jen.ID("postArchivesPublisher"), jen.ID("err")).Op(":=").ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("dataChangesTopicName")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -239,7 +239,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Lit("http://elasticsearch:9200"),
 				jen.Qual(proj.InternalSearchPackage("elasticsearch"), "NewIndexManager"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err"))),
 			jen.Newline(),
 			jen.List(jen.ID("preArchivesConsumer"), jen.ID("err")).Op(":=").ID("consumerProvider").Dot("ProviderConsumer").Call(
@@ -247,13 +247,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("preArchivesTopicName"),
 				jen.ID("preArchivesWorker").Dot("HandleMessage"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),
 			jen.Go().ID("preArchivesConsumer").Dot("Consume").Call(
-				jen.ID("nil"),
-				jen.ID("nil"),
+				jen.Nil(),
+				jen.Nil(),
 			),
 			jen.Newline(),
 			jen.ID("logger").Dot("Info").Call(jen.Lit("working...")),

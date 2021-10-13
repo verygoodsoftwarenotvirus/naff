@@ -154,7 +154,7 @@ func buildTestSqlite_BuildAddUserToAccountQuery(proj *models.Project, dbvendor w
 					jen.Newline(),
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleAccount").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAccount").Call(),
-					jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), "AddUserToAccountInput").Valuesln(jen.ID("UserID").Op(":").ID("exampleUser").Dot("ID"), jen.ID("AccountID").Op(":").ID("exampleAccount").Dot("ID"), jen.ID("Reason").Op(":").ID("t").Dot("Name").Call(), jen.ID("AccountRoles").Op(":").Index().String().Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call())),
+					jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), "AddUserToAccountInput").Valuesln(jen.ID("UserID").MapAssign().ID("exampleUser").Dot("ID"), jen.ID("AccountID").MapAssign().ID("exampleAccount").Dot("ID"), jen.ID("Reason").MapAssign().ID("t").Dot("Name").Call(), jen.ID("AccountRoles").MapAssign().Index().String().Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call())),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleInput").Dot("UserID"), jen.ID("exampleAccount").Dot("ID"), jen.Qual("strings", "Join").Call(

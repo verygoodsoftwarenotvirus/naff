@@ -13,8 +13,8 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Func().ID("dummyIDFetcher").Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).Body(
-			jen.Return().Zero()),
+		jen.Func().ID("dummyIDFetcher").Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()).Body(
+			jen.Return().EmptyString()),
 		jen.Newline(),
 	)
 
@@ -29,32 +29,24 @@ func serviceTestDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.ID("rpm").Assign().Qual(proj.RoutingPackage("mock"), "NewRouteParamManager").Call(),
 		jen.ID("rpm").Dot("On").Call(
-			jen.Lit("BuildRouteParamIDFetcher"),
-			jen.Qual(constants.MockPkg, "IsType").Call(jen.ID("logger")),
+			jen.Lit("BuildRouteParamStringIDFetcher"),
 			jen.ID("apiClientIDURLParamKey"),
-			jen.Lit("API client"),
 		).Dot("Return").Call(jen.ID("dummyIDFetcher")),
 		jen.ID("rpm").Dot("On").Call(
-			jen.Lit("BuildRouteParamIDFetcher"),
-			jen.Qual(constants.MockPkg, "IsType").Call(jen.ID("logger")),
+			jen.Lit("BuildRouteParamStringIDFetcher"),
 			jen.ID("accountIDURLParamKey"),
-			jen.Lit("account"),
 		).Dot("Return").Call(jen.ID("dummyIDFetcher")),
 		jen.ID("rpm").Dot("On").Call(
-			jen.Lit("BuildRouteParamIDFetcher"),
-			jen.Qual(constants.MockPkg, "IsType").Call(jen.ID("logger")),
+			jen.Lit("BuildRouteParamStringIDFetcher"),
 			jen.ID("webhookIDURLParamKey"),
-			jen.Lit("webhook"),
 		).Dot("Return").Call(jen.ID("dummyIDFetcher")),
 	}
 
 	for _, typ := range proj.DataTypes {
 		bodyLines = append(bodyLines,
 			jen.ID("rpm").Dot("On").Call(
-				jen.Lit("BuildRouteParamIDFetcher"),
-				jen.Qual(constants.MockPkg, "IsType").Call(jen.ID("logger")),
+				jen.Lit("BuildRouteParamStringIDFetcher"),
 				jen.IDf("%sIDURLParamKey", typ.Name.UnexportedVarName()),
-				jen.Lit(typ.Name.SingularCommonName()),
 			).Dot("Return").Call(jen.ID("dummyIDFetcher")),
 		)
 	}

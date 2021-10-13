@@ -338,7 +338,7 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("err"),
 		),
 		jen.Newline(),
-		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn)))),
+		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn)))),
 		jen.ID("validateAuditLogEntries").Call(
 			jen.ID("t"),
 			jen.ID("expectedAuditLogEntries"),
@@ -996,7 +996,7 @@ func convertSomethingToSomethingUpdateInput(proj *models.Project, typ models.Dat
 	for _, field := range typ.Fields {
 		if field.ValidForUpdateInput {
 			fsn := field.Name.Singular()
-			updateInputLines = append(updateInputLines, jen.ID(fsn).Op(":").ID("x").Dot(fsn))
+			updateInputLines = append(updateInputLines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
 		}
 	}
 
@@ -1091,8 +1091,8 @@ func buildTestUpdating(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-			jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
-			jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sUpdateEvent", sn))),
+			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
+			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sUpdateEvent", sn))),
 		),
 		jen.ID("validateAuditLogEntries").Call(
 			jen.ID("t"),
@@ -1229,8 +1229,8 @@ func buildTestArchiving(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-			jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
-			jen.Values(jen.ID("EventType").Op(":").Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sArchiveEvent", sn))),
+			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
+			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sArchiveEvent", sn))),
 		),
 		jen.ID("validateAuditLogEntries").Call(
 			jen.ID("t"),

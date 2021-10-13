@@ -30,7 +30,7 @@ func buildBuildBasicEditorTemplate() []jen.Code {
 		jen.Func().ID("buildBasicEditorTemplate").Params(jen.ID("cfg").PointerTo().ID("basicEditorTemplateConfig")).Params(jen.String()).Body(
 			jen.Var().ID("b").Qual("bytes", "Buffer"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicEditorTemplateSrc"), jen.ID("nil")).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().ID("parseTemplate").Call(jen.Lit(""), jen.ID("basicEditorTemplateSrc"), jen.Nil()).Dot("Execute").Call(jen.AddressOf().ID("b"), jen.ID("cfg")), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")),
 			),
 			jen.Newline(),
@@ -51,55 +51,55 @@ func buildBasicEditorTemplateConfig() []jen.Code {
 
 func buildEditorConfigs(types []models.DataType) []jen.Code {
 	editorTemplateConfigs := []jen.Code{
-		jen.Lit("internal/services/frontend/templates/partials/generated/editors/account_editor.gotpl").Op(":").Valuesln(
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		jen.Lit("internal/services/frontend/templates/partials/generated/editors/account_editor.gotpl").MapAssign().Valuesln(
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("FormName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("name"),
+					jen.ID("FormName").MapAssign().Lit("name"),
+					jen.ID("StructFieldName").MapAssign().Lit("Name"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 			),
 		),
-		jen.Lit("internal/services/frontend/templates/partials/generated/editors/api_client_editor.gotpl").Op(":").Valuesln(
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		jen.Lit("internal/services/frontend/templates/partials/generated/editors/api_client_editor.gotpl").MapAssign().Valuesln(
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("FormName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
+					jen.ID("LabelName").MapAssign().Lit("name"),
+					jen.ID("FormName").MapAssign().Lit("name"),
+					jen.ID("StructFieldName").MapAssign().Lit("Name"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true")),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("client_id"),
-					jen.ID("FormName").Op(":").Lit("client_id"),
-					jen.ID("StructFieldName").Op(":").Lit("ClientID"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
+					jen.ID("LabelName").MapAssign().Lit("client_id"),
+					jen.ID("FormName").MapAssign().Lit("client_id"),
+					jen.ID("StructFieldName").MapAssign().Lit("ClientID"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true")),
 			),
 		),
-		jen.Lit("internal/services/frontend/templates/partials/generated/editors/webhook_editor.gotpl").Op(":").Valuesln(
-			jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(
+		jen.Lit("internal/services/frontend/templates/partials/generated/editors/webhook_editor.gotpl").MapAssign().Valuesln(
+			jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("name"),
-					jen.ID("StructFieldName").Op(":").Lit("Name"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
+					jen.ID("LabelName").MapAssign().Lit("name"),
+					jen.ID("StructFieldName").MapAssign().Lit("Name"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true")),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("Method"),
-					jen.ID("StructFieldName").Op(":").Lit("Method"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
+					jen.ID("LabelName").MapAssign().Lit("Method"),
+					jen.ID("StructFieldName").MapAssign().Lit("Method"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true")),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("ContentType"),
-					jen.ID("StructFieldName").Op(":").Lit("ContentType"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true")),
+					jen.ID("LabelName").MapAssign().Lit("ContentType"),
+					jen.ID("StructFieldName").MapAssign().Lit("ContentType"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true")),
 				jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit("URL"),
-					jen.ID("StructFieldName").Op(":").Lit("URL"),
-					jen.ID("InputType").Op(":").Lit("text"),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit("URL"),
+					jen.ID("StructFieldName").MapAssign().Lit("URL"),
+					jen.ID("InputType").MapAssign().Lit("text"),
+					jen.ID("Required").MapAssign().ID("true"),
 				),
 			),
 		),
@@ -110,19 +110,19 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 			if field.ValidForCreationInput {
 				fn := field.Name
 				formFields = append(formFields, jen.Valuesln(
-					jen.ID("LabelName").Op(":").Lit(fn.UnexportedVarName()),
-					jen.ID("FormName").Op(":").Lit(fn.UnexportedVarName()),
-					jen.ID("StructFieldName").Op(":").Lit(fn.Singular()),
-					jen.ID("InputType").Op(":").Lit(determineFormType(field.Type)),
-					jen.ID("Required").Op(":").ID("true"),
+					jen.ID("LabelName").MapAssign().Lit(fn.UnexportedVarName()),
+					jen.ID("FormName").MapAssign().Lit(fn.UnexportedVarName()),
+					jen.ID("StructFieldName").MapAssign().Lit(fn.Singular()),
+					jen.ID("InputType").MapAssign().Lit(determineFormType(field.Type)),
+					jen.ID("Required").MapAssign().ID("true"),
 				))
 			}
 		}
 
 		editorTemplateConfigs = append(
 			editorTemplateConfigs,
-			jen.Litf("internal/services/frontend/templates/partials/generated/editors/%s_editor.gotpl", typ.Name.RouteName()).Op(":").Valuesln(
-				jen.ID("Fields").Op(":").Index().ID("formField").Valuesln(formFields...),
+			jen.Litf("internal/services/frontend/templates/partials/generated/editors/%s_editor.gotpl", typ.Name.RouteName()).MapAssign().Valuesln(
+				jen.ID("Fields").MapAssign().Index().ID("formField").Valuesln(formFields...),
 			),
 		)
 	}

@@ -13,7 +13,7 @@ func authorizationDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("must").Params(jen.ID("err").ID("error")).Body(
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("panic").Call(jen.ID("err")))),
 		jen.Newline(),
 	)
@@ -24,7 +24,7 @@ func authorizationDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.Op("!").ID("globalAuthorizer").Dot("IsGranted").Call(
 					jen.ID("r"),
 					jen.ID("p"),
-					jen.ID("nil"),
+					jen.Nil(),
 				)).Body(
 					jen.Return().ID("false"))),
 			jen.Newline(),

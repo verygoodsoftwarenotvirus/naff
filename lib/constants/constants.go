@@ -19,6 +19,7 @@ const (
 	FlagParsingLibrary        = "github.com/spf13/pflag"
 	SessionManagerLibrary     = "github.com/alexedwards/scs/v2"
 	SearchLibrary             = "github.com/blevesearch/bleve/v2"
+	IDGenerationLibrary       = "github.com/segmentio/ksuid"
 
 	// UserIDVarName is what we normally call a user ID.
 	UserIDVarName = "userID"

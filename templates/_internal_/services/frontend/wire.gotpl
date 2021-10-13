@@ -1,9 +1,9 @@
 package frontend
 
 import (
-	{{ projectImport "pkg/types" }}
-
 	"github.com/google/wire"
+
+	{{ projectImport "pkg/types" }}
 )
 
 var (

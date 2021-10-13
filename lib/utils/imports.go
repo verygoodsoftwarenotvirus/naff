@@ -35,6 +35,7 @@ func AddImports(proj *models.Project, file *jen.File, includeEmbedAnonymously bo
 	file.ImportAlias(proj.MetricsPackage("mock"), "mockmetrics")
 	file.ImportAlias(proj.DatabasePackage("config"), "dbconfig")
 	file.ImportAlias(proj.DatabasePackage("client"), "dbclient")
+	file.ImportAlias(proj.InternalMessageQueuePublishersPackage("mock"), "mockpublishers")
 	file.ImportAlias(proj.TypesPackage("mock"), "mocktypes")
 	file.ImportAlias(filepath.Join(pkgRoot, "server"), "httpserver")
 	file.ImportAlias(proj.APIClientsServicePackage(), "apiclientsservice")

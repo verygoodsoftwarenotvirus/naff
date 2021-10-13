@@ -271,10 +271,10 @@ func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor w
 					jen.ID("q").Dot("externalIDGenerator").Equals().ID("mockExternalIDGenerator"),
 					jen.Newline(),
 					jen.ID("exampleInput").Assign().AddressOf().Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
-						jen.ID("Username").Op(":").Lit("username"),
-						jen.ID("Password").Op(":").Lit("password"),
-						jen.ID("HashedPassword").Op(":").Lit("hashashashash"),
-						jen.ID("IsServiceAdmin").Op(":").ID("true"),
+						jen.ID("Username").MapAssign().Lit("username"),
+						jen.ID("Password").MapAssign().Lit("password"),
+						jen.ID("HashedPassword").MapAssign().Lit("hashashashash"),
+						jen.ID("IsServiceAdmin").MapAssign().ID("true"),
 					),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -695,7 +695,7 @@ func buildTestSqlite_BuildUpdateUserTwoFactorSecretQuery(proj *models.Project, d
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("UPDATE users SET two_factor_secret_verified_on = %s, two_factor_secret = %s WHERE archived_on IS NULL AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("nil"), jen.ID("exampleUser").Dot("TwoFactorSecret"), jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.Nil(), jen.ID("exampleUser").Dot("TwoFactorSecret"), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUpdateUserTwoFactorSecretQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),

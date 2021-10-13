@@ -2,6 +2,7 @@ package iterables
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
@@ -31,8 +32,8 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	structLines = append(structLines,
 		jen.IDf("example%s", sn).PointerTo().Qual(proj.TypesPackage(), sn),
-		jen.ID("exampleCreationInput").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationInput", sn)),
-		jen.ID("exampleUpdateInput").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)),
+		jen.ID("exampleCreationInput").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sCreationRequestInput", sn)),
+		jen.ID("exampleUpdateInput").PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)),
 	)
 
 	code.Add(
@@ -84,8 +85,8 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	bodyLines = append(bodyLines,
-		jen.ID("helper").Dot("exampleCreationInput").Equals().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.ID("helper").Dotf("example%s", sn)),
-		jen.ID("helper").Dot("exampleUpdateInput").Equals().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateInputFrom%s", sn, sn)).Call(jen.ID("helper").Dotf("example%s", sn)),
+		jen.ID("helper").Dot("exampleCreationInput").Equals().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn)).Call(jen.ID("helper").Dotf("example%s", sn)),
+		jen.ID("helper").Dot("exampleUpdateInput").Equals().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sUpdateRequestInputFrom%s", sn, sn)).Call(jen.ID("helper").Dotf("example%s", sn)),
 		jen.Newline(),
 	)
 
@@ -94,7 +95,7 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		tuvn := dep.Name.UnexportedVarName()
 
 		bodyLines = append(bodyLines,
-			jen.ID("helper").Dot("service").Dotf("%sIDFetcher", tuvn).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).Body(
+			jen.ID("helper").Dot("service").Dotf("%sIDFetcher", tuvn).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()).Body(
 				jen.Return().ID("helper").Dotf("example%s", tsn).Dot("ID"),
 			),
 			jen.Newline(),
@@ -102,7 +103,7 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	bodyLines = append(bodyLines,
-		jen.ID("helper").Dot("service").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")).Body(
+		jen.ID("helper").Dot("service").Dotf("%sIDFetcher", uvn).Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()).Body(
 			jen.Return().ID("helper").Dotf("example%s", sn).Dot("ID"),
 		),
 		jen.Newline(),
@@ -110,14 +111,14 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	bodyLines = append(bodyLines,
 		jen.ID("sessionCtxData").Assign().AddressOf().Qual(proj.TypesPackage(), "SessionContextData").Valuesln(
-			jen.ID("Requester").Op(":").Qual(proj.TypesPackage(), "RequesterInfo").Valuesln(
-				jen.ID("UserID").Op(":").ID("helper").Dot("exampleUser").Dot("ID"),
-				jen.ID("Reputation").Op(":").ID("helper").Dot("exampleUser").Dot("ServiceAccountStatus"),
-				jen.ID("ReputationExplanation").Op(":").ID("helper").Dot("exampleUser").Dot("ReputationExplanation"),
-				jen.ID("ServicePermissions").Op(":").Qual(proj.InternalAuthorizationPackage(), "NewServiceRolePermissionChecker").Call(jen.ID("helper").Dot("exampleUser").Dot("ServiceRoles").Op("...")),
+			jen.ID("Requester").MapAssign().Qual(proj.TypesPackage(), "RequesterInfo").Valuesln(
+				jen.ID("UserID").MapAssign().ID("helper").Dot("exampleUser").Dot("ID"),
+				jen.ID("Reputation").MapAssign().ID("helper").Dot("exampleUser").Dot("ServiceAccountStatus"),
+				jen.ID("ReputationExplanation").MapAssign().ID("helper").Dot("exampleUser").Dot("ReputationExplanation"),
+				jen.ID("ServicePermissions").MapAssign().Qual(proj.InternalAuthorizationPackage(), "NewServiceRolePermissionChecker").Call(jen.ID("helper").Dot("exampleUser").Dot("ServiceRoles").Op("...")),
 			),
-			jen.ID("ActiveAccountID").Op(":").ID("helper").Dot("exampleAccount").Dot("ID"),
-			jen.ID("AccountPermissions").Op(":").Map(jen.ID("uint64")).Qual(proj.InternalAuthorizationPackage(), "AccountRolePermissionsChecker").Valuesln(jen.ID("helper").Dot("exampleAccount").Dot("ID").Op(":").Qual(proj.InternalAuthorizationPackage(), "NewAccountRolePermissionChecker").Call(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call()))),
+			jen.ID("ActiveAccountID").MapAssign().ID("helper").Dot("exampleAccount").Dot("ID"),
+			jen.ID("AccountPermissions").MapAssign().Map(jen.String()).Qual(proj.InternalAuthorizationPackage(), "AccountRolePermissionsChecker").Valuesln(jen.ID("helper").Dot("exampleAccount").Dot("ID").MapAssign().Qual(proj.InternalAuthorizationPackage(), "NewAccountRolePermissionChecker").Call(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call()))),
 		jen.Newline(),
 		jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 			jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
@@ -126,7 +127,7 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.ID("helper").Dot("service").Dot("sessionContextDataFetcher").Equals().Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"),
 			jen.ID("error")).Body(
 			jen.Return().List(jen.ID("sessionCtxData"),
-				jen.ID("nil")),
+				jen.Nil()),
 		),
 		jen.Newline(),
 		jen.ID("req").Assign().Qual(proj.TestUtilsPackage(), "BuildTestRequest").Call(jen.ID("t")),

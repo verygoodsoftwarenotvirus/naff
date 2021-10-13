@@ -56,7 +56,7 @@ func buildDotGo(proj *models.Project) *jen.File {
 				)...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID("nil"), jen.ID("nil")),
+			jen.Return().List(jen.Nil(), jen.Nil()),
 		),
 		jen.Newline(),
 	)

@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestService_homepage(T *testing.T) {
@@ -21,7 +21,7 @@ func TestService_homepage(T *testing.T) {
 		s := buildTestHelper(t)
 
 		s.service.sessionContextDataFetcher = func(req *http.Request) (*types.SessionContextData, error) {
-		return fakes.BuildFakeSessionContextData(), nil
+			return fakes.BuildFakeSessionContextData(), nil
 		}
 
 		res := httptest.NewRecorder()
@@ -38,7 +38,7 @@ func TestService_homepage(T *testing.T) {
 		s := buildTestHelper(t)
 
 		s.service.sessionContextDataFetcher = func(req *http.Request) (*types.SessionContextData, error) {
-		return nil, errors.New("blah")
+			return nil, errors.New("blah")
 		}
 
 		res := httptest.NewRecorder()

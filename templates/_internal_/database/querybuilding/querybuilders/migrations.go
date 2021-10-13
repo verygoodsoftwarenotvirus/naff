@@ -859,7 +859,7 @@ func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvsn)).ID("BuildMigrationFunc").Params(jen.ID("db").PointerTo().Qual("database/sql", "DB")).Params(jen.Func().Params()).Body(
 			jen.Return().Func().Params().Body(
 				jen.ID("driver").Assign().Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(jen.ID("db"), jen.Qual("github.com/GuiaBolso/darwin", dialectName).Values()),
-				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(jen.ID("driver"), jen.ID("migrations"), jen.Nil()).Dot("Migrate").Call(), jen.Err().DoesNotEqual().Nil()).Body(
 					jen.ID("panic").Call(jen.Qual("fmt", "Errorf").Call(jen.Lit("migrating database: %w"), jen.Err())),
 				),
 			),

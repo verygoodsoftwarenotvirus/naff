@@ -150,7 +150,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 				),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("metricsHandler").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("metricsHandler").DoesNotEqual().Nil()).Body(
 				jen.ID("s").Dot("logger").Dot("Debug").Call(jen.Lit("establishing metrics handler")),
 				jen.ID("router").Dot("HandleFunc").Call(
 					jen.Lit("/metrics"),

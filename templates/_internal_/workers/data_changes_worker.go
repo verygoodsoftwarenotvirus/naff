@@ -27,7 +27,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("ProvideDataChangesWorker").Params(jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.Op("*").ID("DataChangesWorker")).Body(
 			jen.ID("name").Op(":=").Lit("post_writes"),
-			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").Op(":").ID("encoding").Dot("ProvideClientEncoder").Call(
+			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
 				jen.ID("logger"),
 				jen.ID("encoding").Dot("ContentTypeJSON"),
 			)),
@@ -48,7 +48,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 				jen.ID("ctx"),
 				jen.ID("message"),
 				jen.Op("&").ID("msg"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("w").Dot("logger"),
@@ -63,7 +63,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 				jen.Lit("message"),
 				jen.ID("message"),
 			).Dot("Info").Call(jen.Lit("message received")),
-			jen.Return().ID("nil"),
+			jen.Return().Nil(),
 		),
 		jen.Newline(),
 	)

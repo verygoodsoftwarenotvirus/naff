@@ -27,15 +27,15 @@ func buildWriteFile() []jen.Code {
 		jen.Func().ID("writeFile").Params(jen.List(jen.ID("path"), jen.ID("out")).String()).Params(jen.ID("error")).Body(
 			jen.ID("containingDir").Assign().Qual("path/filepath", "Dir").Call(jen.ID("path")),
 			jen.Newline(),
-			jen.If(jen.ID("err").Assign().Qual("os", "MkdirAll").Call(jen.ID("containingDir"), jen.Octal(777)), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().Qual("os", "MkdirAll").Call(jen.ID("containingDir"), jen.Octal(777)), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("error writing to filepath %q: %w"), jen.ID("path"), jen.ID("err")),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("err").Assign().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.Index().ID("byte").Call(jen.ID("out")), jen.Octal(644)), jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").Assign().Qual("io/ioutil", "WriteFile").Call(jen.ID("path"), jen.Index().ID("byte").Call(jen.ID("out")), jen.Octal(644)), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(jen.Lit("error writing to filepath %q: %w"), jen.ID("path"), jen.ID("err")),
 			),
 			jen.Newline(),
-			jen.Return().ID("nil"),
+			jen.Return().Nil(),
 		),
 		jen.Newline(),
 	}
@@ -45,19 +45,19 @@ func buildMainFunc() []jen.Code {
 	return []jen.Code{
 		jen.Func().ID("main").Params().Body(
 			jen.For(jen.List(jen.ID("path"), jen.ID("cfg")).Assign().Range().ID("editorConfigs")).Body(
-				jen.If(jen.ID("err").Assign().ID("writeFile").Call(jen.ID("path"), jen.ID("buildBasicEditorTemplate").Call(jen.ID("cfg"))), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.If(jen.ID("err").Assign().ID("writeFile").Call(jen.ID("path"), jen.ID("buildBasicEditorTemplate").Call(jen.ID("cfg"))), jen.ID("err").DoesNotEqual().Nil()).Body(
 					jen.Qual("log", "Fatal").Call(jen.ID("err")),
 				),
 			),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("path"), jen.ID("cfg")).Assign().Range().ID("tableConfigs")).Body(
-				jen.If(jen.ID("err").Assign().ID("writeFile").Call(jen.ID("path"), jen.ID("buildBasicTableTemplate").Call(jen.ID("cfg"))), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.If(jen.ID("err").Assign().ID("writeFile").Call(jen.ID("path"), jen.ID("buildBasicTableTemplate").Call(jen.ID("cfg"))), jen.ID("err").DoesNotEqual().Nil()).Body(
 					jen.Qual("log", "Fatal").Call(jen.ID("err")),
 				),
 			),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("path"), jen.ID("cfg")).Assign().Range().ID("creatorConfigs")).Body(
-				jen.If(jen.ID("err").Assign().ID("writeFile").Call(jen.ID("path"), jen.ID("buildBasicCreatorTemplate").Call(jen.ID("cfg"))), jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.If(jen.ID("err").Assign().ID("writeFile").Call(jen.ID("path"), jen.ID("buildBasicCreatorTemplate").Call(jen.ID("cfg"))), jen.ID("err").DoesNotEqual().Nil()).Body(
 					jen.Qual("log", "Fatal").Call(jen.ID("err")),
 				),
 			),

@@ -5,9 +5,11 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/pquerna/otp/totp"
+	"github.com/stretchr/testify/require"
 
 	{{ projectImport "internal/observability/keys" }}
 	{{ projectImport "internal/observability/logging" }}
@@ -16,20 +18,7 @@ import (
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
 	testutils {{ projectImport "tests/utils" }}
-
-	"github.com/pquerna/otp/totp"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-func reverseString(s string) string {
-	runes := []rune(s)
-	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-
-	return string(runes)
-}
 
 func requireNotNilAndNoProblems(t *testing.T, i interface{}, err error) {
 	t.Helper()
@@ -44,7 +33,7 @@ func createUserAndClientForTest(ctx context.Context, t *testing.T) (user *types.
 	user, err := testutils.CreateServiceUser(ctx, urlToUse, fakes.BuildFakeUser().Username)
 	require.NoError(t, err)
 
-	t.Logf("created user #%d: %q", user.ID, user.Username)
+	t.Logf("created user %q: %q", user.ID, user.Username)
 
 	cookie, err = testutils.GetLoginCookie(ctx, urlToUse, user)
 	require.NoError(t, err)
@@ -171,29 +160,4 @@ func buildAdminCookieAndPASETOClients(ctx context.Context, t *testing.T) (cookie
 	require.NoError(t, err)
 
 	return cClient, PASETOClient
-}
-
-func validateAuditLogEntries(t *testing.T, expectedEntries, actualEntries []*types.AuditLogEntry, relevantID uint64, key string) {
-	t.Helper()
-
-	expectedEventTypes := []string{}
-	actualEventTypes := []string{}
-
-	for _, e := range expectedEntries {
-		expectedEventTypes = append(expectedEventTypes, e.EventType)
-	}
-
-	for _, e := range actualEntries {
-		actualEventTypes = append(actualEventTypes, e.EventType)
-
-		if relevantID != 0 && key != "" {
-			if assert.Contains(t, e.Context, key) {
-				assert.EqualValues(t, relevantID, e.Context[key])
-			}
-		}
-	}
-
-	assert.Equal(t, len(expectedEntries), len(actualEntries), "expected %q, got %q", strings.Join(expectedEventTypes, ","), strings.Join(actualEventTypes, ","))
-
-	assert.Subset(t, expectedEventTypes, actualEventTypes)
 }

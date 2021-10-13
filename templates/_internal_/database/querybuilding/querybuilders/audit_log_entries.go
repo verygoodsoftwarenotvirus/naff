@@ -15,7 +15,7 @@ func auditLogEntriesDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.Underscore().Qual(proj.QuerybuildingPackage(), "AuditLogEntrySQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
+			jen.Underscore().Qual(proj.QuerybuildingPackage(), "AuditLogEntrySQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.Nil()),
 		),
 		jen.Newline(),
 	)
@@ -33,7 +33,7 @@ func buildBuildGetAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.Su
 	lines := []jen.Code{
 		jen.Comment("BuildGetAuditLogEntryQuery constructs a SQL query for fetching an audit log entry with a given ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAuditLogEntryQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("entryID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAuditLogEntryQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("entryID").Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -50,7 +50,7 @@ func buildBuildGetAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.Su
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).Op(":").ID("entryID"))),
+				).MapAssign().ID("entryID"))),
 			),
 		),
 		jen.Newline(),
@@ -89,7 +89,7 @@ func buildBuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, dbvendor wor
 	lines := []jen.Code{
 		jen.Comment("BuildGetBatchOfAuditLogEntriesQuery returns a query that fetches every audit log entry in the database within a bucketed range."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetBatchOfAuditLogEntriesQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetBatchOfAuditLogEntriesQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -101,12 +101,12 @@ func buildBuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, dbvendor wor
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).Op(":").ID("beginID"))).
+				).MapAssign().ID("beginID"))).
 					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).Op(":").ID("endID"))),
+				).MapAssign().ID("endID"))),
 			),
 		),
 		jen.Newline(),
@@ -125,7 +125,7 @@ func buildBuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor wordsmith.
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.InternalTracingPackage(), "AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
@@ -157,7 +157,7 @@ func buildBuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor wordsmith.
 				jen.Qual(proj.QuerybuildingPackage(), "CreatedOnColumn"),
 			)),
 			jen.Newline(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
 				jen.ID("builder").Equals().Qual(proj.QuerybuildingPackage(), "ApplyFilterToQueryBuilder").Call(
 					jen.ID("filter"),
 					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),

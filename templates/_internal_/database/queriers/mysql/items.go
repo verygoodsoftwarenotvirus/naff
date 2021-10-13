@@ -13,8 +13,8 @@ func itemsDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("_").ID("types").Dot("ItemDataManager").Op("=").Parens(jen.Op("*").ID("SQLQuerier")).Call(jen.ID("nil")),
-			jen.ID("itemsTableColumns").Op("=").Index().String().Valuesln(jen.Lit("items.id"), jen.Lit("items.name"), jen.Lit("items.details"), jen.Lit("items.created_on"), jen.Lit("items.last_updated_on"), jen.Lit("items.archived_on"), jen.Lit("items.belongs_to_account")),
+			jen.ID("_").ID("types").Dot("ItemDataManager").Equals().Parens(jen.Op("*").ID("SQLQuerier")).Call(jen.Nil()),
+			jen.ID("itemsTableColumns").Equals().Index().String().Valuesln(jen.Lit("items.id"), jen.Lit("items.name"), jen.Lit("items.details"), jen.Lit("items.created_on"), jen.Lit("items.last_updated_on"), jen.Lit("items.archived_on"), jen.Lit("items.belongs_to_account")),
 		),
 		jen.Newline(),
 	)
@@ -29,22 +29,22 @@ func itemsDotGo(proj *models.Project) *jen.File {
 				jen.Lit("include_counts"),
 				jen.ID("includeCounts"),
 			),
-			jen.ID("x").Op("=").Op("&").ID("types").Dot("Item").Values(),
+			jen.ID("x").Equals().Op("&").ID("types").Dot("Item").Values(),
 			jen.ID("targetVars").Op(":=").Index().Interface().Valuesln(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("Name"), jen.Op("&").ID("x").Dot("Details"), jen.Op("&").ID("x").Dot("CreatedOn"), jen.Op("&").ID("x").Dot("LastUpdatedOn"), jen.Op("&").ID("x").Dot("ArchivedOn"), jen.Op("&").ID("x").Dot("BelongsToAccount")),
 			jen.If(jen.ID("includeCounts")).Body(
-				jen.ID("targetVars").Op("=").ID("append").Call(
+				jen.ID("targetVars").Equals().ID("append").Call(
 					jen.ID("targetVars"),
 					jen.Op("&").ID("filteredCount"),
 					jen.Op("&").ID("totalCount"),
 				)),
-			jen.If(jen.ID("err").Op("=").ID("scan").Dot("Scan").Call(jen.ID("targetVars").Op("...")), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.If(jen.ID("err").Equals().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Op("...")), jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit(""),
 				))),
-			jen.Return().List(jen.ID("x"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.ID("nil")),
+			jen.Return().List(jen.ID("x"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
@@ -65,37 +65,37 @@ func itemsDotGo(proj *models.Project) *jen.File {
 					jen.ID("rows"),
 					jen.ID("includeCounts"),
 				),
-				jen.If(jen.ID("scanErr").Op("!=").ID("nil")).Body(
-					jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
+				jen.If(jen.ID("scanErr").DoesNotEqual().Nil()).Body(
+					jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
 				jen.If(jen.ID("includeCounts")).Body(
 					jen.If(jen.ID("filteredCount").Op("==").Zero()).Body(
-						jen.ID("filteredCount").Op("=").ID("fc")),
+						jen.ID("filteredCount").Equals().ID("fc")),
 					jen.If(jen.ID("totalCount").Op("==").Zero()).Body(
-						jen.ID("totalCount").Op("=").ID("tc")),
+						jen.ID("totalCount").Equals().ID("tc")),
 				),
-				jen.ID("items").Op("=").ID("append").Call(
+				jen.ID("items").Equals().ID("append").Call(
 					jen.ID("items"),
 					jen.ID("x"),
 				),
 			),
-			jen.If(jen.ID("err").Op("=").ID("q").Dot("checkRowsForErrorAndClose").Call(
+			jen.If(jen.ID("err").Equals().ID("q").Dot("checkRowsForErrorAndClose").Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("handling rows"),
 				))),
-			jen.Return().List(jen.ID("items"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.ID("nil")),
+			jen.Return().List(jen.ID("items"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("itemExistenceQuery").Op("=").Lit("SELECT EXISTS ( SELECT items.id FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.id = ? )"),
+			jen.ID("itemExistenceQuery").Equals().Lit("SELECT EXISTS ( SELECT items.id FROM items WHERE items.archived_on IS NULL AND items.belongs_to_account = ? AND items.id = ? )"),
 		),
 		jen.Newline(),
 	)
@@ -109,7 +109,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
 			jen.If(jen.ID("itemID").Op("==").Lit("")).Body(
 				jen.Return().List(jen.ID("false"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("ItemIDKey"),
 				jen.ID("itemID"),
 			),
@@ -119,7 +119,7 @@ func itemsDotGo(proj *models.Project) *jen.File {
 			),
 			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
 				jen.Return().List(jen.ID("false"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
 			),
@@ -134,21 +134,21 @@ func itemsDotGo(proj *models.Project) *jen.File {
 				jen.ID("itemExistenceQuery"),
 				jen.ID("args"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().List(jen.ID("false"), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("performing item existence check"),
 				))),
-			jen.Return().List(jen.ID("result"), jen.ID("nil")),
+			jen.Return().List(jen.ID("result"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("getItemQuery").Op("=").Lit(`
+			jen.ID("getItemQuery").Equals().Lit(`
 SELECT 
 	items.id, 
 	items.name, 
@@ -174,8 +174,8 @@ AND items.id = ?
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
 			jen.If(jen.ID("itemID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("ItemIDKey"),
 				jen.ID("itemID"),
 			),
@@ -184,8 +184,8 @@ AND items.id = ?
 				jen.ID("itemID"),
 			),
 			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
 			),
@@ -206,21 +206,21 @@ AND items.id = ?
 				jen.ID("row"),
 				jen.ID("false"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("scanning item"),
 				))),
-			jen.Return().List(jen.ID("item"), jen.ID("nil")),
+			jen.Return().List(jen.ID("item"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("getAllItemsCountQuery").Op("=").Lit("SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL"),
+			jen.ID("getAllItemsCountQuery").Equals().Lit("SELECT COUNT(items.id) FROM items WHERE items.archived_on IS NULL"),
 		),
 		jen.Newline(),
 	)
@@ -238,14 +238,14 @@ AND items.id = ?
 				jen.ID("getAllItemsCountQuery"),
 				jen.Lit("fetching count of items"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().List(jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("querying for count of items"),
 				))),
-			jen.Return().List(jen.ID("count"), jen.ID("nil")),
+			jen.Return().List(jen.ID("count"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
@@ -258,8 +258,8 @@ AND items.id = ?
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
 			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
 			),
@@ -267,19 +267,19 @@ AND items.id = ?
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.ID("x").Op("=").Op("&").ID("types").Dot("ItemList").Values(),
-			jen.ID("logger").Op("=").ID("filter").Dot("AttachToLogger").Call(jen.ID("logger")),
+			jen.ID("x").Equals().Op("&").ID("types").Dot("ItemList").Values(),
+			jen.ID("logger").Equals().ID("filter").Dot("AttachToLogger").Call(jen.ID("logger")),
 			jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
 				jen.ID("span"),
 				jen.ID("filter"),
 			),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
-				jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Op("=").List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit"))),
+			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
+				jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Equals().List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit"))),
 			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dot("buildListQuery").Call(
 				jen.ID("ctx"),
 				jen.Lit("items"),
-				jen.ID("nil"),
-				jen.ID("nil"),
+				jen.Nil(),
+				jen.Nil(),
 				jen.ID("accountOwnershipColumn"),
 				jen.ID("itemsTableColumns"),
 				jen.ID("accountID"),
@@ -293,32 +293,32 @@ AND items.id = ?
 				jen.ID("query"),
 				jen.ID("args"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("executing items list retrieval query"),
 				))),
-			jen.If(jen.List(jen.ID("x").Dot("Items"), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.ID("err")).Op("=").ID("q").Dot("scanItems").Call(
+			jen.If(jen.List(jen.ID("x").Dot("Items"), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.ID("err")).Equals().ID("q").Dot("scanItems").Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
 				jen.ID("true"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("scanning items"),
 				))),
-			jen.Return().List(jen.ID("x"), jen.ID("nil")),
+			jen.Return().List(jen.ID("x"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("getItemsWithIDsQuery").Op("=").Lit(`
+			jen.ID("getItemsWithIDsQuery").Equals().Lit(`
 SELECT 
 	items.id, 
 	items.name, 
@@ -349,8 +349,8 @@ AND items.id IN (?,?,?)
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
 			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
 			),
@@ -358,18 +358,18 @@ AND items.id IN (?,?,?)
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.If(jen.ID("ids").Op("==").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided"))),
+			jen.If(jen.ID("ids").Op("==").Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided"))),
 			jen.If(jen.ID("limit").Op("==").Zero()).Body(
-				jen.ID("limit").Op("=").ID("uint8").Call(jen.ID("types").Dot("DefaultLimit"))),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("limit").Op(":").ID("limit"), jen.Lit("id_count").Op(":").ID("len").Call(jen.ID("ids")))),
+				jen.ID("limit").Equals().ID("uint8").Call(jen.ID("types").Dot("DefaultLimit"))),
+			jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("limit").MapAssign().ID("limit"), jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")))),
 			jen.ID("query").Op(":=").Qual("fmt", "Sprintf").Call(
 				jen.ID("getItemsWithIDsQuery"),
 				jen.ID("joinIDs").Call(jen.ID("ids")),
 			),
 			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("accountID")),
 			jen.For(jen.List(jen.ID("_"), jen.ID("id")).Op(":=").Range().ID("ids")).Body(
-				jen.ID("args").Op("=").ID("append").Call(
+				jen.ID("args").Equals().ID("append").Call(
 					jen.ID("args"),
 					jen.ID("id"),
 				)),
@@ -380,8 +380,8 @@ AND items.id IN (?,?,?)
 				jen.ID("query"),
 				jen.ID("args"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
@@ -392,21 +392,21 @@ AND items.id IN (?,?,?)
 				jen.ID("rows"),
 				jen.ID("false"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("scanning items"),
 				))),
-			jen.Return().List(jen.ID("items"), jen.ID("nil")),
+			jen.Return().List(jen.ID("items"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("itemCreationQuery").Op("=").Lit(`
+			jen.ID("itemCreationQuery").Equals().Lit(`
 	INSERT INTO items (id,name,details,belongs_to_account,created_on) VALUES (?,?,?,?,UNIX_TIMESTAMP())
 `),
 		),
@@ -419,8 +419,8 @@ AND items.id IN (?,?,?)
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("CreateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("types").Dot("ItemDatabaseCreationInput")).Params(jen.Op("*").ID("types").Dot("Item"), jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.If(jen.ID("input").Op("==").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("ErrNilInputProvided"))),
+			jen.If(jen.ID("input").Op("==").Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided"))),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("ItemIDKey"),
 				jen.ID("input").Dot("ID"),
@@ -432,27 +432,27 @@ AND items.id IN (?,?,?)
 				jen.Lit("item creation"),
 				jen.ID("itemCreationQuery"),
 				jen.ID("args"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.ID("observability").Dot("PrepareError").Call(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
 					jen.ID("span"),
 					jen.Lit("creating item"),
 				))),
-			jen.ID("x").Op(":=").Op("&").ID("types").Dot("Item").Valuesln(jen.ID("ID").Op(":").ID("input").Dot("ID"), jen.ID("Name").Op(":").ID("input").Dot("Name"), jen.ID("Details").Op(":").ID("input").Dot("Details"), jen.ID("BelongsToAccount").Op(":").ID("input").Dot("BelongsToAccount"), jen.ID("CreatedOn").Op(":").ID("q").Dot("currentTime").Call()),
+			jen.ID("x").Op(":=").Op("&").ID("types").Dot("Item").Valuesln(jen.ID("ID").MapAssign().ID("input").Dot("ID"), jen.ID("Name").MapAssign().ID("input").Dot("Name"), jen.ID("Details").MapAssign().ID("input").Dot("Details"), jen.ID("BelongsToAccount").MapAssign().ID("input").Dot("BelongsToAccount"), jen.ID("CreatedOn").MapAssign().ID("q").Dot("currentTime").Call()),
 			jen.ID("tracing").Dot("AttachItemIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("x").Dot("ID"),
 			),
 			jen.ID("logger").Dot("Info").Call(jen.Lit("item created")),
-			jen.Return().List(jen.ID("x"), jen.ID("nil")),
+			jen.Return().List(jen.ID("x"), jen.Nil()),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("updateItemQuery").Op("=").Lit(`
+			jen.ID("updateItemQuery").Equals().Lit(`
 	UPDATE items SET name = ?, details = ?, last_updated_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND belongs_to_account = ? AND id = ?
 `),
 		),
@@ -465,7 +465,7 @@ AND items.id IN (?,?,?)
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("UpdateItem").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID("types").Dot("Item")).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.If(jen.ID("updated").Op("==").ID("nil")).Body(
+			jen.If(jen.ID("updated").Op("==").Nil()).Body(
 				jen.Return().ID("ErrNilInputProvided")),
 			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("ItemIDKey"),
@@ -486,7 +486,7 @@ AND items.id IN (?,?,?)
 				jen.Lit("item update"),
 				jen.ID("updateItemQuery"),
 				jen.ID("args"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -494,14 +494,14 @@ AND items.id IN (?,?,?)
 					jen.Lit("updating item"),
 				)),
 			jen.ID("logger").Dot("Info").Call(jen.Lit("item updated")),
-			jen.Return().ID("nil"),
+			jen.Return().Nil(),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
 		jen.Var().Defs(
-			jen.ID("archiveItemQuery").Op("=").Lit(`
+			jen.ID("archiveItemQuery").Equals().Lit(`
 	UPDATE items SET archived_on = UNIX_TIMESTAMP() WHERE archived_on IS NULL AND belongs_to_account = ? AND id = ?
 `),
 		),
@@ -517,7 +517,7 @@ AND items.id IN (?,?,?)
 			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
 			jen.If(jen.ID("itemID").Op("==").Lit("")).Body(
 				jen.Return().ID("ErrInvalidIDProvided")),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("ItemIDKey"),
 				jen.ID("itemID"),
 			),
@@ -527,7 +527,7 @@ AND items.id IN (?,?,?)
 			),
 			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
 				jen.Return().ID("ErrInvalidIDProvided")),
-			jen.ID("logger").Op("=").ID("logger").Dot("WithValue").Call(
+			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
 				jen.ID("keys").Dot("AccountIDKey"),
 				jen.ID("accountID"),
 			),
@@ -542,7 +542,7 @@ AND items.id IN (?,?,?)
 				jen.Lit("item archive"),
 				jen.ID("archiveItemQuery"),
 				jen.ID("args"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -550,7 +550,7 @@ AND items.id IN (?,?,?)
 					jen.Lit("updating item"),
 				)),
 			jen.ID("logger").Dot("Info").Call(jen.Lit("item archived")),
-			jen.Return().ID("nil"),
+			jen.Return().Nil(),
 		),
 		jen.Newline(),
 	)

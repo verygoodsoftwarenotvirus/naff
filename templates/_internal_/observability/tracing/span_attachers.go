@@ -16,7 +16,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("attachUint8ToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("attachmentKey").String(),
 			jen.ID("id").ID("uint8")).Body(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("span").DoesNotEqual().Nil()).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int64").Call(
 					jen.ID("attachmentKey"),
 					jen.ID("int64").Call(jen.ID("id")),
@@ -29,8 +29,8 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("attachUint64ToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("attachmentKey").String(),
-			jen.ID("id").ID("uint64")).Body(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
+			jen.ID("id").Uint64()).Body(
+			jen.If(jen.ID("span").DoesNotEqual().Nil()).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Int64").Call(
 					jen.ID("attachmentKey"),
 					jen.ID("int64").Call(jen.ID("id")),
@@ -44,7 +44,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("attachStringToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.List(jen.ID("key"),
 				jen.ID("str")).String()).Body(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("span").DoesNotEqual().Nil()).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "String").Call(
 					jen.ID("key"),
 					jen.ID("str"),
@@ -58,7 +58,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("attachBooleanToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("key").String(),
 			jen.ID("b").ID("bool")).Body(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("span").DoesNotEqual().Nil()).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Bool").Call(
 					jen.ID("key"),
 					jen.ID("b"),
@@ -86,7 +86,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("AttachToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("key").String(),
 			jen.ID("val").Interface()).Body(
-			jen.If(jen.ID("span").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("span").DoesNotEqual().Nil()).Body(
 				jen.ID("span").Dot("SetAttributes").Call(jen.Qual(constants.TracingAttributionLibrary, "Any").Call(
 					jen.ID("key"),
 					jen.ID("val"),
@@ -169,7 +169,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachSessionContextDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("sessionCtxData").PointerTo().Qual(proj.TypesPackage(), "SessionContextData")).Body(
-			jen.If(jen.ID("sessionCtxData").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("sessionCtxData").DoesNotEqual().Nil()).Body(
 				jen.ID("AttachRequestingUserIDToSpan").Call(
 					jen.ID("span"),
 					jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
@@ -223,7 +223,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachUserToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("user").PointerTo().Qual(proj.TypesPackage(), "User")).Body(
-			jen.If(jen.ID("user").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("user").DoesNotEqual().Nil()).Body(
 				jen.ID("AttachUserIDToSpan").Call(
 					jen.ID("span"),
 					jen.ID("user").Dot("ID"),
@@ -312,7 +312,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachRequestToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("req").PointerTo().Qual("net/http", "Request")).Body(
-			jen.If(jen.ID("req").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("req").DoesNotEqual().Nil()).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
 					jen.Qual(proj.ConstantKeysPackage(), "RequestURIKey"),
@@ -346,7 +346,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachResponseToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("res").PointerTo().Qual("net/http", "Response")).Body(
-			jen.If(jen.ID("res").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("res").DoesNotEqual().Nil()).Body(
 				jen.ID("AttachRequestToSpan").Call(
 					jen.ID("span"),
 					jen.ID("res").Dot("Request"),
@@ -380,7 +380,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Func().ID("AttachErrorToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("description").String(),
 			jen.ID("err").ID("error")).Body(
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("span").Dot("RecordError").Callln(
 					jen.ID("err"),
 					jen.Qual(constants.TracingLibrary, "WithTimestamp").Call(jen.Qual("time", "Now").Call()),
@@ -433,7 +433,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachQueryFilterToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("filter").PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Body(
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
 				jen.ID("attachUint8ToSpan").Call(
 					jen.ID("span"),
 					jen.Qual(proj.ConstantKeysPackage(), "FilterLimitKey"),
@@ -499,7 +499,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("AttachUserAgentDataToSpan").Params(jen.ID("span").Qual(constants.TracingLibrary, "Span"),
 			jen.ID("ua").PointerTo().Qual("github.com/mssola/user_agent", "UserAgent")).Body(
-			jen.If(jen.ID("ua").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("ua").DoesNotEqual().Nil()).Body(
 				jen.ID("attachStringToSpan").Call(
 					jen.ID("span"),
 					jen.Qual(proj.ConstantKeysPackage(), "UserAgentOSKey"),

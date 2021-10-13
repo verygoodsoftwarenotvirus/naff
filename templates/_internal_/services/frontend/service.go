@@ -26,16 +26,15 @@ func serviceDotGo(proj *models.Project) *jen.File {
 		jen.ID("panicker").Qual(proj.InternalPackage("panicking"), "Panicker"),
 		jen.ID("localizer").PointerTo().Qual("github.com/nicksnyder/go-i18n/v2/i18n", "Localizer"),
 		jen.ID("dataStore").Qual(proj.DatabasePackage(), "DataManager"),
-		jen.ID("paymentManager").ID("capitalism").Dot("PaymentManager"),
 		jen.ID("authService").ID("AuthService"),
 		jen.ID("usersService").ID("UsersService"),
 		jen.ID("sessionContextDataFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")),
-		jen.ID("accountIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
-		jen.ID("apiClientIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
-		jen.ID("webhookIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")),
+		jen.ID("accountIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
+		jen.ID("apiClientIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
+		jen.ID("webhookIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
 	}
 	for _, typ := range proj.DataTypes {
-		structFields = append(structFields, jen.IDf("%sIDFetcher", typ.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.ID("uint64")))
+		structFields = append(structFields, jen.IDf("%sIDFetcher", typ.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()))
 	}
 
 	code.Add(
@@ -80,47 +79,38 @@ func serviceDotGo(proj *models.Project) *jen.File {
 	)
 
 	serviceInitFields := []jen.Code{
-		jen.ID("useFakeData").Op(":").ID("cfg").Dot("UseFakeData"),
-		jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
-		jen.ID("tracer").Op(":").Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
-		jen.ID("panicker").Op(":").Qual(proj.InternalPackage("panicking"), "NewProductionPanicker").Call(),
-		jen.ID("localizer").Op(":").ID("provideLocalizer").Call(),
-		jen.ID("sessionContextDataFetcher").Op(":").Qual(proj.AuthServicePackage(), "FetchContextFromRequest"),
-		jen.ID("authService").Op(":").ID("authService"),
-		jen.ID("usersService").Op(":").ID("usersService"),
-		jen.ID("paymentManager").Op(":").ID("paymentManager"),
-		jen.ID("dataStore").Op(":").ID("dataStore"),
-		jen.ID("apiClientIDFetcher").Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-			jen.ID("logger"),
+		jen.ID("useFakeData").MapAssign().ID("cfg").Dot("UseFakeData"),
+		jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
+		jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
+		jen.ID("panicker").MapAssign().Qual(proj.InternalPackage("panicking"), "NewProductionPanicker").Call(),
+		jen.ID("localizer").MapAssign().ID("provideLocalizer").Call(),
+		jen.ID("sessionContextDataFetcher").MapAssign().Qual(proj.AuthServicePackage(), "FetchContextFromRequest"),
+		jen.ID("authService").MapAssign().ID("authService"),
+		jen.ID("usersService").MapAssign().ID("usersService"),
+		jen.ID("dataStore").MapAssign().ID("dataStore"),
+		jen.ID("apiClientIDFetcher").MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
 			jen.ID("apiClientIDURLParamKey"),
-			jen.Lit("API client"),
 		),
-		jen.ID("accountIDFetcher").Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-			jen.ID("logger"),
+		jen.ID("accountIDFetcher").MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
 			jen.ID("accountIDURLParamKey"),
-			jen.Lit("account"),
 		),
-		jen.ID("webhookIDFetcher").Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-			jen.ID("logger"),
+		jen.ID("webhookIDFetcher").MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
 			jen.ID("webhookIDURLParamKey"),
-			jen.Lit("webhook"),
 		),
 	}
 
 	for _, typ := range proj.DataTypes {
 		tuvn := typ.Name.UnexportedVarName()
 		serviceInitFields = append(serviceInitFields,
-			jen.IDf("%sIDFetcher", tuvn).Op(":").ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-				jen.ID("logger"),
+			jen.IDf("%sIDFetcher", tuvn).MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
 				jen.IDf("%sIDURLParamKey", tuvn),
-				jen.Lit(typ.Name.SingularCommonName()),
 			),
 		)
 	}
 
 	serviceInitFields = append(serviceInitFields,
-		jen.ID("templateFuncMap").Op(":").Map(jen.String()).Interface().Valuesln(jen.Lit("relativeTime").Op(":").ID("relativeTime"),
-			jen.Lit("relativeTimeFromPtr").Op(":").ID("relativeTimeFromPtr"),
+		jen.ID("templateFuncMap").MapAssign().Map(jen.String()).Interface().Valuesln(jen.Lit("relativeTime").MapAssign().ID("relativeTime"),
+			jen.Lit("relativeTimeFromPtr").MapAssign().ID("relativeTimeFromPtr"),
 		),
 	)
 

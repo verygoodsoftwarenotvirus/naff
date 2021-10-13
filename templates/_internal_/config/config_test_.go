@@ -117,7 +117,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 							jen.ID("f").Dot("Name").Call(),
 							jen.Func().Params(jen.Interface()).Params(jen.Index().ID("byte"),
 								jen.ID("error")).Body(
-								jen.Return().List(jen.ID("nil"),
+								jen.Return().List(jen.Nil(),
 									jen.Qual("errors", "New").Call(jen.Lit("blah")),
 								),
 							),

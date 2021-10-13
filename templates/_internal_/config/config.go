@@ -86,7 +86,7 @@ func configDotGo(proj *models.Project) *jen.File {
 				jen.ID("error"))).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("byteSlice"),
 				jen.ID("err")).Assign().ID("marshaller").Call(jen.PointerTo().ID("cfg")),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().ID("err"),
 			),
 			jen.Newline(),
@@ -100,13 +100,13 @@ func configDotGo(proj *models.Project) *jen.File {
 	)
 
 	code.Add(
-		jen.Var().Underscore().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("InstanceConfig")).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual("github.com/go-ozzo/ozzo-validation/v4", "ValidatableWithContext").Equals().Parens(jen.PointerTo().ID("InstanceConfig")).Call(jen.Nil()),
 		jen.Newline(),
 	)
 
 	validateLines := []jen.Code{
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Search").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Search portion of config: %w"),
 				jen.ID("err"),
@@ -114,7 +114,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Uploads").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Uploads portion of config: %w"),
 				jen.ID("err"),
@@ -122,7 +122,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Routing").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Routing portion of config: %w"),
 				jen.ID("err"),
@@ -130,7 +130,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Meta").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Meta portion of config: %w"),
 				jen.ID("err"),
@@ -138,7 +138,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Encoding portion of config: %w"),
 				jen.ID("err"),
@@ -146,7 +146,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Encoding").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Encoding portion of config: %w"),
 				jen.ID("err"),
@@ -154,7 +154,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Observability").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Observability portion of config: %w"),
 				jen.ID("err"),
@@ -162,7 +162,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Database").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Database portion of config: %w"),
 				jen.ID("err"),
@@ -170,7 +170,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Server").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating HTTPServer portion of config: %w"),
 				jen.ID("err"),
@@ -178,7 +178,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Services").Dot("Auth").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Auth service portion of config: %w"),
 				jen.ID("err"),
@@ -186,7 +186,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Services").Dot("Frontend").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Frontend service portion of config: %w"),
 				jen.ID("err"),
@@ -194,7 +194,7 @@ func configDotGo(proj *models.Project) *jen.File {
 		),
 		jen.Newline(),
 		jen.If(jen.ID("err").Assign().ID("cfg").Dot("Services").Dot("Webhooks").Dot("ValidateWithContext").Call(jen.ID("ctx")),
-			jen.ID("err").Op("!=").ID("nil")).Body(
+			jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().Qual("fmt", "Errorf").Call(
 				jen.Lit("error validating Webhooks service portion of config: %w"),
 				jen.ID("err"),
@@ -208,7 +208,7 @@ func configDotGo(proj *models.Project) *jen.File {
 
 		validateLines = append(validateLines,
 			jen.If(jen.Err().Assign().ID("cfg").Dot("Services").Dot(pn).Dot("ValidateWithContext").Call(jen.ID("ctx")),
-				jen.ID("err").Op("!=").ID("nil")).Body(
+				jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().Qual("fmt", "Errorf").Call(
 					jen.Lit(fmt.Sprintf("error validating %s service portion of config: ", pn)+"%w"),
 					jen.ID("err"),
@@ -242,13 +242,13 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.Qual(proj.DatabasePackage(), "DataManager"),
 			jen.ID("error"),
 		).Body(
-			jen.If(jen.ID("cfg").IsEqualTo().ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"),
+			jen.If(jen.ID("cfg").IsEqualTo().Nil()).Body(
+				jen.Return().List(jen.Nil(),
 					jen.ID("errNilConfig"),
 				),
 			),
 			jen.Newline(),
-			jen.ID("shouldCreateTestUser").Assign().ID("cfg").Dot("Meta").Dot("RunMode").Op("!=").ID("ProductionRunMode"),
+			jen.ID("shouldCreateTestUser").Assign().ID("cfg").Dot("Meta").Dot("RunMode").DoesNotEqual().ID("ProductionRunMode"),
 			jen.Newline(),
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("cfg").Dot("Database").Dot("Provider")))).Body(
 				utils.ConditionalCode(proj.DatabaseIsEnabled(models.MySQL), jen.Case(jen.Qual(proj.DatabasePackage("config"), "MySQLProvider")).Body(
@@ -258,7 +258,7 @@ func configDotGo(proj *models.Project) *jen.File {
 					jen.Return().Qual(proj.DatabaseQueriersPackage("postgres"), "ProvideDatabaseClient").Call(constants.CtxVar(), constants.LoggerVar(), jen.AddressOf().ID("cfg").Dot("Database"), jen.ID("shouldCreateTestUser")),
 				)),
 				jen.Default().Body(
-					jen.Return().List(jen.ID("nil"),
+					jen.Return().List(jen.Nil(),
 						jen.Qual("fmt", "Errorf").Call(
 							jen.Lit("%w: %q"),
 							jen.ID("errInvalidDatabaseProvider"),

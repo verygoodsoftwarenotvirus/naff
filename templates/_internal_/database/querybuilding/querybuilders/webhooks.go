@@ -15,7 +15,7 @@ func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.F
 
 	code.Add(
 		jen.Var().Defs(
-			jen.Underscore().Qual(proj.QuerybuildingPackage(), "WebhookSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.ID("nil")),
+			jen.Underscore().Qual(proj.QuerybuildingPackage(), "WebhookSQLQueryBuilder").Equals().Parens(jen.PointerTo().ID(dbvendor.Singular())).Call(jen.Nil()),
 		),
 		jen.Newline(),
 	)
@@ -36,7 +36,7 @@ func buildBuildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 	lines := []jen.Code{
 		jen.Comment("BuildGetWebhookQuery returns a SQL query (and arguments) for retrieving a given webhook."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("accountID")).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -57,15 +57,15 @@ func buildBuildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).Op(":").ID("webhookID"), jen.Qual("fmt", "Sprintf").Call(
+				).MapAssign().ID("webhookID"), jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn"),
-				).Op(":").ID("accountID"), jen.Qual("fmt", "Sprintf").Call(
+				).MapAssign().ID("accountID"), jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).Op(":").ID("nil"))),
+				).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -93,7 +93,7 @@ func buildBuildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wordsmith
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).Op(":").ID("nil"))),
+				).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -106,7 +106,7 @@ func buildBuildGetBatchOfWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 	lines := []jen.Code{
 		jen.Comment("BuildGetBatchOfWebhooksQuery returns a query that fetches every webhook in the database within a bucketed range."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetBatchOfWebhooksQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetBatchOfWebhooksQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("beginID"), jen.ID("endID")).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -118,12 +118,12 @@ func buildBuildGetBatchOfWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).Op(":").ID("beginID"))).
+				).MapAssign().ID("beginID"))).
 					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
 					jen.Lit("%s.%s"),
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).Op(":").ID("endID"))),
+				).MapAssign().ID("endID"))),
 			),
 		),
 		jen.Newline(),
@@ -140,7 +140,7 @@ func buildBuildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.If(jen.ID("filter").Op("!=").ID("nil")).Body(
+			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.InternalTracingPackage(), "AttachFilterToSpan").Call(
 					jen.ID("span"),
 					jen.ID("filter").Dot("Page"),
@@ -150,8 +150,8 @@ func buildBuildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			jen.Return().ID("b").Dot("buildListQuery").Callln(
 				jen.ID("ctx"),
 				jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-				jen.ID("nil"),
-				jen.ID("nil"),
+				jen.Nil(),
+				jen.Nil(),
 				jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn"),
 				jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableColumns"),
 				jen.ID("accountID"),
@@ -276,7 +276,7 @@ func buildBuildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").Op(":").ID("input").Dot("BelongsToAccount"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").MapAssign().ID("input").Dot("BelongsToAccount"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -289,7 +289,7 @@ func buildBuildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.Supe
 	lines := []jen.Code{
 		jen.Comment("BuildArchiveWebhookQuery returns a SQL query (and arguments) that will mark a webhook as archived."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildArchiveWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("accountID")).ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildArchiveWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.ID("webhookID"), jen.ID("accountID")).Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -313,7 +313,7 @@ func buildBuildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.Supe
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").Op(":").ID("webhookID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").Op(":").ID("accountID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").Op(":").ID("nil"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("webhookID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").MapAssign().ID("accountID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -326,7 +326,7 @@ func buildBuildGetAuditLogEntriesForWebhookQuery(proj *models.Project, dbvendor 
 	lines := []jen.Code{
 		jen.Comment("BuildGetAuditLogEntriesForWebhookQuery constructs a SQL query for fetching audit log entries belong to a webhook with a given ID."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesForWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("webhookID").ID("uint64")).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).ID("BuildGetAuditLogEntriesForWebhookQuery").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("webhookID").Uint64()).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
 			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -358,7 +358,7 @@ func buildBuildGetAuditLogEntriesForWebhookQuery(proj *models.Project, dbvendor 
 					}
 					return jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 						Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-						Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("webhookIDKey").Op(":").ID("webhookID"))).
+						Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.ID("webhookIDKey").MapAssign().ID("webhookID"))).
 						Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),

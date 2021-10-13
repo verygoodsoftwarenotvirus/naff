@@ -30,7 +30,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("ProvidePreWritesWorker").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"), jen.ID("client").Op("*").Qual("net/http", "Client"), jen.ID("dataManager").ID("database").Dot("DataManager"), jen.ID("postWritesPublisher").ID("publishers").Dot("Publisher"), jen.ID("searchIndexLocation").ID("search").Dot("IndexPath"), jen.ID("searchIndexProvider").ID("search").Dot("IndexManagerProvider")).Params(jen.Op("*").ID("PreWritesWorker"), jen.ID("error")).Body(
 			jen.Var().Defs(
-				jen.ID("name").Op("=").Lit("pre_writes"),
+				jen.ID("name").Equals().Lit("pre_writes"),
 			),
 			jen.List(jen.ID("itemsIndexManager"), jen.ID("err")).Op(":=").ID("searchIndexProvider").Call(
 				jen.ID("ctx"),
@@ -41,18 +41,18 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 				jen.Lit("name"),
 				jen.Lit("description"),
 			),
-			jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
-				jen.Return().List(jen.ID("nil"), jen.Qual("fmt", "Errorf").Call(
+			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(
 					jen.Lit("setting up items search index manager: %w"),
 					jen.ID("err"),
 				))),
-			jen.ID("w").Op(":=").Op("&").ID("PreWritesWorker").Valuesln(jen.ID("logger").Op(":").Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
+			jen.ID("w").Op(":=").Op("&").ID("PreWritesWorker").Valuesln(jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
 				jen.Lit("topic"),
 				jen.ID("name"),
-			), jen.ID("tracer").Op(":").ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").Op(":").ID("encoding").Dot("ProvideClientEncoder").Call(
+			), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
 				jen.ID("logger"),
 				jen.ID("encoding").Dot("ContentTypeJSON"),
-			), jen.ID("postWritesPublisher").Op(":").ID("postWritesPublisher"), jen.ID("dataManager").Op(":").ID("dataManager"), jen.ID("itemsIndexManager").Op(":").ID("itemsIndexManager")),
+			), jen.ID("postWritesPublisher").MapAssign().ID("postWritesPublisher"), jen.ID("dataManager").MapAssign().ID("dataManager"), jen.ID("itemsIndexManager").MapAssign().ID("itemsIndexManager")),
 			jen.Return().List(jen.ID("w"), jen.ID("err")),
 		),
 		jen.Newline(),
@@ -71,7 +71,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 				jen.ID("ctx"),
 				jen.ID("message"),
 				jen.Op("&").ID("msg"),
-			), jen.ID("err").Op("!=").ID("nil")).Body(
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().ID("observability").Dot("PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("w").Dot("logger"),
@@ -92,28 +92,28 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.List(jen.ID("item"), jen.ID("err")).Op(":=").ID("w").Dot("dataManager").Dot("CreateItem").Call(
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("Item"),
-					), jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+					), jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 						jen.Return().ID("observability").Dot("PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
 							jen.Lit("creating item"),
-						)), jen.If(jen.ID("err").Op("=").ID("w").Dot("itemsIndexManager").Dot("Index").Call(
+						)), jen.If(jen.ID("err").Equals().ID("w").Dot("itemsIndexManager").Dot("Index").Call(
 						jen.ID("ctx"),
 						jen.ID("item").Dot("ID"),
 						jen.ID("item"),
-					), jen.ID("err").Op("!=").ID("nil")).Body(
+					), jen.ID("err").DoesNotEqual().Nil()).Body(
 						jen.Return().ID("observability").Dot("PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
 							jen.Lit("indexing the item"),
-						)), jen.If(jen.ID("w").Dot("postWritesPublisher").Op("!=").ID("nil")).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").Op(":").ID("msg").Dot("DataType"), jen.ID("Item").Op(":").ID("item"), jen.ID("AttributableToUserID").Op(":").ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").Op(":").ID("msg").Dot("AttributableToAccountID")),
-						jen.If(jen.ID("err").Op("=").ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
+						)), jen.If(jen.ID("w").Dot("postWritesPublisher").DoesNotEqual().Nil()).Body(
+						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Item").MapAssign().ID("item"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
+						jen.If(jen.ID("err").Equals().ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
 							jen.ID("ctx"),
 							jen.ID("dcm"),
-						), jen.ID("err").Op("!=").ID("nil")).Body(
+						), jen.ID("err").DoesNotEqual().Nil()).Body(
 							jen.Return().ID("observability").Dot("PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
@@ -125,18 +125,18 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.List(jen.ID("webhook"), jen.ID("err")).Op(":=").ID("w").Dot("dataManager").Dot("CreateWebhook").Call(
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("Webhook"),
-					), jen.If(jen.ID("err").Op("!=").ID("nil")).Body(
+					), jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 						jen.Return().ID("observability").Dot("PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
 							jen.Lit("creating webhook"),
-						)), jen.If(jen.ID("w").Dot("postWritesPublisher").Op("!=").ID("nil")).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").Op(":").ID("msg").Dot("DataType"), jen.ID("Webhook").Op(":").ID("webhook"), jen.ID("AttributableToUserID").Op(":").ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").Op(":").ID("msg").Dot("AttributableToAccountID")),
-						jen.If(jen.ID("err").Op("=").ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
+						)), jen.If(jen.ID("w").Dot("postWritesPublisher").DoesNotEqual().Nil()).Body(
+						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Webhook").MapAssign().ID("webhook"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
+						jen.If(jen.ID("err").Equals().ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
 							jen.ID("ctx"),
 							jen.ID("dcm"),
-						), jen.ID("err").Op("!=").ID("nil")).Body(
+						), jen.ID("err").DoesNotEqual().Nil()).Body(
 							jen.Return().ID("observability").Dot("PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
@@ -148,18 +148,18 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.If(jen.ID("err").Op(":=").ID("w").Dot("dataManager").Dot("AddUserToAccount").Call(
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("UserMembership"),
-					), jen.ID("err").Op("!=").ID("nil")).Body(
+					), jen.ID("err").DoesNotEqual().Nil()).Body(
 						jen.Return().ID("observability").Dot("PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
 							jen.Lit("creating webhook"),
-						)), jen.If(jen.ID("w").Dot("postWritesPublisher").Op("!=").ID("nil")).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").Op(":").ID("msg").Dot("DataType"), jen.ID("AttributableToUserID").Op(":").ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").Op(":").ID("msg").Dot("AttributableToAccountID")),
+						)), jen.If(jen.ID("w").Dot("postWritesPublisher").DoesNotEqual().Nil()).Body(
+						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
 						jen.If(jen.ID("err").Op(":=").ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
 							jen.ID("ctx"),
 							jen.ID("dcm"),
-						), jen.ID("err").Op("!=").ID("nil")).Body(
+						), jen.ID("err").DoesNotEqual().Nil()).Body(
 							jen.Return().ID("observability").Dot("PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
@@ -168,7 +168,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 							)),
 					)),
 			),
-			jen.Return().ID("nil"),
+			jen.Return().Nil(),
 		),
 		jen.Newline(),
 	)

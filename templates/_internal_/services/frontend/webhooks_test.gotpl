@@ -1,20 +1,18 @@
 package frontend
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	{{ projectImport "internal/database" }}
-	mockrouting {{ projectImport "internal/routing/mock" }}
 	{{ projectImport "pkg/types" }}
 	{{ projectImport "pkg/types/fakes" }}
 	testutils {{ projectImport "tests/utils" }}
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestService_fetchWebhook(T *testing.T) {
@@ -26,7 +24,7 @@ func TestService_fetchWebhook(T *testing.T) {
 		s := buildTestHelper(t)
 
 		exampleWebhook := fakes.BuildFakeWebhook()
-		s.service.webhookIDFetcher = func(*http.Request) uint64 { return exampleWebhook.ID }
+		s.service.webhookIDFetcher = func(*http.Request) string { return exampleWebhook.ID }
 
 		mockDB := database.BuildMockDatabase()
 		mockDB.WebhookDataManager.On(
@@ -65,7 +63,7 @@ func TestService_fetchWebhook(T *testing.T) {
 		s := buildTestHelper(t)
 
 		exampleWebhook := fakes.BuildFakeWebhook()
-		s.service.webhookIDFetcher = func(*http.Request) uint64 { return exampleWebhook.ID }
+		s.service.webhookIDFetcher = func(*http.Request) string { return exampleWebhook.ID }
 
 		mockDB := database.BuildMockDatabase()
 		mockDB.WebhookDataManager.On(
@@ -94,7 +92,7 @@ func TestService_buildWebhookEditorView(T *testing.T) {
 
 		s := buildTestHelper(t)
 		exampleWebhook := fakes.BuildFakeWebhook()
-		s.service.webhookIDFetcher = func(*http.Request) uint64 { return exampleWebhook.ID }
+		s.service.webhookIDFetcher = func(*http.Request) string { return exampleWebhook.ID }
 
 		mockDB := database.BuildMockDatabase()
 		mockDB.WebhookDataManager.On(
@@ -120,7 +118,7 @@ func TestService_buildWebhookEditorView(T *testing.T) {
 
 		s := buildTestHelper(t)
 		exampleWebhook := fakes.BuildFakeWebhook()
-		s.service.webhookIDFetcher = func(*http.Request) uint64 { return exampleWebhook.ID }
+		s.service.webhookIDFetcher = func(*http.Request) string { return exampleWebhook.ID }
 
 		mockDB := database.BuildMockDatabase()
 		mockDB.WebhookDataManager.On(
@@ -163,7 +161,7 @@ func TestService_buildWebhookEditorView(T *testing.T) {
 
 		s := buildTestHelper(t)
 		exampleWebhook := fakes.BuildFakeWebhook()
-		s.service.webhookIDFetcher = func(*http.Request) uint64 { return exampleWebhook.ID }
+		s.service.webhookIDFetcher = func(*http.Request) string { return exampleWebhook.ID }
 
 		mockDB := database.BuildMockDatabase()
 		mockDB.WebhookDataManager.On(

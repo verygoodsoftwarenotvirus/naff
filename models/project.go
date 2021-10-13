@@ -11,6 +11,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -262,6 +263,8 @@ func (p *Project) EnabledDatabases() []string {
 	for k := range p.enabledDatabases {
 		out = append(out, string(k))
 	}
+	sort.Strings(out)
+
 	return out
 }
 

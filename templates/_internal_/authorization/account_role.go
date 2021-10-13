@@ -74,7 +74,7 @@ func accountRoleDotGo(proj *models.Project) *jen.File {
 		jen.Comment("NewAccountRolePermissionChecker returns a new checker for a set of Roles."),
 		jen.Newline(),
 		jen.Func().ID("NewAccountRolePermissionChecker").Params(jen.ID("roles").Op("...").String()).Params(jen.ID("AccountRolePermissionsChecker")).Body(
-			jen.Return().AddressOf().ID("accountRoleCollection").Valuesln(jen.ID("Roles").Op(":").ID("roles"))),
+			jen.Return().AddressOf().ID("accountRoleCollection").Valuesln(jen.ID("Roles").MapAssign().ID("roles"))),
 		jen.Newline(),
 	)
 

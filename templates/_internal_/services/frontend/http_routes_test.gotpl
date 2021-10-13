@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	{{ projectImport "internal/authorization" }}
 	{{ projectImport "internal/observability/logging" }}
 	{{ projectImport "internal/routing/chi" }}
 	mocktypes {{ projectImport "pkg/types/mock" }}
-
-	"github.com/stretchr/testify/mock"
 )
 
 func TestService_SetupRoutes(T *testing.T) {

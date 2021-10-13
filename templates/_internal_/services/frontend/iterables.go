@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -135,8 +136,8 @@ func buildFetchSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.List(jen.IDf(uvn), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Get%s", sn).Call(
 			callArgs...,
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.Err(),
 				constants.LoggerVar(),
 				jen.ID("span"),
@@ -166,7 +167,7 @@ func buildFetchSomething(proj *models.Project, typ models.DataType) []jen.Code {
 				elseBodyLines...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID(uvn), jen.ID("nil")),
+			jen.Return().List(jen.ID(uvn), jen.Nil()),
 		),
 		jen.Newline(),
 	}
@@ -191,7 +192,7 @@ func buildBuildSomethingCreatorView(proj *models.Project, typ models.DataType) [
 				),
 				jen.Newline(),
 				jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
@@ -211,13 +212,13 @@ func buildBuildSomethingCreatorView(proj *models.Project, typ models.DataType) [
 				jen.If(jen.ID("includeBaseTemplate")).Body(
 					jen.ID("view").Assign().ID("s").Dot("renderTemplateIntoBaseTemplate").Call(
 						jen.IDf("%sCreatorTemplate", uvn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("page").Assign().AddressOf().ID("pageData").Valuesln(
-						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Litf("New %s", sn), jen.ID("ContentData").Op(":").ID(uvn),
+						jen.ID("IsLoggedIn").MapAssign().ID("sessionCtxData").DoesNotEqual().Nil(), jen.ID("Title").MapAssign().Litf("New %s", sn), jen.ID("ContentData").MapAssign().ID(uvn),
 					),
-					jen.If(jen.ID("sessionCtxData").DoesNotEqual().ID("nil")).Body(
+					jen.If(jen.ID("sessionCtxData").DoesNotEqual().Nil()).Body(
 						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
 					),
 					jen.Newline(),
@@ -232,7 +233,7 @@ func buildBuildSomethingCreatorView(proj *models.Project, typ models.DataType) [
 						jen.ID("ctx"),
 						jen.Lit(""),
 						jen.IDf("%sCreatorTemplate", uvn),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.Newline(),
 					jen.ID("s").Dot("renderTemplateToResponse").Call(
@@ -366,18 +367,18 @@ func buildParseFormEncodedSomethingCreationInput(proj *models.Project, typ model
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 		if field.Type != "string" || (field.Type == "string" && field.IsPointer) {
-			creationInputFields = append(creationInputFields, jen.ID(fsn).Op(":").ID("s").Dot(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
+			creationInputFields = append(creationInputFields, jen.ID(fsn).MapAssign().ID("s").Dot(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
 		} else {
-			creationInputFields = append(creationInputFields, jen.ID(fsn).Op(":").ID("form").Dot("Get").Call(jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
+			creationInputFields = append(creationInputFields, jen.ID(fsn).MapAssign().ID("form").Dot("Get").Call(jen.IDf("%sCreationInput%sFormKey", uvn, fsn)))
 		}
 	}
 
 	if typ.BelongsToAccount {
-		creationInputFields = append(creationInputFields, jen.ID("BelongsToAccount").Op(":").ID("sessionCtxData").Dot("ActiveAccountID"))
+		creationInputFields = append(creationInputFields, jen.ID("BelongsToAccount").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("parseFormEncoded%sCreationInput checks a request for an %sCreationInput.", sn, sn),
+		jen.Commentf("parseFormEncoded%sCreationInput checks a request for an %sCreationRequestInput.", sn, sn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).IDf("parseFormEncoded%sCreationInput", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
@@ -388,7 +389,7 @@ func buildParseFormEncodedSomethingCreationInput(proj *models.Project, typ model
 				}
 				return jen.Null()
 			}(),
-		).Params(jen.ID("creationInput").PointerTo().ID("types").Dotf("%sCreationInput", sn)).Body(
+		).Params(jen.ID("creationInput").PointerTo().ID("types").Dotf("%sDatabaseCreationInput", sn)).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -402,32 +403,18 @@ func buildParseFormEncodedSomethingCreationInput(proj *models.Project, typ model
 				jen.ID("ctx"),
 				jen.ID("req"),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("parsing %s creation input", scn),
 				),
-				jen.Return().ID("nil"),
+				jen.Return().Nil(),
 			),
 			jen.Newline(),
-			jen.ID("creationInput").Equals().AddressOf().ID("types").Dotf("%sCreationInput", sn).Valuesln(
+			jen.ID("creationInput").Equals().AddressOf().ID("types").Dotf("%sDatabaseCreationInput", sn).Valuesln(
 				creationInputFields...,
-			),
-			jen.Newline(),
-			jen.If(jen.Err().Equals().ID("creationInput").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.Err().DoesNotEqual().ID("nil")).Body(
-				constants.LoggerVar().Equals().ID("logger").Dot("WithValue").Call(
-					jen.Lit("input"),
-					jen.ID("creationInput"),
-				),
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-					jen.Err(),
-					constants.LoggerVar(),
-					jen.ID("span"),
-					jen.Litf("invalid %s creation input", scn),
-				),
-				jen.Return().ID("nil"),
 			),
 			jen.Newline(),
 			jen.Return().ID("creationInput"),
@@ -457,7 +444,7 @@ func buildHandleSomethingCreationRequest(proj *models.Project, typ models.DataTy
 			constants.LoggerVar().Dot("Debug").Call(jen.Litf("%s creation route called", scn)),
 			jen.Newline(),
 			jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -500,7 +487,7 @@ func buildHandleSomethingCreationRequest(proj *models.Project, typ models.DataTy
 					return jen.Null()
 				}(),
 			),
-			jen.If(jen.ID("creationInput").IsEqualTo().ID("nil")).Body(
+			jen.If(jen.ID("creationInput").IsEqualTo().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -522,8 +509,7 @@ func buildHandleSomethingCreationRequest(proj *models.Project, typ models.DataTy
 			jen.If(jen.List(jen.Underscore(), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Create%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("creationInput"),
-				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
-			), jen.Err().DoesNotEqual().ID("nil")).Body(
+			), jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -566,7 +552,7 @@ func buildBuildSomethingEditorView(proj *models.Project, typ models.DataType) []
 				),
 				jen.Newline(),
 				jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
@@ -587,7 +573,7 @@ func buildBuildSomethingEditorView(proj *models.Project, typ models.DataType) []
 					jen.ID("req"),
 					utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("sessionCtxData")),
 				),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
@@ -599,9 +585,9 @@ func buildBuildSomethingEditorView(proj *models.Project, typ models.DataType) []
 				),
 				jen.Newline(),
 				jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-					jen.Lit("componentTitle").Op(":").Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.String()).Body(
+					jen.Lit("componentTitle").MapAssign().Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.String()).Body(
 						jen.Return().Qual("fmt", "Sprintf").Call(
-							jen.Lit(sn+" #%d"),
+							jen.Lit(sn+" %s"),
 							jen.ID("x").Dot("ID"),
 						),
 					),
@@ -614,12 +600,12 @@ func buildBuildSomethingEditorView(proj *models.Project, typ models.DataType) []
 					),
 					jen.Newline(),
 					jen.ID("page").Assign().AddressOf().ID("pageData").Valuesln(
-						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Qual("fmt", "Sprintf").Call(
-							jen.Lit(fmt.Sprintf("%s ", sn)+"#%d"),
+						jen.ID("IsLoggedIn").MapAssign().ID("sessionCtxData").DoesNotEqual().Nil(), jen.ID("Title").MapAssign().Qual("fmt", "Sprintf").Call(
+							jen.Lit(fmt.Sprintf("%s ", sn)+"%s"),
 							jen.ID(uvn).Dot("ID"),
-						), jen.ID("ContentData").Op(":").ID(uvn),
+						), jen.ID("ContentData").MapAssign().ID(uvn),
 					),
-					jen.If(jen.ID("sessionCtxData").DoesNotEqual().ID("nil")).Body(
+					jen.If(jen.ID("sessionCtxData").DoesNotEqual().Nil()).Body(
 						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
 					),
 					jen.Newline(),
@@ -683,8 +669,8 @@ func buildFetchSomethings(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.List(jen.ID(puvn), jen.Err()).Equals().ID("s").Dot("dataStore").Dotf("Get%s", pn).Call(
 			callArgs...,
 		),
-		jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
-			jen.Return().List(jen.ID("nil"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.Err(),
 				constants.LoggerVar(),
 				jen.ID("span"),
@@ -714,7 +700,7 @@ func buildFetchSomethings(proj *models.Project, typ models.DataType) []jen.Code 
 				elseBody...,
 			),
 			jen.Newline(),
-			jen.Return().List(jen.ID(puvn), jen.ID("nil")),
+			jen.Return().List(jen.ID(puvn), jen.Nil()),
 		),
 		jen.Newline(),
 	}
@@ -742,7 +728,7 @@ func buildBuildSomethingTableView(proj *models.Project, typ models.DataType) []j
 				),
 				jen.Newline(),
 				jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
@@ -763,7 +749,7 @@ func buildBuildSomethingTableView(proj *models.Project, typ models.DataType) []j
 					jen.ID("req"),
 					utils.ConditionalCode(typ.RestrictedToAccountMembers, jen.ID("sessionCtxData")),
 				),
-				jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+				jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 						jen.Err(),
 						constants.LoggerVar(),
@@ -775,16 +761,16 @@ func buildBuildSomethingTableView(proj *models.Project, typ models.DataType) []j
 				),
 				jen.Newline(),
 				jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-					jen.Lit("individualURL").Op(":").Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+					jen.Lit("individualURL").MapAssign().Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
 						jen.Comment("#nosec G203"),
 						jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%d"),
+							jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
 							jen.ID("x").Dot("ID"),
 						)),
-					), jen.Lit("pushURL").Op(":").Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+					), jen.Lit("pushURL").MapAssign().Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
 						jen.Comment("#nosec G203"),
 						jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-							jen.Lit(fmt.Sprintf("/%s/", prn)+"%d"),
+							jen.Lit(fmt.Sprintf("/%s/", prn)+"%s"),
 							jen.ID("x").Dot("ID"),
 						)),
 					),
@@ -797,9 +783,9 @@ func buildBuildSomethingTableView(proj *models.Project, typ models.DataType) []j
 					),
 					jen.Newline(),
 					jen.ID("page").Assign().AddressOf().ID("pageData").Valuesln(
-						jen.ID("IsLoggedIn").Op(":").ID("sessionCtxData").DoesNotEqual().ID("nil"), jen.ID("Title").Op(":").Lit(pn), jen.ID("ContentData").Op(":").ID(puvn),
+						jen.ID("IsLoggedIn").MapAssign().ID("sessionCtxData").DoesNotEqual().Nil(), jen.ID("Title").MapAssign().Lit(pn), jen.ID("ContentData").MapAssign().ID(puvn),
 					),
-					jen.If(jen.ID("sessionCtxData").DoesNotEqual().ID("nil")).Body(
+					jen.If(jen.ID("sessionCtxData").DoesNotEqual().Nil()).Body(
 						jen.ID("page").Dot("IsServiceAdmin").Equals().ID("sessionCtxData").Dot("Requester").Dot("ServicePermissions").Dot("IsServiceAdmin").Call(),
 					),
 					jen.Newline(),
@@ -841,24 +827,24 @@ func buildParseFormEncodedSomethingUpdateInput(proj *models.Project, typ models.
 	for _, field := range typ.Fields {
 		fsn := field.Name.Singular()
 		if field.Type != "string" || (field.Type == "string" && field.IsPointer) {
-			updateInputFields = append(updateInputFields, jen.ID(fsn).Op(":").ID("s").Dot(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
+			updateInputFields = append(updateInputFields, jen.ID(fsn).MapAssign().ID("s").Dot(determineFormFetcher(field)).Call(jen.ID("form"), jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
 		} else {
-			updateInputFields = append(updateInputFields, jen.ID(fsn).Op(":").ID("form").Dot("Get").Call(jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
+			updateInputFields = append(updateInputFields, jen.ID(fsn).MapAssign().ID("form").Dot("Get").Call(jen.IDf("%sUpdateInput%sFormKey", uvn, fsn)))
 		}
 	}
 
 	if typ.BelongsToAccount {
-		updateInputFields = append(updateInputFields, jen.ID("BelongsToAccount").Op(":").ID("sessionCtxData").Dot("ActiveAccountID"))
+		updateInputFields = append(updateInputFields, jen.ID("BelongsToAccount").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("parseFormEncoded%sUpdateInput checks a request for an %sUpdateInput.", sn, sn),
+		jen.Commentf("parseFormEncoded%sUpdateInput checks a request for an %sUpdateRequestInput.", sn, sn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").PointerTo().ID("service")).IDf("parseFormEncoded%sUpdateInput", sn).Params(
 			jen.ID("ctx").Qual("context", "Context"),
 			jen.ID("req").PointerTo().Qual("net/http", "Request"),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("sessionCtxData").PointerTo().Qual(proj.TypesPackage(), "SessionContextData")),
-		).Params(jen.ID("updateInput").PointerTo().ID("types").Dotf("%sUpdateInput", sn)).Body(
+		).Params(jen.ID("updateInput").PointerTo().ID("types").Dotf("%sUpdateRequestInput", sn)).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("s").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -872,21 +858,21 @@ func buildParseFormEncodedSomethingUpdateInput(proj *models.Project, typ models.
 				jen.ID("ctx"),
 				jen.ID("req"),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
 					jen.ID("span"),
 					jen.Litf("parsing %s creation input", scn),
 				),
-				jen.Return().ID("nil"),
+				jen.Return().Nil(),
 			),
 			jen.Newline(),
-			jen.ID("updateInput").Equals().AddressOf().ID("types").Dotf("%sUpdateInput", sn).Valuesln(
+			jen.ID("updateInput").Equals().AddressOf().ID("types").Dotf("%sUpdateRequestInput", sn).Valuesln(
 				updateInputFields...,
 			),
 			jen.Newline(),
-			jen.If(jen.Err().Equals().ID("updateInput").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().Equals().ID("updateInput").Dot("ValidateWithContext").Call(jen.ID("ctx")), jen.Err().DoesNotEqual().Nil()).Body(
 				constants.LoggerVar().Equals().ID("logger").Dot("WithValue").Call(
 					jen.Lit("input"),
 					jen.ID("updateInput"),
@@ -897,7 +883,7 @@ func buildParseFormEncodedSomethingUpdateInput(proj *models.Project, typ models.
 					jen.ID("span"),
 					jen.Litf("invalid %s creation input", scn),
 				),
-				jen.Return().ID("nil"),
+				jen.Return().Nil(),
 			),
 			jen.Newline(),
 			jen.Return().ID("updateInput"),
@@ -925,7 +911,7 @@ func buildHandleSomethingUpdateRequest(proj *models.Project, typ models.DataType
 			),
 			jen.Newline(),
 			jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -946,7 +932,7 @@ func buildHandleSomethingUpdateRequest(proj *models.Project, typ models.DataType
 				jen.ID("req"),
 				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("sessionCtxData")),
 			),
-			jen.If(jen.ID("updateInput").IsEqualTo().ID("nil")).Body(
+			jen.If(jen.ID("updateInput").IsEqualTo().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -962,7 +948,7 @@ func buildHandleSomethingUpdateRequest(proj *models.Project, typ models.DataType
 				jen.ID("req"),
 				utils.ConditionalCode(typ.RestrictedToAccountAtSomeLevel(proj), jen.ID("sessionCtxData")),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -973,14 +959,12 @@ func buildHandleSomethingUpdateRequest(proj *models.Project, typ models.DataType
 				jen.Return(),
 			),
 			jen.Newline(),
-			jen.ID("changes").Assign().ID(uvn).Dot("Update").Call(jen.ID("updateInput")),
+			jen.ID(uvn).Dot("Update").Call(jen.ID("updateInput")),
 			jen.Newline(),
 			jen.If(jen.Err().Equals().ID("s").Dot("dataStore").Dotf("Update%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID(uvn),
-				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
-				jen.ID("changes"),
-			), jen.Err().DoesNotEqual().ID("nil")).Body(
+			), jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -992,9 +976,9 @@ func buildHandleSomethingUpdateRequest(proj *models.Project, typ models.DataType
 			),
 			jen.Newline(),
 			jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-				jen.Lit("componentTitle").Op(":").Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.String()).Body(
+				jen.Lit("componentTitle").MapAssign().Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.String()).Body(
 					jen.Return().Qual("fmt", "Sprintf").Call(
-						jen.Lit(sn+" #%d"),
+						jen.Lit(sn+" %s"),
 						jen.ID("x").Dot("ID"),
 					),
 				),
@@ -1057,7 +1041,7 @@ func buildHandleSomethingDeletionRequest(proj *models.Project, typ models.DataTy
 			),
 			jen.Newline(),
 			jen.List(jen.ID("sessionCtxData"), jen.Err()).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -1102,8 +1086,7 @@ func buildHandleSomethingDeletionRequest(proj *models.Project, typ models.DataTy
 					}
 					return jen.Null()
 				}(),
-				jen.ID("sessionCtxData").Dot("Requester").Dot("UserID"),
-			), jen.Err().DoesNotEqual().ID("nil")).Body(
+			), jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -1119,7 +1102,7 @@ func buildHandleSomethingDeletionRequest(proj *models.Project, typ models.DataTy
 				jen.ID("req"),
 				utils.ConditionalCode(typ.RestrictedToAccountMembers, jen.ID("sessionCtxData")),
 			),
-			jen.If(jen.Err().DoesNotEqual().ID("nil")).Body(
+			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.Err(),
 					constants.LoggerVar(),
@@ -1131,17 +1114,17 @@ func buildHandleSomethingDeletionRequest(proj *models.Project, typ models.DataTy
 			),
 			jen.Newline(),
 			jen.ID("tmplFuncMap").Assign().Map(jen.String()).Interface().Valuesln(
-				jen.Lit("individualURL").Op(":").Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+				jen.Lit("individualURL").MapAssign().Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
 					jen.Comment("#nosec G203"),
 					jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%d"),
+						jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
 						jen.ID("x").Dot("ID"),
 					),
 					),
-				), jen.Lit("pushURL").Op(":").Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
+				), jen.Lit("pushURL").MapAssign().Func().Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.Qual("html/template", "URL")).Body(
 					jen.Comment("#nosec G203"),
 					jen.Return().Qual("html/template", "URL").Call(jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit(fmt.Sprintf("/%s/", prn)+"%d"),
+						jen.Lit(fmt.Sprintf("/%s/", prn)+"%s"),
 						jen.ID("x").Dot("ID"),
 					),
 					),

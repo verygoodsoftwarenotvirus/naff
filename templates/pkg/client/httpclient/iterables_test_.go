@@ -71,7 +71,7 @@ func buildSuiteStruct(proj *models.Project, typ models.DataType) []jen.Code {
 			structFields...,
 		),
 		jen.Newline(),
-		jen.Var().Underscore().ID("suite").Dot("SetupTestSuite").Equals().Parens(jen.PointerTo().IDf("%sBaseSuite", puvn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().ID("suite").Dot("SetupTestSuite").Equals().Parens(jen.PointerTo().IDf("%sBaseSuite", puvn)).Call(jen.Nil()),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("s").PointerTo().IDf("%sBaseSuite", puvn)).ID("SetupTest").Params().Body(
 			initFields...,
@@ -500,7 +500,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.ID("nil")),
+				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 				jen.Newline(),
 				jen.IDf("example%sList", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sList", sn)).Call(),
 				jen.Newline(),
@@ -541,7 +541,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 				jen.Func().Params().Body(
 					jen.ID("t").Assign().ID("s").Dot("T").Call(),
 					jen.Newline(),
-					jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.ID("nil")),
+					jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 					jen.Newline(),
 					jen.List(jen.ID("c"), jen.Underscore()).Assign().ID("buildSimpleTestClient").Call(jen.ID("t")),
 					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
@@ -568,7 +568,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.ID("nil")),
+				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 				jen.Newline(),
 				jen.ID("c").Assign().ID("buildTestClientWithInvalidURL").Call(jen.ID("t")),
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
@@ -591,7 +591,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 			jen.Func().Params().Body(
 				jen.ID("t").Assign().ID("s").Dot("T").Call(),
 				jen.Newline(),
-				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.ID("nil")),
+				jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 				jen.Newline(),
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
 					specArgs...,
@@ -1013,7 +1013,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 					append(
 						buildCreateSomethingArgsWithoutIndex(proj, typ, -1, false),
-						jen.ID("nil"),
+						jen.Nil(),
 					)...,
 				),
 				jen.Qual(constants.AssertionLibrary, "Empty").Call(

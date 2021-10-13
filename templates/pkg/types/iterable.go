@@ -170,14 +170,14 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 		case "string":
 			if field.IsPointer {
 				updateLines = append(updateLines,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
 						conditionBodyLines...,
 					),
 					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			} else {
 				updateLines = append(updateLines,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").Lit("").Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Lit("").Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						conditionBodyLines...,
 					),
 					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
@@ -186,14 +186,14 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 		case "bool":
 			if field.IsPointer {
 				updateLines = append(updateLines,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
 						conditionBodyLines...,
 					),
 					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
 				)
 			} else {
 				updateLines = append(updateLines,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						conditionBodyLines...,
 					),
 					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
@@ -203,7 +203,7 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 			if field.IsPointer {
 				updateLines = append(
 					updateLines,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().Zero().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Nil().And().Parens(jen.ID("x").Dot(fsn).IsEqualTo().Nil().Or().Parens(jen.PointerTo().ID("input").Dot(fsn).DoesNotEqual().Zero().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().PointerTo().ID("x").Dot(fsn)))).Body(
 						conditionBodyLines...,
 					),
 					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
@@ -211,7 +211,7 @@ func buildSomethingUpdate(typ models.DataType) []jen.Code {
 			} else {
 				updateLines = append(
 					updateLines,
-					jen.If(jen.ID("input").Dot(fsn).Op("!=").Zero().Op("&&").ID("input").Dot(fsn).Op("!=").ID("x").Dot(fsn)).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Zero().Op("&&").ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						conditionBodyLines...,
 					),
 					utils.ConditionalCode(i != len(typ.Fields)-1, jen.Newline()),
@@ -380,7 +380,7 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.IsPointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Nil().And().PointerTo().ID("input").Dot(fsn).DoesNotEqual().EmptyString().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
@@ -408,7 +408,7 @@ func buildUpdateFunctionLogic(fields []models.DataField) []jen.Code {
 			if field.IsPointer {
 				out = append(
 					out,
-					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().ID("nil").And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
+					jen.If(jen.ID("input").Dot(fsn).DoesNotEqual().Nil().And().ID("input").Dot(fsn).DoesNotEqual().ID("x").Dot(fsn)).Body(
 						jen.ID("x").Dot(fsn).Equals().ID("input").Dot(fsn),
 					),
 				)
@@ -451,7 +451,7 @@ func buildSomethingCreationInputValidateWithContext(typ models.DataType) []jen.C
 	}
 
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationRequestInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sCreationRequestInput", sn)).Call(jen.Nil()),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sCreationRequestInput.", sn),
@@ -494,7 +494,7 @@ func buildSomethingDatabaseCreationInputValidateWithContext(typ models.DataType)
 	}
 
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sDatabaseCreationInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sDatabaseCreationInput", sn)).Call(jen.Nil()),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sDatabaseCreationInput.", sn),
@@ -555,7 +555,7 @@ func buildSomethingUpdateInputValidateWithContext(typ models.DataType) []jen.Cod
 	}
 
 	lines := []jen.Code{
-		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateRequestInput", sn)).Call(jen.ID("nil")),
+		jen.Var().Underscore().Qual(constants.ValidationLibrary, "ValidatableWithContext").Equals().Parens(jen.PointerTo().IDf("%sUpdateRequestInput", sn)).Call(jen.Nil()),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("ValidateWithContext validates a %sUpdateRequestInput.", sn),

@@ -223,11 +223,11 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("AttachSessionContextDataToSpan").Call(
 						jen.ID("span"),
 						jen.AddressOf().Qual(proj.TypesPackage(), "SessionContextData").Valuesln(
-							jen.ID("AccountPermissions").Op(":").ID("nil"),
-							jen.ID("Requester").Op(":").Qual(proj.TypesPackage(), "RequesterInfo").Valuesln(
-								jen.ID("ServicePermissions").Op(":").Qual(proj.InternalPackage("authorization"), "NewServiceRolePermissionChecker").Call(jen.Qual(proj.InternalPackage("authorization"), "ServiceUserRole").Dot("String").Call()),
+							jen.ID("AccountPermissions").MapAssign().Nil(),
+							jen.ID("Requester").MapAssign().Qual(proj.TypesPackage(), "RequesterInfo").Valuesln(
+								jen.ID("ServicePermissions").MapAssign().Qual(proj.InternalPackage("authorization"), "NewServiceRolePermissionChecker").Call(jen.Qual(proj.InternalPackage("authorization"), "ServiceUserRole").Dot("String").Call()),
 							),
-							jen.ID("ActiveAccountID").Op(":").Lit(""),
+							jen.ID("ActiveAccountID").MapAssign().Lit(""),
 						),
 					),
 				),
@@ -424,7 +424,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("ctx"),
 						jen.Qual("net/http", "MethodGet"),
 						jen.Lit("/"),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 					jen.ID("req").Dot("Header").Dot("Set").Call(
 						jen.ID("t").Dot("Name").Call(),
@@ -455,7 +455,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(jen.ID("Header").Op(":").Map(jen.String()).Index().String().Values()),
+					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(jen.ID("Header").MapAssign().Map(jen.String()).Index().String().Values()),
 					jen.ID("res").Dot("Header").Dot("Set").Call(
 						jen.ID("t").Dot("Name").Call(),
 						jen.Lit("blah"),
@@ -543,7 +543,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachQueryFilterToSpan").Call(
 						jen.ID("span"),
-						jen.ID("nil"),
+						jen.Nil(),
 					),
 				),
 			),
