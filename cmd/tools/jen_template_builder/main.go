@@ -62,9 +62,9 @@ func runTojenForFile(filename, pkg string) (string, error) {
 
 func main() {
 	allPackages := map[string]bool{
-		"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/workers": true,
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/workers": true,
-		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/queriers/mysql": true,
+		//"gitlab.com/verygoodsoftwarenotvirus/todo/cmd/workers": true,
+		//"gitlab.com/verygoodsoftwarenotvirus/todo/internal/workers": true,
+		//"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/queriers/mysql": true,
 		"gitlab.com/verygoodsoftwarenotvirus/todo/internal/database/queriers/postgres": true,
 	}
 

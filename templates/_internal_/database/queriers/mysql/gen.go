@@ -48,7 +48,7 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	jenFiles := map[string]*jen.File{
-		"items.go":        itemsDotGo(proj),
+		"iterables.go":    itemsDotGo(proj),
 		"items_test.go":   itemsTestDotGo(proj),
 		"migrate.go":      migrateDotGo(proj),
 		"migrate_test.go": migrateTestDotGo(proj),

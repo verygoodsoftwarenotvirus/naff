@@ -48,7 +48,7 @@ func buildIterableRoutes(proj *models.Project) []jen.Code {
 					jen.IDf("%sPath", uvn),
 				)
 			}(),
-			jen.IDf("%sIDRouteParam", uvn).Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.ServicePackage(typ.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", sn))),
+			jen.IDf("%sIDRouteParam", uvn).Assign().ID("buildURLVarChunk").Call(jen.Qual(proj.ServicePackage(typ.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", sn)), jen.EmptyString()),
 			jen.ID("v1Router").Dot("Route").Call(
 				jen.IDf("%sRouteWithPrefix", puvn),
 				jen.Func().Params(jen.IDf("%sRouter", puvn).ID("routing").Dot("Router")).Body(
@@ -79,20 +79,12 @@ func buildIterableRoutes(proj *models.Project) []jen.Code {
 								Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ReadHandler")),
 							jen.IDf("single%sRouter", sn).
 								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
-								Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Read%sPermission", pn)))).
-								Dotln("Head").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ExistenceHandler")),
-							jen.IDf("single%sRouter", sn).
-								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
 								Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Archive%sPermission", pn)))).
 								Dotln("Delete").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("ArchiveHandler")),
 							jen.IDf("single%sRouter", sn).
 								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
 								Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Update%sPermission", pn)))).
 								Dotln("Put").Call(jen.ID("root"), jen.ID("s").Dotf("%sService", puvn).Dot("UpdateHandler")),
-							jen.IDf("single%sRouter", sn).
-								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").
-								Call(jen.Qual(proj.InternalAuthorizationPackage(), fmt.Sprintf("Read%sAuditLogEntriesPermission", pn)))).
-								Dotln("Get").Call(jen.ID("auditRoute"), jen.ID("s").Dotf("%sService", puvn).Dot("AuditEntryHandler")),
 						),
 					),
 				),
@@ -111,19 +103,17 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Const().Defs(
 			jen.ID("root").Equals().Lit("/"),
-			jen.ID("auditRoute").Equals().Lit("/audit"),
 			jen.ID("searchRoot").Equals().Lit("/search"),
-			jen.ID("numericIDPattern").Equals().Lit("{%s:[0-9]+}"),
 		),
 		jen.Newline(),
 	)
 
 	code.Add(
-		jen.Func().ID("buildNumericIDURLChunk").Params(jen.ID("key").String()).Params(jen.String()).Body(
-			jen.Return().Qual("fmt", "Sprintf").Call(
-				jen.ID("root").Op("+").ID("numericIDPattern"),
-				jen.ID("key"),
+		jen.Func().ID("buildURLVarChunk").Params(jen.List(jen.ID("key"), jen.ID("pattern")).String()).Params(jen.String()).Body(
+			jen.If(jen.ID("pattern").DoesNotEqual().EmptyString()).Body(
+				jen.Return(jen.Qual("fmt", "Sprintf").Call(jen.Lit("/{%s:%s}"), jen.ID("key"), jen.ID("pattern"))),
 			),
+			jen.Return(jen.Qual("fmt", "Sprintf").Call(jen.Lit("/{%s}"), jen.ID("key"))),
 		),
 		jen.Newline(),
 	)
@@ -257,16 +247,13 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 								jen.ID("s").Dot("usersService").Dot("SelfHandler"),
 							),
 							jen.Newline(),
-							jen.ID("singleUserRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.UsersServicePackage(), "UserIDURIParamKey")),
+							jen.ID("singleUserRoute").Assign().ID("buildURLVarChunk").Call(jen.Qual(proj.UsersServicePackage(), "UserIDURIParamKey"), jen.EmptyString()),
 							jen.ID("usersRouter").Dot("Route").Call(
 								jen.ID("singleUserRoute"),
 								jen.Func().Params(jen.ID("singleUserRouter").ID("routing").Dot("Router")).Body(
 									jen.ID("singleUserRouter").
 										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadUserPermission"))).
 										Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dot("usersService").Dot("ReadHandler")),
-									jen.ID("singleUserRouter").
-										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadUserAuditLogEntriesPermission"))).
-										Dotln("Get").Call(jen.ID("auditRoute"), jen.ID("s").Dot("usersService").Dot("AuditEntryHandler")),
 									jen.Newline(),
 									jen.ID("singleUserRouter").Dot("Delete").Call(
 										jen.ID("root"),
@@ -290,8 +277,8 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 								jen.ID("s").Dot("accountsService").Dot("ListHandler"),
 							),
 							jen.Newline(),
-							jen.ID("singleUserRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AccountsServicePackage(), "UserIDURIParamKey")),
-							jen.ID("singleAccountRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.AccountsServicePackage(), "AccountIDURIParamKey")),
+							jen.ID("singleUserRoute").Assign().ID("buildURLVarChunk").Call(jen.Qual(proj.AccountsServicePackage(), "UserIDURIParamKey"), jen.EmptyString()),
+							jen.ID("singleAccountRoute").Assign().ID("buildURLVarChunk").Call(jen.Qual(proj.AccountsServicePackage(), "AccountIDURIParamKey"), jen.EmptyString()),
 							jen.ID("accountsRouter").Dot("Route").Call(
 								jen.ID("singleAccountRoute"),
 								jen.Func().Params(jen.ID("singleAccountRouter").ID("routing").Dot("Router")).Body(
@@ -306,9 +293,6 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 									jen.ID("singleAccountRouter").
 										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ArchiveAccountPermission"))).
 										Dotln("Delete").Call(jen.ID("root"), jen.ID("s").Dot("accountsService").Dot("ArchiveHandler")),
-									jen.ID("singleAccountRouter").
-										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadAccountAuditLogEntriesPermission"))).
-										Dotln("Get").Call(jen.ID("auditRoute"), jen.ID("s").Dot("accountsService").Dot("AuditEntryHandler")),
 									jen.Newline(),
 									jen.ID("singleAccountRouter").Dot("Post").Call(
 										jen.Lit("/default"),
@@ -340,7 +324,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "CreateAPIClientsPermission"))).
 								Dotln("Post").Call(jen.ID("root"), jen.ID("s").Dot("apiClientsService").Dot("CreateHandler")),
 							jen.Newline(),
-							jen.ID("singleClientRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.APIClientsServicePackage(), "APIClientIDURIParamKey")),
+							jen.ID("singleClientRoute").Assign().ID("buildURLVarChunk").Call(jen.Qual(proj.APIClientsServicePackage(), "APIClientIDURIParamKey"), jen.EmptyString()),
 							jen.ID("clientRouter").Dot("Route").Call(
 								jen.ID("singleClientRoute"),
 								jen.Func().Params(jen.ID("singleClientRouter").ID("routing").Dot("Router")).Body(
@@ -350,11 +334,16 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 									jen.ID("singleClientRouter").
 										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ArchiveAPIClientsPermission"))).
 										Dotln("Delete").Call(jen.ID("root"), jen.ID("s").Dot("apiClientsService").Dot("ArchiveHandler")),
-									jen.ID("singleClientRouter").
-										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadAPIClientAuditLogEntriesPermission"))).
-										Dotln("Get").Call(jen.ID("auditRoute"), jen.ID("s").Dot("apiClientsService").Dot("AuditEntryHandler")),
 								),
 							),
+						),
+					),
+					jen.Newline(),
+					jen.Comment("Websockets"),
+					jen.ID("v1Router").Dot("Route").Call(
+						jen.Lit("/websockets"),
+						jen.Func().Params(jen.ID("websocketsRouter").ID("routing").Dot("Router")).Body(
+							jen.ID("websocketsRouter").Dot("Get").Call(jen.Lit("/data_changes"), jen.ID("s").Dot("websocketsService").Dot("SubscribeHandler")),
 						),
 					),
 					jen.Newline(),
@@ -362,7 +351,7 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 					jen.ID("v1Router").Dot("Route").Call(
 						jen.Lit("/webhooks"),
 						jen.Func().Params(jen.ID("webhookRouter").ID("routing").Dot("Router")).Body(
-							jen.ID("singleWebhookRoute").Assign().ID("buildNumericIDURLChunk").Call(jen.Qual(proj.WebhooksServicePackage(), "WebhookIDURIParamKey")),
+							jen.ID("singleWebhookRoute").Assign().ID("buildURLVarChunk").Call(jen.Qual(proj.WebhooksServicePackage(), "WebhookIDURIParamKey"), jen.EmptyString()),
 							jen.ID("webhookRouter").
 								Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadWebhooksPermission"))).
 								Dotln("Get").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("ListHandler")),
@@ -378,12 +367,6 @@ func httpRoutesDotGo(proj *models.Project) *jen.File {
 									jen.ID("singleWebhookRouter").
 										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ArchiveWebhooksPermission"))).
 										Dotln("Delete").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("ArchiveHandler")),
-									jen.ID("singleWebhookRouter").
-										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "UpdateWebhooksPermission"))).
-										Dotln("Put").Call(jen.ID("root"), jen.ID("s").Dot("webhooksService").Dot("UpdateHandler")),
-									jen.ID("singleWebhookRouter").
-										Dotln("WithMiddleware").Call(jen.ID("s").Dot("authService").Dot("PermissionFilterMiddleware").Call(jen.Qual(proj.InternalAuthorizationPackage(), "ReadWebhooksAuditLogEntriesPermission"))).
-										Dotln("Get").Call(jen.ID("auditRoute"), jen.ID("s").Dot("webhooksService").Dot("AuditEntryHandler")),
 								),
 							),
 						),

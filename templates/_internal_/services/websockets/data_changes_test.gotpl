@@ -229,6 +229,8 @@ func Test_pingConnections(T *testing.T) {
 
 		<-time.After(time.Second)
 
+		s.service.connectionsHat.RLock()
 		assert.Empty(t, s.service.connections)
+		s.service.connectionsHat.RUnlock()
 	})
 }

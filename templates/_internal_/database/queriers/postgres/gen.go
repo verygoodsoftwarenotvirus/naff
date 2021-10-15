@@ -2,7 +2,12 @@ package postgres
 
 import (
 	_ "embed"
+	"fmt"
 	"path/filepath"
+
+	"github.com/Masterminds/squirrel"
+
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
@@ -11,6 +16,7 @@ import (
 )
 
 const (
+	whatever        = "fart"
 	packageName     = "postgres"
 	basePackagePath = "internal/database/queriers/postgres"
 )
@@ -57,10 +63,13 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	jenFiles := map[string]*jen.File{
-		"items.go":        itemsDotGo(proj),
-		"items_test.go":   itemsTestDotGo(proj),
 		"migrate.go":      migrateDotGo(proj),
 		"migrate_test.go": migrateTestDotGo(proj),
+	}
+
+	for _, typ := range proj.DataTypes {
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ, wordsmith.FromSingularPascalCase("Postgres"))
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ, wordsmith.FromSingularPascalCase("Postgres"))
 	}
 
 	for path, file := range jenFiles {
@@ -70,6 +79,30 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	return nil
+}
+
+func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
+	switch db.LowercaseAbbreviation() {
+	case "p":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+	case "s", "m":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	default:
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
+	}
+}
+
+func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
+	switch db.LowercaseAbbreviation() {
+	case "m":
+		return "UNIX_TIMESTAMP()"
+	case "p":
+		return "extract(epoch FROM NOW())"
+	case "s":
+		return "(strftime('%s','now'))"
+	default:
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
+	}
 }
 
 //go:embed migrations/00001_initial.sql
