@@ -95,6 +95,47 @@ func buildTopVarBlock(proj *models.Project, typ models.DataType, dbvendor wordsm
 	return lines
 }
 
+func buildIDBoilerplate(proj *models.Project, typ models.DataType, includeType bool, returnVal jen.Code) []jen.Code {
+	lines := []jen.Code{}
+
+	for _, dep := range proj.FindOwnerTypeChain(typ) {
+		lines = append(lines,
+			jen.If(jen.IDf("%sID", dep.Name.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
+				jen.Return(returnVal, jen.ID("ErrInvalidIDProvided")),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", dep.Name.Singular())), jen.IDf("%sID", dep.Name.UnexportedVarName())),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", dep.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", dep.Name.UnexportedVarName())),
+			jen.Newline(),
+		)
+	}
+
+	if includeType {
+		lines = append(lines,
+			jen.If(jen.IDf("%sID", typ.Name.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
+				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
+			jen.Newline(),
+		)
+	}
+
+	if typ.RestrictedToAccountAtSomeLevel(proj) {
+		lines = append(lines,
+			jen.If(jen.ID("accountID").IsEqualTo().EmptyString()).Body(
+				jen.Return().List(returnVal, jen.ID("ErrInvalidIDProvided")),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID")),
+			jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("accountID")),
+			jen.Newline(),
+		)
+	}
+
+	return lines
+}
+
+// end helpers
+
 func buildScanSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
@@ -121,38 +162,42 @@ func buildScanSomething(proj *models.Project, typ models.DataType, dbvendor word
 		columns = append(columns, jen.Op("&").ID("x").Dot("BelongsToAccount"))
 	}
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Lit("include_counts"),
+			jen.ID("includeCounts"),
+		),
+		jen.Newline(),
+		jen.ID("x").Equals().Op("&").ID("types").Dotf(sn).Values(),
+		jen.Newline(),
+		jen.ID("targetVars").Op(":=").Index().Interface().Valuesln(columns...),
+		jen.Newline(),
+		jen.If(jen.ID("includeCounts")).Body(
+			jen.ID("targetVars").Equals().ID("append").Call(
+				jen.ID("targetVars"),
+				jen.Op("&").ID("filteredCount"),
+				jen.Op("&").ID("totalCount"),
+			)),
+		jen.Newline(),
+		jen.If(jen.ID("err").Equals().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Op("...")), jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Lit(""),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID("x"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.Nil()),
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct.", sn, scnwp),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("scan%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").ID("database").Dot("Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").Op("*").ID("types").Dot(sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
-				jen.Lit("include_counts"),
-				jen.ID("includeCounts"),
-			),
-			jen.Newline(),
-			jen.ID("x").Equals().Op("&").ID("types").Dotf(sn).Values(),
-			jen.Newline(),
-			jen.ID("targetVars").Op(":=").Index().Interface().Valuesln(columns...),
-			jen.Newline(),
-			jen.If(jen.ID("includeCounts")).Body(
-				jen.ID("targetVars").Equals().ID("append").Call(
-					jen.ID("targetVars"),
-					jen.Op("&").ID("filteredCount"),
-					jen.Op("&").ID("totalCount"),
-				)),
-			jen.Newline(),
-			jen.If(jen.ID("err").Equals().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Op("...")), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Lit(""),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID("x"), jen.ID("filteredCount"), jen.ID("totalCount"), jen.Nil()),
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -166,53 +211,57 @@ func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbve
 	pcn := typ.Name.PluralCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.Lit("include_counts"),
+			jen.ID("includeCounts"),
+		),
+		jen.Newline(),
+		jen.For(jen.ID("rows").Dot("Next").Call()).Body(
+			jen.List(jen.ID("x"), jen.ID("fc"), jen.ID("tc"), jen.ID("scanErr")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
+				jen.ID("ctx"),
+				jen.ID("rows"),
+				jen.ID("includeCounts"),
+			),
+			jen.If(jen.ID("scanErr").DoesNotEqual().Nil()).Body(
+				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
+			jen.Newline(),
+			jen.If(jen.ID("includeCounts")).Body(
+				jen.If(jen.ID("filteredCount").Op("==").Zero()).Body(
+					jen.ID("filteredCount").Equals().ID("fc")),
+				jen.Newline(),
+				jen.If(jen.ID("totalCount").Op("==").Zero()).Body(
+					jen.ID("totalCount").Equals().ID("tc")),
+			),
+			jen.Newline(),
+			jen.ID(puvn).Equals().ID("append").Call(
+				jen.ID(puvn),
+				jen.ID("x"),
+			),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("err").Equals().ID("q").Dot("checkRowsForErrorAndClose").Call(
+			jen.ID("ctx"),
+			jen.ID("rows"),
+		), jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Lit("handling rows"),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID(puvn), jen.ID("filteredCount"), jen.ID("totalCount"), jen.Nil()),
+	}
+
 	lines := []jen.Code{
 		jen.Commentf("scan%s takes some database rows and turns them into a slice of %s.", pn, pcn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("scan%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").ID("database").Dot("ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID(puvn).Index().Op("*").ID("types").Dot(sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
-			jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
-				jen.Lit("include_counts"),
-				jen.ID("includeCounts"),
-			),
-			jen.Newline(),
-			jen.For(jen.ID("rows").Dot("Next").Call()).Body(
-				jen.List(jen.ID("x"), jen.ID("fc"), jen.ID("tc"), jen.ID("scanErr")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
-					jen.ID("ctx"),
-					jen.ID("rows"),
-					jen.ID("includeCounts"),
-				),
-				jen.If(jen.ID("scanErr").DoesNotEqual().Nil()).Body(
-					jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
-				jen.Newline(),
-				jen.If(jen.ID("includeCounts")).Body(
-					jen.If(jen.ID("filteredCount").Op("==").Zero()).Body(
-						jen.ID("filteredCount").Equals().ID("fc")),
-					jen.Newline(),
-					jen.If(jen.ID("totalCount").Op("==").Zero()).Body(
-						jen.ID("totalCount").Equals().ID("tc")),
-				),
-				jen.Newline(),
-				jen.ID(puvn).Equals().ID("append").Call(
-					jen.ID(puvn),
-					jen.ID("x"),
-				),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("err").Equals().ID("q").Dot("checkRowsForErrorAndClose").Call(
-				jen.ID("ctx"),
-				jen.ID("rows"),
-			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Lit("handling rows"),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID(puvn), jen.ID("filteredCount"), jen.ID("totalCount"), jen.Nil()),
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -242,57 +291,45 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 		panic(err)
 	}
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.False())...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.ID("args").Op(":=").Index().Interface().Valuesln(
+			jen.ID("accountID"), jen.IDf("%sID", uvn)),
+		jen.Newline(),
+		jen.List(jen.ID("result"), jen.ID("err")).Op(":=").ID("q").Dot("performBooleanQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.IDf("%sExistenceQuery", uvn),
+			jen.ID("args"),
+		),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.ID("false"), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("performing %s existence check", scn),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID("result"), jen.Nil()),
+	)
+
 	lines := []jen.Code{
 		jen.Const().IDf("%sExistenceQuery", uvn).Equals().Lit(query),
 		jen.Newline(),
 		jen.Commentf("%sExists fetches whether %s exists from the database.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("%sExists", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).String()).Params(jen.ID("exists").ID("bool"), jen.ID("err").ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
-			jen.Newline(),
-			jen.If(jen.IDf("%sID", uvn).Op("==").Lit("")).Body(
-				jen.Return().List(jen.ID("false"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dotf("%sIDKey", sn),
-				jen.IDf("%sID", uvn),
-			),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.ID("false"), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("AccountIDKey"),
-				jen.ID("accountID"),
-			),
-			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("accountID"),
-			),
-			jen.Newline(),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(
-				jen.ID("accountID"), jen.IDf("%sID", uvn)),
-			jen.Newline(),
-			jen.List(jen.ID("result"), jen.ID("err")).Op(":=").ID("q").Dot("performBooleanQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.IDf("%sExistenceQuery", uvn),
-				jen.ID("args"),
-			),
-			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.ID("false"), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("performing %s existence check", scn),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID("result"), jen.Nil()),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("%sExists", sn).Params(typ.BuildDBClientExistenceMethodParams(proj)...).Params(jen.ID("exists").ID("bool"), jen.ID("err").ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -328,64 +365,52 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 		panic(err)
 	}
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.Nil())...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.ID("args").Op(":=").Index().Interface().Valuesln(
+			jen.ID("accountID"), jen.IDf("%sID", uvn)),
+		jen.Newline(),
+		jen.ID("row").Op(":=").ID("q").Dot("getOneRow").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.Lit(uvn),
+			jen.IDf("get%sQuery", sn),
+			jen.ID("args"),
+		),
+		jen.Newline(),
+		jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
+			jen.ID("ctx"),
+			jen.ID("row"),
+			jen.ID("false"),
+		),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("scanning %s", uvn),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID(uvn), jen.Nil()),
+	)
+
 	lines := []jen.Code{
 		jen.Const().IDf("get%sQuery", sn).Equals().Lit(query),
 		jen.Newline(),
 		jen.Commentf("Get%s fetches %s from the database.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Get%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).String()).Params(jen.Op("*").ID("types").Dot(sn), jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
-			jen.Newline(),
-			jen.If(jen.IDf("%sID", uvn).Op("==").Lit("")).Body(
-				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dotf("%sIDKey", sn),
-				jen.IDf("%sID", uvn),
-			),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("AccountIDKey"),
-				jen.ID("accountID"),
-			),
-			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("accountID"),
-			),
-			jen.Newline(),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(
-				jen.ID("accountID"), jen.IDf("%sID", uvn)),
-			jen.Newline(),
-			jen.ID("row").Op(":=").ID("q").Dot("getOneRow").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Lit(uvn),
-				jen.IDf("get%sQuery", sn),
-				jen.ID("args"),
-			),
-			jen.Newline(),
-			jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
-				jen.ID("ctx"),
-				jen.ID("row"),
-				jen.ID("false"),
-			),
-			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("scanning %s", uvn),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID(uvn), jen.Nil()),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Get%s", sn).Params(typ.BuildDBClientRetrievalMethodParams(proj)...).Params(jen.Op("*").ID("types").Dot(sn), jen.ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -399,77 +424,75 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 	pcn := typ.Name.PluralCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false, jen.Nil())...)
+
+	bodyLines = append(bodyLines,
+		jen.ID("x").Equals().Op("&").ID("types").Dotf("%sList", sn).Values(),
+		jen.ID("logger").Equals().ID("filter").Dot("AttachToLogger").Call(jen.ID("logger")),
+		jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
+			jen.ID("span"),
+			jen.ID("filter"),
+		),
+		jen.Newline(),
+		jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
+			jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Equals().List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit")),
+		),
+		jen.Newline(),
+		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dot("buildListQuery").Callln(
+			jen.ID("ctx"),
+			jen.Lit(puvn),
+			jen.Nil(),
+			jen.Nil(),
+			jen.ID("accountOwnershipColumn"),
+			jen.IDf("%sTableColumns", puvn),
+			jen.ID("accountID"),
+			jen.ID("false"),
+			jen.ID("filter"),
+		),
+		jen.Newline(),
+		jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("q").Dot("performReadQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.Lit(puvn),
+			jen.ID("query"),
+			jen.ID("args"),
+		),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("executing %s list retrieval query", pcn),
+			))),
+		jen.Newline(),
+		jen.If(jen.List(jen.ID("x").Dot(pn), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.ID("err")).Equals().ID("q").Dotf("scan%s", pn).Call(
+			jen.ID("ctx"),
+			jen.ID("rows"),
+			jen.ID("true"),
+		), jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("scanning %s", pcn),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID("x"), jen.Nil()),
+	)
+
 	lines := []jen.Code{
 		jen.Commentf("Get%s fetches a list of %s from the database that meet a particular filter.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Get%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").String(), jen.ID("filter").Op("*").ID("types").Dot("QueryFilter")).Params(jen.ID("x").Op("*").ID("types").Dotf("%sList", sn), jen.ID("err").ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
-			jen.Newline(),
-			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("AccountIDKey"),
-				jen.ID("accountID"),
-			),
-			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("accountID"),
-			),
-			jen.Newline(),
-			jen.ID("x").Equals().Op("&").ID("types").Dotf("%sList", sn).Values(),
-			jen.ID("logger").Equals().ID("filter").Dot("AttachToLogger").Call(jen.ID("logger")),
-			jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
-				jen.ID("span"),
-				jen.ID("filter"),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("filter").DoesNotEqual().Nil()).Body(
-				jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Equals().List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit")),
-			),
-			jen.Newline(),
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dot("buildListQuery").Callln(
-				jen.ID("ctx"),
-				jen.Lit(puvn),
-				jen.Nil(),
-				jen.Nil(),
-				jen.ID("accountOwnershipColumn"),
-				jen.IDf("%sTableColumns", puvn),
-				jen.ID("accountID"),
-				jen.ID("false"),
-				jen.ID("filter"),
-			),
-			jen.Newline(),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("q").Dot("performReadQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Lit(puvn),
-				jen.ID("query"),
-				jen.ID("args"),
-			),
-			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("executing %s list retrieval query", pcn),
-				))),
-			jen.Newline(),
-			jen.If(jen.List(jen.ID("x").Dot(pn), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.ID("err")).Equals().ID("q").Dotf("scan%s", pn).Call(
-				jen.ID("ctx"),
-				jen.ID("rows"),
-				jen.ID("true"),
-			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("scanning %s", pcn),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID("x"), jen.Nil()),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Get%s", pn).Params(typ.BuildDBClientListRetrievalMethodParams(proj)...).Params(jen.ID("x").Op("*").ID("types").Dotf("%sList", sn), jen.ID("err").ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -494,32 +517,36 @@ func buildGetTotalSomethingCount(proj *models.Project, typ models.DataType, dbve
 		panic(err)
 	}
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.Newline(),
+		jen.List(jen.ID("count"), jen.ID("err")).Op(":=").ID("q").Dot("performCountQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.IDf("getTotal%sCountQuery", pn),
+			jen.Litf("fetching count of %s", pcn),
+		),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("querying for count of %s", pcn),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID("count"), jen.Nil()),
+	}
+
 	lines := []jen.Code{
 		jen.Const().IDf("getTotal%sCountQuery", pn).Equals().Lit(query),
 		jen.Newline(),
 		jen.Commentf("GetTotal%sCount fetches the count of %s from the database that meet a particular filter.", sn, pcn),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("GetTotal%sCount", sn).Params(jen.ID("ctx").Qual("context", "Context")).Params(jen.Uint64(), jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
-			jen.Newline(),
-			jen.List(jen.ID("count"), jen.ID("err")).Op(":=").ID("q").Dot("performCountQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.IDf("getTotal%sCountQuery", pn),
-				jen.Litf("fetching count of %s", pcn),
-			),
-			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("querying for count of %s", pcn),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID("count"), jen.Nil()),
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -533,41 +560,39 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 
 	tableName := typ.Name.PluralRouteName()
 
+	bodyLines := []jen.Code{jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("withIDsWhere").Op(":=").ID("squirrel").Dot("Eq").Valuesln(
+			jen.Litf("%s.id", tableName).Op(":").ID("ids"),
+			jen.Litf("%s.archived_on", tableName).Op(":").ID("nil"),
+			jen.Litf("%s.belongs_to_account", tableName).Op(":").ID("accountID"),
+		),
+		jen.Newline(),
+		jen.ID("subqueryBuilder").Op(":=").ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
+			Dotln("From").Call(jen.Lit(puvn)).
+			Dotln("Join").Call(jen.Lit("unnest('{%s}'::text[])")).
+			Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d"), jen.ID("limit"))),
+		jen.Newline(),
+		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op(":=").ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
+			Dotln("FromSelect").Call(jen.ID("subqueryBuilder"), jen.Lit(puvn)).
+			Dotln("Where").Call(jen.ID("withIDsWhere")).Dot("ToSql").Call(),
+		jen.ID("query").Op("=").Qual("fmt", "Sprintf").Call(
+			jen.ID("query"),
+			jen.ID("joinIDs").Call(jen.ID("ids")),
+		),
+		jen.Newline(),
+		jen.ID("q").Dot("logQueryBuildingError").Call(
+			jen.ID("span"),
+			jen.ID("err"),
+		),
+		jen.Newline(),
+		jen.Return().List(jen.ID("query"), jen.ID("args")),
+	}
+
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("buildGet%sWithIDsQuery", pn).Params(
-			jen.ID("ctx").Qual("context", "Context"),
-			jen.ID("accountID").ID("string"),
-			jen.ID("limit").ID("uint8"),
-			jen.ID("ids").Index().ID("string"),
-		).Params(jen.ID("string"), jen.Index().Interface()).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("withIDsWhere").Op(":=").ID("squirrel").Dot("Eq").Valuesln(
-				jen.Litf("%s.id", tableName).Op(":").ID("ids"),
-				jen.Litf("%s.archived_on", tableName).Op(":").ID("nil"),
-				jen.Litf("%s.belongs_to_account", tableName).Op(":").ID("accountID"),
-			),
-			jen.Newline(),
-			jen.ID("subqueryBuilder").Op(":=").ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
-				Dotln("From").Call(jen.Lit(puvn)).
-				Dotln("Join").Call(jen.Lit("unnest('{%s}'::text[])")).
-				Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d"), jen.ID("limit"))),
-			jen.Newline(),
-			jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op(":=").ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
-				Dotln("FromSelect").Call(jen.ID("subqueryBuilder"), jen.Lit(puvn)).
-				Dotln("Where").Call(jen.ID("withIDsWhere")).Dot("ToSql").Call(),
-			jen.ID("query").Op("=").Qual("fmt", "Sprintf").Call(
-				jen.ID("query"),
-				jen.ID("joinIDs").Call(jen.ID("ids")),
-			),
-			jen.Newline(),
-			jen.ID("q").Dot("logQueryBuildingError").Call(
-				jen.ID("span"),
-				jen.ID("err"),
-			),
-			jen.Newline(),
-			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("buildGet%sWithIDsQuery", pn).Params(typ.BuildGetListOfSomethingFromIDsParams(proj)...).Params(jen.ID("string"), jen.Index().Interface()).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -581,69 +606,68 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 	pcn := typ.Name.PluralCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false, jen.Nil())...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.If(jen.ID("limit").Op("==").Zero()).Body(
+			jen.ID("limit").Equals().ID("uint8").Call(jen.ID("types").Dot("DefaultLimit")),
+		),
+		jen.Newline(),
+		jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+			jen.Lit("limit").MapAssign().ID("limit"), jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")))),
+		jen.Newline(),
+		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dotf("buildGet%sWithIDsQuery", pn).Call(
+			constants.CtxVar(),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
+			jen.ID("limit"),
+			jen.ID("ids"),
+		),
+		jen.Newline(),
+		jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("q").Dot("performReadQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.Litf("%s with IDs", pcn),
+			jen.ID("query"),
+			jen.ID("args"),
+		),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("fetching %s from database", pcn),
+			))),
+		jen.Newline(),
+		jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", pn).Call(
+			jen.ID("ctx"),
+			jen.ID("rows"),
+			jen.ID("false"),
+		),
+		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("scanning %s", pcn),
+			))),
+		jen.Newline(),
+		jen.Return().List(jen.ID(puvn), jen.Nil()),
+	)
+
 	lines := []jen.Code{
 		jen.Commentf("Get%sWithIDs fetches %s from the database within a given set of IDs.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Get%sWithIDs", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("accountID").String(), jen.ID("limit").ID("uint8"), jen.ID("ids").Index().String()).Params(jen.Index().Op("*").ID("types").Dot(sn), jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
-			jen.Newline(),
-			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("AccountIDKey"),
-				jen.ID("accountID"),
-			),
-			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("accountID"),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("limit").Op("==").Zero()).Body(
-				jen.ID("limit").Equals().ID("uint8").Call(jen.ID("types").Dot("DefaultLimit")),
-			),
-			jen.Newline(),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
-				jen.Lit("limit").MapAssign().ID("limit"), jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")))),
-			jen.Newline(),
-			jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dotf("buildGet%sWithIDsQuery", pn).Call(
-				constants.CtxVar(),
-				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
-				jen.ID("limit"),
-				jen.ID("ids"),
-			),
-			jen.Newline(),
-			jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("q").Dot("performReadQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Litf("%s with IDs", pcn),
-				jen.ID("query"),
-				jen.ID("args"),
-			),
-			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("fetching %s from database", pcn),
-				))),
-			jen.Newline(),
-			jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", pn).Call(
-				jen.ID("ctx"),
-				jen.ID("rows"),
-				jen.ID("false"),
-			),
-			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("scanning %s", pcn),
-				))),
-			jen.Newline(),
-			jen.Return().List(jen.ID(puvn), jen.Nil()),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Get%sWithIDs", pn).Params(typ.BuildGetListOfSomethingFromIDsParams(proj)...).Params(jen.Index().Op("*").ID("types").Dot(sn), jen.ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -707,50 +731,54 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 
 	fieldValues = append(fieldValues, jen.ID("CreatedOn").MapAssign().ID("q").Dot("currentTime").Call())
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.If(jen.ID("input").Op("==").Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided")),
+		),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.ID("keys").Dotf("%sIDKey", sn),
+			jen.ID("input").Dot("ID"),
+		),
+		jen.Newline(),
+		jen.ID("args").Op(":=").Index().Interface().Valuesln(argValues...),
+		jen.Newline(),
+		jen.Commentf("create the %s.", scn),
+		jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.Litf("%s creation", scn),
+			jen.IDf("%sCreationQuery", uvn),
+			jen.ID("args"),
+		), jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("creating %s", scn),
+			))),
+		jen.Newline(),
+		jen.ID("x").Op(":=").Op("&").ID("types").Dot(sn).Valuesln(fieldValues...),
+		jen.Newline(),
+		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
+			jen.ID("span"),
+			jen.ID("x").Dot("ID"),
+		),
+		jen.ID("logger").Dot("Info").Call(jen.Litf("%s created", scn)),
+		jen.Newline(),
+		jen.Return().List(jen.ID("x"), jen.Nil()),
+	}
+
 	lines := []jen.Code{
 		jen.Const().IDf("%sCreationQuery", uvn).Equals().Lit(query),
 		jen.Newline(),
 		jen.Commentf("Create%s creates %s in the database.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Create%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("input").Op("*").ID("types").Dotf("%sDatabaseCreationInput", sn)).Params(jen.Op("*").ID("types").Dot(sn), jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.If(jen.ID("input").Op("==").Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided")),
-			),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dotf("%sIDKey", sn),
-				jen.ID("input").Dot("ID"),
-			),
-			jen.Newline(),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(argValues...),
-			jen.Newline(),
-			jen.Commentf("create the %s.", scn),
-			jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Litf("%s creation", scn),
-				jen.IDf("%sCreationQuery", uvn),
-				jen.ID("args"),
-			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("creating %s", scn),
-				))),
-			jen.Newline(),
-			jen.ID("x").Op(":=").Op("&").ID("types").Dot(sn).Valuesln(fieldValues...),
-			jen.Newline(),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.ID("x").Dot("ID"),
-			),
-			jen.ID("logger").Dot("Info").Call(jen.Litf("%s created", scn)),
-			jen.Newline(),
-			jen.Return().List(jen.ID("x"), jen.Nil()),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Create%s", sn).Params(typ.BuildDBClientCreationMethodParams(proj)...).Params(jen.Op("*").ID("types").Dot(sn), jen.ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -802,51 +830,55 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 		panic(err)
 	}
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.If(jen.ID("updated").Op("==").Nil()).Body(
+			jen.Return().ID("ErrNilInputProvided"),
+		),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+			jen.ID("keys").Dotf("%sIDKey", sn),
+			jen.ID("updated").Dot("ID"),
+		),
+		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
+			jen.ID("span"),
+			jen.ID("updated").Dot("ID"),
+		),
+		jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
+			jen.ID("span"),
+			jen.ID("updated").Dot("BelongsToAccount"),
+		),
+		jen.Newline(),
+		jen.ID("args").Op(":=").Index().Interface().Valuesln(argValues...),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.Litf("%s update", scn),
+			jen.IDf("update%sQuery", sn),
+			jen.ID("args"),
+		), jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("updating %s", scn),
+			)),
+		jen.Newline(),
+		jen.ID("logger").Dot("Info").Call(jen.Litf("%s updated", scn)),
+		jen.Newline(),
+		jen.Return().Nil(),
+	}
+
 	lines := []jen.Code{
 		jen.Const().IDf("update%sQuery", sn).Equals().Lit(query),
 		jen.Newline(),
 		jen.Commentf("Update%s updates a particular %s.", sn, scn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Update%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("updated").Op("*").ID("types").Dot(sn)).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.If(jen.ID("updated").Op("==").Nil()).Body(
-				jen.Return().ID("ErrNilInputProvided"),
-			),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dotf("%sIDKey", sn),
-				jen.ID("updated").Dot("ID"),
-			),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.ID("updated").Dot("ID"),
-			),
-			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("updated").Dot("BelongsToAccount"),
-			),
-			jen.Newline(),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(argValues...),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Litf("%s update", scn),
-				jen.IDf("update%sQuery", sn),
-				jen.ID("args"),
-			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("updating %s", scn),
-				)),
-			jen.Newline(),
-			jen.ID("logger").Dot("Info").Call(jen.Litf("%s updated", scn)),
-			jen.Newline(),
-			jen.Return().Nil(),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Update%s", sn).Params(typ.BuildDBClientUpdateMethodParams(proj, "updated")...).Params(jen.ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
@@ -884,60 +916,48 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 		panic(err)
 	}
 
+	bodyLines := []jen.Code{
+		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.Null())...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.ID("args").Op(":=").Index().Interface().Valuesln(
+			jen.ID("accountID"), jen.IDf("%sID", uvn)),
+		jen.Newline(),
+		jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
+			jen.ID("ctx"),
+			jen.ID("q").Dot("db"),
+			jen.Litf("%s archive", scn),
+			jen.IDf("archive%sQuery", sn),
+			jen.ID("args"),
+		), jen.ID("err").DoesNotEqual().Nil()).Body(
+			jen.Return().ID("observability").Dot("PrepareError").Call(
+				jen.ID("err"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("updating %s", scn),
+			)),
+		jen.Newline(),
+		jen.ID("logger").Dot("Info").Call(jen.Litf("%s archived", scn)),
+		jen.Newline(),
+		jen.Return().Nil(),
+	)
+
 	lines := []jen.Code{
 		jen.Const().IDf("archive%sQuery", sn).Equals().Lit(query),
 		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Archive%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.List(jen.IDf("%sID", uvn), jen.ID("accountID")).String()).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("logger").Op(":=").ID("q").Dot("logger"),
-			jen.Newline(),
-			jen.If(jen.IDf("%sID", uvn).Op("==").Lit("")).Body(
-				jen.Return().ID("ErrInvalidIDProvided")),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dotf("%sIDKey", sn),
-				jen.IDf("%sID", uvn),
-			),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			jen.If(jen.ID("accountID").Op("==").Lit("")).Body(
-				jen.Return().ID("ErrInvalidIDProvided")),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-				jen.ID("keys").Dot("AccountIDKey"),
-				jen.ID("accountID"),
-			),
-			jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
-				jen.ID("span"),
-				jen.ID("accountID"),
-			),
-			jen.Newline(),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(
-				jen.ID("accountID"), jen.IDf("%sID", uvn)),
-			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Litf("%s archive", scn),
-				jen.IDf("archive%sQuery", sn),
-				jen.ID("args"),
-			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().ID("observability").Dot("PrepareError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("updating %s", scn),
-				)),
-			jen.Newline(),
-			jen.ID("logger").Dot("Info").Call(jen.Litf("%s archived", scn)),
-			jen.Newline(),
-			jen.Return().Nil(),
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Archive%s", sn).Params(typ.BuildDBClientArchiveMethodParams()...).Params(jen.ID("error")).Body(
+			bodyLines...,
 		),
 		jen.Newline(),
 	}

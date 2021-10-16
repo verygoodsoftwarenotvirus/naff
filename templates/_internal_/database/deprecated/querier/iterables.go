@@ -9,6 +9,36 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func newIterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
+	code := jen.NewFile(packageName)
+
+	sn := typ.Name.Singular()
+
+	utils.AddImports(proj, code, false)
+
+	code.Add(
+		jen.Var().Defs(
+			jen.Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("SQLQuerier")).Call(jen.Nil()),
+		),
+		jen.Newline(),
+	)
+
+	code.Add(buildScanSomethingRow(proj, typ)...)
+	code.Add(buildScanListOfSomethingRows(proj, typ)...)
+	code.Add(buildSomethingExists(proj, typ)...)
+	code.Add(buildGetSomething(proj, typ)...)
+	code.Add(buildGetAllSomethingCount(proj, typ)...)
+	code.Add(buildGetAllSomething(proj, typ)...)
+	code.Add(buildGetListOfSomething(proj, typ)...)
+	code.Add(buildGetListOfSomethingWithIDs(proj, typ)...)
+	code.Add(buildCreateSomething(proj, typ)...)
+	code.Add(buildUpdateSomething(proj, typ)...)
+	code.Add(buildArchiveSomething(proj, typ)...)
+	code.Add(buildGetAuditLogEntriesForSomething(proj, typ)...)
+
+	return code
+}
+
 func buildScanFields(typ models.DataType) (scanFields []jen.Code) {
 	scanFields = []jen.Code{
 		jen.AddressOf().ID("x").Dot("ID"),
@@ -1075,34 +1105,4 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 		),
 		jen.Newline(),
 	}
-}
-
-func newIterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
-	code := jen.NewFile(packageName)
-
-	sn := typ.Name.Singular()
-
-	utils.AddImports(proj, code, false)
-
-	code.Add(
-		jen.Var().Defs(
-			jen.Underscore().Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)).Equals().Parens(jen.PointerTo().ID("SQLQuerier")).Call(jen.Nil()),
-		),
-		jen.Newline(),
-	)
-
-	code.Add(buildScanSomethingRow(proj, typ)...)
-	code.Add(buildScanListOfSomethingRows(proj, typ)...)
-	code.Add(buildSomethingExists(proj, typ)...)
-	code.Add(buildGetSomething(proj, typ)...)
-	code.Add(buildGetAllSomethingCount(proj, typ)...)
-	code.Add(buildGetAllSomething(proj, typ)...)
-	code.Add(buildGetListOfSomething(proj, typ)...)
-	code.Add(buildGetListOfSomethingWithIDs(proj, typ)...)
-	code.Add(buildCreateSomething(proj, typ)...)
-	code.Add(buildUpdateSomething(proj, typ)...)
-	code.Add(buildArchiveSomething(proj, typ)...)
-	code.Add(buildGetAuditLogEntriesForSomething(proj, typ)...)
-
-	return code
 }

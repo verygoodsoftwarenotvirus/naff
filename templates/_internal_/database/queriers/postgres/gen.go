@@ -56,6 +56,10 @@ func RenderPackage(proj *models.Project) error {
 		"migrations/00001_initial.sql": baseMigrationDotSQL(proj),
 	}
 
+	for i, typ := range proj.DataTypes {
+		migrations[fmt.Sprintf("migrations/0000%d_%s.sql", i+2, typ.Name.PluralRouteName())] = buildMigrationScript(typ)
+	}
+
 	for path, file := range migrations {
 		if err := utils.RenderStringFile(proj, filepath.Join(basePackagePath, path), file, false); err != nil {
 			return err
