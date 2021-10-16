@@ -377,7 +377,8 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 					jen.ID("begin"),
 					jen.ID("end"),
 				),
-				constants.LoggerVar().Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("query").MapAssign().ID("query"), jen.Lit("begin").MapAssign().ID("begin"), jen.Lit("end").MapAssign().ID("end"))),
+				constants.LoggerVar().Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+					jen.Lit("query").MapAssign().ID("query"), jen.Lit("begin").MapAssign().ID("begin"), jen.Lit("end").MapAssign().ID("end"))),
 				jen.Newline(),
 				jen.List(jen.ID("rows"), jen.ID("queryErr")).Assign().ID("q").Dot("db").Dot("Query").Call(
 					jen.ID("query"),

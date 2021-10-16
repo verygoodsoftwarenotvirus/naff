@@ -311,11 +311,12 @@ func buildBuildGetAllSomethingCountQuery(proj *models.Project, typ models.DataTy
 					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil(),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil(),
 				)),
 			),
 		),
@@ -343,16 +344,18 @@ func buildBuildGetBatchOfSomethingQuery(proj *models.Project, typ models.DataTyp
 				jen.ID("b").Dot("sqlBuilder").
 					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableColumns", pn)).Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("beginID"))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("endID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("beginID"))).
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableName", pn)),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("endID"),
 				)),
 			),
 		),
@@ -675,7 +678,8 @@ func buildBuildUpdateSomethingQuery(proj *models.Project, typ models.DataType, d
 		jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 		jen.ID("currentUnixTimeQuery"),
 	).
-		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
+		Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+		jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"),
 		jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -778,7 +782,8 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType, 
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().IDf("%sID", uvn),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(),
 					func() jen.Code {
 						if typ.BelongsToStruct != nil {

@@ -118,7 +118,8 @@ func httpHelpersTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("ServicePermissions").MapAssign().Qual(proj.InternalAuthorizationPackage(), "NewServiceRolePermissionChecker").Call(jen.ID("helper").Dot("exampleUser").Dot("ServiceRoles").Op("...")),
 			),
 			jen.ID("ActiveAccountID").MapAssign().ID("helper").Dot("exampleAccount").Dot("ID"),
-			jen.ID("AccountPermissions").MapAssign().Map(jen.String()).Qual(proj.InternalAuthorizationPackage(), "AccountRolePermissionsChecker").Valuesln(jen.ID("helper").Dot("exampleAccount").Dot("ID").MapAssign().Qual(proj.InternalAuthorizationPackage(), "NewAccountRolePermissionChecker").Call(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call()))),
+			jen.ID("AccountPermissions").MapAssign().Map(jen.String()).Qual(proj.InternalAuthorizationPackage(), "AccountRolePermissionsChecker").Valuesln(
+				jen.ID("helper").Dot("exampleAccount").Dot("ID").MapAssign().Qual(proj.InternalAuthorizationPackage(), "NewAccountRolePermissionChecker").Call(jen.Qual(proj.InternalAuthorizationPackage(), "AccountMemberRole").Dot("String").Call()))),
 		jen.Newline(),
 		jen.ID("helper").Dot("service").Dot("encoderDecoder").Equals().Qual(proj.EncodingPackage(), "ProvideServerEncoderDecoder").Call(
 			jen.Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),

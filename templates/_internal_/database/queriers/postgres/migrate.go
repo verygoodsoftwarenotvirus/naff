@@ -53,7 +53,8 @@ func migrateDotGo(proj *models.Project) *jen.File {
 			jen.ID("q").Dot("migrateOnce").Dot("Do").Call(jen.ID("q").Dot("migrationFunc")),
 			jen.If(jen.ID("testUserConfig").DoesNotEqual().Nil()).Body(
 				jen.ID("q").Dot("logger").Dot("Debug").Call(jen.Lit("creating test user")),
-				jen.ID("testUserExistenceArgs").Op(":=").Index().Interface().Valuesln(jen.ID("testUserConfig").Dot("Username")),
+				jen.ID("testUserExistenceArgs").Op(":=").Index().Interface().Valuesln(
+					jen.ID("testUserConfig").Dot("Username")),
 				jen.ID("userRow").Op(":=").ID("q").Dot("getOneRow").Call(
 					jen.ID("ctx"),
 					jen.ID("q").Dot("db"),
@@ -69,9 +70,12 @@ func migrateDotGo(proj *models.Project) *jen.File {
 				jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 					jen.If(jen.ID("testUserConfig").Dot("ID").Op("==").Lit("")).Body(
 						jen.ID("testUserConfig").Dot("ID").Equals().ID("ksuid").Dot("New").Call().Dot("String").Call()),
-					jen.ID("testUserCreationArgs").Op(":=").Index().Interface().Valuesln(jen.ID("testUserConfig").Dot("ID"), jen.ID("testUserConfig").Dot("Username"), jen.ID("testUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.ID("types").Dot("GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
-					jen.ID("user").Op(":=").Op("&").ID("types").Dot("User").Valuesln(jen.ID("ID").MapAssign().ID("testUserConfig").Dot("ID"), jen.ID("Username").MapAssign().ID("testUserConfig").Dot("Username")),
-					jen.ID("account").Op(":=").Op("&").ID("types").Dot("Account").Valuesln(jen.ID("ID").MapAssign().ID("ksuid").Dot("New").Call().Dot("String").Call()),
+					jen.ID("testUserCreationArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("testUserConfig").Dot("ID"), jen.ID("testUserConfig").Dot("Username"), jen.ID("testUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.ID("types").Dot("GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
+					jen.ID("user").Op(":=").Op("&").ID("types").Dot("User").Valuesln(
+						jen.ID("ID").MapAssign().ID("testUserConfig").Dot("ID"), jen.ID("Username").MapAssign().ID("testUserConfig").Dot("Username")),
+					jen.ID("account").Op(":=").Op("&").ID("types").Dot("Account").Valuesln(
+						jen.ID("ID").MapAssign().ID("ksuid").Dot("New").Call().Dot("String").Call()),
 					jen.If(jen.ID("err").Equals().ID("q").Dot("createUser").Call(
 						jen.ID("ctx"),
 						jen.ID("user"),
@@ -100,7 +104,9 @@ func migrateDotGo(proj *models.Project) *jen.File {
 		jen.Var().Defs(
 			jen.ID("initMigration").String(),
 			jen.ID("itemsMigration").String(),
-			jen.ID("migrations").Equals().Index().ID("darwin").Dot("Migration").Valuesln(jen.Valuesln(jen.ID("Version").MapAssign().Lit(0.01), jen.ID("Description").MapAssign().Lit("basic infrastructural tables"), jen.ID("Script").MapAssign().ID("initMigration")), jen.Valuesln(jen.ID("Version").MapAssign().Lit(0.02), jen.ID("Description").MapAssign().Lit("create items table"), jen.ID("Script").MapAssign().ID("itemsMigration"))),
+			jen.ID("migrations").Equals().Index().ID("darwin").Dot("Migration").Valuesln(
+				jen.Valuesln(jen.ID("Version").MapAssign().Lit(0.01), jen.ID("Description").MapAssign().Lit("basic infrastructural tables"), jen.ID("Script").MapAssign().ID("initMigration")), jen.Valuesln(
+					jen.ID("Version").MapAssign().Lit(0.02), jen.ID("Description").MapAssign().Lit("create items table"), jen.ID("Script").MapAssign().ID("itemsMigration"))),
 		),
 		jen.Newline(),
 	)

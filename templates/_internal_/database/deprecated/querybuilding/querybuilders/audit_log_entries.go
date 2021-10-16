@@ -46,11 +46,12 @@ func buildBuildGetAuditLogEntryQuery(proj *models.Project, dbvendor wordsmith.Su
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("entryID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("entryID"))),
 			),
 		),
 		jen.Newline(),
@@ -97,16 +98,18 @@ func buildBuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, dbvendor wor
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("beginID"))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("endID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("beginID"))).
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("endID"))),
 			),
 		),
 		jen.Newline(),

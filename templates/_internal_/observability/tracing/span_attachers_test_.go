@@ -455,7 +455,8 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("StartSpan").Call(jen.Qual("context", "Background").Call()),
-					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(jen.ID("Header").MapAssign().Map(jen.String()).Index().String().Values()),
+					jen.ID("res").Assign().AddressOf().Qual("net/http", "Response").Valuesln(
+						jen.ID("Header").MapAssign().Map(jen.String()).Index().String().Values()),
 					jen.ID("res").Dot("Header").Dot("Set").Call(
 						jen.ID("t").Dot("Name").Call(),
 						jen.Lit("blah"),

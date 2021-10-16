@@ -63,7 +63,8 @@ func buildTestSqlite_BuildGetBatchOfAPIClientsQuery(proj *models.Project, dbvend
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Assign().List(jen.Uint64().Call(jen.Lit(1)), jen.Uint64().Call(jen.Lit(1000))),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetBatchOfAPIClientsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("beginID"),
@@ -129,7 +130,8 @@ func buildTestSqlite_BuildGetAPIClientQuery(proj *models.Project, dbvendor words
 					jen.ID("exampleAPIClient").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAPIClient").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAPIClient").Dot("ClientID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAPIClient").Dot("ClientID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAPIClientByClientIDQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAPIClient").Dot("ClientID"),
@@ -218,7 +220,8 @@ func buildTestSqlite_BuildGetAPIClientsQuery(proj *models.Project, dbvendor word
 					jen.ID("filter").Assign().Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT api_clients.id, api_clients.external_id, api_clients.name, api_clients.client_id, api_clients.secret_key, api_clients.created_on, api_clients.last_updated_on, api_clients.archived_on, api_clients.belongs_to_user, (SELECT COUNT(api_clients.id) FROM api_clients WHERE api_clients.archived_on IS NULL AND api_clients.belongs_to_user = %s) as total_count, (SELECT COUNT(api_clients.id) FROM api_clients WHERE api_clients.archived_on IS NULL AND api_clients.belongs_to_user = %s AND api_clients.created_on > %s AND api_clients.created_on < %s AND api_clients.last_updated_on > %s AND api_clients.last_updated_on < %s) as filtered_count FROM api_clients WHERE api_clients.archived_on IS NULL AND api_clients.belongs_to_user = %s AND api_clients.created_on > %s AND api_clients.created_on < %s AND api_clients.last_updated_on > %s AND api_clients.last_updated_on < %s GROUP BY api_clients.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7), getIncIndex(dbvendor, 8), getIncIndex(dbvendor, 9), getIncIndex(dbvendor, 10)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAPIClientsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -286,7 +289,8 @@ func buildTestSqlite_BuildGetAPIClientByDatabaseIDQuery(proj *models.Project, db
 					jen.ID("exampleAPIClient").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAPIClient").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAPIClient").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAPIClient").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAPIClientByDatabaseIDQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAPIClient").Dot("ID"),
@@ -360,7 +364,8 @@ func buildTestSqlite_BuildCreateAPIClientQuery(proj *models.Project, dbvendor wo
 					jen.ID("q").Dot("externalIDGenerator").Equals().ID("exIDGen"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAPIClient").Dot("ExternalID"), jen.ID("exampleAPIClient").Dot("Name"), jen.ID("exampleAPIClient").Dot("ClientID"), jen.ID("exampleAPIClient").Dot("ClientSecret"), jen.ID("exampleAPIClient").Dot("BelongsToUser")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAPIClient").Dot("ExternalID"), jen.ID("exampleAPIClient").Dot("Name"), jen.ID("exampleAPIClient").Dot("ClientID"), jen.ID("exampleAPIClient").Dot("ClientSecret"), jen.ID("exampleAPIClient").Dot("BelongsToUser")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildCreateAPIClientQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAPIClientInput"),
@@ -422,7 +427,8 @@ func buildTestSqlite_BuildUpdateAPIClientQuery(proj *models.Project, dbvendor wo
 					jen.ID("exampleAPIClient").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAPIClient").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAPIClient").Dot("ClientID"), jen.ID("exampleAPIClient").Dot("BelongsToUser"), jen.ID("exampleAPIClient").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAPIClient").Dot("ClientID"), jen.ID("exampleAPIClient").Dot("BelongsToUser"), jen.ID("exampleAPIClient").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUpdateAPIClientQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAPIClient"),
@@ -480,7 +486,8 @@ func buildTestSqlite_BuildArchiveAPIClientQuery(proj *models.Project, dbvendor w
 					jen.ID("exampleAPIClient").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAPIClient").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAPIClient").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAPIClient").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildArchiveAPIClientQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAPIClient").Dot("ID"),
@@ -543,7 +550,8 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAPIClientQuery(proj *models.Proje
 	expectedQuery, _ := buildQuery(queryBuilder)
 
 	expectedQueryDecl := jen.ID("expectedQuery").Assign().Lit(expectedQuery)
-	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAPIClient").Dot("ID"))
+	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+		jen.ID("exampleAPIClient").Dot("ID"))
 
 	if dbvendor.SingularPackageName() == "mysql" {
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleAPIClient").Dot("ID"))

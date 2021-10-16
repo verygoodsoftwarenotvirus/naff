@@ -53,19 +53,20 @@ func buildBuildGetWebhookQuery(proj *models.Project, dbvendor wordsmith.SuperPal
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("webhookID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn"),
-				).MapAssign().ID("accountID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("webhookID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn"),
+					).MapAssign().ID("accountID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -89,11 +90,12 @@ func buildBuildGetAllWebhooksCountQuery(proj *models.Project, dbvendor wordsmith
 					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -114,16 +116,18 @@ func buildBuildGetBatchOfWebhooksQuery(proj *models.Project, dbvendor wordsmith.
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("beginID"))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("endID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("beginID"))).
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("endID"))),
 			),
 		),
 		jen.Newline(),
@@ -276,7 +280,8 @@ func buildBuildUpdateWebhookQuery(proj *models.Project, dbvendor wordsmith.Super
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").MapAssign().ID("input").Dot("BelongsToAccount"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").MapAssign().ID("input").Dot("BelongsToAccount"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -313,7 +318,8 @@ func buildBuildArchiveWebhookQuery(proj *models.Project, dbvendor wordsmith.Supe
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("webhookID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").MapAssign().ID("accountID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("webhookID"), jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn").MapAssign().ID("accountID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),

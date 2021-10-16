@@ -57,7 +57,8 @@ func buildTestSqlite_BuildUserIsBannedQuery(proj *models.Project, dbvendor words
 					),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT EXISTS ( SELECT users.id FROM users WHERE users.archived_on IS NULL AND users.id = %s AND (users.reputation = %s OR users.reputation = %s) )", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.String().Call(jen.Qual(proj.TypesPackage(), "BannedUserAccountStatus")), jen.String().Call(jen.Qual(proj.TypesPackage(), "TerminatedUserReputation"))),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.String().Call(jen.Qual(proj.TypesPackage(), "BannedUserAccountStatus")), jen.String().Call(jen.Qual(proj.TypesPackage(), "TerminatedUserReputation"))),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUserHasStatusQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -104,7 +105,8 @@ func buildTestSqlite_BuildGetUserQuery(proj *models.Project, dbvendor wordsmith.
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT users.id, users.external_id, users.username, users.avatar_src, users.hashed_password, users.requires_password_change, users.password_last_changed_on, users.two_factor_secret, users.two_factor_secret_verified_on, users.service_roles, users.reputation, users.reputation_explanation, users.created_on, users.last_updated_on, users.archived_on FROM users WHERE users.archived_on IS NULL AND users.id = %s AND users.two_factor_secret_verified_on IS NOT NULL", getIncIndex(dbvendor, 0)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetUserQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -150,7 +152,8 @@ func buildTestSqlite_BuildGetUserWithUnverifiedTwoFactorSecretQuery(proj *models
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT users.id, users.external_id, users.username, users.avatar_src, users.hashed_password, users.requires_password_change, users.password_last_changed_on, users.two_factor_secret, users.two_factor_secret_verified_on, users.service_roles, users.reputation, users.reputation_explanation, users.created_on, users.last_updated_on, users.archived_on FROM users WHERE users.archived_on IS NULL AND users.id = %s AND users.two_factor_secret_verified_on IS NULL", getIncIndex(dbvendor, 0)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetUserWithUnverifiedTwoFactorSecretQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -196,7 +199,8 @@ func buildTestSqlite_BuildGetUsersQuery(proj *models.Project, dbvendor wordsmith
 					jen.ID("filter").Assign().Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT users.id, users.external_id, users.username, users.avatar_src, users.hashed_password, users.requires_password_change, users.password_last_changed_on, users.two_factor_secret, users.two_factor_secret_verified_on, users.service_roles, users.reputation, users.reputation_explanation, users.created_on, users.last_updated_on, users.archived_on, (SELECT COUNT(users.id) FROM users WHERE users.archived_on IS NULL) as total_count, (SELECT COUNT(users.id) FROM users WHERE users.archived_on IS NULL AND users.created_on > %s AND users.created_on < %s AND users.last_updated_on > %s AND users.last_updated_on < %s) as filtered_count FROM users WHERE users.archived_on IS NULL AND users.created_on > %s AND users.created_on < %s AND users.last_updated_on > %s AND users.last_updated_on < %s GROUP BY users.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetUsersQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("filter"),
@@ -278,7 +282,8 @@ func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor w
 					),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("fakeUUID"), jen.ID("exampleInput").Dot("Username"), jen.ID("exampleInput").Dot("HashedPassword"), jen.Qual(proj.QuerybuildingPackage(), "DefaultTestUserTwoFactorSecret"), jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.Qual(proj.InternalAuthorizationPackage(), "ServiceAdminRole").Dot("String").Call()),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("fakeUUID"), jen.ID("exampleInput").Dot("Username"), jen.ID("exampleInput").Dot("HashedPassword"), jen.Qual(proj.QuerybuildingPackage(), "DefaultTestUserTwoFactorSecret"), jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.Qual(proj.InternalAuthorizationPackage(), "ServiceAdminRole").Dot("String").Call()),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildTestUserCreationQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
@@ -326,7 +331,8 @@ func buildTestSqlite_BuildGetUserByUsernameQuery(proj *models.Project, dbvendor 
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT users.id, users.external_id, users.username, users.avatar_src, users.hashed_password, users.requires_password_change, users.password_last_changed_on, users.two_factor_secret, users.two_factor_secret_verified_on, users.service_roles, users.reputation, users.reputation_explanation, users.created_on, users.last_updated_on, users.archived_on FROM users WHERE users.archived_on IS NULL AND users.username = %s AND users.two_factor_secret_verified_on IS NOT NULL", getIncIndex(dbvendor, 0)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("Username")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("Username")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetUserByUsernameQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("Username"),
@@ -377,10 +383,11 @@ func buildTestSqlite_BuildSearchForUserByUsernameQuery(proj *models.Project, dbv
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT users.id, users.external_id, users.username, users.avatar_src, users.hashed_password, users.requires_password_change, users.password_last_changed_on, users.two_factor_secret, users.two_factor_secret_verified_on, users.service_roles, users.reputation, users.reputation_explanation, users.created_on, users.last_updated_on, users.archived_on FROM users WHERE users.username %sLIKE %s AND users.archived_on IS NULL AND users.two_factor_secret_verified_on IS NOT NULL", postgresPrefix, getIncIndex(dbvendor, 0)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.Qual("fmt", "Sprintf").Call(
-						jen.Lit("%s%%"),
-						jen.ID("exampleUser").Dot("Username"),
-					)),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.Qual("fmt", "Sprintf").Call(
+							jen.Lit("%s%%"),
+							jen.ID("exampleUser").Dot("Username"),
+						)),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildSearchForUserByUsernameQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("Username"),
@@ -471,7 +478,8 @@ func buildTestSqlite_BuildCreateUserQuery(proj *models.Project, dbvendor wordsmi
 					jen.ID("q").Dot("externalIDGenerator").Equals().ID("exIDGen"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("INSERT INTO users (external_id,username,hashed_password,two_factor_secret,reputation,service_roles) VALUES (%s,%s,%s,%s,%s,%s)%s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), querySuffix),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ExternalID"), jen.ID("exampleUser").Dot("Username"), jen.ID("exampleUser").Dot("HashedPassword"), jen.ID("exampleUser").Dot("TwoFactorSecret"), jen.Qual(proj.TypesPackage(), "UnverifiedAccountStatus"), jen.Qual(proj.InternalAuthorizationPackage(), "ServiceUserRole").Dot("String").Call()),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ExternalID"), jen.ID("exampleUser").Dot("Username"), jen.ID("exampleUser").Dot("HashedPassword"), jen.ID("exampleUser").Dot("TwoFactorSecret"), jen.Qual(proj.TypesPackage(), "UnverifiedAccountStatus"), jen.Qual(proj.InternalAuthorizationPackage(), "ServiceUserRole").Dot("String").Call()),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildCreateUserQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
@@ -601,7 +609,8 @@ func buildTestSqlite_BuildUpdateUserPasswordQuery(proj *models.Project, dbvendor
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("HashedPassword"), jen.ID("false"), jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("HashedPassword"), jen.ID("false"), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUpdateUserPasswordQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -649,7 +658,8 @@ func buildTestSqlite_BuildSetUserStatusQuery(proj *models.Project, dbvendor word
 					jen.ID("exampleInput").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUserReputationUpdateInputFromUser").Call(jen.ID("exampleUser")),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("UPDATE users SET reputation = %s, reputation_explanation = %s WHERE archived_on IS NULL AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleInput").Dot("NewReputation"), jen.ID("exampleInput").Dot("Reason"), jen.ID("exampleInput").Dot("TargetUserID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleInput").Dot("NewReputation"), jen.ID("exampleInput").Dot("Reason"), jen.ID("exampleInput").Dot("TargetUserID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildSetUserStatusQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
@@ -695,7 +705,8 @@ func buildTestSqlite_BuildUpdateUserTwoFactorSecretQuery(proj *models.Project, d
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("UPDATE users SET two_factor_secret_verified_on = %s, two_factor_secret = %s WHERE archived_on IS NULL AND id = %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.Nil(), jen.ID("exampleUser").Dot("TwoFactorSecret"), jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.Nil(), jen.ID("exampleUser").Dot("TwoFactorSecret"), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUpdateUserTwoFactorSecretQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -752,7 +763,8 @@ func buildTestSqlite_BuildVerifyUserTwoFactorSecretQuery(proj *models.Project, d
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildVerifyUserTwoFactorSecretQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -807,7 +819,8 @@ func buildTestSqlite_BuildArchiveUserQuery(proj *models.Project, dbvendor wordsm
 					jen.ID("exampleUser").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildArchiveUserQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -875,7 +888,8 @@ func buildTestSqlite_BuildGetAuditLogEntriesForUserQuery(proj *models.Project, d
 	expectedQuery, _ := buildQuery(queryBuilder)
 
 	expectedQueryDecl := jen.ID("expectedQuery").Assign().Lit(expectedQuery)
-	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"))
+	expectedArgs := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+		jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"))
 
 	if dbvendor.SingularPackageName() == "mysql" {
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"))

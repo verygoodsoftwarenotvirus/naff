@@ -38,7 +38,8 @@ func buildTestSqlite_BuildGetAuditLogEntryQuery(proj *models.Project, dbvendor w
 					jen.ID("exampleAuditLogEntry").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeAuditLogEntry").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE audit_log.id = %s", getIncIndex(dbvendor, 0)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAuditLogEntry").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAuditLogEntry").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAuditLogEntryQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAuditLogEntry").Dot("ID"),
@@ -119,7 +120,8 @@ func buildTestSqlite_BuildGetBatchOfAuditLogEntriesQuery(proj *models.Project, d
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Assign().List(jen.Uint64().Call(jen.Lit(1)), jen.Uint64().Call(jen.Lit(1000))),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on FROM audit_log WHERE audit_log.id > %s AND audit_log.id < %s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetBatchOfAuditLogEntriesQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("beginID"),
@@ -166,7 +168,8 @@ func buildTestSqlite_BuildGetAuditLogEntriesQuery(proj *models.Project, dbvendor
 					jen.ID("filter").Assign().Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT audit_log.id, audit_log.external_id, audit_log.event_type, audit_log.context, audit_log.created_on, (SELECT COUNT(*) FROM audit_log) FROM audit_log WHERE audit_log.created_on > %s AND audit_log.created_on < %s AND audit_log.last_updated_on > %s AND audit_log.last_updated_on < %s ORDER BY audit_log.created_on LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAuditLogEntriesQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("filter"),
@@ -222,7 +225,8 @@ func buildTestSqlite_BuildCreateAuditLogEntryQuery(proj *models.Project, dbvendo
 					jen.ID("q").Dot("externalIDGenerator").Equals().ID("exIDGen"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("INSERT INTO audit_log (external_id,event_type,context) VALUES (%s,%s,%s)%s", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), querySuffix),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAuditLogEntry").Dot("ExternalID"), jen.ID("exampleAuditLogEntry").Dot("EventType"), jen.ID("exampleAuditLogEntry").Dot("Context")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAuditLogEntry").Dot("ExternalID"), jen.ID("exampleAuditLogEntry").Dot("EventType"), jen.ID("exampleAuditLogEntry").Dot("Context")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildCreateAuditLogEntryQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),

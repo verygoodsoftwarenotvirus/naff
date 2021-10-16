@@ -46,13 +46,14 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.Lit("setting up items search index manager: %w"),
 					jen.ID("err"),
 				))),
-			jen.ID("w").Op(":=").Op("&").ID("PreWritesWorker").Valuesln(jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
-				jen.Lit("topic"),
-				jen.ID("name"),
-			), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
-				jen.ID("logger"),
-				jen.ID("encoding").Dot("ContentTypeJSON"),
-			), jen.ID("postWritesPublisher").MapAssign().ID("postWritesPublisher"), jen.ID("dataManager").MapAssign().ID("dataManager"), jen.ID("itemsIndexManager").MapAssign().ID("itemsIndexManager")),
+			jen.ID("w").Op(":=").Op("&").ID("PreWritesWorker").Valuesln(
+				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
+					jen.Lit("topic"),
+					jen.ID("name"),
+				), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
+					jen.ID("logger"),
+					jen.ID("encoding").Dot("ContentTypeJSON"),
+				), jen.ID("postWritesPublisher").MapAssign().ID("postWritesPublisher"), jen.ID("dataManager").MapAssign().ID("dataManager"), jen.ID("itemsIndexManager").MapAssign().ID("itemsIndexManager")),
 			jen.Return().List(jen.ID("w"), jen.ID("err")),
 		),
 		jen.Newline(),
@@ -109,7 +110,8 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("span"),
 							jen.Lit("indexing the item"),
 						)), jen.If(jen.ID("w").Dot("postWritesPublisher").DoesNotEqual().Nil()).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Item").MapAssign().ID("item"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
+						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(
+							jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Item").MapAssign().ID("item"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
 						jen.If(jen.ID("err").Equals().ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
 							jen.ID("ctx"),
 							jen.ID("dcm"),
@@ -132,7 +134,8 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("span"),
 							jen.Lit("creating webhook"),
 						)), jen.If(jen.ID("w").Dot("postWritesPublisher").DoesNotEqual().Nil()).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Webhook").MapAssign().ID("webhook"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
+						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(
+							jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Webhook").MapAssign().ID("webhook"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
 						jen.If(jen.ID("err").Equals().ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
 							jen.ID("ctx"),
 							jen.ID("dcm"),
@@ -155,7 +158,8 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("span"),
 							jen.Lit("creating webhook"),
 						)), jen.If(jen.ID("w").Dot("postWritesPublisher").DoesNotEqual().Nil()).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
+						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(
+							jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
 						jen.If(jen.ID("err").Op(":=").ID("w").Dot("postWritesPublisher").Dot("Publish").Call(
 							jen.ID("ctx"),
 							jen.ID("dcm"),

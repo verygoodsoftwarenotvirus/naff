@@ -338,7 +338,8 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("err"),
 		),
 		jen.Newline(),
-		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn)))),
+		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
+			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn)))),
 		jen.ID("validateAuditLogEntries").Call(
 			jen.ID("t"),
 			jen.ID("expectedAuditLogEntries"),

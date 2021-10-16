@@ -143,7 +143,8 @@ func preUpdatesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(
+						jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -211,7 +212,8 @@ func preUpdatesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(
+						jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -265,7 +267,8 @@ func preUpdatesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(
+						jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -327,7 +330,8 @@ func preUpdatesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(
+						jen.ID("DataType").MapAssign().ID("types").Dot("ItemDataType"), jen.ID("Item").MapAssign().ID("fakes").Dot("BuildFakeItem").Call()),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -395,7 +399,8 @@ func preUpdatesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("UserMembershipDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(
+						jen.ID("DataType").MapAssign().ID("types").Dot("UserMembershipDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
@@ -444,7 +449,8 @@ func preUpdatesWorkerTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(jen.ID("DataType").MapAssign().ID("types").Dot("WebhookDataType")),
+					jen.ID("body").Op(":=").Op("&").ID("types").Dot("PreUpdateMessage").Valuesln(
+						jen.ID("DataType").MapAssign().ID("types").Dot("WebhookDataType")),
 					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),

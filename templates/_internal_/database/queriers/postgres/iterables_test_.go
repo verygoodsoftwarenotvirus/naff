@@ -220,7 +220,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.Newline(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -257,7 +258,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.Newline(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -302,7 +304,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getItemQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -397,7 +400,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getItemQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1092,7 +1096,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("updateItemQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1205,7 +1210,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("archiveItemQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1280,7 +1286,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("archiveItemQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).

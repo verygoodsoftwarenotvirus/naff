@@ -14,7 +14,8 @@ func itemsDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Var().Defs(
 			jen.ID("_").ID("types").Dot("ItemDataManager").Equals().Parens(jen.Op("*").ID("SQLQuerier")).Call(jen.Nil()),
-			jen.ID("itemsTableColumns").Equals().Index().String().Valuesln(jen.Lit("items.id"), jen.Lit("items.name"), jen.Lit("items.details"), jen.Lit("items.created_on"), jen.Lit("items.last_updated_on"), jen.Lit("items.archived_on"), jen.Lit("items.belongs_to_account")),
+			jen.ID("itemsTableColumns").Equals().Index().String().Valuesln(
+				jen.Lit("items.id"), jen.Lit("items.name"), jen.Lit("items.details"), jen.Lit("items.created_on"), jen.Lit("items.last_updated_on"), jen.Lit("items.archived_on"), jen.Lit("items.belongs_to_account")),
 		),
 		jen.Newline(),
 	)
@@ -30,7 +31,8 @@ func itemsDotGo(proj *models.Project) *jen.File {
 				jen.ID("includeCounts"),
 			),
 			jen.ID("x").Equals().Op("&").ID("types").Dot("Item").Values(),
-			jen.ID("targetVars").Op(":=").Index().Interface().Valuesln(jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("Name"), jen.Op("&").ID("x").Dot("Details"), jen.Op("&").ID("x").Dot("CreatedOn"), jen.Op("&").ID("x").Dot("LastUpdatedOn"), jen.Op("&").ID("x").Dot("ArchivedOn"), jen.Op("&").ID("x").Dot("BelongsToAccount")),
+			jen.ID("targetVars").Op(":=").Index().Interface().Valuesln(
+				jen.Op("&").ID("x").Dot("ID"), jen.Op("&").ID("x").Dot("Name"), jen.Op("&").ID("x").Dot("Details"), jen.Op("&").ID("x").Dot("CreatedOn"), jen.Op("&").ID("x").Dot("LastUpdatedOn"), jen.Op("&").ID("x").Dot("ArchivedOn"), jen.Op("&").ID("x").Dot("BelongsToAccount")),
 			jen.If(jen.ID("includeCounts")).Body(
 				jen.ID("targetVars").Equals().ID("append").Call(
 					jen.ID("targetVars"),
@@ -127,7 +129,8 @@ func itemsDotGo(proj *models.Project) *jen.File {
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("accountID"), jen.ID("itemID")),
+			jen.ID("args").Op(":=").Index().Interface().Valuesln(
+				jen.ID("accountID"), jen.ID("itemID")),
 			jen.List(jen.ID("result"), jen.ID("err")).Op(":=").ID("q").Dot("performBooleanQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -193,7 +196,8 @@ AND items.id = ?
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("accountID"), jen.ID("itemID")),
+			jen.ID("args").Op(":=").Index().Interface().Valuesln(
+				jen.ID("accountID"), jen.ID("itemID")),
 			jen.ID("row").Op(":=").ID("q").Dot("getOneRow").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -362,12 +366,14 @@ AND items.id IN (?,?,?)
 				jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided"))),
 			jen.If(jen.ID("limit").Op("==").Zero()).Body(
 				jen.ID("limit").Equals().ID("uint8").Call(jen.ID("types").Dot("DefaultLimit"))),
-			jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(jen.Lit("limit").MapAssign().ID("limit"), jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")))),
+			jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
+				jen.Lit("limit").MapAssign().ID("limit"), jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")))),
 			jen.ID("query").Op(":=").Qual("fmt", "Sprintf").Call(
 				jen.ID("getItemsWithIDsQuery"),
 				jen.ID("joinIDs").Call(jen.ID("ids")),
 			),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("accountID")),
+			jen.ID("args").Op(":=").Index().Interface().Valuesln(
+				jen.ID("accountID")),
 			jen.For(jen.List(jen.ID("_"), jen.ID("id")).Op(":=").Range().ID("ids")).Body(
 				jen.ID("args").Equals().ID("append").Call(
 					jen.ID("args"),
@@ -425,7 +431,8 @@ AND items.id IN (?,?,?)
 				jen.ID("keys").Dot("ItemIDKey"),
 				jen.ID("input").Dot("ID"),
 			),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("input").Dot("ID"), jen.ID("input").Dot("Name"), jen.ID("input").Dot("Details"), jen.ID("input").Dot("BelongsToAccount")),
+			jen.ID("args").Op(":=").Index().Interface().Valuesln(
+				jen.ID("input").Dot("ID"), jen.ID("input").Dot("Name"), jen.ID("input").Dot("Details"), jen.ID("input").Dot("BelongsToAccount")),
 			jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -439,7 +446,8 @@ AND items.id IN (?,?,?)
 					jen.ID("span"),
 					jen.Lit("creating item"),
 				))),
-			jen.ID("x").Op(":=").Op("&").ID("types").Dot("Item").Valuesln(jen.ID("ID").MapAssign().ID("input").Dot("ID"), jen.ID("Name").MapAssign().ID("input").Dot("Name"), jen.ID("Details").MapAssign().ID("input").Dot("Details"), jen.ID("BelongsToAccount").MapAssign().ID("input").Dot("BelongsToAccount"), jen.ID("CreatedOn").MapAssign().ID("q").Dot("currentTime").Call()),
+			jen.ID("x").Op(":=").Op("&").ID("types").Dot("Item").Valuesln(
+				jen.ID("ID").MapAssign().ID("input").Dot("ID"), jen.ID("Name").MapAssign().ID("input").Dot("Name"), jen.ID("Details").MapAssign().ID("input").Dot("Details"), jen.ID("BelongsToAccount").MapAssign().ID("input").Dot("BelongsToAccount"), jen.ID("CreatedOn").MapAssign().ID("q").Dot("currentTime").Call()),
 			jen.ID("tracing").Dot("AttachItemIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("x").Dot("ID"),
@@ -479,7 +487,8 @@ AND items.id IN (?,?,?)
 				jen.ID("span"),
 				jen.ID("updated").Dot("BelongsToAccount"),
 			),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("updated").Dot("Name"), jen.ID("updated").Dot("Details"), jen.ID("updated").Dot("BelongsToAccount"), jen.ID("updated").Dot("ID")),
+			jen.ID("args").Op(":=").Index().Interface().Valuesln(
+				jen.ID("updated").Dot("Name"), jen.ID("updated").Dot("Details"), jen.ID("updated").Dot("BelongsToAccount"), jen.ID("updated").Dot("ID")),
 			jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),
@@ -535,7 +544,8 @@ AND items.id IN (?,?,?)
 				jen.ID("span"),
 				jen.ID("accountID"),
 			),
-			jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("accountID"), jen.ID("itemID")),
+			jen.ID("args").Op(":=").Index().Interface().Valuesln(
+				jen.ID("accountID"), jen.ID("itemID")),
 			jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("q").Dot("db"),

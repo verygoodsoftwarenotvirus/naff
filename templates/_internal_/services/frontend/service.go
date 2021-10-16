@@ -109,7 +109,8 @@ func serviceDotGo(proj *models.Project) *jen.File {
 	}
 
 	serviceInitFields = append(serviceInitFields,
-		jen.ID("templateFuncMap").MapAssign().Map(jen.String()).Interface().Valuesln(jen.Lit("relativeTime").MapAssign().ID("relativeTime"),
+		jen.ID("templateFuncMap").MapAssign().Map(jen.String()).Interface().Valuesln(
+			jen.Lit("relativeTime").MapAssign().ID("relativeTime"),
 			jen.Lit("relativeTimeFromPtr").MapAssign().ID("relativeTimeFromPtr"),
 		),
 	)

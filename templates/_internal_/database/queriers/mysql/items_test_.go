@@ -22,7 +22,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 				)),
 			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot("NewRows").Call(jen.ID("columns")),
 			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID("items")).Body(
-				jen.ID("rowValues").Op(":=").Index().ID("driver").Dot("Value").Valuesln(jen.ID("x").Dot("ID"), jen.ID("x").Dot("Name"), jen.ID("x").Dot("Details"), jen.ID("x").Dot("CreatedOn"), jen.ID("x").Dot("LastUpdatedOn"), jen.ID("x").Dot("ArchivedOn"), jen.ID("x").Dot("BelongsToAccount")),
+				jen.ID("rowValues").Op(":=").Index().ID("driver").Dot("Value").Valuesln(
+					jen.ID("x").Dot("ID"), jen.ID("x").Dot("Name"), jen.ID("x").Dot("Details"), jen.ID("x").Dot("CreatedOn"), jen.ID("x").Dot("LastUpdatedOn"), jen.ID("x").Dot("ArchivedOn"), jen.ID("x").Dot("BelongsToAccount")),
 				jen.If(jen.ID("includeCounts")).Body(
 					jen.ID("rowValues").Equals().ID("append").Call(
 						jen.ID("rowValues"),
@@ -95,8 +96,10 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
-					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().String().Valuesln(jen.Lit("exists"))).Dot("AddRow").Call(jen.ID("true"))),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().String().Valuesln(
+						jen.Lit("exists"))).Dot("AddRow").Call(jen.ID("true"))),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("ItemExists").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleItemID"),
@@ -172,7 +175,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("ItemExists").Call(
 						jen.ID("ctx"),
@@ -201,7 +205,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemExistenceQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("ItemExists").Call(
 						jen.ID("ctx"),
@@ -237,7 +242,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnRows").Call(jen.ID("buildMockRowsFromItems").Call(
 						jen.ID("false"),
 						jen.Zero(),
@@ -315,7 +321,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItem").Dot("ID")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("getItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dot("GetItem").Call(
 						jen.ID("ctx"),
@@ -601,7 +608,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
-					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID")),
+					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID")),
 					jen.Var().Defs(
 						jen.ID("exampleIDs").Index().String(),
 					),
@@ -698,7 +706,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
-					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID")),
+					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID")),
 					jen.Var().Defs(
 						jen.ID("exampleIDs").Index().String(),
 					),
@@ -745,7 +754,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("exampleItemList").Op(":=").ID("fakes").Dot("BuildFakeItemList").Call(),
-					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID")),
+					jen.ID("exampleArgs").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID")),
 					jen.Var().Defs(
 						jen.ID("exampleIDs").Index().String(),
 					),
@@ -802,7 +812,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleInput").Op(":=").ID("fakes").Dot("BuildFakeItemDatabaseCreationInputFromItem").Call(jen.ID("exampleItem")),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleInput").Dot("ID"), jen.ID("exampleInput").Dot("Name"), jen.ID("exampleInput").Dot("Details"), jen.ID("exampleInput").Dot("BelongsToAccount")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleInput").Dot("ID"), jen.ID("exampleInput").Dot("Name"), jen.ID("exampleInput").Dot("Details"), jen.ID("exampleInput").Dot("BelongsToAccount")),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemCreationQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnResult").Call(jen.ID("newArbitraryDatabaseResult").Call(jen.ID("exampleItem").Dot("ID"))),
 					jen.ID("c").Dot("timeFunc").Equals().Func().Params().Params(jen.Uint64()).Body(
 						jen.Return().ID("exampleItem").Dot("CreatedOn")),
@@ -854,7 +865,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleInput").Op(":=").ID("fakes").Dot("BuildFakeItemDatabaseCreationInputFromItem").Call(jen.ID("exampleItem")),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleInput").Dot("ID"), jen.ID("exampleInput").Dot("Name"), jen.ID("exampleInput").Dot("Details"), jen.ID("exampleInput").Dot("BelongsToAccount")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleInput").Dot("ID"), jen.ID("exampleInput").Dot("Name"), jen.ID("exampleInput").Dot("Details"), jen.ID("exampleInput").Dot("BelongsToAccount")),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("itemCreationQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnError").Call(jen.ID("expectedErr")),
 					jen.ID("c").Dot("timeFunc").Equals().Func().Params().Params(jen.Uint64()).Body(
 						jen.Return().ID("exampleItem").Dot("CreatedOn")),
@@ -897,7 +909,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("updateItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnResult").Call(jen.ID("newArbitraryDatabaseResult").Call(jen.ID("exampleItem").Dot("ID"))),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
@@ -950,7 +963,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItem").Op(":=").ID("fakes").Dot("BuildFakeItem").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleItem").Dot("Name"), jen.ID("exampleItem").Dot("Details"), jen.ID("exampleItem").Dot("BelongsToAccount"), jen.ID("exampleItem").Dot("ID")),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("updateItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
@@ -980,7 +994,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("archiveItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnResult").Call(jen.ID("newArbitraryDatabaseResult").Call(jen.ID("exampleItemID"))),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
@@ -1038,7 +1053,8 @@ func itemsTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleItemID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
+					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+						jen.ID("exampleAccountID"), jen.ID("exampleItemID")),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("archiveItemQuery"))).Dot("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).Dot("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),

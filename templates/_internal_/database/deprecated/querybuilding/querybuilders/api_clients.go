@@ -45,16 +45,18 @@ func buildBuildGetBatchOfAPIClientsQuery(proj *models.Project, dbvendor wordsmit
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("beginID"))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("endID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("beginID"))).
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("endID"))),
 			),
 		),
 		jen.Newline(),
@@ -80,15 +82,16 @@ func buildBuildGetAPIClientByClientIDQuery(proj *models.Project, dbvendor wordsm
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableClientIDColumn"),
-				).MapAssign().ID("clientID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableClientIDColumn"),
+					).MapAssign().ID("clientID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -114,11 +117,12 @@ func buildBuildGetAllAPIClientsCountQuery(proj *models.Project, dbvendor wordsmi
 					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -190,19 +194,20 @@ func buildBuildGetAPIClientByDatabaseIDQuery(proj *models.Project, dbvendor word
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
-				).MapAssign().ID("userID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("clientID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
+					).MapAssign().ID("userID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("clientID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -276,7 +281,8 @@ func buildBuildUpdateAPIClientQuery(proj *models.Project, dbvendor wordsmith.Sup
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").MapAssign().ID("input").Dot("BelongsToUser"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").MapAssign().ID("input").Dot("BelongsToUser"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -313,7 +319,8 @@ func buildBuildArchiveAPIClientQuery(proj *models.Project, dbvendor wordsmith.Su
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("clientID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").MapAssign().ID("userID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("clientID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(), jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn").MapAssign().ID("userID"))),
 			),
 		),
 		jen.Newline(),

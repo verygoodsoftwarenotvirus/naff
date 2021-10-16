@@ -65,19 +65,20 @@ func buildBuildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Proj
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				)).Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("accountID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn"),
-				).MapAssign().ID("userID"), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+				)).Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("accountID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn"),
+					).MapAssign().ID("userID"), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -103,11 +104,12 @@ func buildBuildGetAllAccountsCountQuery(proj *models.Project, dbvendor wordsmith
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil())),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil())),
 			),
 		),
 		jen.Newline(),
@@ -128,16 +130,18 @@ func buildBuildGetBatchOfAccountsQuery(proj *models.Project, dbvendor wordsmith.
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableColumns").Op("...")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("beginID"))).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
-				).MapAssign().ID("endID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Gt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("beginID"))).
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Lt").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
+					).MapAssign().ID("endID"))),
 			),
 		),
 		jen.Newline(),
@@ -223,15 +227,16 @@ func buildBuildGetAccountsQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 			)),
 			jen.Newline(),
 			jen.If(jen.Op("!").ID("forAdmin")).Body(
-				jen.ID("builder").Equals().ID("builder").Dot("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil(), jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn"),
-				).MapAssign().ID("userID"))),
+				jen.ID("builder").Equals().ID("builder").Dot("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil(), jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn"),
+					).MapAssign().ID("userID"))),
 			),
 			jen.Newline(),
 			jen.ID("builder").Equals().ID("builder").Dot("GroupBy").Call(jen.Qual("fmt", "Sprintf").Callln(
@@ -336,7 +341,8 @@ func buildBuildUpdateAccountQuery(proj *models.Project, dbvendor wordsmith.Super
 					jen.Qual(proj.QuerybuildingPackage(), "LastUpdatedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(), jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn").MapAssign().ID("input").Dot("BelongsToUser"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("input").Dot("ID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(), jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn").MapAssign().ID("input").Dot("BelongsToUser"))),
 			),
 		),
 		jen.Newline(),
@@ -373,7 +379,8 @@ func buildBuildArchiveAccountQuery(proj *models.Project, dbvendor wordsmith.Supe
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
 					jen.ID("currentUnixTimeQuery"),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("accountID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(), jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn").MapAssign().ID("userID"))),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("accountID"), jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil(), jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn").MapAssign().ID("userID"))),
 			),
 		),
 		jen.Newline(),

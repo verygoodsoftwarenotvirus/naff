@@ -71,11 +71,12 @@ func buildBuildGetDefaultAccountIDForUserQuery(proj *models.Project, dbvendor wo
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName"),
 					jen.Qual(proj.QuerybuildingPackage(), "IDColumn"),
 				)).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn"),
-				).MapAssign().ID("userID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn"),
+					).MapAssign().ID("userID"),
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
@@ -105,7 +106,8 @@ func buildBuildArchiveAccountMembershipsForUserQuery(proj *models.Project, dbven
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
 					Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"), jen.ID("currentUnixTimeQuery")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").MapAssign().ID("userID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").MapAssign().ID("userID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
 		),
@@ -143,11 +145,12 @@ func buildBuildGetAccountMembershipsForUserQuery(proj *models.Project, dbvendor 
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
 				)).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
-				).MapAssign().Nil(),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn"),
+					).MapAssign().Nil(),
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
@@ -213,7 +216,8 @@ func buildBuildTransferAccountOwnershipQuery(proj *models.Project, dbvendor word
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableName")).
 					Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn"), jen.ID("newOwnerID")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("accountID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "IDColumn").MapAssign().ID("accountID"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsTableUserOwnershipColumn").MapAssign().ID("currentOwnerID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
@@ -241,7 +245,8 @@ func buildBuildTransferAccountMembershipsQuery(proj *models.Project, dbvendor wo
 				jen.ID("span"),
 				jen.ID("b").Dot("sqlBuilder").Dot("Update").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
 					Dotln("Set").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn"), jen.ID("newOwnerID")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").MapAssign().ID("accountID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").MapAssign().ID("accountID"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").MapAssign().ID("currentOwnerID"),
 					jen.Qual(proj.QuerybuildingPackage(), "ArchivedOnColumn").MapAssign().Nil())),
 			),
@@ -273,7 +278,8 @@ func buildBuildModifyUserPermissionsQuery(proj *models.Project, dbvendor wordsmi
 					jen.ID("accountMemberRolesSeparator"),
 				),
 				).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").MapAssign().ID("userID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableUserOwnershipColumn").MapAssign().ID("userID"),
 					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn").MapAssign().ID("accountID"))),
 			),
 		),
@@ -341,11 +347,12 @@ func buildBuildUserIsMemberOfAccountQuery(proj *models.Project, dbvendor wordsmi
 				)).
 					Dotln("Prefix").Call(jen.Qual(proj.QuerybuildingPackage(), "ExistencePrefix")).
 					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName")).
-					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
-				).MapAssign().ID("accountID"),
+					Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("%s.%s"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
+						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableAccountOwnershipColumn"),
+					).MapAssign().ID("accountID"),
 					jen.Qual("fmt", "Sprintf").Call(
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),

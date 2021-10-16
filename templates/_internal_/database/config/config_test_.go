@@ -27,7 +27,8 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(jen.ID("Provider").MapAssign().IDf("%sProvider", firstSupportedDatabase), jen.ID("ConnectionDetails").MapAssign().Lit("example_connection_string")),
+					jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(
+						jen.ID("Provider").MapAssign().IDf("%sProvider", firstSupportedDatabase), jen.ID("ConnectionDetails").MapAssign().Lit("example_connection_string")),
 					jen.Newline(),
 					jen.Qual(constants.AssertionLibrary, "NoError").Call(
 						jen.ID("t"),

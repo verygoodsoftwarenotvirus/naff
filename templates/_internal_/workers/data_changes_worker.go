@@ -27,10 +27,11 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 		jen.Newline(),
 		jen.Func().ID("ProvideDataChangesWorker").Params(jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.Op("*").ID("DataChangesWorker")).Body(
 			jen.ID("name").Op(":=").Lit("post_writes"),
-			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
-				jen.ID("logger"),
-				jen.ID("encoding").Dot("ContentTypeJSON"),
-			)),
+			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(
+				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
+					jen.ID("logger"),
+					jen.ID("encoding").Dot("ContentTypeJSON"),
+				)),
 		),
 		jen.Newline(),
 	)

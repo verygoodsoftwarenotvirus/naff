@@ -79,7 +79,8 @@ func buildTestSqlite_BuildGetAccountQuery(proj *models.Project, dbvendor wordsmi
 					jen.ID("exampleAccount").Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("BelongsToUser"), jen.ID("exampleAccount").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAccount").Dot("BelongsToUser"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAccountQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccount").Dot("ID"),
@@ -193,7 +194,8 @@ func buildTestSqlite_BuildGetBatchOfAccountsQuery(proj *models.Project, dbvendor
 					jen.List(jen.ID("beginID"), jen.ID("endID")).Assign().List(jen.Uint64().Call(jen.Lit(1)), jen.Uint64().Call(jen.Lit(1000))),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("beginID"), jen.ID("endID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("beginID"), jen.ID("endID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetBatchOfAccountsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("beginID"),
@@ -241,7 +243,8 @@ func buildTestSqlite_BuildGetAccountsQuery(proj *models.Project, dbvendor wordsm
 					jen.ID("filter").Assign().Qual(proj.FakeTypesPackage(), "BuildFleshedOutQueryFilter").Call(),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Litf("SELECT accounts.id, accounts.external_id, accounts.name, accounts.billing_status, accounts.contact_email, accounts.contact_phone, accounts.payment_processor_customer_id, accounts.subscription_plan_id, accounts.created_on, accounts.last_updated_on, accounts.archived_on, accounts.belongs_to_user, account_user_memberships.id, account_user_memberships.belongs_to_user, account_user_memberships.belongs_to_account, account_user_memberships.account_roles, account_user_memberships.default_account, account_user_memberships.created_on, account_user_memberships.last_updated_on, account_user_memberships.archived_on, (SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = %s) as total_count, (SELECT COUNT(accounts.id) FROM accounts WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = %s AND accounts.created_on > %s AND accounts.created_on < %s AND accounts.last_updated_on > %s AND accounts.last_updated_on < %s) as filtered_count FROM accounts JOIN account_user_memberships ON account_user_memberships.belongs_to_account = accounts.id WHERE accounts.archived_on IS NULL AND accounts.belongs_to_user = %s AND accounts.created_on > %s AND accounts.created_on < %s AND accounts.last_updated_on > %s AND accounts.last_updated_on < %s GROUP BY accounts.id, account_user_memberships.id LIMIT 20 OFFSET 180", getIncIndex(dbvendor, 0), getIncIndex(dbvendor, 1), getIncIndex(dbvendor, 2), getIncIndex(dbvendor, 3), getIncIndex(dbvendor, 4), getIncIndex(dbvendor, 5), getIncIndex(dbvendor, 6), getIncIndex(dbvendor, 7), getIncIndex(dbvendor, 8), getIncIndex(dbvendor, 9), getIncIndex(dbvendor, 10)),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore"), jen.ID("exampleUser").Dot("ID"), jen.ID("exampleUser").Dot("ID"), jen.ID("filter").Dot("CreatedAfter"), jen.ID("filter").Dot("CreatedBefore"), jen.ID("filter").Dot("UpdatedAfter"), jen.ID("filter").Dot("UpdatedBefore")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAccountsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -320,7 +323,8 @@ func buildTestSqlite_BuildCreateAccountQuery(proj *models.Project, dbvendor word
 					jen.ID("q").Dot("externalIDGenerator").Equals().ID("exIDGen"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ExternalID"), jen.ID("exampleAccount").Dot("Name"), jen.Qual(proj.TypesPackage(), "UnpaidAccountBillingStatus"), jen.ID("exampleAccount").Dot("ContactEmail"), jen.ID("exampleAccount").Dot("ContactPhone"), jen.ID("exampleAccount").Dot("BelongsToUser")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAccount").Dot("ExternalID"), jen.ID("exampleAccount").Dot("Name"), jen.Qual(proj.TypesPackage(), "UnpaidAccountBillingStatus"), jen.ID("exampleAccount").Dot("ContactEmail"), jen.ID("exampleAccount").Dot("ContactPhone"), jen.ID("exampleAccount").Dot("BelongsToUser")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildAccountCreationQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
@@ -386,7 +390,8 @@ func buildTestSqlite_BuildUpdateAccountQuery(proj *models.Project, dbvendor word
 					jen.ID("exampleAccount").Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("Name"), jen.ID("exampleAccount").Dot("ContactEmail"), jen.ID("exampleAccount").Dot("ContactPhone"), jen.ID("exampleAccount").Dot("BelongsToUser"), jen.ID("exampleAccount").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleAccount").Dot("Name"), jen.ID("exampleAccount").Dot("ContactEmail"), jen.ID("exampleAccount").Dot("ContactPhone"), jen.ID("exampleAccount").Dot("BelongsToUser"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUpdateAccountQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccount"),
@@ -445,7 +450,8 @@ func buildTestSqlite_BuildArchiveAccountQuery(proj *models.Project, dbvendor wor
 					jen.ID("exampleAccount").Dot("BelongsToUser").Equals().ID("exampleUser").Dot("ID"),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
-					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID")),
+					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildArchiveAccountQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccount").Dot("ID"),
@@ -512,7 +518,8 @@ func buildTestSqlite_BuildGetAuditLogEntriesForAccountQuery(proj *models.Project
 		expectedQueryDecl = jen.ID("expectedQuery").Assign().Qual("fmt", "Sprintf").Call(jen.Lit(expectedQuery), jen.ID("exampleAccount").Dot("ID"))
 	}
 
-	expectedArgsDecl := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("exampleAccount").Dot("ID"))
+	expectedArgsDecl := jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+		jen.ID("exampleAccount").Dot("ID"))
 	if dbvendor.SingularPackageName() == "mysql" {
 		expectedArgsDecl = jen.ID("expectedArgs").Assign().Index().Interface().Call(jen.Nil())
 	}

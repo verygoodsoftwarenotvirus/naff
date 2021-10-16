@@ -160,7 +160,8 @@ func buildTestParseBool(_ *models.Project, _ models.DataType) []jen.Code {
 		jen.Func().ID("TestParseBool").Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 			jen.ID("t").Dot("Parallel").Call(),
 			jen.Newline(),
-			jen.ID("expectations").Assign().Map(jen.String()).ID("bool").Valuesln(jen.Lit("1").MapAssign().ID("true"), jen.ID("t").Dot("Name").Call().MapAssign().ID("false"), jen.Lit("true").MapAssign().ID("true"), jen.Lit("troo").MapAssign().ID("false"), jen.Lit("t").MapAssign().ID("true"), jen.Lit("false").MapAssign().ID("false")),
+			jen.ID("expectations").Assign().Map(jen.String()).ID("bool").Valuesln(
+				jen.Lit("1").MapAssign().ID("true"), jen.ID("t").Dot("Name").Call().MapAssign().ID("false"), jen.Lit("true").MapAssign().ID("true"), jen.Lit("troo").MapAssign().ID("false"), jen.Lit("t").MapAssign().ID("true"), jen.Lit("false").MapAssign().ID("false")),
 			jen.Newline(),
 			jen.For(jen.List(jen.ID("input"), jen.ID("expected")).Assign().Range().ID("expectations")).Body(
 				jen.Qual(constants.AssertionLibrary, "Equal").Call(

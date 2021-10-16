@@ -366,7 +366,8 @@ func buildTestVendor_BuildGetBatchOfSomethingsQuery(proj *models.Project, typ mo
 		),
 		jen.Newline(),
 		jen.ID("expectedQuery").Assign().Lit(query),
-		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(jen.ID("beginID"),
+		jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
+			jen.ID("beginID"),
 			jen.ID("endID"),
 		),
 		jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dotf("BuildGetBatchOf%sQuery", pn).Call(

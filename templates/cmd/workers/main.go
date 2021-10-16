@@ -69,7 +69,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 			jen.Newline(),
-			jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "ProvideLogger").Call(jen.Qual(proj.InternalLoggingPackage(), "Config").Valuesln(jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"))),
+			jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "ProvideLogger").Call(jen.Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
+				jen.ID("Provider").MapAssign().Qual(proj.InternalLoggingPackage(), "ProviderZerolog"))),
 			jen.Newline(),
 			jen.ID("logger").Dot("Info").Call(jen.Lit("starting workers...")),
 			jen.Newline(),
@@ -158,7 +159,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.Comment("pre-writes worker"),
 			jen.Newline(),
-			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(jen.ID("Timeout").MapAssign().Lit(5).Op("*").Qual("time", "Second")),
+			jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Valuesln(
+				jen.ID("Timeout").MapAssign().Lit(5).Op("*").Qual("time", "Second")),
 			jen.Newline(),
 			jen.List(jen.ID("postWritesPublisher"), jen.ID("err")).Op(":=").ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("dataChangesTopicName")),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
