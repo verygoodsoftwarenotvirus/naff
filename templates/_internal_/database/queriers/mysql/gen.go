@@ -2,7 +2,10 @@ package mysql
 
 import (
 	_ "embed"
+	"fmt"
 	"path/filepath"
+
+	"github.com/Masterminds/squirrel"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
 
@@ -13,14 +16,15 @@ import (
 )
 
 const (
-	packageName = "mysal"
+	packageName = "mysql"
+	whatever    = "blah"
 
 	basePackagePath = "internal/database/queriers/mysql"
 )
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
-	dbVendor := wordsmith.FromSingularPascalCase("Postgres")
+	dbVendor := wordsmith.FromSingularPascalCase("Mysql")
 
 	files := map[string]string{
 		"accounts.go":                      accountsDotGo(proj),
@@ -57,8 +61,8 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	for _, typ := range proj.DataTypes {
-		jenFiles["item.go"] = iterablesDotGo(proj, typ, dbVendor)
-		jenFiles["items_test.go"] = iterablesTestDotGo(proj, typ, dbVendor)
+		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ, dbVendor)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ, dbVendor)
 	}
 
 	for path, file := range jenFiles {
@@ -68,6 +72,30 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	return nil
+}
+
+func queryBuilderForDatabase(db wordsmith.SuperPalabra) squirrel.StatementBuilderType {
+	switch db.LowercaseAbbreviation() {
+	case "p":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+	case "s", "m":
+		return squirrel.StatementBuilder.PlaceholderFormat(squirrel.Question)
+	default:
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
+	}
+}
+
+func unixTimeForDatabase(db wordsmith.SuperPalabra) string {
+	switch db.LowercaseAbbreviation() {
+	case "m":
+		return "UNIX_TIMESTAMP()"
+	case "p":
+		return "extract(epoch FROM NOW())"
+	case "s":
+		return "(strftime('%s','now'))"
+	default:
+		panic(fmt.Sprintf("invalid database type! %q", db.LowercaseAbbreviation()))
+	}
 }
 
 //go:embed accounts.gotpl

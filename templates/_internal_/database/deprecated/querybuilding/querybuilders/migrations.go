@@ -135,7 +135,7 @@ func typeToSqliteType(t string) string {
 	panic(fmt.Sprintf("unknown type!: %q", t))
 }
 
-func typeToMariaDBType(t string) string {
+func typeToMySQLType(t string) string {
 	typeMap := map[string]string{
 		//"[]string": "LONGTEXT",
 		"string":   "LONGTEXT",
@@ -372,7 +372,7 @@ func makePostgresMigrations(proj *models.Project) []migration {
 	return migrations
 }
 
-func makeMariaDBMigrations(proj *models.Project) []migration {
+func makeMySQLMigrations(proj *models.Project) []migration {
 	migrations := []migration{
 		{
 			description: "create sessions table for session manager",
@@ -552,7 +552,7 @@ func makeMariaDBMigrations(proj *models.Project) []migration {
 		for _, field := range typ.Fields {
 			rn := field.Name.RouteName()
 
-			query := fmt.Sprintf("    `%s` %s", rn, typeToMariaDBType(field.Type))
+			query := fmt.Sprintf("    `%s` %s", rn, typeToMySQLType(field.Type))
 			if !field.IsPointer {
 				query += ` NOT NULL`
 			}
@@ -821,7 +821,7 @@ func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) jen.C
 	case "sqlite":
 		migrations = makeSqliteMigrations(proj)
 	case "mysql", "maria_db":
-		migrations = makeMariaDBMigrations(proj)
+		migrations = makeMySQLMigrations(proj)
 	}
 
 	for i, script := range migrations {
@@ -842,10 +842,10 @@ func makeMigrations(proj *models.Project, dbVendor wordsmith.SuperPalabra) jen.C
 func buildBuildMigrationFuncDecl(dbvendor wordsmith.SuperPalabra) []jen.Code {
 	dbcn := dbvendor.SingularCommonName()
 	dbvsn := dbvendor.Singular()
-	isMariaDB := dbvendor.RouteName() == "mysql" || dbvendor.RouteName() == "maria_db"
+	isMySQL := dbvendor.RouteName() == "mysql" || dbvendor.RouteName() == "maria_db"
 
 	var dialectName string
-	if !isMariaDB {
+	if !isMySQL {
 		dialectName = fmt.Sprintf("%sDialect", dbvsn)
 	} else {
 		dialectName = "MySQLDialect"

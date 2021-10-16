@@ -560,7 +560,8 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 
 	tableName := typ.Name.PluralRouteName()
 
-	bodyLines := []jen.Code{jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+	bodyLines := []jen.Code{
+		jen.List(jen.Underscore(), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.ID("withIDsWhere").Op(":=").ID("squirrel").Dot("Eq").Valuesln(
@@ -591,7 +592,7 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 	}
 
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("buildGet%sWithIDsQuery", pn).Params(typ.BuildGetListOfSomethingFromIDsParams(proj)...).Params(jen.ID("string"), jen.Index().Interface()).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("buildGet%sWithIDsQuery", pn).Params(typ.BuildGetListOfSomethingFromIDsParams(proj)...).Params(jen.ID("query").ID("string"), jen.ID("args").Index().Interface()).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -617,6 +618,10 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false, jen.Nil())...)
 
 	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.If(jen.ID("ids").IsEqualTo().Nil()).Body(
+			jen.Return(jen.Nil(), jen.ID("ErrNilInputProvided")),
+		),
 		jen.Newline(),
 		jen.If(jen.ID("limit").Op("==").Zero()).Body(
 			jen.ID("limit").Equals().ID("uint8").Call(jen.ID("types").Dot("DefaultLimit")),
@@ -702,6 +707,9 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 		creationColumns = append(creationColumns, "belongs_to_account")
 		args = append(args, whatever)
 	}
+
+	creationColumns = append(creationColumns, "created_on")
+	args = append(args, squirrel.Expr(unixTimeForDatabase(dbvendor)))
 
 	query, _, err := sqlBuilder.Insert(tableName).
 		Columns(creationColumns...).
@@ -908,7 +916,6 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 	}
 
 	query, _, err := sqlBuilder.Update(tableName).
-		Set("last_updated_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
 		Where(archiveWhere).ToSql()
 
