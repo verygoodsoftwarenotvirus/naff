@@ -13,7 +13,22 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(
+	code.Add(buildBuildMockRowsFromSomethings(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierScanSomethings(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierSomethingExists(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierGetSomething(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierGetTotalSomethingCount(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierGetSomethings(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierGetSomethingsWithIDs(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierCreateSomething(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierUpdateSomething(proj, typ, dbvendor)...)
+	code.Add(buildTestQuerierArchiveSomething(proj, typ, dbvendor)...)
+
+	return code
+}
+
+func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("buildMockRowsFromItems").Params(jen.ID("includeCounts").ID("bool"), jen.ID("filteredCount").Uint64(), jen.ID("items").Op("...").Op("*").ID("types").Dot("Item")).Params(jen.Op("*").ID("sqlmock").Dot("Rows")).Body(
 			jen.ID("columns").Op(":=").ID("itemsTableColumns"),
 			jen.Newline(),
@@ -51,9 +66,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			jen.Return().ID("exampleRows"),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierScanSomethings(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestQuerier_ScanItems").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -107,9 +126,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestQuerier_ItemExists").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -287,9 +310,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierGetSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestQuerier_GetItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -429,9 +456,14 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierGetTotalSomethingCount(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+
 		jen.Func().ID("TestQuerier_GetTotalItemCount").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -496,9 +528,14 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+
 		jen.Func().ID("TestQuerier_GetItems").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -734,9 +771,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestQuerier_GetItemsWithIDs").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -950,9 +991,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierCreateSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestQuerier_CreateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -1080,9 +1125,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
 		jen.Func().ID("TestQuerier_UpdateItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -1193,9 +1242,14 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	code.Add(
+	return lines
+}
+
+func buildTestQuerierArchiveSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+
 		jen.Func().ID("TestQuerier_ArchiveItem").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
 			jen.Newline(),
@@ -1310,7 +1364,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 			),
 		),
 		jen.Newline(),
-	)
+	}
 
-	return code
+	return lines
 }
