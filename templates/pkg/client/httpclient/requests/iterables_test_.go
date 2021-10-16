@@ -475,7 +475,7 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 
 	firstSubtestLines = append(firstSubtestLines,
 		jen.Newline(),
-		jen.ID("filter").Assign().Parens(jen.PointerTo().ID("types").Dot("QueryFilter")).Call(jen.Nil()),
+		jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append(
 				[]jen.Code{
@@ -523,7 +523,7 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 
 		subtestLines = append(subtestLines,
 			jen.Newline(),
-			jen.ID("filter").Assign().Parens(jen.PointerTo().ID("types").Dot("QueryFilter")).Call(jen.Nil()),
+			jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 			jen.Newline(),
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
 				buildListOfSomethingArgsWithoutIndex(proj, typ, i)...,
@@ -555,7 +555,7 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 
 	invalidBuilderSubtest = append(invalidBuilderSubtest,
 		jen.Newline(),
-		jen.ID("filter").Assign().Parens(jen.PointerTo().ID("types").Dot("QueryFilter")).Call(jen.Nil()),
+		jen.ID("filter").Assign().Parens(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildGet%sRequest", pn).Call(
 			buildListOfSomethingArgsWithoutIndex(proj, typ, -1)...,
@@ -659,7 +659,7 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 
 	firstSubtest = append(firstSubtest,
 		jen.Newline(),
-		jen.ID("limit").Assign().ID("types").Dot("DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append([]jen.Code{
@@ -709,7 +709,7 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 
 		subtest = append(subtest,
 			jen.Newline(),
-			jen.ID("limit").Assign().ID("types").Dot("DefaultQueryFilter").Call().Dot("Limit"),
+			jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 			jen.ID("exampleQuery").Assign().Lit("whatever"),
 			jen.Newline(),
 			jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildSearch%sRequest", pn).Call(
@@ -741,7 +741,7 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 	secondSubtest = append(secondSubtest, buildPrerequisiteIDsWithoutIndex(proj, typ, -1, false)...)
 
 	secondSubtest = append(secondSubtest,
-		jen.ID("limit").Assign().ID("types").Dot("DefaultQueryFilter").Call().Dot("Limit"),
+		jen.ID("limit").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call().Dot("Limit"),
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("helper").Dot("builder").Dotf("BuildSearch%sRequest", pn).Call(

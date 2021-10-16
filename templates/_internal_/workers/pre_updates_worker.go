@@ -12,15 +12,15 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 	utils.AddImports(proj, code, false)
 
 	code.Add(
-		jen.Type().Defs(
-			jen.ID("PreUpdatesWorker").Struct(
-				jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
-				jen.ID("tracer").ID("tracing").Dot("Tracer"),
-				jen.ID("encoder").ID("encoding").Dot("ClientEncoder"),
-				jen.ID("postUpdatesPublisher").ID("publishers").Dot("Publisher"),
-				jen.ID("dataManager").ID("database").Dot("DataManager"),
-				jen.ID("itemsIndexManager").ID("search").Dot("IndexManager"),
-			),
+		jen.Comment("PreUpdatesWorker updates data from the pending updates topic to the database."),
+		jen.Newline(),
+		jen.Type().ID("PreUpdatesWorker").Struct(
+			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
+			jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
+			jen.ID("encoder").Qual(proj.EncodingPackage(), "ClientEncoder"),
+			jen.ID("postUpdatesPublisher").Qual(proj.InternalMessageQueuePublishersPackage(), "Publisher"),
+			jen.ID("dataManager").Qual(proj.DatabasePackage(), "DataManager"),
+			jen.ID("itemsIndexManager").Qual(proj.InternalSearchPackage(), "IndexManager"),
 		),
 		jen.Newline(),
 	)
@@ -28,10 +28,17 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Comment("ProvidePreUpdatesWorker provides a PreUpdatesWorker."),
 		jen.Newline(),
-		jen.Func().ID("ProvidePreUpdatesWorker").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"), jen.ID("client").Op("*").Qual("net/http", "Client"), jen.ID("dataManager").ID("database").Dot("DataManager"), jen.ID("postUpdatesPublisher").ID("publishers").Dot("Publisher"), jen.ID("searchIndexLocation").ID("search").Dot("IndexPath"), jen.ID("searchIndexProvider").ID("search").Dot("IndexManagerProvider")).Params(jen.Op("*").ID("PreUpdatesWorker"), jen.ID("error")).Body(
-			jen.Var().Defs(
-				jen.ID("name").Equals().Lit("pre_updates"),
-			),
+		jen.Func().ID("ProvidePreUpdatesWorker").Paramsln(
+			jen.ID("ctx").Qual("context", "Context"),
+			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
+			jen.ID("client").Op("*").Qual("net/http", "Client"),
+			jen.ID("dataManager").Qual(proj.DatabasePackage(), "DataManager"),
+			jen.ID("postUpdatesPublisher").Qual(proj.InternalMessageQueuePublishersPackage(), "Publisher"),
+			jen.ID("searchIndexLocation").Qual(proj.InternalSearchPackage(), "IndexPath"),
+			jen.ID("searchIndexProvider").Qual(proj.InternalSearchPackage(), "IndexManagerProvider"),
+		).Params(jen.Op("*").ID("PreUpdatesWorker"), jen.ID("error")).Body(
+			jen.Const().ID("name").Equals().Lit("pre_updates"),
+			jen.Newline(),
 			jen.List(jen.ID("itemsIndexManager"), jen.ID("err")).Op(":=").ID("searchIndexProvider").Call(
 				jen.ID("ctx"),
 				jen.ID("logger"),
@@ -46,14 +53,16 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.Lit("setting up items search index manager: %w"),
 					jen.ID("err"),
 				))),
+			jen.Newline(),
 			jen.ID("w").Op(":=").Op("&").ID("PreUpdatesWorker").Valuesln(
 				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(
 					jen.Lit("topic"),
 					jen.ID("name"),
-				), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
+				), jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().Qual(proj.EncodingPackage(), "ProvideClientEncoder").Call(
 					jen.ID("logger"),
-					jen.ID("encoding").Dot("ContentTypeJSON"),
+					jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 				), jen.ID("postUpdatesPublisher").MapAssign().ID("postUpdatesPublisher"), jen.ID("dataManager").MapAssign().ID("dataManager"), jen.ID("itemsIndexManager").MapAssign().ID("itemsIndexManager")),
+			jen.Newline(),
 			jen.Return().List(jen.ID("w"), jen.Nil()),
 		),
 		jen.Newline(),
@@ -65,9 +74,9 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 		jen.Func().Params(jen.ID("w").Op("*").ID("PreUpdatesWorker")).ID("HandleMessage").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("message").Index().ID("byte")).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Var().Defs(
-				jen.ID("msg").Op("*").ID("types").Dot("PreUpdateMessage"),
-			),
+			jen.Newline(),
+			jen.Var().ID("msg").Op("*").Qual(proj.TypesPackage(), "PreUpdateMessage"),
+			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("w").Dot("encoder").Dot("Unmarshal").Call(
 				jen.ID("ctx"),
 				jen.ID("message"),
@@ -79,7 +88,7 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.ID("span"),
 					jen.Lit("unmarshalling message"),
 				)),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("msg").Dot("AttributableToUserID"),
 			),
@@ -87,9 +96,11 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 				jen.Lit("data_type"),
 				jen.ID("msg").Dot("DataType"),
 			),
+			jen.Newline(),
 			jen.ID("logger").Dot("Debug").Call(jen.Lit("message read")),
+			jen.Newline(),
 			jen.Switch(jen.ID("msg").Dot("DataType")).Body(
-				jen.Case(jen.ID("types").Dot("ItemDataType")).Body(
+				jen.Case(jen.Qual(proj.TypesPackage(), "ItemDataType")).Body(
 					jen.If(jen.ID("err").Op(":=").ID("w").Dot("dataManager").Dot("UpdateItem").Call(
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("Item"),
@@ -99,7 +110,9 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("logger"),
 							jen.ID("span"),
 							jen.Lit("creating item"),
-						)), jen.If(jen.ID("err").Op(":=").ID("w").Dot("itemsIndexManager").Dot("Index").Call(
+						)),
+					jen.Newline(),
+					jen.If(jen.ID("err").Op(":=").ID("w").Dot("itemsIndexManager").Dot("Index").Call(
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("Item").Dot("ID"),
 						jen.ID("msg").Dot("Item"),
@@ -109,23 +122,33 @@ func preUpdatesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("logger"),
 							jen.ID("span"),
 							jen.Lit("indexing the item"),
-						)), jen.If(jen.ID("w").Dot("postUpdatesPublisher").DoesNotEqual().Nil()).Body(
-						jen.ID("dcm").Op(":=").Op("&").ID("types").Dot("DataChangeMessage").Valuesln(
-							jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"), jen.ID("Item").MapAssign().ID("msg").Dot("Item"), jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"), jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID")),
-						jen.If(jen.ID("err").Op(":=").ID("w").Dot("postUpdatesPublisher").Dot("Publish").Call(
-							jen.ID("ctx"),
-							jen.ID("dcm"),
-						), jen.ID("err").DoesNotEqual().Nil()).Body(
+						)),
+					jen.Newline(),
+					jen.If(jen.ID("w").Dot("postUpdatesPublisher").DoesNotEqual().Nil()).Body(
+						jen.ID("dcm").Op(":=").Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
+							jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"),
+							jen.ID("Item").MapAssign().ID("msg").Dot("Item"),
+							jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"),
+							jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID"),
+						),
+						jen.Newline(),
+						jen.If(
+							jen.ID("err").Op(":=").ID("w").Dot("postUpdatesPublisher").Dot("Publish").Call(jen.ID("ctx"), jen.ID("dcm")),
+							jen.ID("err").DoesNotEqual().Nil(),
+						).Body(
 							jen.Return().ID("observability").Dot("PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
 								jen.ID("span"),
 								jen.Lit("publishing data change message"),
-							)),
-					)),
-				jen.Case(jen.ID("types").Dot("UserMembershipDataType"), jen.ID("types").Dot("WebhookDataType")).Body(
+							),
+						),
+					),
+				),
+				jen.Case(jen.Qual(proj.TypesPackage(), "UserMembershipDataType"), jen.Qual(proj.TypesPackage(), "WebhookDataType")).Body(
 					jen.Break()),
 			),
+			jen.Newline(),
 			jen.Return().Nil(),
 		),
 		jen.Newline(),

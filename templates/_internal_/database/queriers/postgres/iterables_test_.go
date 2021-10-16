@@ -101,7 +101,7 @@ func buildTestQuerierScanSomethings(proj *models.Project, typ models.DataType, d
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("mockRows").Op(":=").Op("&").ID("database").Dot("MockResultIterator").Values(),
+					jen.ID("mockRows").Op(":=").Op("&").Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.ID("false")),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
@@ -125,7 +125,7 @@ func buildTestQuerierScanSomethings(proj *models.Project, typ models.DataType, d
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("mockRows").Op(":=").Op("&").ID("database").Dot("MockResultIterator").Values(),
+					jen.ID("mockRows").Op(":=").Op("&").Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.ID("false")),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
@@ -575,7 +575,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").ID("types").Dot("DefaultQueryFilter").Call(),
+					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
@@ -628,7 +628,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").Parens(jen.Op("*").ID("types").Dot("QueryFilter")).Call(jen.Nil()),
+					jen.ID("filter").Op(":=").Parens(jen.Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 					jen.IDf("example%sList", sn).Dot("Page").Equals().Zero(),
@@ -684,7 +684,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").ID("types").Dot("DefaultQueryFilter").Call(),
+					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
@@ -710,7 +710,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").ID("types").Dot("DefaultQueryFilter").Call(),
+					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
@@ -758,7 +758,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").ID("types").Dot("DefaultQueryFilter").Call(),
+					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
 					jen.ID("exampleAccountID").Op(":=").ID("fakes").Dot("BuildFakeID").Call(),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),

@@ -13,10 +13,11 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Comment("DataChangesWorker observes data changes in the database."),
+		jen.Newline(),
 		jen.Type().ID("DataChangesWorker").Struct(
 			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
-			jen.ID("tracer").ID("tracing").Dot("Tracer"),
-			jen.ID("encoder").ID("encoding").Dot("ClientEncoder"),
+			jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
+			jen.ID("encoder").Qual(proj.EncodingPackage(), "ClientEncoder"),
 		),
 		jen.Newline(),
 	)
@@ -28,9 +29,9 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 			jen.ID("name").Op(":=").Lit("post_writes"),
 			jen.Newline(),
 			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(
-				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").MapAssign().ID("tracing").Dot("NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().ID("encoding").Dot("ProvideClientEncoder").Call(
+				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().Qual(proj.EncodingPackage(), "ProvideClientEncoder").Call(
 					jen.ID("logger"),
-					jen.ID("encoding").Dot("ContentTypeJSON"),
+					jen.Qual(proj.EncodingPackage(), "ContentTypeJSON"),
 				)),
 		),
 		jen.Newline(),
@@ -43,7 +44,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
-			jen.Var().ID("msg").Op("*").ID("types").Dot("DataChangeMessage"),
+			jen.Var().ID("msg").Op("*").Qual(proj.TypesPackage(), "DataChangeMessage"),
 			jen.Newline(),
 			jen.If(jen.ID("err").Op(":=").ID("w").Dot("encoder").Dot("Unmarshal").Call(
 				jen.ID("ctx"),
@@ -57,7 +58,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 					jen.Lit("unmarshalling message"),
 				)),
 			jen.Newline(),
-			jen.ID("tracing").Dot("AttachUserIDToSpan").Call(
+			jen.Qual(proj.InternalTracingPackage(), "AttachUserIDToSpan").Call(
 				jen.ID("span"),
 				jen.ID("msg").Dot("AttributableToUserID"),
 			),

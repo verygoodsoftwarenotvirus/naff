@@ -196,7 +196,7 @@ func buildScanSomething(proj *models.Project, typ models.DataType, dbvendor word
 	lines := []jen.Code{
 		jen.Commentf("scan%s takes a database Scanner (i.e. *sql.Row) and scans the result into %s struct.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("scan%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").ID("database").Dot("Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").Op("*").ID("types").Dot(sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("scan%s", sn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("scan").Qual(proj.DatabasePackage(), "Scanner"), jen.ID("includeCounts").ID("bool")).Params(jen.ID("x").Op("*").ID("types").Dot(sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -260,7 +260,7 @@ func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbve
 	lines := []jen.Code{
 		jen.Commentf("scan%s takes some database rows and turns them into a slice of %s.", pn, pcn),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("scan%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").ID("database").Dot("ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID(puvn).Index().Op("*").ID("types").Dot(sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("scan%s", pn).Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("rows").Qual(proj.DatabasePackage(), "ResultIterator"), jen.ID("includeCounts").ID("bool")).Params(jen.ID(puvn).Index().Op("*").ID("types").Dot(sn), jen.List(jen.ID("filteredCount"), jen.ID("totalCount")).Uint64(), jen.ID("err").ID("error")).Body(
 			bodyLines...,
 		),
 		jen.Newline(),
@@ -437,7 +437,7 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 	bodyLines = append(bodyLines,
 		jen.ID("x").Equals().Op("&").ID("types").Dotf("%sList", sn).Values(),
 		jen.ID("logger").Equals().ID("filter").Dot("AttachToLogger").Call(jen.ID("logger")),
-		jen.ID("tracing").Dot("AttachQueryFilterToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachQueryFilterToSpan").Call(
 			jen.ID("span"),
 			jen.ID("filter"),
 		),
@@ -624,7 +624,7 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 		),
 		jen.Newline(),
 		jen.If(jen.ID("limit").Op("==").Zero()).Body(
-			jen.ID("limit").Equals().ID("uint8").Call(jen.ID("types").Dot("DefaultLimit")),
+			jen.ID("limit").Equals().ID("uint8").Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 		),
 		jen.Newline(),
 		jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
@@ -851,7 +851,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 			jen.ID("span"),
 			jen.ID("updated").Dot("ID"),
 		),
-		jen.ID("tracing").Dot("AttachAccountIDToSpan").Call(
+		jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
 			jen.ID("span"),
 			jen.ID("updated").Dot("BelongsToAccount"),
 		),

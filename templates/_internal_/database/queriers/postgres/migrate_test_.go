@@ -28,7 +28,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("exampleAccount").Op(":=").ID("fakes").Dot("BuildFakeAccountForUser").Call(jen.ID("exampleUser")),
 					jen.Newline(),
-					jen.ID("exampleTestUserConfig").Op(":=").Op("&").ID("types").Dot("TestUserCreationConfig").Valuesln(
+					jen.ID("exampleTestUserConfig").Op(":=").Op("&").Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
 						jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"),
 						jen.ID("Password").MapAssign().ID("exampleUser").Dot("HashedPassword"),
 						jen.ID("HashedPassword").MapAssign().ID("exampleUser").Dot("HashedPassword"),
@@ -60,7 +60,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("exampleTestUserConfig").Dot("Username"),
 						jen.ID("exampleTestUserConfig").Dot("HashedPassword"),
 						jen.ID("defaultTestUserTwoFactorSecret"),
-						jen.ID("types").Dot("GoodStandingAccountStatus"),
+						jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"),
 						jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call(),
 					),
 					jen.Newline(),
@@ -69,9 +69,9 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 						Dotln("WillReturnResult").Call(jen.ID("newArbitraryDatabaseResult").Call(jen.ID("exampleUser").Dot("ID"))),
 					jen.Newline(),
 					jen.Comment("create account for created TestUser"),
-					jen.ID("accountCreationInput").Op(":=").ID("types").Dot("AccountCreationInputForNewUser").Call(jen.ID("exampleUser")),
+					jen.ID("accountCreationInput").Op(":=").Qual(proj.TypesPackage(), "AccountCreationInputForNewUser").Call(jen.ID("exampleUser")),
 					jen.ID("accountCreationArgs").Op(":=").Index().Interface().Valuesln(
-						jen.Op("&").ID("idMatcher").Values(), jen.ID("accountCreationInput").Dot("Name"), jen.ID("types").Dot("UnpaidAccountBillingStatus"), jen.ID("accountCreationInput").Dot("ContactEmail"), jen.ID("accountCreationInput").Dot("ContactPhone"), jen.Op("&").ID("idMatcher").Values()),
+						jen.Op("&").ID("idMatcher").Values(), jen.ID("accountCreationInput").Dot("Name"), jen.Qual(proj.TypesPackage(), "UnpaidAccountBillingStatus"), jen.ID("accountCreationInput").Dot("ContactEmail"), jen.ID("accountCreationInput").Dot("ContactPhone"), jen.Op("&").ID("idMatcher").Values()),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("accountCreationQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("accountCreationArgs")).Op("...")).
@@ -118,7 +118,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("exampleUser").Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 					jen.ID("exampleUser").Dot("CreatedOn").Equals().ID("exampleCreationTime"),
 					jen.Newline(),
-					jen.ID("exampleTestUserConfig").Op(":=").Op("&").ID("types").Dot("TestUserCreationConfig").Valuesln(
+					jen.ID("exampleTestUserConfig").Op(":=").Op("&").Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
 						jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"), jen.ID("Password").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("HashedPassword").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("IsServiceAdmin").MapAssign().ID("true")),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
@@ -143,7 +143,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.Comment("expect TestUser to be created"),
 					jen.ID("testUserCreationArgs").Op(":=").Index().Interface().Valuesln(
-						jen.Op("&").ID("idMatcher").Values(), jen.ID("exampleTestUserConfig").Dot("Username"), jen.ID("exampleTestUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.ID("types").Dot("GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
+						jen.Op("&").ID("idMatcher").Values(), jen.ID("exampleTestUserConfig").Dot("Username"), jen.ID("exampleTestUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("testUserCreationQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("testUserCreationArgs")).Op("...")).

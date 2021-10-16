@@ -14,10 +14,12 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("TestProvideDataChangesWorker").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
@@ -32,15 +34,18 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("TestDataChangesWorker_HandleMessage").Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
 			jen.ID("T").Dot("Parallel").Call(),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("standard"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
+					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
@@ -51,15 +56,18 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 					),
 				),
 			),
+			jen.Newline(),
 			jen.ID("T").Dot("Run").Call(
 				jen.Lit("invalid input"),
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
+					jen.Newline(),
 					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
+					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),

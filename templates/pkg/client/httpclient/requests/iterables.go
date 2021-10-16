@@ -268,20 +268,20 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName).Dot("WithValue").Call(
-			jen.ID("types").Dot("SearchQueryKey"),
+			jen.Qual(proj.TypesPackage(), "SearchQueryKey"),
 			jen.ID("query"),
 		).Dot("WithValue").Call(
-			jen.ID("types").Dot("LimitQueryKey"),
+			jen.Qual(proj.TypesPackage(), "LimitQueryKey"),
 			jen.ID("limit"),
 		),
 		jen.Newline(),
 		jen.ID("params").Assign().Qual("net/url", "Values").Values(),
 		jen.ID("params").Dot("Set").Call(
-			jen.ID("types").Dot("SearchQueryKey"),
+			jen.Qual(proj.TypesPackage(), "SearchQueryKey"),
 			jen.ID("query"),
 		),
 		jen.ID("params").Dot("Set").Call(
-			jen.ID("types").Dot("LimitQueryKey"),
+			jen.Qual(proj.TypesPackage(), "LimitQueryKey"),
 			jen.Qual("strconv", "FormatUint").Call(
 				jen.Uint64().Call(jen.ID("limit")),
 				jen.Lit(10),

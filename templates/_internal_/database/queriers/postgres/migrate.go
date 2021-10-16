@@ -17,7 +17,7 @@ func migrateDotGo(proj *models.Project) *jen.File {
 	code.Anon("embed")
 
 	code.Add(buildConstantsBlock()...)
-	code.Add(buildMigrate()...)
+	code.Add(buildMigrate(proj)...)
 	code.Add(buildMigrationScriptDeclarations(proj)...)
 	code.Add(buildBuildMigrationFunc()...)
 
@@ -45,11 +45,11 @@ func buildConstantsBlock() []jen.Code {
 	return lines
 }
 
-func buildMigrate() []jen.Code {
+func buildMigrate(proj *models.Project) []jen.Code {
 	lines := []jen.Code{
 		jen.Comment("Migrate is a simple wrapper around the core querier Migrate call."),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("maxAttempts").ID("uint8"), jen.ID("testUserConfig").Op("*").ID("types").Dot("TestUserCreationConfig")).Params(jen.ID("error")).Body(
+		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("maxAttempts").ID("uint8"), jen.ID("testUserConfig").Op("*").Qual(proj.TypesPackage(), "TestUserCreationConfig")).Params(jen.ID("error")).Body(
 			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
@@ -59,7 +59,7 @@ func buildMigrate() []jen.Code {
 				jen.ID("ctx"),
 				jen.ID("maxAttempts"),
 			)).Body(
-				jen.Return().ID("database").Dot("ErrDatabaseNotReady")),
+				jen.Return().Qual(proj.DatabasePackage(), "ErrDatabaseNotReady")),
 			jen.Newline(),
 			jen.ID("q").Dot("migrateOnce").Dot("Do").Call(jen.ID("q").Dot("migrationFunc")),
 			jen.Newline(),
@@ -86,13 +86,13 @@ func buildMigrate() []jen.Code {
 					),
 					jen.Newline(),
 					jen.ID("testUserCreationArgs").Op(":=").Index().Interface().Valuesln(
-						jen.ID("testUserConfig").Dot("ID"), jen.ID("testUserConfig").Dot("Username"), jen.ID("testUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.ID("types").Dot("GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
+						jen.ID("testUserConfig").Dot("ID"), jen.ID("testUserConfig").Dot("Username"), jen.ID("testUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
 					jen.Newline(),
 					jen.Comment("these structs will be fleshed out by createUser"),
-					jen.ID("user").Op(":=").Op("&").ID("types").Dot("User").Valuesln(
+					jen.ID("user").Op(":=").Op("&").Qual(proj.TypesPackage(), "User").Valuesln(
 						jen.ID("ID").MapAssign().ID("testUserConfig").Dot("ID"), jen.ID("Username").MapAssign().ID("testUserConfig").Dot("Username"),
 					),
-					jen.ID("account").Op(":=").Op("&").ID("types").Dot("Account").Valuesln(
+					jen.ID("account").Op(":=").Op("&").Qual(proj.TypesPackage(), "Account").Valuesln(
 						jen.ID("ID").MapAssign().ID("ksuid").Dot("New").Call().Dot("String").Call(),
 					),
 					jen.Newline(),
