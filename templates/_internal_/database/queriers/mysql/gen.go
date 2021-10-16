@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"path/filepath"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -18,6 +20,8 @@ const (
 
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
+	dbVendor := wordsmith.FromSingularPascalCase("Postgres")
+
 	files := map[string]string{
 		"accounts.go":                      accountsDotGo(proj),
 		"accounts_test.go":                 accountsTestDotGo(proj),
@@ -48,10 +52,13 @@ func RenderPackage(proj *models.Project) error {
 	}
 
 	jenFiles := map[string]*jen.File{
-		"iterables.go":    itemsDotGo(proj),
-		"items_test.go":   itemsTestDotGo(proj),
 		"migrate.go":      migrateDotGo(proj),
 		"migrate_test.go": migrateTestDotGo(proj),
+	}
+
+	for _, typ := range proj.DataTypes {
+		jenFiles["item.go"] = iterablesDotGo(proj, typ, dbVendor)
+		jenFiles["items_test.go"] = iterablesTestDotGo(proj, typ, dbVendor)
 	}
 
 	for path, file := range jenFiles {
