@@ -894,3 +894,19 @@ func preWritesWorkerTestDotGo(proj *models.Project) *jen.File {
 
 	return code
 }
+
+func buildTestProvidePreWritesWorker(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
+		//
+	}
+
+	return lines
+}
+
+func buildTestPreWritesWorker_HandleMessage(proj *models.Project) []jen.Code {
+	lines := []jen.Code{
+		//
+	}
+
+	return lines
+}
