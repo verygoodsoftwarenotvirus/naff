@@ -1,11 +1,11 @@
 package querybuilders
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	"github.com/Masterminds/squirrel"
 )
@@ -57,7 +57,7 @@ func buildTestSqlite_BuildGetDefaultAccountIDForUserQuery(proj *models.Project, 
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(query),
 					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
-						jen.ID("exampleUser").Dot("ID"), jen.ID("true")),
+						jen.ID("exampleUser").Dot("ID"), jen.True()),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetDefaultAccountIDForUserQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
@@ -305,7 +305,7 @@ func buildTestSqlite_BuildCreateMembershipForNewUserQuery(proj *models.Project, 
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(exampleQuery),
 					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
-						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID"), jen.ID("true"), jen.Qual(proj.InternalAuthorizationPackage(), "AccountAdminRole").Dot("String").Call()),
+						jen.ID("exampleUser").Dot("ID"), jen.ID("exampleAccount").Dot("ID"), jen.True(), jen.Qual(proj.InternalAuthorizationPackage(), "AccountAdminRole").Dot("String").Call()),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildCreateMembershipForNewUserQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),

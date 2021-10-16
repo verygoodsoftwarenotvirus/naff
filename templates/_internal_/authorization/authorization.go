@@ -26,9 +26,9 @@ func authorizationDotGo(proj *models.Project) *jen.File {
 					jen.ID("p"),
 					jen.Nil(),
 				)).Body(
-					jen.Return().ID("false"))),
+					jen.Return().False())),
 			jen.Newline(),
-			jen.Return().ID("true"),
+			jen.Return().True(),
 		),
 		jen.Newline(),
 	)

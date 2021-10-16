@@ -1,11 +1,11 @@
 package querybuilders
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func webhooksDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -159,7 +159,7 @@ func buildBuildGetWebhooksQuery(proj *models.Project, dbvendor wordsmith.SuperPa
 				jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableOwnershipColumn"),
 				jen.Qual(proj.QuerybuildingPackage(), "WebhooksTableColumns"),
 				jen.ID("accountID"),
-				jen.ID("false"),
+				jen.False(),
 				jen.ID("filter"),
 			),
 		),

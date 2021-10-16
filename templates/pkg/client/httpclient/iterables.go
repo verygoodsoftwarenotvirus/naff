@@ -115,7 +115,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
-				jen.ID("false"),
+				jen.False(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),
@@ -132,7 +132,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 			jen.Return().List(
-				jen.ID("false"),
+				jen.False(),
 				jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("logger"),

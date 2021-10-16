@@ -1,8 +1,8 @@
 package template_gen
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -58,7 +58,7 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 					jen.ID("FormName").MapAssign().Lit("name"),
 					jen.ID("StructFieldName").MapAssign().Lit("Name"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true"),
+					jen.ID("Required").MapAssign().True(),
 				),
 			),
 		),
@@ -69,13 +69,13 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 					jen.ID("FormName").MapAssign().Lit("name"),
 					jen.ID("StructFieldName").MapAssign().Lit("Name"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true")),
+					jen.ID("Required").MapAssign().True()),
 				jen.Valuesln(
 					jen.ID("LabelName").MapAssign().Lit("client_id"),
 					jen.ID("FormName").MapAssign().Lit("client_id"),
 					jen.ID("StructFieldName").MapAssign().Lit("ClientID"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true")),
+					jen.ID("Required").MapAssign().True()),
 			),
 		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/editors/webhook_editor.gotpl").MapAssign().Valuesln(
@@ -84,22 +84,22 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 					jen.ID("LabelName").MapAssign().Lit("name"),
 					jen.ID("StructFieldName").MapAssign().Lit("Name"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true")),
+					jen.ID("Required").MapAssign().True()),
 				jen.Valuesln(
 					jen.ID("LabelName").MapAssign().Lit("Method"),
 					jen.ID("StructFieldName").MapAssign().Lit("Method"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true")),
+					jen.ID("Required").MapAssign().True()),
 				jen.Valuesln(
 					jen.ID("LabelName").MapAssign().Lit("ContentType"),
 					jen.ID("StructFieldName").MapAssign().Lit("ContentType"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true")),
+					jen.ID("Required").MapAssign().True()),
 				jen.Valuesln(
 					jen.ID("LabelName").MapAssign().Lit("URL"),
 					jen.ID("StructFieldName").MapAssign().Lit("URL"),
 					jen.ID("InputType").MapAssign().Lit("text"),
-					jen.ID("Required").MapAssign().ID("true"),
+					jen.ID("Required").MapAssign().True(),
 				),
 			),
 		),
@@ -114,7 +114,7 @@ func buildEditorConfigs(types []models.DataType) []jen.Code {
 					jen.ID("FormName").MapAssign().Lit(fn.UnexportedVarName()),
 					jen.ID("StructFieldName").MapAssign().Lit(fn.Singular()),
 					jen.ID("InputType").MapAssign().Lit(determineFormType(field.Type)),
-					jen.ID("Required").MapAssign().ID("true"),
+					jen.ID("Required").MapAssign().True(),
 				))
 			}
 		}

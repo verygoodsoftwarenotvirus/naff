@@ -1,11 +1,11 @@
 package querybuilders
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func apiClientsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -163,7 +163,7 @@ func buildBuildGetAPIClientsQuery(proj *models.Project, dbvendor wordsmith.Super
 				jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableOwnershipColumn"),
 				jen.Qual(proj.QuerybuildingPackage(), "APIClientsTableColumns"),
 				jen.ID("userID"),
-				jen.ID("false"),
+				jen.False(),
 				jen.ID("filter"),
 			),
 		),

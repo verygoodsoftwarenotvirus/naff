@@ -21,7 +21,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 			),
 			jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
 			jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
-			jen.ID("EnableUserSignup").MapAssign().ID("true"),
+			jen.ID("EnableUserSignup").MapAssign().True(),
 		),
 	}
 
@@ -47,7 +47,7 @@ func configTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("cfg").Assign().AddressOf().ID("InstanceConfig").Valuesln(
 						jen.ID("Server").MapAssign().Qual(proj.HTTPServerPackage(), "Config").Valuesln(
 							jen.ID("HTTPPort").MapAssign().Lit(1234),
-							jen.ID("Debug").MapAssign().ID("false"),
+							jen.ID("Debug").MapAssign().False(),
 							jen.ID("StartupDeadline").MapAssign().Qual("time", "Minute"),
 						),
 						jen.ID("Meta").MapAssign().ID("MetaSettings").Valuesln(
@@ -68,8 +68,8 @@ func configTestDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("postgres"),
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("RunMigrations").MapAssign().ID("true"),
+							jen.ID("Debug").MapAssign().True(),
+							jen.ID("RunMigrations").MapAssign().True(),
 							jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.Lit("postgres://username:passwords@host/table")),
 						),
 					),

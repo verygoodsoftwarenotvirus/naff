@@ -48,7 +48,7 @@ func buildSuiteStruct(proj *models.Project, typ models.DataType) []jen.Code {
 
 	for _, owner := range proj.FindOwnerTypeChain(typ) {
 		structFields = append(structFields, jen.IDf("example%sID", owner.Name.Singular()).Uint64())
-		initFields = append(initFields, jen.ID("s").Dotf("example%sID", owner.Name.Singular()).Equals().ID("fakes").Dot("BuildFakeID").Call())
+		initFields = append(initFields, jen.ID("s").Dotf("example%sID", owner.Name.Singular()).Equals().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
 	}
 
 	structFields = append(structFields, jen.IDf("example%s", sn).PointerTo().Qual(proj.TypesPackage(), sn))
@@ -137,7 +137,7 @@ func buildTestClientSomethingExists(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
 					append([]jen.Code{
-						jen.ID("true"),
+						jen.True(),
 						jen.Qual("net/http", "MethodHead"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
@@ -284,7 +284,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 				jen.Newline(),
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
 					append([]jen.Code{
-						jen.ID("true"),
+						jen.True(),
 						jen.Qual("net/http", "MethodGet"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
@@ -398,7 +398,7 @@ func buildTestClientGetSomething(proj *models.Project, typ models.DataType) []je
 				jen.Newline(),
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
 					append([]jen.Code{
-						jen.ID("true"),
+						jen.True(),
 						jen.Qual("net/http", "MethodGet"),
 						jen.Lit(""),
 						jen.ID("expectedPathFormat"),
@@ -484,7 +484,7 @@ func buildTestClientGetListOfSomething(proj *models.Project, typ models.DataType
 	expectedPath := buildListOfSomethingFormatString(proj, typ)
 
 	specArgs := append([]jen.Code{
-		jen.ID("true"),
+		jen.True(),
 		jen.Qual("net/http", "MethodGet"),
 		jen.Lit("includeArchived=false&limit=20&page=1&sortBy=asc"),
 		jen.ID("expectedPath"),
@@ -688,7 +688,7 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 		jen.Newline(),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append([]jen.Code{
-				jen.ID("true"),
+				jen.True(),
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit("limit=20&q=whatever"),
 				jen.ID("expectedPath"),
@@ -811,7 +811,7 @@ func buildTestClientSearchSomething(proj *models.Project, typ models.DataType) [
 				jen.Newline(),
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
 					append([]jen.Code{
-						jen.ID("true"),
+						jen.True(),
 						jen.Qual("net/http", "MethodGet"),
 						jen.Lit("limit=20&q=whatever"),
 						jen.ID("expectedPath"),
@@ -913,7 +913,7 @@ func buildTestClientCreateSomething(proj *models.Project, typ models.DataType) [
 
 	expectedPath := buildCreateSomethingFormatString(proj, typ)
 	specArgs := append([]jen.Code{
-		jen.ID("false"),
+		jen.False(),
 		jen.Qual("net/http", "MethodPost"),
 		jen.Lit(""),
 		jen.ID("expectedPath"),
@@ -1143,7 +1143,7 @@ func buildTestClientUpdateSomething(proj *models.Project, typ models.DataType) [
 
 	specArgs := append(
 		[]jen.Code{
-			jen.ID("false"),
+			jen.False(),
 			jen.Qual("net/http", "MethodPut"),
 			jen.Lit(""),
 			jen.ID("expectedPathFormat"),
@@ -1269,7 +1269,7 @@ func buildTestClientArchiveSomething(proj *models.Project, typ models.DataType) 
 				jen.ID("spec").Assign().ID("newRequestSpec").Call(
 					append(
 						[]jen.Code{
-							jen.ID("true"),
+							jen.True(),
 							jen.Qual("net/http", "MethodDelete"),
 							jen.Lit(""),
 							jen.ID("expectedPathFormat"),
@@ -1443,7 +1443,7 @@ func buildTestClientGetAuditLogForSomething(proj *models.Project, typ models.Dat
 		jen.Newline(),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append([]jen.Code{
-				jen.ID("true"),
+				jen.True(),
 				jen.ID("expectedMethod"),
 				jen.Lit(""),
 				jen.ID("expectedPath"),

@@ -24,7 +24,7 @@ func mockIterablesSQLQueryBuilderDotGo(proj *models.Project, typ models.DataType
 	code.Add(
 		jen.Commentf("%sSQLQueryBuilder is a mocked types.%sSQLQueryBuilder for testing.", sn, sn),
 		jen.Newline(),
-		jen.Type().IDf("%sSQLQueryBuilder", sn).Struct(jen.ID("mock").Dot("Mock")),
+		jen.Type().IDf("%sSQLQueryBuilder", sn).Struct(jen.Qual(constants.MockPkg, "Mock")),
 		jen.Newline(),
 	)
 

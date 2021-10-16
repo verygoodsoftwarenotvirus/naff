@@ -258,7 +258,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.ID("args"),
 		),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.ID("false"), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+			jen.Return().List(jen.False(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.Err(),
 				constants.LoggerVar(),
 				jen.ID("span"),
@@ -312,7 +312,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.List(jen.ID(uvn), jen.Underscore(), jen.Underscore(), jen.Err()).Assign().ID("q").Dotf("scan%s", sn).Call(
 			jen.ID("ctx"),
 			jen.ID("row"),
-			jen.ID("false"),
+			jen.False(),
 		),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -429,7 +429,7 @@ func buildGetAllSomething(proj *models.Project, typ models.DataType) []jen.Code 
 				jen.List(jen.ID(puvn), jen.Underscore(), jen.Underscore(), jen.ID("scanErr")).Assign().ID("q").Dotf("scan%s", pn).Call(
 					jen.ID("ctx"),
 					jen.ID("rows"),
-					jen.ID("false"),
+					jen.False(),
 				),
 				jen.If(jen.ID("scanErr").DoesNotEqual().Nil()).Body(
 					constants.LoggerVar().Dot("Error").Call(
@@ -532,7 +532,7 @@ func buildGetListOfSomething(proj *models.Project, typ models.DataType) []jen.Co
 		jen.If(jen.List(jen.ID("x").Dot(pn), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.Err()).Equals().ID("q").Dotf("scan%s", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("rows"),
-			jen.ID("true"),
+			jen.True(),
 		), jen.Err().DoesNotEqual().Nil()).Body(
 			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.Err(),
@@ -649,7 +649,7 @@ func buildGetListOfSomethingWithIDs(proj *models.Project, typ models.DataType) [
 		jen.List(jen.ID(puvn), jen.Underscore(), jen.Underscore(), jen.Err()).Assign().ID("q").Dotf("scan%s", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("rows"),
-			jen.ID("false"),
+			jen.False(),
 		),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -750,7 +750,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 			jen.List(jen.ID("id"), jen.Err()).Assign().ID("q").Dot("performWriteQuery").Call(
 				jen.ID("ctx"),
 				jen.ID("tx"),
-				jen.ID("false"),
+				jen.False(),
 				jen.Litf("%s creation", scn),
 				jen.ID("query"),
 				jen.ID("args"),
@@ -1090,7 +1090,7 @@ func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataTy
 			jen.List(jen.ID("auditLogEntries"), jen.Underscore(), jen.Err()).Assign().ID("q").Dot("scanAuditLogEntries").Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
-				jen.ID("false"),
+				jen.False(),
 			),
 			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 				jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(

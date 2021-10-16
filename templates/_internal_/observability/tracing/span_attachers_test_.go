@@ -92,7 +92,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("attachBooleanToSpan").Call(
 						jen.ID("span"),
 						jen.ID("t").Dot("Name").Call(),
-						jen.ID("false"),
+						jen.False(),
 					),
 				),
 			),

@@ -3,11 +3,11 @@ package querybuilders
 import (
 	"fmt"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 
 	"github.com/Masterminds/squirrel"
 )
@@ -248,7 +248,7 @@ func buildTestSqlite_BuildGetAccountsQuery(proj *models.Project, dbvendor wordsm
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildGetAccountsQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),
-						jen.ID("false"),
+						jen.False(),
 						jen.ID("filter"),
 					),
 					jen.Newline(),

@@ -183,7 +183,7 @@ func buildScanSomething(proj *models.Project, typ models.DataType, dbvendor word
 			)),
 		jen.Newline(),
 		jen.If(jen.ID("err").Equals().ID("scan").Dot("Scan").Call(jen.ID("targetVars").Op("...")), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -247,7 +247,7 @@ func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbve
 			jen.ID("ctx"),
 			jen.ID("rows"),
 		), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -313,7 +313,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 			jen.ID("args"),
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.ID("false"), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.False(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -391,10 +391,10 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 		jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
 			jen.ID("ctx"),
 			jen.ID("row"),
-			jen.ID("false"),
+			jen.False(),
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -454,7 +454,7 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 			jen.ID("accountOwnershipColumn"),
 			jen.IDf("%sTableColumns", puvn),
 			jen.ID("accountID"),
-			jen.ID("false"),
+			jen.False(),
 			jen.ID("filter"),
 		),
 		jen.Newline(),
@@ -466,7 +466,7 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 			jen.ID("args"),
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -476,9 +476,9 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 		jen.If(jen.List(jen.ID("x").Dot(pn), jen.ID("x").Dot("FilteredCount"), jen.ID("x").Dot("TotalCount"), jen.ID("err")).Equals().ID("q").Dotf("scan%s", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("rows"),
-			jen.ID("true"),
+			jen.True(),
 		), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -530,7 +530,7 @@ func buildGetTotalSomethingCount(proj *models.Project, typ models.DataType, dbve
 			jen.Litf("fetching count of %s", pcn),
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Zero(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Zero(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -566,7 +566,7 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 		jen.Newline(),
 		jen.ID("withIDsWhere").Op(":=").ID("squirrel").Dot("Eq").Valuesln(
 			jen.Litf("%s.id", tableName).Op(":").ID("ids"),
-			jen.Litf("%s.archived_on", tableName).Op(":").ID("nil"),
+			jen.Litf("%s.archived_on", tableName).Op(":").Nil(),
 			jen.Litf("%s.belongs_to_account", tableName).Op(":").ID("accountID"),
 		),
 		jen.Newline(),
@@ -645,7 +645,7 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 			jen.ID("args"),
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -655,10 +655,10 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 		jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("rows"),
-			jen.ID("false"),
+			jen.False(),
 		),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -759,7 +759,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 			jen.IDf("%sCreationQuery", uvn),
 			jen.ID("args"),
 		), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().List(jen.Nil(), jen.ID("observability").Dot("PrepareError").Call(
+			jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -865,7 +865,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 			jen.IDf("update%sQuery", sn),
 			jen.ID("args"),
 		), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().ID("observability").Dot("PrepareError").Call(
+			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),
@@ -942,7 +942,7 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 			jen.IDf("archive%sQuery", sn),
 			jen.ID("args"),
 		), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().ID("observability").Dot("PrepareError").Call(
+			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 				jen.ID("err"),
 				jen.ID("logger"),
 				jen.ID("span"),

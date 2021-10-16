@@ -1,9 +1,9 @@
 package workers
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func preWritesWorkerDotGo(proj *models.Project) *jen.File {
@@ -82,7 +82,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 				jen.ID("message"),
 				jen.Op("&").ID("msg"),
 			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().ID("observability").Dot("PrepareError").Call(
+				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),
 					jen.ID("w").Dot("logger"),
 					jen.ID("span"),
@@ -105,7 +105,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("Item"),
 					), jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-						jen.Return().ID("observability").Dot("PrepareError").Call(
+						jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
@@ -117,7 +117,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 						jen.ID("item").Dot("ID"),
 						jen.ID("item"),
 					), jen.ID("err").DoesNotEqual().Nil()).Body(
-						jen.Return().ID("observability").Dot("PrepareError").Call(
+						jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
@@ -132,7 +132,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 						),
 						jen.Newline(),
 						jen.If(jen.ID("err").Equals().ID("w").Dot("postWritesPublisher").Dot("Publish").Call(jen.ID("ctx"), jen.ID("dcm")), jen.ID("err").DoesNotEqual().Nil()).Body(
-							jen.Return().ID("observability").Dot("PrepareError").Call(
+							jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
 								jen.ID("span"),
@@ -147,7 +147,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 						jen.ID("msg").Dot("Webhook"),
 					),
 					jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-						jen.Return().ID("observability").Dot("PrepareError").Call(
+						jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
@@ -166,7 +166,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("ctx"),
 							jen.ID("dcm"),
 						), jen.ID("err").DoesNotEqual().Nil()).Body(
-							jen.Return().ID("observability").Dot("PrepareError").Call(
+							jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
 								jen.ID("span"),
@@ -178,7 +178,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 						jen.ID("ctx"),
 						jen.ID("msg").Dot("UserMembership"),
 					), jen.ID("err").DoesNotEqual().Nil()).Body(
-						jen.Return().ID("observability").Dot("PrepareError").Call(
+						jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("logger"),
 							jen.ID("span"),
@@ -192,7 +192,7 @@ func preWritesWorkerDotGo(proj *models.Project) *jen.File {
 							jen.ID("ctx"),
 							jen.ID("dcm"),
 						), jen.ID("err").DoesNotEqual().Nil()).Body(
-							jen.Return().ID("observability").Dot("PrepareError").Call(
+							jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 								jen.ID("err"),
 								jen.ID("logger"),
 								jen.ID("span"),

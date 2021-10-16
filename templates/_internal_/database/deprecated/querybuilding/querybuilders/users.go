@@ -1,11 +1,11 @@
 package querybuilders
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func usersDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -329,7 +329,7 @@ func buildBuildGetUsersQuery(proj *models.Project, dbvendor wordsmith.SuperPalab
 				jen.Lit(""),
 				jen.Qual(proj.QuerybuildingPackage(), "UsersTableColumns"),
 				jen.Zero(),
-				jen.ID("false"),
+				jen.False(),
 				jen.ID("filter"),
 			),
 		),
@@ -544,7 +544,7 @@ func buildBuildUpdateUserPasswordQuery(proj *models.Project, dbvendor wordsmith.
 				).
 					Dotln("Set").Call(
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTableRequiresPasswordChangeColumn"),
-					jen.ID("false"),
+					jen.False(),
 				).
 					Dotln("Set").Call(
 					jen.Qual(proj.QuerybuildingPackage(), "UsersTablePasswordLastChangedOnColumn"),

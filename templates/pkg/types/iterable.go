@@ -6,8 +6,8 @@ import (
 
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 

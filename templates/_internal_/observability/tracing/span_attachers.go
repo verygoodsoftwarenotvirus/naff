@@ -473,7 +473,7 @@ func spanAttachersDotGo(proj *models.Project) *jen.File {
 				jen.ID("attachBooleanToSpan").Call(
 					jen.ID("span"),
 					jen.Qual(proj.ConstantKeysPackage(), "FilterIsNilKey"),
-					jen.ID("true"),
+					jen.True(),
 				),
 			),
 		),

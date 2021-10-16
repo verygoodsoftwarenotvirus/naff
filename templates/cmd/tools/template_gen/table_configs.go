@@ -1,8 +1,8 @@
 package template_gen
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
@@ -82,8 +82,8 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("CreatedOn"),
 			),
 			jen.ID("RowDataFieldName").MapAssign().Lit("Clients"),
-			jen.ID("IncludeLastUpdatedOn").MapAssign().ID("false"),
-			jen.ID("IncludeCreatedOn").MapAssign().ID("true"),
+			jen.ID("IncludeLastUpdatedOn").MapAssign().False(),
+			jen.ID("IncludeCreatedOn").MapAssign().True(),
 		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/tables/accounts_table.gotpl").MapAssign().Valuesln(
 			jen.ID("Title").MapAssign().Lit("Accounts"),
@@ -101,8 +101,8 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("BelongsToUser"),
 			),
 			jen.ID("RowDataFieldName").MapAssign().Lit("Accounts"),
-			jen.ID("IncludeLastUpdatedOn").MapAssign().ID("true"),
-			jen.ID("IncludeCreatedOn").MapAssign().ID("true"),
+			jen.ID("IncludeLastUpdatedOn").MapAssign().True(),
+			jen.ID("IncludeCreatedOn").MapAssign().True(),
 		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/tables/users_table.gotpl").MapAssign().Valuesln(
 			jen.ID("Title").MapAssign().Lit("Users"),
@@ -115,12 +115,12 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 			jen.ID("CellFields").MapAssign().Index().String().Valuesln(
 				jen.Lit("Username"),
 			),
-			jen.ID("EnableSearch").MapAssign().ID("true"),
+			jen.ID("EnableSearch").MapAssign().True(),
 			jen.ID("RowDataFieldName").MapAssign().Lit("Users"),
-			jen.ID("IncludeLastUpdatedOn").MapAssign().ID("true"),
-			jen.ID("IncludeCreatedOn").MapAssign().ID("true"),
-			jen.ID("IncludeDeleteRow").MapAssign().ID("false"),
-			jen.ID("ExcludeLink").MapAssign().ID("true"),
+			jen.ID("IncludeLastUpdatedOn").MapAssign().True(),
+			jen.ID("IncludeCreatedOn").MapAssign().True(),
+			jen.ID("IncludeDeleteRow").MapAssign().False(),
+			jen.ID("ExcludeLink").MapAssign().True(),
 		),
 		jen.Lit("internal/services/frontend/templates/partials/generated/tables/webhooks_table.gotpl").MapAssign().Valuesln(
 			jen.ID("Title").MapAssign().Lit("Webhooks"),
@@ -144,8 +144,8 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.Lit("BelongsToAccount"),
 			),
 			jen.ID("RowDataFieldName").MapAssign().Lit("Webhooks"),
-			jen.ID("IncludeLastUpdatedOn").MapAssign().ID("true"),
-			jen.ID("IncludeCreatedOn").MapAssign().ID("true"),
+			jen.ID("IncludeLastUpdatedOn").MapAssign().True(),
+			jen.ID("IncludeCreatedOn").MapAssign().True(),
 		),
 	}
 
@@ -169,9 +169,9 @@ func buildTableConfigs(types []models.DataType) []jen.Code {
 				jen.ID("Columns").MapAssign().Index().String().Valuesln(columns...),
 				jen.ID("CellFields").MapAssign().Index().String().Valuesln(cellFields...),
 				jen.ID("RowDataFieldName").MapAssign().Lit(tn.Plural()),
-				jen.ID("IncludeLastUpdatedOn").MapAssign().ID("true"),
-				jen.ID("IncludeCreatedOn").MapAssign().ID("true"),
-				jen.ID("IncludeDeleteRow").MapAssign().ID("true"),
+				jen.ID("IncludeLastUpdatedOn").MapAssign().True(),
+				jen.ID("IncludeCreatedOn").MapAssign().True(),
+				jen.ID("IncludeDeleteRow").MapAssign().True(),
 			),
 		)
 	}

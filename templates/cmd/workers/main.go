@@ -3,9 +3,9 @@ package workers
 import (
 	"strings"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func mainDotGo(proj *models.Project) *jen.File {
@@ -110,7 +110,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Defer().ID("flushFunc").Call(),
 			),
 			jen.Newline(),
-			jen.ID("cfg").Dot("Database").Dot("RunMigrations").Equals().ID("false"),
+			jen.ID("cfg").Dot("Database").Dot("RunMigrations").Equals().False(),
 			jen.Newline(),
 			jen.List(jen.ID("dataManager"), jen.ID("err")).Op(":=").Qual(proj.InternalConfigPackage(), "ProvideDatabaseClient").Call(
 				jen.ID("ctx"),

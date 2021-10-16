@@ -1,10 +1,10 @@
 package config
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func configDotGo(proj *models.Project) *jen.File {
@@ -87,7 +87,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("sessionManager").Dot("Lifetime").Equals().ID("cookieConfig").Dot("Lifetime"),
 			jen.ID("sessionManager").Dot("Cookie").Dot("Name").Equals().ID("cookieConfig").Dot("Name"),
 			jen.ID("sessionManager").Dot("Cookie").Dot("Domain").Equals().ID("cookieConfig").Dot("Domain"),
-			jen.ID("sessionManager").Dot("Cookie").Dot("HttpOnly").Equals().ID("true"),
+			jen.ID("sessionManager").Dot("Cookie").Dot("HttpOnly").Equals().True(),
 			jen.ID("sessionManager").Dot("Cookie").Dot("Path").Equals().Lit("/"),
 			jen.ID("sessionManager").Dot("Cookie").Dot("SameSite").Equals().Qual("net/http", "SameSiteStrictMode"),
 			jen.ID("sessionManager").Dot("Cookie").Dot("Secure").Equals().ID("cookieConfig").Dot("SecureOnly"),

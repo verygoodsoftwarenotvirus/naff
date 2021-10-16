@@ -1,11 +1,11 @@
 package querybuilders
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func accountUserMembershipsDotGo(proj *models.Project, dbvendor wordsmith.SuperPalabra) *jen.File {
@@ -81,7 +81,7 @@ func buildBuildGetDefaultAccountIDForUserQuery(proj *models.Project, dbvendor wo
 						jen.Lit("%s.%s"),
 						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableName"),
 						jen.Qual(proj.QuerybuildingPackage(), "AccountsUserMembershipTableDefaultUserAccountColumn"),
-					).MapAssign().ID("true"))),
+					).MapAssign().True())),
 			),
 		),
 		jen.Newline(),
@@ -313,7 +313,7 @@ func buildBuildCreateMembershipForNewUserQuery(proj *models.Project, dbvendor wo
 				).Dotln("Values").Callln(
 					jen.ID("userID"),
 					jen.ID("accountID"),
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("strings", "Join").Call(jen.Index().String().Values(jen.Qual(proj.InternalAuthorizationPackage(), "AccountAdminRole").Dot("String").Call()), jen.ID("accountMemberRolesSeparator")),
 				),
 			),

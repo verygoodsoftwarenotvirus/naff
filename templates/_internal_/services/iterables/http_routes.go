@@ -3,10 +3,10 @@ package iterables
 import (
 	"fmt"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func buildIDFetchers(proj *models.Project, typ models.DataType, includePrimaryType bool) []jen.Code {
@@ -168,9 +168,9 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Func().ID("parseBool").Params(jen.ID("str").String()).Params(jen.ID("bool")).Body(
 			jen.Switch(jen.Qual("strings", "ToLower").Call(jen.Qual("strings", "TrimSpace").Call(jen.ID("str")))).Body(
 				jen.Case(jen.Lit("1"), jen.Lit("t"), jen.Lit("true")).Body(
-					jen.Return().ID("true")),
+					jen.Return().True()),
 				jen.Default().Body(
-					jen.Return().ID("false")),
+					jen.Return().False()),
 			)),
 		jen.Newline(),
 	)

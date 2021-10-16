@@ -278,7 +278,7 @@ func buildTestSqlite_BuildTestUserCreationQuery(proj *models.Project, dbvendor w
 						jen.ID("Username").MapAssign().Lit("username"),
 						jen.ID("Password").MapAssign().Lit("password"),
 						jen.ID("HashedPassword").MapAssign().Lit("hashashashash"),
-						jen.ID("IsServiceAdmin").MapAssign().ID("true"),
+						jen.ID("IsServiceAdmin").MapAssign().True(),
 					),
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
@@ -610,7 +610,7 @@ func buildTestSqlite_BuildUpdateUserPasswordQuery(proj *models.Project, dbvendor
 					jen.Newline(),
 					jen.ID("expectedQuery").Assign().Lit(expectedQuery),
 					jen.ID("expectedArgs").Assign().Index().Interface().Valuesln(
-						jen.ID("exampleUser").Dot("HashedPassword"), jen.ID("false"), jen.ID("exampleUser").Dot("ID")),
+						jen.ID("exampleUser").Dot("HashedPassword"), jen.False(), jen.ID("exampleUser").Dot("ID")),
 					jen.List(jen.ID("actualQuery"), jen.ID("actualArgs")).Assign().ID("q").Dot("BuildUpdateUserPasswordQuery").Call(
 						jen.ID("ctx"),
 						jen.ID("exampleUser").Dot("ID"),

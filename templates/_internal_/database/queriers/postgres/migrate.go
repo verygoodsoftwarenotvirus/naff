@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func migrateDotGo(proj *models.Project) *jen.File {
@@ -78,7 +78,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 				jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dot("scanUser").Call(
 					jen.ID("ctx"),
 					jen.ID("userRow"),
-					jen.ID("false"),
+					jen.False(),
 				),
 				jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 					jen.If(jen.ID("testUserConfig").Dot("ID").Op("==").Lit("")).Body(
@@ -103,7 +103,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 						jen.ID("testUserCreationQuery"),
 						jen.ID("testUserCreationArgs"),
 					), jen.ID("err").DoesNotEqual().Nil()).Body(
-						jen.Return().ID("observability").Dot("PrepareError").Call(
+						jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 							jen.ID("err"),
 							jen.ID("q").Dot("logger"),
 							jen.ID("span"),

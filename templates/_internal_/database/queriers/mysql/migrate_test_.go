@@ -1,9 +1,10 @@
 package mysql
 
 import (
-	jen "gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
-	utils "gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
-	models "gitlab.com/verygoodsoftwarenotvirus/naff/models"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
 func migrateTestDotGo(proj *models.Project) *jen.File {
@@ -20,16 +21,16 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleCreationTime").Op(":=").ID("fakes").Dot("BuildFakeTime").Call(),
+					jen.ID("exampleCreationTime").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeTime").Call(),
 					jen.Newline(),
-					jen.ID("exampleUser").Op(":=").ID("fakes").Dot("BuildFakeUser").Call(),
+					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleUser").Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 					jen.ID("exampleUser").Dot("CreatedOn").Equals().ID("exampleCreationTime"),
 					jen.Newline(),
-					jen.ID("exampleAccount").Op(":=").ID("fakes").Dot("BuildFakeAccountForUser").Call(jen.ID("exampleUser")),
+					jen.ID("exampleAccount").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeAccountForUser").Call(jen.ID("exampleUser")),
 					jen.Newline(),
 					jen.ID("exampleTestUserConfig").Op(":=").Op("&").Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
-						jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"), jen.ID("Password").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("HashedPassword").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("IsServiceAdmin").MapAssign().ID("true")),
+						jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"), jen.ID("Password").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("HashedPassword").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("IsServiceAdmin").MapAssign().True()),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
@@ -77,7 +78,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.Comment("create account user membership for created user"),
 					jen.ID("createAccountMembershipForNewUserArgs").Op(":=").Index().Interface().Valuesln(
-						jen.Op("&").ID("idMatcher").Values(), jen.Op("&").ID("idMatcher").Values(), jen.Op("&").ID("idMatcher").Values(), jen.ID("true"), jen.ID("authorization").Dot("AccountAdminRole").Dot("String").Call()),
+						jen.Op("&").ID("idMatcher").Values(), jen.Op("&").ID("idMatcher").Values(), jen.Op("&").ID("idMatcher").Values(), jen.True(), jen.ID("authorization").Dot("AccountAdminRole").Dot("String").Call()),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("createAccountMembershipForNewUserQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("createAccountMembershipForNewUserArgs")).Op("...")).
@@ -95,7 +96,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("mock").Dot("AssertExpectationsForObjects").Call(
+					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
 						jen.ID("t"),
 						jen.ID("db"),
 					),
@@ -107,14 +108,14 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleCreationTime").Op(":=").ID("fakes").Dot("BuildFakeTime").Call(),
+					jen.ID("exampleCreationTime").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeTime").Call(),
 					jen.Newline(),
-					jen.ID("exampleUser").Op(":=").ID("fakes").Dot("BuildFakeUser").Call(),
+					jen.ID("exampleUser").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeUser").Call(),
 					jen.ID("exampleUser").Dot("TwoFactorSecretVerifiedOn").Equals().Nil(),
 					jen.ID("exampleUser").Dot("CreatedOn").Equals().ID("exampleCreationTime"),
 					jen.Newline(),
 					jen.ID("exampleTestUserConfig").Op(":=").Op("&").Qual(proj.TypesPackage(), "TestUserCreationConfig").Valuesln(
-						jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"), jen.ID("Password").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("HashedPassword").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("IsServiceAdmin").MapAssign().ID("true")),
+						jen.ID("Username").MapAssign().ID("exampleUser").Dot("Username"), jen.ID("Password").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("HashedPassword").MapAssign().ID("exampleUser").Dot("HashedPassword"), jen.ID("IsServiceAdmin").MapAssign().True()),
 					jen.Newline(),
 					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
 					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
@@ -155,7 +156,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("mock").Dot("AssertExpectationsForObjects").Call(
+					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
 						jen.ID("t"),
 						jen.ID("db"),
 					),

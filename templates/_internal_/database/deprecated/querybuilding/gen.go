@@ -65,7 +65,6 @@ func queryBuildersDotGo(proj *models.Project) string {
 		querybuildingInterfaces = append(querybuildingInterfaces, fmt.Sprintf("%sSQLQueryBuilder", sn))
 		querybuildingInterfaceDeclarations = append(querybuildingInterfaceDeclarations,
 			jen.Newline(),
-			jen.Newline(),
 			jen.Commentf("%sSQLQueryBuilder describes a structure capable of generating query/arg pairs for certain situations.", sn),
 			jen.Newline(),
 			jen.IDf("%sSQLQueryBuilder", sn).Interface(

@@ -129,7 +129,7 @@ func buildTestBuilder_BuildSomethingExistsRequest(proj *models.Project, typ mode
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append(
 				[]jen.Code{
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("net/http", "MethodHead"),
 					jen.Lit(""),
 					jen.ID("expectedPathFormat"),
@@ -273,7 +273,7 @@ func buildTestBuilder_BuildGetSomethingRequest(proj *models.Project, typ models.
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append(
 				[]jen.Code{
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit(""),
 					jen.ID("expectedPathFormat"),
@@ -479,7 +479,7 @@ func buildTestBuilder_BuildGetListOfSomethingsRequest(proj *models.Project, typ 
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append(
 				[]jen.Code{
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("net/http", "MethodGet"),
 					jen.Lit("includeArchived=false&limit=20&page=1&sortBy=asc"),
 					jen.ID("expectedPathFormat"),
@@ -663,7 +663,7 @@ func buildTestBuilder_BuildSearchSomethingRequest(proj *models.Project, typ mode
 		jen.ID("exampleQuery").Assign().Lit("whatever"),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append([]jen.Code{
-				jen.ID("true"),
+				jen.True(),
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit("limit=20&q=whatever"),
 				jen.ID("expectedPath"),
@@ -838,7 +838,7 @@ func buildTestBuilder_BuildCreateSomethingRequest(proj *models.Project, typ mode
 	sn := typ.Name.Singular()
 
 	specArgs := append([]jen.Code{
-		jen.ID("false"),
+		jen.False(),
 		jen.Qual("net/http", "MethodPost"),
 		jen.Lit(""),
 		jen.ID("expectedPath"),
@@ -1053,7 +1053,7 @@ func buildTestBuilder_BuildUpdateSomethingRequest(proj *models.Project, typ mode
 	sn := typ.Name.Singular()
 
 	specArgs := append([]jen.Code{
-		jen.ID("false"),
+		jen.False(),
 		jen.Qual("net/http", "MethodPut"),
 		jen.Lit(""),
 		jen.ID("expectedPathFormat"),
@@ -1215,7 +1215,7 @@ func buildTestBuilder_BuildArchiveSomethingRequest(proj *models.Project, typ mod
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append(
 				[]jen.Code{
-					jen.ID("true"),
+					jen.True(),
 					jen.Qual("net/http", "MethodDelete"),
 					jen.Lit(""),
 					jen.ID("expectedPathFormat"),
@@ -1400,7 +1400,7 @@ func buildTestBuilder_BuildGetAuditLogForSomethingRequest(proj *models.Project, 
 		jen.Newline(),
 		jen.ID("spec").Assign().ID("newRequestSpec").Call(
 			append([]jen.Code{
-				jen.ID("true"),
+				jen.True(),
 				jen.Qual("net/http", "MethodGet"),
 				jen.Lit(""),
 				jen.ID("expectedPath"),

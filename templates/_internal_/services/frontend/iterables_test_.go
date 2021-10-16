@@ -129,7 +129,7 @@ func buildTestServiceFetchSomething(proj *models.Project, typ models.DataType) [
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
-		jen.ID("s").Dot("service").Dot("useFakeData").Equals().ID("true"),
+		jen.ID("s").Dot("service").Dot("useFakeData").Equals().True(),
 		jen.Newline(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
@@ -282,7 +282,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 						jen.Nil(),
 					),
 					jen.Newline(),
-					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("true")).Call(
+					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.True()).Call(
 						jen.ID("res"),
 						jen.ID("req"),
 					),
@@ -306,7 +306,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 						jen.Nil(),
 					),
 					jen.Newline(),
-					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("false")).Call(
+					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.False()).Call(
 						jen.ID("res"),
 						jen.ID("req"),
 					),
@@ -332,7 +332,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 						jen.Nil(),
 					),
 					jen.Newline(),
-					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("false")).Call(
+					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.False()).Call(
 						jen.ID("res"),
 						jen.ID("req"),
 					),
@@ -361,7 +361,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 						jen.Nil(),
 					),
 					jen.Newline(),
-					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("true")).Call(
+					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.True()).Call(
 						jen.ID("res"),
 						jen.ID("req"),
 					),
@@ -388,7 +388,7 @@ func buildTestServiceBuildSomethingCreatorView(proj *models.Project, typ models.
 						jen.Nil(),
 					),
 					jen.Newline(),
-					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.ID("false")).Call(
+					jen.ID("s").Dot("service").Dotf("build%sCreatorView", sn).Call(jen.False()).Call(
 						jen.ID("res"),
 						jen.ID("req"),
 					),
@@ -695,7 +695,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("true")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.True()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -730,7 +730,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("false")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.False()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -756,7 +756,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("true")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.True()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -789,7 +789,7 @@ func buildTestServiceBuildSomethingEditorView(proj *models.Project, typ models.D
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.ID("true")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sEditorView", sn).Call(jen.True()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -900,7 +900,7 @@ func buildTestServiceFetchListOfSomethings(proj *models.Project, typ models.Data
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
 		jen.ID("s").Assign().ID("buildTestHelper").Call(jen.ID("t")),
-		jen.ID("s").Dot("service").Dot("useFakeData").Equals().ID("true"),
+		jen.ID("s").Dot("service").Dot("useFakeData").Equals().True(),
 		jen.Newline(),
 		jen.ID("req").Assign().ID("httptest").Dot("NewRequest").Call(
 			jen.Qual("net/http", "MethodGet"),
@@ -1040,7 +1040,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("true")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.True()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -1078,7 +1078,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("false")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.False()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -1103,7 +1103,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("true")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.True()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),
@@ -1138,7 +1138,7 @@ func buildTestServiceBuildSomethingTableView(proj *models.Project, typ models.Da
 			jen.Nil(),
 		),
 		jen.Newline(),
-		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.ID("true")).Call(
+		jen.ID("s").Dot("service").Dotf("build%sTableView", pn).Call(jen.True()).Call(
 			jen.ID("res"),
 			jen.ID("req"),
 		),

@@ -138,13 +138,13 @@ func buildTestQuerier_ScanSomethings(proj *models.Project, typ models.DataType) 
 					jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
-					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.ID("false")),
+					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
 					jen.List(jen.Underscore(), jen.Underscore(), jen.Underscore(), jen.Err()).Assign().ID("q").Dotf("scan%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("mockRows"),
-						jen.ID("false"),
+						jen.False(),
 					),
 					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
@@ -162,14 +162,14 @@ func buildTestQuerier_ScanSomethings(proj *models.Project, typ models.DataType) 
 					jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("mockRows").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
-					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.ID("false")),
+					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
 					jen.List(jen.Underscore(), jen.Underscore(), jen.Underscore(), jen.Err()).Assign().ID("q").Dotf("scan%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("mockRows"),
-						jen.ID("false"),
+						jen.False(),
 					),
 					jen.Qual(constants.AssertionLibrary, "Error").Call(
 						jen.ID("t"),
@@ -218,7 +218,7 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 		jen.Newline(),
 		jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
 			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
-			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.ID("true"))),
+			Dotln("WillReturnRows").Call(jen.Qual("github.com/DATA-DOG/go-sqlmock", "NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True())),
 		jen.Newline(),
 		jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 			buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true)...,
@@ -473,7 +473,7 @@ func buildTestQuerier_GetSomething(proj *models.Project, typ models.DataType) []
 		jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
 			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
-			jen.ID("false"),
+			jen.False(),
 			jen.Zero(),
 			jen.IDf("example%s", sn),
 		)),
@@ -761,7 +761,7 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("secondFakeQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("secondFakeArgs")).Spread()).
 						Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
-						jen.ID("false"),
+						jen.False(),
 						jen.Zero(),
 						jen.IDf("example%sList", sn).Dot(pn).Spread(),
 					)),
@@ -775,18 +775,18 @@ func buildTestQuerier_GetAllSomethings(proj *models.Project, typ models.DataType
 						),
 					),
 					jen.Newline(),
-					jen.ID("stillQuerying").Assign().ID("true"),
+					jen.ID("stillQuerying").Assign().True(),
 					jen.For(jen.ID("stillQuerying")).Body(
 						jen.Select().Body(
 							jen.Case(jen.ID("batch").Assign().Op("<-").ID("results")).Body(
 								jen.Qual(constants.AssertionLibrary, "NotEmpty").Call(
 									jen.ID("t"),
 									jen.ID("batch"),
-								), jen.ID("doneChan").ReceiveFromChannel().ID("true")),
+								), jen.ID("doneChan").ReceiveFromChannel().True()),
 							jen.Case(jen.Op("<-").Qual("time", "After").Call(jen.Qual("time", "Second"))).Body(
 								jen.ID("t").Dot("FailNow").Call()),
 							jen.Case(jen.Op("<-").ID("doneChan")).Body(
-								jen.ID("stillQuerying").Equals().ID("false")),
+								jen.ID("stillQuerying").Equals().False()),
 						)),
 					jen.Newline(),
 					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
@@ -1109,7 +1109,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 			Dotln("WillReturnRows").Call(
 			jen.IDf("buildMockRowsFrom%s", pn).Call(
-				jen.ID("true"),
+				jen.True(),
 				jen.IDf("example%sList", sn).Dot("FilteredCount"),
 				jen.IDf("example%sList", sn).Dot(pn).Spread(),
 			)),
@@ -1199,7 +1199,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
 					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
-					jen.ID("true"),
+					jen.True(),
 					jen.IDf("example%sList", sn).Dot("FilteredCount"),
 					jen.IDf("example%sList", sn).Dot(pn).Spread(),
 				)),
@@ -1412,7 +1412,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 		jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
 			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 			Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
-			jen.ID("false"),
+			jen.False(),
 			jen.Zero(),
 			jen.IDf("example%sList", sn).Dot(pn).Spread(),
 		)),
@@ -1605,7 +1605,7 @@ func buildTestQuerier_GetSomethingsWithIDs(proj *models.Project, typ models.Data
 				jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
 					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 					Dotln("WillReturnRows").Call(jen.IDf("buildMockRowsFrom%s", pn).Call(
-					jen.ID("false"),
+					jen.False(),
 					jen.Zero(),
 					jen.IDf("example%sList", sn).Dot(pn).Spread(),
 				)),
@@ -3020,7 +3020,7 @@ func buildTestQuerier_GetAuditLogEntriesForSomething(proj *models.Project, typ m
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
 						Dotln("WillReturnRows").Call(jen.ID("buildMockRowsFromAuditLogEntries").Call(
-						jen.ID("false"),
+						jen.False(),
 						jen.ID("exampleAuditLogEntriesList").Dot("Entries").Spread(),
 					)),
 					jen.Newline(),

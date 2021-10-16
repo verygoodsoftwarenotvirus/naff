@@ -166,7 +166,6 @@ func httpRoutesDotGo(proj *models.Project) string {
 
 		routes = append(routes,
 			jen.Newline(),
-			jen.Newline(),
 			jen.IDf("single%sPattern", sn).Assign().Qual("fmt", "Sprintf").Call(
 				jen.ID("numericIDPattern"),
 				jen.IDf("%sIDURLParamKey", uvn),
@@ -176,21 +175,21 @@ func httpRoutesDotGo(proj *models.Project) string {
 				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Read%sPermission", pn))).
 				Dotln("Get").Call(
 				jen.Litf("/%s", prn),
-				jen.ID("s").Dotf("build%sTableView", pn).Call(jen.ID("true")),
+				jen.ID("s").Dotf("build%sTableView", pn).Call(jen.True()),
 			),
 			jen.Newline(),
 			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
 				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Read%sPermission", pn))).
 				Dotln("Get").Call(
 				jen.Litf("/dashboard_pages/%s", prn),
-				jen.ID("s").Dotf("build%sTableView", pn).Call(jen.ID("false")),
+				jen.ID("s").Dotf("build%sTableView", pn).Call(jen.False()),
 			),
 			jen.Newline(),
 			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
 				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Create%sPermission", pn))).
 				Dotln("Get").Call(
 				jen.Lit(fmt.Sprintf("/%s/", prn)+"new"),
-				jen.ID("s").Dotf("build%sCreatorView", sn).Call(jen.ID("true")),
+				jen.ID("s").Dotf("build%sCreatorView", sn).Call(jen.True()),
 			),
 			jen.Newline(),
 			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
@@ -214,7 +213,7 @@ func httpRoutesDotGo(proj *models.Project) string {
 				Dot("PermissionFilterMiddleware").Call(jen.ID("authorization").Dotf("Archive%sPermission", pn))).
 				Dotln("Get").Call(
 				jen.Litf("/dashboard_pages/%s/new", prn),
-				jen.ID("s").Dotf("build%sCreatorView", sn).Call(jen.ID("false")),
+				jen.ID("s").Dotf("build%sCreatorView", sn).Call(jen.False()),
 			),
 			jen.Newline(),
 			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
@@ -224,7 +223,7 @@ func httpRoutesDotGo(proj *models.Project) string {
 					jen.Lit(fmt.Sprintf("/%s/", prn)+"%s"),
 					jen.IDf("single%sPattern", sn),
 				),
-				jen.ID("s").Dotf("build%sEditorView", sn).Call(jen.ID("true")),
+				jen.ID("s").Dotf("build%sEditorView", sn).Call(jen.True()),
 			),
 			jen.Newline(),
 			jen.ID("router").Dot("WithMiddleware").Call(jen.ID("s").Dot("authService").
@@ -244,7 +243,7 @@ func httpRoutesDotGo(proj *models.Project) string {
 					jen.Lit(fmt.Sprintf("/dashboard_pages/%s/", prn)+"%s"),
 					jen.IDf("single%sPattern", sn),
 				),
-				jen.ID("s").Dotf("build%sEditorView", sn).Call(jen.ID("false")),
+				jen.ID("s").Dotf("build%sEditorView", sn).Call(jen.False()),
 			),
 		)
 	}

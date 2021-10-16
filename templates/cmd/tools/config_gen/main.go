@@ -64,7 +64,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.ID("localServer").Equals().Qual(proj.HTTPServerPackage(), "Config").Valuesln(
-				jen.ID("Debug").MapAssign().ID("true"),
+				jen.ID("Debug").MapAssign().True(),
 				jen.ID("HTTPPort").MapAssign().ID("defaultPort"),
 				jen.ID("StartupDeadline").MapAssign().Qual("time", "Minute"),
 			),
@@ -75,7 +75,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("HashKey").MapAssign().ID("debugCookieSecret"),
 				jen.ID("SigningKey").MapAssign().ID("debugCookieSecret"),
 				jen.ID("Lifetime").MapAssign().Qual(proj.AuthServicePackage(), "DefaultCookieLifetime"),
-				jen.ID("SecureOnly").MapAssign().ID("false"),
+				jen.ID("SecureOnly").MapAssign().False(),
 			),
 			jen.Newline(),
 			jen.ID("localTracingConfig").Equals().Qual(proj.InternalTracingPackage(), "Config").Valuesln(
@@ -173,7 +173,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 	code.Add(
 		jen.Func().ID("buildLocalFrontendServiceConfig").Params().Params(jen.Qual(proj.FrontendServicePackage(), "Config")).Body(
 			jen.Return().Qual(proj.FrontendServicePackage(), "Config").Valuesln(
-				jen.ID("UseFakeData").MapAssign().ID("false"),
+				jen.ID("UseFakeData").MapAssign().False(),
 			),
 		),
 		jen.Newline(),
@@ -218,7 +218,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				}
 				return jen.Null()
 			}(),
-			jen.ID("Async").MapAssign().ID("true"),
+			jen.ID("Async").MapAssign().True(),
 			jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 			jen.ID("PreUpdatesTopicName").MapAssign().ID("preUpdatesTopicName"),
 			jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
@@ -235,7 +235,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("filePath").String()).Params(jen.ID("error")).Body(
 			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
 				jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
-					jen.ID("Debug").MapAssign().ID("true"),
+					jen.ID("Debug").MapAssign().True(),
 					jen.ID("RunMode").MapAssign().ID("developmentEnv"),
 				),
 				jen.ID("Encoding").MapAssign().Qual(proj.EncodingPackage(), "Config").Valuesln(
@@ -249,8 +249,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 				),
 				jen.ID("Server").MapAssign().ID("localServer"),
 				jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
-					jen.ID("Debug").MapAssign().ID("true"),
-					jen.ID("RunMigrations").MapAssign().ID("true"),
+					jen.ID("Debug").MapAssign().True(),
+					jen.ID("RunMigrations").MapAssign().True(),
 					jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
 					jen.ID("Provider").MapAssign().ID("postgres"),
 					jen.ID("ConnectionDetails").MapAssign().ID("devPostgresDBConnDetails"),
@@ -258,7 +258,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("Username").MapAssign().Lit("username"),
 						jen.ID("Password").MapAssign().ID("defaultPassword"),
 						jen.ID("HashedPassword").MapAssign().ID("mustHashPass").Call(jen.ID("defaultPassword")),
-						jen.ID("IsServiceAdmin").MapAssign().ID("true"),
+						jen.ID("IsServiceAdmin").MapAssign().True(),
 					),
 				),
 				jen.ID("Observability").MapAssign().Qual(proj.ObservabilityPackage(), "Config").Valuesln(
@@ -270,7 +270,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Tracing").MapAssign().ID("localTracingConfig"),
 				),
 				jen.ID("Uploads").MapAssign().Qual(proj.UploadsPackage(), "Config").Valuesln(
-					jen.ID("Debug").MapAssign().ID("true"),
+					jen.ID("Debug").MapAssign().True(),
 					jen.ID("Storage").MapAssign().Qual(proj.StoragePackage(), "Config").Valuesln(
 						jen.ID("UploadFilenameKey").MapAssign().Lit("avatar"),
 						jen.ID("Provider").MapAssign().Lit("filesystem"),
@@ -299,14 +299,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
 							),
 							jen.ID("Cookies").MapAssign().ID("localCookies"),
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("EnableUserSignup").MapAssign().ID("true"),
+							jen.ID("Debug").MapAssign().True(),
+							jen.ID("EnableUserSignup").MapAssign().True(),
 							jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
 							jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
 						),
 						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Async").MapAssign().ID("true"),
+							jen.ID("Async").MapAssign().True(),
 							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 							jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 						),
@@ -337,7 +337,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("filePath").String()).Params(jen.ID("error")).Body(
 			jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
 				jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
-					jen.ID("Debug").MapAssign().ID("false"),
+					jen.ID("Debug").MapAssign().False(),
 					jen.ID("RunMode").MapAssign().ID("developmentEnv"),
 				),
 				jen.ID("Encoding").MapAssign().Qual(proj.EncodingPackage(), "Config").Valuesln(
@@ -351,8 +351,8 @@ func mainDotGo(proj *models.Project) *jen.File {
 				),
 				jen.ID("Server").MapAssign().ID("localServer"),
 				jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
-					jen.ID("Debug").MapAssign().ID("true"),
-					jen.ID("RunMigrations").MapAssign().ID("true"),
+					jen.ID("Debug").MapAssign().True(),
+					jen.ID("RunMigrations").MapAssign().True(),
 					jen.ID("Provider").MapAssign().ID("postgres"),
 					jen.ID("ConnectionDetails").MapAssign().ID("devPostgresDBConnDetails"),
 					jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
@@ -366,7 +366,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 					jen.ID("Tracing").MapAssign().ID("noopTracingConfig"),
 				),
 				jen.ID("Uploads").MapAssign().Qual(proj.UploadsPackage(), "Config").Valuesln(
-					jen.ID("Debug").MapAssign().ID("true"),
+					jen.ID("Debug").MapAssign().True(),
 					jen.ID("Storage").MapAssign().Qual(proj.StoragePackage(), "Config").Valuesln(
 						jen.ID("UploadFilenameKey").MapAssign().Lit("avatar"),
 						jen.ID("Provider").MapAssign().Lit("memory"),
@@ -389,14 +389,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 								jen.ID("LocalModeKey").MapAssign().ID("examplePASETOKey"),
 							),
 							jen.ID("Cookies").MapAssign().ID("localCookies"),
-							jen.ID("Debug").MapAssign().ID("true"),
-							jen.ID("EnableUserSignup").MapAssign().ID("true"),
+							jen.ID("Debug").MapAssign().True(),
+							jen.ID("EnableUserSignup").MapAssign().True(),
 							jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
 							jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
 						),
 						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Async").MapAssign().ID("true"),
+							jen.ID("Async").MapAssign().True(),
 							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 							jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 						),
@@ -431,7 +431,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.Newline(),
 				jen.ID("cfg").Assign().AddressOf().Qual(proj.InternalConfigPackage(), "InstanceConfig").Valuesln(
 					jen.ID("Meta").MapAssign().Qual(proj.InternalConfigPackage(), "MetaSettings").Valuesln(
-						jen.ID("Debug").MapAssign().ID("false"),
+						jen.ID("Debug").MapAssign().False(),
 						jen.ID("RunMode").MapAssign().ID("testingEnv"),
 					),
 					jen.ID("Events").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "Config").Valuesln(
@@ -444,13 +444,13 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("ContentType").MapAssign().ID("contentTypeJSON"),
 					),
 					jen.ID("Server").MapAssign().Qual(proj.HTTPServerPackage(), "Config").Valuesln(
-						jen.ID("Debug").MapAssign().ID("false"),
+						jen.ID("Debug").MapAssign().False(),
 						jen.ID("HTTPPort").MapAssign().ID("defaultPort"),
 						jen.ID("StartupDeadline").MapAssign().ID("startupDeadline"),
 					),
 					jen.ID("Database").MapAssign().Qual(proj.DatabasePackage("config"), "Config").Valuesln(
-						jen.ID("Debug").MapAssign().ID("false"),
-						jen.ID("RunMigrations").MapAssign().ID("true"),
+						jen.ID("Debug").MapAssign().False(),
+						jen.ID("RunMigrations").MapAssign().True(),
 						jen.ID("Provider").MapAssign().ID("dbVendor"),
 						jen.ID("MaxPingAttempts").MapAssign().ID("maxAttempts"),
 						jen.ID("ConnectionDetails").MapAssign().Qual(proj.DatabasePackage(), "ConnectionDetails").Call(jen.ID("dbDetails")),
@@ -458,7 +458,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 							jen.ID("Username").MapAssign().Lit("exampleUser"),
 							jen.ID("Password").MapAssign().Lit("integration-tests-are-cool"),
 							jen.ID("HashedPassword").MapAssign().ID("mustHashPass").Call(jen.Lit("integration-tests-are-cool")),
-							jen.ID("IsServiceAdmin").MapAssign().ID("true"),
+							jen.ID("IsServiceAdmin").MapAssign().True(),
 						),
 					),
 					jen.ID("Observability").MapAssign().Qual(proj.ObservabilityPackage(), "Config").Valuesln(
@@ -470,7 +470,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("Tracing").MapAssign().ID("localTracingConfig"),
 					),
 					jen.ID("Uploads").MapAssign().Qual(proj.UploadsPackage(), "Config").Valuesln(
-						jen.ID("Debug").MapAssign().ID("false"),
+						jen.ID("Debug").MapAssign().False(),
 						jen.ID("Storage").MapAssign().Qual(proj.StoragePackage(), "Config").Valuesln(
 							jen.ID("Provider").MapAssign().Lit("memory"),
 							jen.ID("BucketName").MapAssign().Lit("avatars"),
@@ -499,16 +499,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 									jen.ID("Domain").MapAssign().ID("defaultCookieDomain"),
 									jen.ID("SigningKey").MapAssign().ID("debugCookieSecret"),
 									jen.ID("Lifetime").MapAssign().Qual(proj.AuthServicePackage(), "DefaultCookieLifetime"),
-									jen.ID("SecureOnly").MapAssign().ID("false"),
+									jen.ID("SecureOnly").MapAssign().False(),
 								),
-								jen.ID("Debug").MapAssign().ID("false"),
-								jen.ID("EnableUserSignup").MapAssign().ID("true"),
+								jen.ID("Debug").MapAssign().False(),
+								jen.ID("EnableUserSignup").MapAssign().True(),
 								jen.ID("MinimumUsernameLength").MapAssign().Lit(4),
 								jen.ID("MinimumPasswordLength").MapAssign().Lit(8),
 							),
 							jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 							jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-								jen.ID("Async").MapAssign().ID("true"),
+								jen.ID("Async").MapAssign().True(),
 								jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 								jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 							),
