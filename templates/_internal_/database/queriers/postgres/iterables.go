@@ -17,18 +17,18 @@ func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmit
 
 	utils.AddImports(proj, code, false)
 
-	code.Add(buildTopVarBlock(typ)...)
-	code.Add(buildScanSomething(typ)...)
-	code.Add(buildScanMultipleSomethings(typ)...)
-	code.Add(buildSomethingExists(typ, dbvendor)...)
-	code.Add(buildGetSomething(typ, dbvendor)...)
-	code.Add(buildGetTotalSomethingCount(typ, dbvendor)...)
-	code.Add(buildGetSomethingsList(typ)...)
-	code.Add(buildGetSomethingWithIDsQuery(typ)...)
-	code.Add(buildGetSomethingWithIDs(typ)...)
-	code.Add(buildCreateSomething(typ, dbvendor)...)
-	code.Add(buildUpdateSomething(typ, dbvendor)...)
-	code.Add(buildArchiveSomething(typ, dbvendor)...)
+	code.Add(buildTopVarBlock(proj, typ, dbvendor)...)
+	code.Add(buildScanSomething(proj, typ, dbvendor)...)
+	code.Add(buildScanMultipleSomethings(proj, typ, dbvendor)...)
+	code.Add(buildSomethingExists(proj, typ, dbvendor)...)
+	code.Add(buildGetSomething(proj, typ, dbvendor)...)
+	code.Add(buildGetTotalSomethingCount(proj, typ, dbvendor)...)
+	code.Add(buildGetSomethingsList(proj, typ, dbvendor)...)
+	code.Add(buildGetSomethingWithIDsQuery(proj, typ, dbvendor)...)
+	code.Add(buildGetSomethingWithIDs(proj, typ, dbvendor)...)
+	code.Add(buildCreateSomething(proj, typ, dbvendor)...)
+	code.Add(buildUpdateSomething(proj, typ, dbvendor)...)
+	code.Add(buildArchiveSomething(proj, typ, dbvendor)...)
 
 	return code
 }
@@ -52,7 +52,7 @@ func determineSelectColumns(typ models.DataType) []string {
 	return selectColumns
 }
 
-func buildTopVarBlock(typ models.DataType) []jen.Code {
+func buildTopVarBlock(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	puvn := typ.Name.PluralUnexportedVarName()
 
@@ -95,7 +95,7 @@ func buildTopVarBlock(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildScanSomething(typ models.DataType) []jen.Code {
+func buildScanSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
@@ -160,7 +160,7 @@ func buildScanSomething(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildScanMultipleSomethings(typ models.DataType) []jen.Code {
+func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -220,7 +220,7 @@ func buildScanMultipleSomethings(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildSomethingExists(typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -300,7 +300,7 @@ func buildSomethingExists(typ models.DataType, dbvendor wordsmith.SuperPalabra) 
 	return lines
 }
 
-func buildGetSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
@@ -393,7 +393,7 @@ func buildGetSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) []j
 	return lines
 }
 
-func buildGetSomethingsList(typ models.DataType) []jen.Code {
+func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -477,7 +477,7 @@ func buildGetSomethingsList(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildGetTotalSomethingCount(typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildGetTotalSomethingCount(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -527,7 +527,7 @@ func buildGetTotalSomethingCount(typ models.DataType, dbvendor wordsmith.SuperPa
 	return lines
 }
 
-func buildGetSomethingWithIDsQuery(typ models.DataType) []jen.Code {
+func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	pn := typ.Name.Plural()
 	puvn := typ.Name.PluralUnexportedVarName()
 
@@ -575,7 +575,7 @@ func buildGetSomethingWithIDsQuery(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildGetSomethingWithIDs(typ models.DataType) []jen.Code {
+func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
@@ -651,7 +651,7 @@ func buildGetSomethingWithIDs(typ models.DataType) []jen.Code {
 	return lines
 }
 
-func buildCreateSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -758,7 +758,7 @@ func buildCreateSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) 
 	return lines
 }
 
-func buildUpdateSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
@@ -854,7 +854,7 @@ func buildUpdateSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) 
 	return lines
 }
 
-func buildArchiveSomething(typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
