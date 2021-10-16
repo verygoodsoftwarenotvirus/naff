@@ -82,7 +82,7 @@ func configDotGo(proj *models.Project) *jen.File {
 			jen.ID("cookieConfig").Qual(proj.AuthServicePackage(), "CookieConfig"),
 			jen.ID("dm").Qual(proj.DatabasePackage(), "DataManager"),
 		).Params(jen.Op("*").Qual("github.com/alexedwards/scs/v2", "SessionManager"), jen.ID("error")).Body(
-			jen.ID("sessionManager").Op(":=").Qual("github.com/alexedwards/scs/v2", "New").Call(),
+			jen.ID("sessionManager").Assign().Qual("github.com/alexedwards/scs/v2", "New").Call(),
 			jen.Newline(),
 			jen.ID("sessionManager").Dot("Lifetime").Equals().ID("cookieConfig").Dot("Lifetime"),
 			jen.ID("sessionManager").Dot("Cookie").Dot("Name").Equals().ID("cookieConfig").Dot("Name"),

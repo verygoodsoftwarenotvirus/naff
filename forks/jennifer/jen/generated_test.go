@@ -156,7 +156,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `new statement`,
-		code:   Id("a").Op(":=").New(Id("a")),
+		code:   Id("a").Assign().New(Id("a")),
 		expect: `a := new(a)`,
 	},
 	{
@@ -175,7 +175,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `make statement`,
-		code:   Id("a").Op(":=").Make(Id("a")),
+		code:   Id("a").Assign().Make(Id("a")),
 		expect: `a := make(a)`,
 	},
 	{
@@ -194,7 +194,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `len statement`,
-		code:   Id("a").Op(":=").Len(Id("a")),
+		code:   Id("a").Assign().Len(Id("a")),
 		expect: `a := len(a)`,
 	},
 	{
@@ -213,7 +213,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `imag statement`,
-		code:   Id("a").Op(":=").Imag(Id("a")),
+		code:   Id("a").Assign().Imag(Id("a")),
 		expect: `a := imag(a)`,
 	},
 	{
@@ -251,7 +251,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `copy statement`,
-		code:   Id("a").Op(":=").Copy(Id("a"), Id("b")),
+		code:   Id("a").Assign().Copy(Id("a"), Id("b")),
 		expect: `a := copy(a, b)`,
 	},
 	{
@@ -270,7 +270,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `complex statement`,
-		code:   Id("a").Op(":=").Complex(Id("a"), Id("b")),
+		code:   Id("a").Assign().Complex(Id("a"), Id("b")),
 		expect: `a := complex(a, b)`,
 	},
 	{
@@ -296,7 +296,7 @@ var gencases = []tc{
 	},
 	{
 		desc:   `cap statement`,
-		code:   Id("a").Op(":=").Cap(Id("b")),
+		code:   Id("a").Assign().Cap(Id("b")),
 		expect: `a := cap(b)`,
 	},
 	{
@@ -356,31 +356,31 @@ var gencases = []tc{
 	},
 	{
 		desc:   `structfunc statement`,
-		code:   Id("a").Op(":=").StructFunc(func(g *Group) {}).Values(),
+		code:   Id("a").Assign().StructFunc(func(g *Group) {}).Values(),
 		expect: `a := struct{}{}`,
 	},
 	{
 		desc: `structfunc group`,
 		// Don't do this! ListFunc used to kludge Group.Struct usage
 		// without syntax error.
-		code:   Id("a").Op(":=").ListFunc(func(g *Group) { g.StructFunc(func(g *Group) {}) }).Values(),
+		code:   Id("a").Assign().ListFunc(func(g *Group) { g.StructFunc(func(g *Group) {}) }).Values(),
 		expect: `a := struct{}{}`,
 	},
 	{
 		desc:   `structfunc func`,
-		code:   Id("a").Op(":=").Add(StructFunc(func(g *Group) {})).Values(),
+		code:   Id("a").Assign().Add(StructFunc(func(g *Group) {})).Values(),
 		expect: `a := struct{}{}`,
 	},
 	{
 		desc: `struct group`,
 		// Don't do this! ListFunc used to kludge Group.Struct usage
 		// without syntax error.
-		code:   Id("a").Op(":=").ListFunc(func(g *Group) { g.Struct() }).Values(),
+		code:   Id("a").Assign().ListFunc(func(g *Group) { g.Struct() }).Values(),
 		expect: `a := struct{}{}`,
 	},
 	{
 		desc:   `struct func`,
-		code:   Id("a").Op(":=").Add(Struct()).Values(),
+		code:   Id("a").Assign().Add(Struct()).Values(),
 		expect: `a := struct{}{}`,
 	},
 	{

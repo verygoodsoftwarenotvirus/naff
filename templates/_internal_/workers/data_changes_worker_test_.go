@@ -20,7 +20,7 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
+					jen.ID("actual").Assign().ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
@@ -40,13 +40,13 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
+					jen.ID("actual").Assign().ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("actual").Dot("HandleMessage").Call(
@@ -62,13 +62,13 @@ func dataChangesWorkerTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("actual").Op(":=").ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
+					jen.ID("actual").Assign().ID("ProvideDataChangesWorker").Call(jen.Qual(proj.InternalLoggingPackage(), "NewZerologLogger").Call()),
 					jen.ID("assert").Dot("NotNil").Call(
 						jen.ID("t"),
 						jen.ID("actual"),
 					),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
 						jen.ID("actual").Dot("HandleMessage").Call(

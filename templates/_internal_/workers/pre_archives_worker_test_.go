@@ -28,16 +28,16 @@ func buildTestProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("dbManager").Op(":=").Op("&").Qual(proj.DatabasePackage(), "MockDatabase").Values(),
-					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
-					jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
+					jen.ID("dbManager").Assign().Op("&").Qual(proj.DatabasePackage(), "MockDatabase").Values(),
+					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+					jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+					jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 						jen.ID("ctx"),
 						jen.ID("logger"),
 						jen.ID("client"),
@@ -68,16 +68,16 @@ func buildTestProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-					jen.ID("dbManager").Op(":=").Op("&").Qual(proj.DatabasePackage(), "MockDatabase").Values(),
-					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
-					jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
+					jen.ID("dbManager").Assign().Op("&").Qual(proj.DatabasePackage(), "MockDatabase").Values(),
+					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+					jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+					jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(jen.Nil(), jen.Qual("errors", "New").Call(jen.Lit("blah")))),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 						jen.ID("ctx"),
 						jen.ID("logger"),
 						jen.ID("client"),
@@ -121,19 +121,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 					jen.Newline(),
-					jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+					jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 						jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn)),
-					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+					jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -141,25 +141,25 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 						jen.ID("body").Dot("AttributableToAccountID"),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
-					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("postArchivesPublisher").Dot("On").Callln(
 						jen.Lit("Publish"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(constants.MockPkg, "MatchedBy").Call(jen.Func().Params(jen.ID("message").Op("*").Qual(proj.TypesPackage(), "DataChangeMessage")).Params(jen.ID("bool")).SingleLineBody(jen.Return().True())),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
-					jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("searchIndexManager").Assign().Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("searchIndexManager").Dot("On").Callln(
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dotf("%sID", sn),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
-					jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+					jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+					jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.Newline(),
-					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+					jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 						jen.ID("ctx"),
 						jen.ID("logger"),
 						jen.ID("client"),
@@ -199,19 +199,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 					jen.Newline(),
-					jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+					jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 						jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn)),
-					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+					jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -219,12 +219,12 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 						jen.ID("body").Dot("AttributableToAccountID"),
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
-					jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+					jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+					jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(jen.Nil(), jen.Nil())),
 					jen.Newline(),
-					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+					jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 						jen.ID("ctx"),
 						jen.ID("logger"),
 						jen.ID("client"),
@@ -263,19 +263,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 					jen.Newline(),
-					jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+					jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 						jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn)),
-					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+					jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -283,20 +283,20 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 						jen.ID("body").Dot("AttributableToAccountID"),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
-					jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("searchIndexManager").Assign().Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("searchIndexManager").Dot("On").Callln(
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dotf("%sID", sn),
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.Newline(),
-					jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+					jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+					jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.Newline(),
-					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+					jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 						jen.ID("ctx"),
 						jen.ID("logger"),
 						jen.ID("client"),
@@ -336,19 +336,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-					jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+					jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 					jen.Newline(),
-					jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+					jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 						jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn)),
-					jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+					jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 					jen.ID("require").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
 					),
 					jen.Newline(),
-					jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+					jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -356,25 +356,25 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 						jen.ID("body").Dot("AttributableToAccountID"),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
-					jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 					jen.ID("postArchivesPublisher").Dot("On").Callln(
 						jen.Lit("Publish"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.Qual(constants.MockPkg, "MatchedBy").Call(jen.Func().Params(jen.ID("message").Op("*").Qual(proj.TypesPackage(), "DataChangeMessage")).Params(jen.ID("bool")).SingleLineBody(jen.Return().True())),
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+					jen.ID("searchIndexManager").Assign().Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 					jen.ID("searchIndexManager").Dot("On").Callln(
 						jen.Lit("Delete"),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 						jen.ID("body").Dotf("%sID", sn),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
-					jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-					jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+					jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+					jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 						jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 					jen.Newline(),
-					jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+					jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 						jen.ID("ctx"),
 						jen.ID("logger"),
 						jen.ID("client"),
@@ -418,19 +418,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-				jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-				jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+				jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 				jen.Newline(),
-				jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+				jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 					jen.ID("DataType").MapAssign().Qual(proj.TypesPackage(), "WebhookDataType")),
-				jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+				jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 				jen.ID("require").Dot("NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
 				jen.Newline(),
-				jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+				jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("dbManager").Dot("WebhookDataManager").Dot("On").Callln(
 					jen.Lit("ArchiveWebhook"),
 					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -438,18 +438,18 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("body").Dot("AttributableToAccountID"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Newline(),
-				jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+				jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 				jen.ID("postArchivesPublisher").Dot("On").Callln(
 					jen.Lit("Publish"),
 					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 					jen.Qual(constants.MockPkg, "MatchedBy").Call(jen.Func().Params(jen.ID("message").Op("*").Qual(proj.TypesPackage(), "DataChangeMessage")).Params(jen.ID("bool")).SingleLineBody(jen.Return().True())),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Newline(),
-				jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-				jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+				jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+				jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 					jen.Return().List(jen.Nil(), jen.Nil())),
 				jen.Newline(),
-				jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+				jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 					jen.ID("ctx"),
 					jen.ID("logger"),
 					jen.ID("client"),
@@ -488,19 +488,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-				jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-				jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+				jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 				jen.Newline(),
-				jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+				jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 					jen.ID("DataType").MapAssign().Qual(proj.TypesPackage(), "WebhookDataType")),
-				jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+				jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 				jen.ID("require").Dot("NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
 				jen.Newline(),
-				jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+				jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("dbManager").Dot("WebhookDataManager").Dot("On").Callln(
 					jen.Lit("ArchiveWebhook"),
 					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -508,14 +508,14 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("body").Dot("AttributableToAccountID"),
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Newline(),
-				jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
-				jen.ID("searchIndexManager").Op(":=").Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
+				jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+				jen.ID("searchIndexManager").Assign().Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
 				jen.Newline(),
-				jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-				jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+				jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+				jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 					jen.Return().List(jen.ID("searchIndexManager"), jen.Nil())),
 				jen.Newline(),
-				jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+				jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 					jen.ID("ctx"),
 					jen.ID("logger"),
 					jen.ID("client"),
@@ -555,19 +555,19 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-				jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-				jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+				jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
 				jen.Newline(),
-				jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+				jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 					jen.ID("DataType").MapAssign().Qual(proj.TypesPackage(), "WebhookDataType")),
-				jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+				jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 				jen.ID("require").Dot("NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
 				),
 				jen.Newline(),
-				jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+				jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
 				jen.ID("dbManager").Dot("WebhookDataManager").Dot("On").Callln(
 					jen.Lit("ArchiveWebhook"),
 					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
@@ -575,18 +575,18 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("body").Dot("AttributableToAccountID"),
 				).Dot("Return").Call(jen.Nil()),
 				jen.Newline(),
-				jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+				jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
 				jen.ID("postArchivesPublisher").Dot("On").Callln(
 					jen.Lit("Publish"),
 					jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
 					jen.Qual(constants.MockPkg, "MatchedBy").Call(jen.Func().Params(jen.ID("message").Op("*").Qual(proj.TypesPackage(), "DataChangeMessage")).Params(jen.ID("bool")).SingleLineBody(jen.Return().True())),
 				).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 				jen.Newline(),
-				jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-				jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+				jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+				jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 					jen.Return().List(jen.Nil(), jen.Nil())),
 				jen.Newline(),
-				jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+				jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 					jen.ID("ctx"),
 					jen.ID("logger"),
 					jen.ID("client"),
@@ -625,16 +625,16 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-				jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-				jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-				jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
-				jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
-				jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-				jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+				jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
+				jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+				jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+				jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+				jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 					jen.Return().List(jen.Nil(), jen.Nil())),
 				jen.Newline(),
-				jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+				jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 					jen.ID("ctx"),
 					jen.ID("logger"),
 					jen.ID("client"),
@@ -652,9 +652,9 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("err"),
 				),
 				jen.Newline(),
-				jen.ID("body").Op(":=").Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+				jen.ID("body").Assign().Op("&").Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
 					jen.ID("DataType").MapAssign().Qual(proj.TypesPackage(), "UserMembershipDataType")),
-				jen.List(jen.ID("examplePayload"), jen.ID("err")).Op(":=").Qual("encoding/json", "Marshal").Call(jen.ID("body")),
+				jen.List(jen.ID("examplePayload"), jen.ID("err")).Assign().Qual("encoding/json", "Marshal").Call(jen.ID("body")),
 				jen.ID("require").Dot("NoError").Call(
 					jen.ID("t"),
 					jen.ID("err"),
@@ -687,16 +687,16 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 						jen.ID("t").Dot("Parallel").Call(),
 						jen.Newline(),
-						jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-						jen.ID("logger").Op(":=").Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
-						jen.ID("client").Op(":=").Op("&").Qual("net/http", "Client").Values(),
-						jen.ID("dbManager").Op(":=").Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
-						jen.ID("postArchivesPublisher").Op(":=").Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
-						jen.ID("searchIndexLocation").Op(":=").Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
-						jen.ID("searchIndexProvider").Op(":=").Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
+						jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+						jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
+						jen.ID("client").Assign().Op("&").Qual("net/http", "Client").Values(),
+						jen.ID("dbManager").Assign().Qual(proj.DatabasePackage(), "BuildMockDatabase").Call(),
+						jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
+						jen.ID("searchIndexLocation").Assign().Qual(proj.InternalSearchPackage(), "IndexPath").Call(jen.ID("t").Dot("Name").Call()),
+						jen.ID("searchIndexProvider").Assign().Func().Params(jen.Qual("context", "Context"), jen.Qual(proj.InternalLoggingPackage(), "Logger"), jen.Op("*").Qual("net/http", "Client"), jen.Qual(proj.InternalSearchPackage(), "IndexPath"), jen.Qual(proj.InternalSearchPackage(), "IndexName"), jen.Op("...").String()).Params(jen.Qual(proj.InternalSearchPackage(), "IndexManager"), jen.ID("error")).Body(
 							jen.Return().List(jen.Nil(), jen.Nil())),
 						jen.Newline(),
-						jen.List(jen.ID("worker"), jen.ID("err")).Op(":=").ID("ProvidePreArchivesWorker").Callln(
+						jen.List(jen.ID("worker"), jen.ID("err")).Assign().ID("ProvidePreArchivesWorker").Callln(
 							jen.ID("ctx"),
 							jen.ID("logger"),
 							jen.ID("client"),

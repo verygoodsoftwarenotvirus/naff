@@ -62,7 +62,7 @@ func buildProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 		puvn := typ.Name.PluralUnexportedVarName()
 
 		bodyLines = append(bodyLines,
-			jen.List(jen.IDf("%sIndexManager", puvn), jen.ID("err")).Op(":=").ID("searchIndexProvider").Call(
+			jen.List(jen.IDf("%sIndexManager", puvn), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
 				jen.ID("ctx"),
 				jen.ID("logger"),
 				jen.ID("client"),
@@ -83,7 +83,7 @@ func buildProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 	}
 
 	bodyLines = append(bodyLines,
-		jen.ID("w").Op(":=").Op("&").ID("PreArchivesWorker").Valuesln(
+		jen.ID("w").Assign().Op("&").ID("PreArchivesWorker").Valuesln(
 			valuesLines...,
 		),
 		jen.Newline(),
@@ -118,7 +118,7 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 		scn := typ.Name.SingularCommonName()
 
 		switchCases = append(switchCases, jen.Case(jen.Qualf(proj.TypesPackage(), "%sDataType", sn)).Body(
-			jen.If(jen.ID("err").Op(":=").ID("w").Dot("dataManager").Dotf("Archive%s", sn).Call(
+			jen.If(jen.ID("err").Assign().ID("w").Dot("dataManager").Dotf("Archive%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("msg").Dotf("%sID", sn),
 				jen.ID("msg").Dot("AttributableToAccountID"),
@@ -130,7 +130,7 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 					jen.Litf("archiving %s", scn),
 				)),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("w").Dotf("%sIndexManager", puvn).Dot("Delete").Call(
+			jen.If(jen.ID("err").Assign().ID("w").Dotf("%sIndexManager", puvn).Dot("Delete").Call(
 				jen.ID("ctx"),
 				jen.ID("msg").Dotf("%sID", sn),
 			), jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -142,13 +142,13 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 				)),
 			jen.Newline(),
 			jen.If(jen.ID("w").Dot("postArchivesPublisher").DoesNotEqual().Nil()).Body(
-				jen.ID("dcm").Op(":=").Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
+				jen.ID("dcm").Assign().Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
 					jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"),
 					jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"),
 					jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID"),
 				),
 				jen.Newline(),
-				jen.If(jen.ID("err").Op(":=").ID("w").Dot("postArchivesPublisher").Dot("Publish").Call(
+				jen.If(jen.ID("err").Assign().ID("w").Dot("postArchivesPublisher").Dot("Publish").Call(
 					jen.ID("ctx"),
 					jen.ID("dcm"),
 				), jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -163,7 +163,7 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 	}
 
 	switchCases = append(switchCases, jen.Case(jen.Qual(proj.TypesPackage(), "WebhookDataType")).Body(
-		jen.If(jen.ID("err").Op(":=").ID("w").Dot("dataManager").Dot("ArchiveWebhook").Call(
+		jen.If(jen.ID("err").Assign().ID("w").Dot("dataManager").Dot("ArchiveWebhook").Call(
 			jen.ID("ctx"),
 			jen.ID("msg").Dot("WebhookID"),
 			jen.ID("msg").Dot("AttributableToAccountID"),
@@ -176,13 +176,13 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 			)),
 		jen.Newline(),
 		jen.If(jen.ID("w").Dot("postArchivesPublisher").DoesNotEqual().Nil()).Body(
-			jen.ID("dcm").Op(":=").Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
+			jen.ID("dcm").Assign().Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
 				jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"),
 				jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"),
 				jen.ID("AttributableToAccountID").MapAssign().ID("msg").Dot("AttributableToAccountID"),
 			),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("w").Dot("postArchivesPublisher").Dot("Publish").Call(
+			jen.If(jen.ID("err").Assign().ID("w").Dot("postArchivesPublisher").Dot("Publish").Call(
 				jen.ID("ctx"),
 				jen.ID("dcm"),
 			), jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -201,12 +201,12 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 		jen.Comment("HandleMessage handles a pending archive."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("w").Op("*").ID("PreArchivesWorker")).ID("HandleMessage").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("message").Index().ID("byte")).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Var().ID("msg").Op("*").Qual(proj.TypesPackage(), "PreArchiveMessage"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("w").Dot("encoder").Dot("Unmarshal").Call(
+			jen.If(jen.ID("err").Assign().ID("w").Dot("encoder").Dot("Unmarshal").Call(
 				jen.ID("ctx"),
 				jen.ID("message"),
 				jen.Op("&").ID("msg"),
@@ -221,7 +221,7 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 				jen.ID("span"),
 				jen.ID("msg").Dot("AttributableToUserID"),
 			),
-			jen.ID("logger").Op(":=").ID("w").Dot("logger").Dot("WithValue").Call(
+			jen.ID("logger").Assign().ID("w").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("data_type"),
 				jen.ID("msg").Dot("DataType"),
 			),

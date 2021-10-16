@@ -26,8 +26,8 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("cfg").Op(":=").Op("&").ID("Config").Valuesln(
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("cfg").Assign().Op("&").ID("Config").Valuesln(
 						jen.ID("Provider").MapAssign().IDf("%sProvider", firstSupportedDatabase), jen.ID("ConnectionDetails").MapAssign().Lit("example_connection_string")),
 					jen.Newline(),
 					jen.Qual(constants.AssertionLibrary, "NoError").Call(
@@ -49,13 +49,13 @@ func configTestDotGo(proj *models.Project) *jen.File {
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("cookieConfig").Op(":=").Qual(proj.AuthServicePackage(), "CookieConfig").Values(),
+					jen.ID("cookieConfig").Assign().Qual(proj.AuthServicePackage(), "CookieConfig").Values(),
 					jen.ID("store").Assign().Qual("github.com/alexedwards/scs/v2/memstore", "New").Call(),
 					jen.Newline(),
 					jen.ID("mdm").Assign().AddressOf().Qual(proj.DatabasePackage(), "MockDatabase").Values(),
 					jen.ID("mdm").Dot("On").Call(jen.Lit("ProvideSessionStore")).Dot("Return").Call(jen.ID("store")),
 					jen.Newline(),
-					jen.List(jen.ID("sessionManager"), jen.ID("err")).Op(":=").ID("ProvideSessionManager").Call(
+					jen.List(jen.ID("sessionManager"), jen.ID("err")).Assign().ID("ProvideSessionManager").Call(
 						jen.ID("cookieConfig"),
 						jen.ID("mdm"),
 					),

@@ -126,12 +126,12 @@ func GenerateFile(s []byte, packName string, main bool) *jen.File {
 
 func genNewJenFile(name string) jen.Code {
 	const varName = "code"
-	return jen.ID(varName).Op(":=").Qual(jenImp, "NewFile").Call(jen.ID("packageName")).Newline().Newline().Qual(utilsImp, "AddImports").Call(jen.ID("proj"), jen.ID(varName), jen.False()).Newline().Newline()
+	return jen.ID(varName).Assign().Qual(jenImp, "NewFile").Call(jen.ID("packageName")).Newline().Newline().Qual(utilsImp, "AddImports").Call(jen.ID("proj"), jen.ID(varName), jen.False()).Newline().Newline()
 }
 
 func genMainFunc() jen.Code {
 	return jen.Func().ID("main").Params().Body(
-		jen.ID("code").Op(":=").ID("genFile").Call(),
+		jen.ID("code").Assign().ID("genFile").Call(),
 		jen.Qual("fmt", "Printf").Call(
 			jen.Lit("%#v"),
 			jen.ID("code"),

@@ -50,7 +50,7 @@ func buildMigrate(proj *models.Project) []jen.Code {
 		jen.Comment("Migrate is a simple wrapper around the core querier Migrate call."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("Migrate").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("maxAttempts").ID("uint8"), jen.ID("testUserConfig").Op("*").Qual(proj.TypesPackage(), "TestUserCreationConfig")).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID("q").Dot("logger").Dot("Info").Call(jen.Lit("migrating db")),
@@ -66,16 +66,16 @@ func buildMigrate(proj *models.Project) []jen.Code {
 			jen.If(jen.ID("testUserConfig").DoesNotEqual().Nil()).Body(
 				jen.ID("q").Dot("logger").Dot("Debug").Call(jen.Lit("creating test user")),
 				jen.Newline(),
-				jen.ID("testUserExistenceArgs").Op(":=").Index().Interface().Values(jen.ID("testUserConfig").Dot("Username")),
+				jen.ID("testUserExistenceArgs").Assign().Index().Interface().Values(jen.ID("testUserConfig").Dot("Username")),
 				jen.Newline(),
-				jen.ID("userRow").Op(":=").ID("q").Dot("getOneRow").Call(
+				jen.ID("userRow").Assign().ID("q").Dot("getOneRow").Call(
 					jen.ID("ctx"),
 					jen.ID("q").Dot("db"),
 					jen.Lit("user"),
 					jen.ID("testUserExistenceQuery"),
 					jen.ID("testUserExistenceArgs"),
 				),
-				jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dot("scanUser").Call(
+				jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Assign().ID("q").Dot("scanUser").Call(
 					jen.ID("ctx"),
 					jen.ID("userRow"),
 					jen.False(),
@@ -85,14 +85,14 @@ func buildMigrate(proj *models.Project) []jen.Code {
 						jen.ID("testUserConfig").Dot("ID").Equals().ID("ksuid").Dot("New").Call().Dot("String").Call(),
 					),
 					jen.Newline(),
-					jen.ID("testUserCreationArgs").Op(":=").Index().Interface().Valuesln(
+					jen.ID("testUserCreationArgs").Assign().Index().Interface().Valuesln(
 						jen.ID("testUserConfig").Dot("ID"), jen.ID("testUserConfig").Dot("Username"), jen.ID("testUserConfig").Dot("HashedPassword"), jen.ID("defaultTestUserTwoFactorSecret"), jen.Qual(proj.TypesPackage(), "GoodStandingAccountStatus"), jen.ID("authorization").Dot("ServiceAdminRole").Dot("String").Call()),
 					jen.Newline(),
 					jen.Comment("these structs will be fleshed out by createUser"),
-					jen.ID("user").Op(":=").Op("&").Qual(proj.TypesPackage(), "User").Valuesln(
+					jen.ID("user").Assign().Op("&").Qual(proj.TypesPackage(), "User").Valuesln(
 						jen.ID("ID").MapAssign().ID("testUserConfig").Dot("ID"), jen.ID("Username").MapAssign().ID("testUserConfig").Dot("Username"),
 					),
-					jen.ID("account").Op(":=").Op("&").Qual(proj.TypesPackage(), "Account").Valuesln(
+					jen.ID("account").Assign().Op("&").Qual(proj.TypesPackage(), "Account").Valuesln(
 						jen.ID("ID").MapAssign().ID("ksuid").Dot("New").Call().Dot("String").Call(),
 					),
 					jen.Newline(),
@@ -172,11 +172,11 @@ func buildBuildMigrationFunc() []jen.Code {
 		jen.Comment("migrate a postgres database."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).ID("migrationFunc").Params().Body(
-			jen.ID("driver").Op(":=").Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(
+			jen.ID("driver").Assign().Qual("github.com/GuiaBolso/darwin", "NewGenericDriver").Call(
 				jen.ID("q").Dot("db"),
 				jen.Qual("github.com/GuiaBolso/darwin", "PostgresDialect").Values(),
 			),
-			jen.If(jen.ID("err").Op(":=").Qual("github.com/GuiaBolso/darwin", "New").Call(
+			jen.If(jen.ID("err").Assign().Qual("github.com/GuiaBolso/darwin", "New").Call(
 				jen.ID("driver"),
 				jen.ID("migrations"),
 				jen.Nil(),

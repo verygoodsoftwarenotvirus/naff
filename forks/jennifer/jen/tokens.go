@@ -730,7 +730,7 @@ func (s *Statement) Opln(op string) *Statement {
 
 // Assign renders the colon equals ( `:=` ) operator
 func Assign() *Statement {
-	return newStatement().Op(":=")
+	return newStatement().Assign()
 }
 
 // Assign renders the colon equals ( `:=` ) operator

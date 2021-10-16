@@ -26,7 +26,7 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 		jen.Comment("ProvideDataChangesWorker provides a DataChangesWorker."),
 		jen.Newline(),
 		jen.Func().ID("ProvideDataChangesWorker").Params(jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger")).Params(jen.Op("*").ID("DataChangesWorker")).Body(
-			jen.ID("name").Op(":=").Lit("post_writes"),
+			jen.ID("name").Assign().Lit("post_writes"),
 			jen.Newline(),
 			jen.Return().Op("&").ID("DataChangesWorker").Valuesln(
 				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")), jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().Qual(proj.EncodingPackage(), "ProvideClientEncoder").Call(
@@ -41,12 +41,12 @@ func dataChangesWorkerDotGo(proj *models.Project) *jen.File {
 		jen.Comment("HandleMessage handles a pending write."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("w").Op("*").ID("DataChangesWorker")).ID("HandleMessage").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("message").Index().ID("byte")).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Var().ID("msg").Op("*").Qual(proj.TypesPackage(), "DataChangeMessage"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("w").Dot("encoder").Dot("Unmarshal").Call(
+			jen.If(jen.ID("err").Assign().ID("w").Dot("encoder").Dot("Unmarshal").Call(
 				jen.ID("ctx"),
 				jen.ID("message"),
 				jen.Op("&").ID("msg"),

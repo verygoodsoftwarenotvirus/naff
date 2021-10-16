@@ -138,7 +138,7 @@ need to be aliased. If more control is needed of the aliases, see
 List renders a comma separated list. Use for multiple return functions.
 
 ```go
-c := List(Id("a"), Err()).Op(":=").Id("b").Call()
+c := List(Id("a"), Err()).Assign().Id("b").Call()
 fmt.Printf("%#v", c)
 // Output:
 // a, err := b()
@@ -175,7 +175,7 @@ Special cases for [If, For](#if-for), [Interface, Struct](#interface-struct), [S
 Op renders the provided operator / token.
 
 ```go
-c := Id("a").Op(":=").Id("b").Call()
+c := Id("a").Assign().Id("b").Call()
 fmt.Printf("%#v", c)
 // Output:
 // a := b()
@@ -269,7 +269,7 @@ fmt.Printf("%#v", c)
 ```
 
 ```go
-c := Id("c").Op(":=").Make(Chan().Struct())
+c := Id("c").Assign().Make(Chan().Struct())
 fmt.Printf("%#v", c)
 // Output:
 // c := make(chan struct{})
@@ -354,7 +354,7 @@ fmt.Printf("%#v", c)
 Parens renders a single item in parenthesis. Use for type conversion or to specify evaluation order.
 
 ```go
-c := Id("b").Op(":=").Index().Byte().Parens(Id("s"))
+c := Id("b").Assign().Index().Byte().Parens(Id("s"))
 fmt.Printf("%#v", c)
 // Output:
 // b := []byte(s)
@@ -371,7 +371,7 @@ fmt.Printf("%#v", c)
 Assert renders a period followed by a single item enclosed by parenthesis. Use for type assertions.
 
 ```go
-c := List(Id("b"), Id("ok")).Op(":=").Id("a").Assert(Bool())
+c := List(Id("b"), Id("ok")).Assign().Id("a").Assert(Bool())
 fmt.Printf("%#v", c)
 // Output:
 // b, ok := a.(bool)
@@ -385,7 +385,7 @@ If and For render the keyword followed by a semicolon separated list.
 
 ```go
 c := If(
-	Err().Op(":=").Id("a").Call(),
+	Err().Assign().Id("a").Call(),
 	Err().Op("!=").Nil(),
 ).Block(
 	Return(Err()),
@@ -399,7 +399,7 @@ fmt.Printf("%#v", c)
 
 ```go
 c := For(
-	Id("i").Op(":=").Lit(0),
+	Id("i").Assign().Lit(0),
 	Id("i").Op("<").Lit(10),
 	Id("i").Op("++"),
 ).Block(
@@ -461,7 +461,7 @@ fmt.Printf("%#v", c)
 Map renders the keyword followed by a single item enclosed by square brackets. Use for map definitions.
 
 ```go
-c := Id("a").Op(":=").Map(String()).String().Values()
+c := Id("a").Assign().Map(String()).String().Values()
 fmt.Printf("%#v", c)
 // Output:
 // a := map[string]string{}
@@ -478,14 +478,14 @@ fmt.Printf("%#v", c)
 ```
 
 ```go
-c := Id("a").Op(":=").Id("b").Index(Lit(0), Lit(1))
+c := Id("a").Assign().Id("b").Index(Lit(0), Lit(1))
 fmt.Printf("%#v", c)
 // Output:
 // a := b[0:1]
 ```
 
 ```go
-c := Id("a").Op(":=").Id("b").Index(Lit(1), Empty())
+c := Id("a").Assign().Id("b").Index(Lit(1), Empty())
 fmt.Printf("%#v", c)
 // Output:
 // a := b[1:]
@@ -533,7 +533,7 @@ fmt.Printf("%#v", c)
 DictFunc executes a func(Dict) to generate the value.
 
 ```go
-c := Id("a").Op(":=").Map(String()).String().Values(DictFunc(func(d Dict) {
+c := Id("a").Assign().Map(String()).String().Values(DictFunc(func(d Dict) {
 	d[Lit("a")] = Lit("b")
 	d[Lit("c")] = Lit("d")
 }))
@@ -556,14 +556,14 @@ float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr
 Passing any other type will panic.
 
 ```go
-c := Id("a").Op(":=").Lit("a")
+c := Id("a").Assign().Lit("a")
 fmt.Printf("%#v", c)
 // Output:
 // a := "a"
 ```
 
 ```go
-c := Id("a").Op(":=").Lit(1.5)
+c := Id("a").Assign().Lit(1.5)
 fmt.Printf("%#v", c)
 // Output:
 // a := 1.5
@@ -573,7 +573,7 @@ LitFunc generates the value to render by executing the provided
 function.
 
 ```go
-c := Id("a").Op(":=").LitFunc(func() interface{} { return 1 + 1 })
+c := Id("a").Assign().LitFunc(func() interface{} { return 1 + 1 })
 fmt.Printf("%#v", c)
 // Output:
 // a := 2
@@ -658,7 +658,7 @@ Commentf adds a comment, using a format string and a list of parameters.
 ```go
 name := "foo"
 val := "bar"
-c := Id(name).Op(":=").Lit(val).Commentf("%s is the string \"%s\"", name, val)
+c := Id(name).Assign().Lit(val).Commentf("%s is the string \"%s\"", name, val)
 fmt.Printf("%#v", c)
 // Output:
 // foo := "bar" // foo is the string "bar"
@@ -672,7 +672,7 @@ All constructs that accept a variadic list of items are paired with GroupFunc
 functions that accept a func(*Group). Use for embedding logic.
 
 ```go
-c := Id("numbers").Op(":=").Index().Int().ValuesFunc(func(g *Group) {
+c := Id("numbers").Assign().Index().Int().ValuesFunc(func(g *Group) {
 	for i := 0; i <= 5; i++ {
 		g.Lit(i)
 	}
@@ -727,7 +727,7 @@ embedding logic.
 
 ```go
 f := func(name string, isMap bool) *Statement {
-	return Id(name).Op(":=").Do(func(s *Statement) {
+	return Id(name).Assign().Do(func(s *Statement) {
 		if isMap {
 			s.Map(String()).String()
 		} else {
@@ -785,7 +785,7 @@ Empty adds an empty item. Empty items render nothing but are followed by a
 separator in lists.
 
 ```go
-c := Id("a").Op(":=").Id("b").Index(Lit(1), Empty())
+c := Id("a").Assign().Id("b").Index(Lit(1), Empty())
 fmt.Printf("%#v", c)
 // Output:
 // a := b[1:]
@@ -845,7 +845,7 @@ printf("%s\n", s);
 }
 `)
 f.Func().Id("init").Params().Block(
-	Id("cs").Op(":=").Qual("C", "CString").Call(Lit("Hello from stdio\n")),
+	Id("cs").Assign().Qual("C", "CString").Call(Lit("Hello from stdio\n")),
 	Qual("C", "myprint").Call(Id("cs")),
 	Qual("C", "free").Call(Qual("unsafe", "Pointer").Parens(Id("cs"))),
 )

@@ -53,7 +53,7 @@ func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType,
 
 	lines := []jen.Code{
 		jen.Func().IDf("buildMockRowsFrom%s", pn).Params(jen.ID("includeCounts").ID("bool"), jen.ID("filteredCount").Uint64(), jen.ID(puvn).Op("...").Op("*").ID("types").Dot(sn)).Params(jen.Op("*").ID("sqlmock").Dot("Rows")).Body(
-			jen.ID("columns").Op(":=").IDf("%sTableColumns", puvn),
+			jen.ID("columns").Assign().IDf("%sTableColumns", puvn),
 			jen.Newline(),
 			jen.If(jen.ID("includeCounts")).Body(
 				jen.ID("columns").Equals().ID("append").Call(
@@ -62,10 +62,10 @@ func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType,
 					jen.Lit("total_count"),
 				)),
 			jen.Newline(),
-			jen.ID("exampleRows").Op(":=").ID("sqlmock").Dot("NewRows").Call(jen.ID("columns")),
+			jen.ID("exampleRows").Assign().ID("sqlmock").Dot("NewRows").Call(jen.ID("columns")),
 			jen.Newline(),
-			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().ID(puvn)).Body(
-				jen.ID("rowValues").Op(":=").Index().ID("driver").Dot("Value").Valuesln(valuesLines...),
+			jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().ID(puvn)).Body(
+				jen.ID("rowValues").Assign().Index().ID("driver").Dot("Value").Valuesln(valuesLines...),
 				jen.Newline(),
 				jen.If(jen.ID("includeCounts")).Body(
 					jen.ID("rowValues").Equals().ID("append").Call(
@@ -98,14 +98,14 @@ func buildTestQuerierScanSomethings(proj *models.Project, typ models.DataType, d
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("mockRows").Op(":=").Op("&").Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
+					jen.ID("mockRows").Assign().Op("&").Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", pn).Call(
+					jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Assign().ID("q").Dotf("scan%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("mockRows"),
 						jen.False(),
@@ -122,15 +122,15 @@ func buildTestQuerierScanSomethings(proj *models.Project, typ models.DataType, d
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("q"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("q"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("mockRows").Op(":=").Op("&").Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
+					jen.ID("mockRows").Assign().Op("&").Qual(proj.DatabasePackage(), "MockResultIterator").Values(),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Next")).Dot("Return").Call(jen.False()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Err")).Dot("Return").Call(jen.Nil()),
 					jen.ID("mockRows").Dot("On").Call(jen.Lit("Close")).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", pn).Call(
+					jen.List(jen.ID("_"), jen.ID("_"), jen.ID("_"), jen.ID("err")).Assign().ID("q").Dotf("scan%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("mockRows"),
 						jen.False(),
@@ -162,13 +162,13 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"),
 						jen.IDf("example%sID", sn),
 					),
@@ -177,7 +177,7 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True())),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%sID", sn),
 						jen.ID("exampleAccountID"),
@@ -203,11 +203,11 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
 						jen.ID("ctx"),
 						jen.Lit(""),
 						jen.ID("exampleAccountID"),
@@ -228,12 +228,12 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%sID", sn),
 						jen.Lit(""),
@@ -259,19 +259,19 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"), jen.IDf("example%sID", sn)),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%sID", sn),
 						jen.ID("exampleAccountID"),
@@ -297,19 +297,19 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"), jen.IDf("example%sID", sn)),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("%sExists", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%sID", sn),
 						jen.ID("exampleAccountID"),
@@ -350,13 +350,13 @@ func buildTestQuerierGetSomething(proj *models.Project, typ models.DataType, dbv
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"), jen.IDf("example%s", sn).Dot("ID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("get%sQuery", sn))).
@@ -367,7 +367,7 @@ func buildTestQuerierGetSomething(proj *models.Project, typ models.DataType, dbv
 						jen.IDf("example%s", sn),
 					)),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),
 						jen.ID("exampleAccountID"),
@@ -394,12 +394,12 @@ func buildTestQuerierGetSomething(proj *models.Project, typ models.DataType, dbv
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", sn).Call(
 						jen.ID("ctx"),
 						jen.Lit(""),
 						jen.ID("exampleAccountID"),
@@ -420,12 +420,12 @@ func buildTestQuerierGetSomething(proj *models.Project, typ models.DataType, dbv
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),
 						jen.Lit(""),
@@ -446,20 +446,20 @@ func buildTestQuerierGetSomething(proj *models.Project, typ models.DataType, dbv
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"), jen.IDf("example%s", sn).Dot("ID")),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("get%sQuery", sn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", sn).Call(
 						jen.ID("ctx"),
 						jen.IDf("example%s", sn).Dot("ID"),
 						jen.ID("exampleAccountID"),
@@ -499,15 +499,15 @@ func buildTestQuerierGetTotalSomethingCount(proj *models.Project, typ models.Dat
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.ID("exampleCount").Op(":=").Uint64().Call(jen.Lit(123)),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.ID("exampleCount").Assign().Uint64().Call(jen.Lit(123)),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("getTotal%sCountQuery", pn))).
 						Dotln("WithArgs").Call().
 						Dotln("WillReturnRows").Call(jen.ID("newCountDBRowResponse").Call(jen.Uint64().Call(jen.Lit(123)))),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("GetTotal%sCount", sn).Call(jen.ID("ctx")),
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetTotal%sCount", sn).Call(jen.ID("ctx")),
 					jen.ID("assert").Dot("NoError").Call(
 						jen.ID("t"),
 						jen.ID("err"),
@@ -530,14 +530,14 @@ func buildTestQuerierGetTotalSomethingCount(proj *models.Project, typ models.Dat
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("getTotal%sCountQuery", pn))).
 						Dotln("WithArgs").Call().
 						Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("GetTotal%sCount", sn).Call(jen.ID("ctx")),
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("GetTotal%sCount", sn).Call(jen.ID("ctx")),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
 						jen.ID("err"),
@@ -575,13 +575,13 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
+					jen.ID("filter").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sList", sn).Assign().ID("fakes").Dotf("BuildFake%sList", sn).Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
-					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("c").Dot("buildListQuery").Callln(
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 						jen.ID("ctx"),
 						jen.Lit(puvn),
 						jen.Nil(),
@@ -601,7 +601,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 						jen.IDf("example%sList", sn).Dot(pn).Op("..."),
 					)),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("filter"),
@@ -628,16 +628,16 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").Parens(jen.Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
+					jen.ID("filter").Assign().Parens(jen.Op("*").Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil()),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sList", sn).Assign().ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 					jen.IDf("example%sList", sn).Dot("Page").Equals().Zero(),
 					jen.IDf("example%sList", sn).Dot("Limit").Equals().Zero(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("c").Dot("buildListQuery").Callln(
+					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 						jen.ID("ctx"),
 						jen.Lit(puvn),
 						jen.Nil(),
@@ -657,7 +657,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 						jen.IDf("example%sList", sn).Dot(pn).Op("..."),
 					)),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("filter"),
@@ -684,12 +684,12 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
+					jen.ID("filter").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
 						jen.ID("ctx"),
 						jen.Lit(""),
 						jen.ID("filter"),
@@ -710,13 +710,13 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("filter").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("c").Dot("buildListQuery").Callln(
+					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 						jen.ID("ctx"),
 						jen.Lit(puvn),
 						jen.Nil(),
@@ -732,7 +732,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("filter"),
@@ -758,13 +758,13 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("filter").Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("filter").Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("c").Dot("buildListQuery").Callln(
+					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 						jen.ID("ctx"),
 						jen.Lit(puvn),
 						jen.Nil(),
@@ -780,7 +780,7 @@ func buildTestQuerierGetSomethings(proj *models.Project, typ models.DataType, db
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRow").Call()),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%s", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%s", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("filter"),
@@ -820,19 +820,19 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sList", sn).Assign().ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 					jen.Newline(),
 					jen.Var().ID("exampleIDs").Index().String(),
-					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().IDf("example%sList", sn).Dot(pn)).Body(
+					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 						jen.ID("exampleIDs").Equals().ID("append").Call(
 							jen.ID("exampleIDs"),
 							jen.ID("x").Dot("ID"),
 						),
 					),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dotf("buildGet%sWithIDsQuery", pn).Call(
 						constants.CtxVar(),
@@ -848,7 +848,7 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 						jen.IDf("example%sList", sn).Dot(pn).Op("..."),
 					)),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%sWithIDs", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.Zero(),
@@ -876,10 +876,10 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%sWithIDs", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
 						jen.ID("ctx"),
 						jen.Lit(""),
 						jen.ID("defaultLimit"),
@@ -901,11 +901,11 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%sWithIDs", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("defaultLimit"),
@@ -927,19 +927,19 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sList", sn).Assign().ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 					jen.Newline(),
 					jen.Var().ID("exampleIDs").Index().String(),
-					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().IDf("example%sList", sn).Dot(pn)).Body(
+					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 						jen.ID("exampleIDs").Equals().ID("append").Call(
 							jen.ID("exampleIDs"),
 							jen.ID("x").Dot("ID"),
 						),
 					),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dotf("buildGet%sWithIDsQuery", pn).Call(
 						constants.CtxVar(),
@@ -951,7 +951,7 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnError").Call(constants.ObligatoryError()),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%sWithIDs", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("defaultLimit"),
@@ -978,19 +978,19 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sList", sn).Op(":=").ID("fakes").Dotf("BuildFake%sList", sn).Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sList", sn).Assign().ID("fakes").Dotf("BuildFake%sList", sn).Call(),
 					jen.Newline(),
 					jen.Var().ID("exampleIDs").Index().String(),
-					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Op(":=").Range().IDf("example%sList", sn).Dot(pn)).Body(
+					jen.For(jen.List(jen.ID("_"), jen.ID("x")).Assign().Range().IDf("example%sList", sn).Dot(pn)).Body(
 						jen.ID("exampleIDs").Equals().ID("append").Call(
 							jen.ID("exampleIDs"),
 							jen.ID("x").Dot("ID"),
 						),
 					),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dotf("buildGet%sWithIDsQuery", pn).Call(
 						constants.CtxVar(),
@@ -1002,7 +1002,7 @@ func buildTestQuerierGetSomethingsWithIDs(proj *models.Project, typ models.DataT
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
 						Dotln("WillReturnRows").Call(jen.ID("buildErroneousMockRow").Call()),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Get%sWithIDs", pn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Get%sWithIDs", pn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleAccountID"),
 						jen.ID("defaultLimit"),
@@ -1055,14 +1055,14 @@ func buildTestQuerierCreateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.IDf("example%s", sn).Dot("ID").Equals().Lit("1"),
-					jen.ID("exampleInput").Op(":=").ID("fakes").Dotf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn).Call(jen.IDf("example%s", sn)),
+					jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(argsLines...),
+					jen.ID("args").Assign().Index().Interface().Valuesln(argsLines...),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sCreationQuery", uvn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1071,7 +1071,7 @@ func buildTestQuerierCreateSomething(proj *models.Project, typ models.DataType, 
 					jen.ID("c").Dot("timeFunc").Equals().Func().Params().Params(jen.Uint64()).Body(
 						jen.Return().IDf("example%s", sn).Dot("CreatedOn")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Create%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
 					),
@@ -1097,10 +1097,10 @@ func buildTestQuerierCreateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Create%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 						jen.ID("ctx"),
 						jen.Nil(),
 					),
@@ -1120,14 +1120,14 @@ func buildTestQuerierCreateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("expectedErr").Op(":=").Qual("errors", "New").Call(jen.ID("t").Dot("Name").Call()),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
-					jen.ID("exampleInput").Op(":=").ID("fakes").Dotf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn).Call(jen.IDf("example%s", sn)),
+					jen.ID("expectedErr").Assign().Qual("errors", "New").Call(jen.ID("t").Dot("Name").Call()),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.ID("exampleInput").Assign().ID("fakes").Dotf("BuildFake%sDatabaseCreationInputFrom%s", sn, sn).Call(jen.IDf("example%s", sn)),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(argsLines...),
+					jen.ID("args").Assign().Index().Interface().Valuesln(argsLines...),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sCreationQuery", uvn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1136,7 +1136,7 @@ func buildTestQuerierCreateSomething(proj *models.Project, typ models.DataType, 
 					jen.ID("c").Dot("timeFunc").Equals().Func().Params().Params(jen.Uint64()).Body(
 						jen.Return().IDf("example%s", sn).Dot("CreatedOn")),
 					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Op(":=").ID("c").Dotf("Create%s", sn).Call(
+					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("Create%s", sn).Call(
 						jen.ID("ctx"),
 						jen.ID("exampleInput"),
 					),
@@ -1196,12 +1196,12 @@ func buildTestQuerierUpdateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(argsLines...),
+					jen.ID("args").Assign().Index().Interface().Valuesln(argsLines...),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("update%sQuery", sn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1227,8 +1227,8 @@ func buildTestQuerierUpdateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
@@ -1245,10 +1245,10 @@ func buildTestQuerierUpdateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
@@ -1265,12 +1265,12 @@ func buildTestQuerierUpdateSomething(proj *models.Project, typ models.DataType, 
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.IDf("example%s", sn).Op(":=").ID("fakes").Dotf("BuildFake%s", sn).Call(),
+					jen.IDf("example%s", sn).Assign().ID("fakes").Dotf("BuildFake%s", sn).Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(argsLines...),
+					jen.ID("args").Assign().Index().Interface().Valuesln(argsLines...),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("update%sQuery", sn))).
 						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
@@ -1310,13 +1310,13 @@ func buildTestQuerierArchiveSomething(proj *models.Project, typ models.DataType,
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"), jen.IDf("example%sID", sn)),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("archive%sQuery", sn))).
@@ -1344,10 +1344,10 @@ func buildTestQuerierArchiveSomething(proj *models.Project, typ models.DataType,
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
@@ -1365,10 +1365,10 @@ func buildTestQuerierArchiveSomething(proj *models.Project, typ models.DataType,
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
 					jen.ID("assert").Dot("Error").Call(
 						jen.ID("t"),
@@ -1386,13 +1386,13 @@ func buildTestQuerierArchiveSomething(proj *models.Project, typ models.DataType,
 				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleAccountID").Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Op(":=").Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
+					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					jen.Newline(),
-					jen.ID("ctx").Op(":=").Qual("context", "Background").Call(),
-					jen.List(jen.ID("c"), jen.ID("db")).Op(":=").ID("buildTestClient").Call(jen.ID("t")),
+					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 					jen.Newline(),
-					jen.ID("args").Op(":=").Index().Interface().Valuesln(
+					jen.ID("args").Assign().Index().Interface().Valuesln(
 						jen.ID("exampleAccountID"), jen.IDf("example%sID", sn)),
 					jen.Newline(),
 					jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("archive%sQuery", sn))).

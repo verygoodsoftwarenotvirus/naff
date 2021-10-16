@@ -130,7 +130,7 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType, inclu
 			utils.BuildFakeVarWithCustomName(
 				proj,
 				fmt.Sprintf("example%sInput", sn),
-				fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn),
+				fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn),
 				jen.ID(utils.BuildFakeVarName(sn)),
 			),
 			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
@@ -221,20 +221,6 @@ func buildRequisiteCleanupCode(proj *models.Project, typ models.DataType, includ
 	return lines
 }
 
-func buildGetSomethingAuditLogEntriesArgs(proj *models.Project, typ models.DataType) []jen.Code {
-	lines := []jen.Code{
-		jen.ID("ctx"),
-	}
-
-	for _, owner := range proj.FindOwnerTypeChain(typ) {
-		lines = append(lines, jen.IDf("created%s", owner.Name.Singular()).Dot("ID"))
-	}
-
-	lines = append(lines, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
-
-	return lines
-}
-
 func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code := jen.NewFile(packageName)
 
@@ -258,7 +244,7 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				jen.ID("t"),
 				jen.ID("expected").Dot(fsn),
 				jen.ID("actual").Dot(fsn),
-				jen.Lit("expected "+fsn+" for "+scn+" #%d to be %v, but it was %v "),
+				jen.Lit("expected "+fsn+" for "+scn+" %s to be %v, but it was %v"),
 				jen.ID("expected").Dot("ID"),
 				jen.ID("expected").Dot(fsn),
 				jen.ID("actual").Dot(fsn),
@@ -279,7 +265,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.Newline(),
 	)
 
-	code.Add(buildTestCreating(proj, typ)...)
+	code.Add(convertSomethingToSomethingUpdateInput(proj, typ)...)
+	code.Add(buildTestCompleteLifecycle(proj, typ)...)
 	code.Add(buildTestListing(proj, typ)...)
 
 	if typ.SearchEnabled {
@@ -292,18 +279,13 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildTestExistenceChecking_ReturnsFalseForNonexistentSomething(proj, typ)...)
 	code.Add(buildTestExistenceChecking_ReturnsTrueForValidSomething(proj, typ)...)
 	code.Add(buildTestReading_Returns404ForNonexistentSomething(proj, typ)...)
-	code.Add(buildTestReading(proj, typ)...)
 	code.Add(buildTestUpdating_Returns404ForNonexistentSomething(proj, typ)...)
-	code.Add(convertSomethingToSomethingUpdateInput(proj, typ)...)
-	code.Add(buildTestUpdating(proj, typ)...)
 	code.Add(buildTestArchiving_Returns404ForNonexistentSomething(proj, typ)...)
-	code.Add(buildTestArchiving(proj, typ)...)
-	code.Add(buildTestAuditing_Returns404ForNonexistentSomething(proj, typ)...)
 
 	return code
 }
 
-func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
+func buildTestCompleteLifecycle(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 	pn := typ.Name.Plural()
@@ -330,32 +312,14 @@ func buildTestCreating(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.IDf("created%s", sn),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			buildGetSomethingAuditLogEntriesArgs(proj, typ)...,
-		),
-		jen.Qual(constants.MustAssertPkg, "NoError").Call(
-			jen.ID("t"),
-			jen.ID("err"),
-		),
-		jen.Newline(),
-		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn)))),
-		jen.ID("validateAuditLogEntries").Call(
-			jen.ID("t"),
-			jen.ID("expectedAuditLogEntries"),
-			jen.ID("auditLogEntries"),
-			jen.IDf("created%s", sn).Dot("ID"),
-			jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
-		),
-		jen.Newline(),
 	)
 
 	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, true)...)
 
 	lines := []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Creating", pn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("should be creatable"),
+		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_CompleteLifecycle", pn).Params().Body(
+			jen.ID("s").Dot("runForCookieClient").Call(
+				jen.Lit("should be creatable and readable and updatable and deletable"),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
 					bodyLines...,
 				)),
@@ -1002,10 +966,10 @@ func convertSomethingToSomethingUpdateInput(proj *models.Project, typ models.Dat
 	}
 
 	lines := []jen.Code{
-		jen.Commentf("convert%sTo%sUpdateInput creates an %sUpdateInput struct from %s.", sn, sn, sn, scnwp),
+		jen.Commentf("convert%sTo%sUpdateInput creates an %sUpdateRequestInput struct from %s.", sn, sn, sn, scnwp),
 		jen.Newline(),
-		jen.Func().IDf("convert%sTo%sUpdateInput", sn, sn).Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn))).Body(
-			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateInput", sn)).Valuesln(
+		jen.Func().IDf("convert%sTo%sUpdateInput", sn, sn).Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Valuesln(
 				updateInputLines...,
 			)),
 		jen.Newline(),
@@ -1083,25 +1047,6 @@ func buildTestUpdating(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("actual").Dot("LastUpdatedOn"),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			buildGetSomethingAuditLogEntriesArgs(proj, typ)...,
-		),
-		jen.Qual(constants.MustAssertPkg, "NoError").Call(
-			jen.ID("t"),
-			jen.ID("err"),
-		),
-		jen.Newline(),
-		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
-			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sUpdateEvent", sn))),
-		),
-		jen.ID("validateAuditLogEntries").Call(
-			jen.ID("t"),
-			jen.ID("expectedAuditLogEntries"),
-			jen.ID("auditLogEntries"),
-			jen.IDf("created%s", sn).Dot("ID"),
-			jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
-		),
 	)
 
 	bodyLines = append(bodyLines,
@@ -1220,26 +1165,6 @@ func buildTestArchiving(proj *models.Project, typ models.DataType) []jen.Code {
 				buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnly(proj, typ)...,
 			),
 		),
-		jen.Newline(),
-		jen.List(jen.ID("auditLogEntries"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			buildGetSomethingAuditLogEntriesArgs(proj, typ)...,
-		),
-		jen.Qual(constants.MustAssertPkg, "NoError").Call(
-			jen.ID("t"),
-			jen.ID("err"),
-		),
-		jen.Newline(),
-		jen.ID("expectedAuditLogEntries").Assign().Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry").Valuesln(
-			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sCreationEvent", sn))),
-			jen.Values(jen.ID("EventType").MapAssign().Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sArchiveEvent", sn))),
-		),
-		jen.ID("validateAuditLogEntries").Call(
-			jen.ID("t"),
-			jen.ID("expectedAuditLogEntries"),
-			jen.ID("auditLogEntries"),
-			jen.IDf("created%s", sn).Dot("ID"),
-			jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
-		),
 	)
 
 	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
@@ -1248,63 +1173,6 @@ func buildTestArchiving(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Archiving", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Litf("it should be possible to delete %s", scnwp),
-				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
-				)),
-			)),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
-func buildTestAuditing_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-	pn := typ.Name.Plural()
-
-	bodyLines := []jen.Code{
-		jen.ID("t").Assign().ID("s").Dot("T").Call(),
-		jen.Newline(),
-		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
-			jen.ID("s").Dot("ctx"),
-			jen.ID("t").Dot("Name").Call(),
-		),
-		jen.Defer().ID("span").Dot("End").Call(),
-		jen.Newline(),
-	}
-
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
-
-	callArgs := []jen.Code{
-		constants.CtxVar(),
-	}
-	for _, owner := range proj.FindOwnerTypeChain(typ) {
-		callArgs = append(callArgs, jen.IDf("created%s", owner.Name.Singular()).Dot("ID"))
-	}
-	callArgs = append(callArgs, jen.ID("nonexistentID"))
-
-	bodyLines = append(bodyLines,
-		jen.Newline(),
-		jen.List(jen.ID("x"), jen.ID("err")).Assign().ID("testClients").Dot("admin").Dotf("GetAuditLogFor%s", sn).Call(
-			callArgs...,
-		),
-		jen.Newline(),
-		jen.Qual(constants.AssertionLibrary, "NoError").Call(
-			jen.ID("t"),
-			jen.ID("err"),
-		),
-		jen.Qual(constants.AssertionLibrary, "Empty").Call(
-			jen.ID("t"),
-			jen.ID("x"),
-		),
-	)
-
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
-
-	lines := []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Auditing_Returns404ForNonexistent%s", pn, sn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("it should return an error when trying to audit something that does not exist"),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
 					bodyLines...,
 				)),

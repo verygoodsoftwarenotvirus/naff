@@ -163,17 +163,17 @@ func buildScanSomething(proj *models.Project, typ models.DataType, dbvendor word
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+		jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 			jen.Lit("include_counts"),
 			jen.ID("includeCounts"),
 		),
 		jen.Newline(),
 		jen.ID("x").Equals().Op("&").ID("types").Dotf(sn).Values(),
 		jen.Newline(),
-		jen.ID("targetVars").Op(":=").Index().Interface().Valuesln(columns...),
+		jen.ID("targetVars").Assign().Index().Interface().Valuesln(columns...),
 		jen.Newline(),
 		jen.If(jen.ID("includeCounts")).Body(
 			jen.ID("targetVars").Equals().ID("append").Call(
@@ -212,16 +212,16 @@ func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbve
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("_"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("_"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+		jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 			jen.Lit("include_counts"),
 			jen.ID("includeCounts"),
 		),
 		jen.Newline(),
 		jen.For(jen.ID("rows").Dot("Next").Call()).Body(
-			jen.List(jen.ID("x"), jen.ID("fc"), jen.ID("tc"), jen.ID("scanErr")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
+			jen.List(jen.ID("x"), jen.ID("fc"), jen.ID("tc"), jen.ID("scanErr")).Assign().ID("q").Dotf("scan%s", sn).Call(
 				jen.ID("ctx"),
 				jen.ID("rows"),
 				jen.ID("includeCounts"),
@@ -292,10 +292,10 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.ID("logger").Assign().ID("q").Dot("logger"),
 		jen.Newline(),
 	}
 
@@ -303,10 +303,10 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("args").Op(":=").Index().Interface().Valuesln(
+		jen.ID("args").Assign().Index().Interface().Valuesln(
 			jen.ID("accountID"), jen.IDf("%sID", uvn)),
 		jen.Newline(),
-		jen.List(jen.ID("result"), jen.ID("err")).Op(":=").ID("q").Dot("performBooleanQuery").Call(
+		jen.List(jen.ID("result"), jen.ID("err")).Assign().ID("q").Dot("performBooleanQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.IDf("%sExistenceQuery", uvn),
@@ -366,10 +366,10 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.ID("logger").Assign().ID("q").Dot("logger"),
 		jen.Newline(),
 	}
 
@@ -377,10 +377,10 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("args").Op(":=").Index().Interface().Valuesln(
+		jen.ID("args").Assign().Index().Interface().Valuesln(
 			jen.ID("accountID"), jen.IDf("%sID", uvn)),
 		jen.Newline(),
-		jen.ID("row").Op(":=").ID("q").Dot("getOneRow").Call(
+		jen.ID("row").Assign().ID("q").Dot("getOneRow").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.Lit(uvn),
@@ -388,7 +388,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 			jen.ID("args"),
 		),
 		jen.Newline(),
-		jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", sn).Call(
+		jen.List(jen.ID(uvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Assign().ID("q").Dotf("scan%s", sn).Call(
 			jen.ID("ctx"),
 			jen.ID("row"),
 			jen.False(),
@@ -425,10 +425,10 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.ID("logger").Assign().ID("q").Dot("logger"),
 		jen.Newline(),
 	}
 
@@ -446,7 +446,7 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 			jen.List(jen.ID("x").Dot("Page"), jen.ID("x").Dot("Limit")).Equals().List(jen.ID("filter").Dot("Page"), jen.ID("filter").Dot("Limit")),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dot("buildListQuery").Callln(
+		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("buildListQuery").Callln(
 			jen.ID("ctx"),
 			jen.Lit(puvn),
 			jen.Nil(),
@@ -458,7 +458,7 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 			jen.ID("filter"),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("q").Dot("performReadQuery").Call(
+		jen.List(jen.ID("rows"), jen.ID("err")).Assign().ID("q").Dot("performReadQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.Lit(puvn),
@@ -518,12 +518,12 @@ func buildGetTotalSomethingCount(proj *models.Project, typ models.DataType, dbve
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.ID("logger").Assign().ID("q").Dot("logger"),
 		jen.Newline(),
-		jen.List(jen.ID("count"), jen.ID("err")).Op(":=").ID("q").Dot("performCountQuery").Call(
+		jen.List(jen.ID("count"), jen.ID("err")).Assign().ID("q").Dot("performCountQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.IDf("getTotal%sCountQuery", pn),
@@ -561,21 +561,21 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 	tableName := typ.Name.PluralRouteName()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.Underscore(), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("withIDsWhere").Op(":=").ID("squirrel").Dot("Eq").Valuesln(
+		jen.ID("withIDsWhere").Assign().ID("squirrel").Dot("Eq").Valuesln(
 			jen.Litf("%s.id", tableName).Op(":").ID("ids"),
 			jen.Litf("%s.archived_on", tableName).Op(":").Nil(),
 			jen.Litf("%s.belongs_to_account", tableName).Op(":").ID("accountID"),
 		),
 		jen.Newline(),
-		jen.ID("subqueryBuilder").Op(":=").ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
+		jen.ID("subqueryBuilder").Assign().ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 			Dotln("From").Call(jen.Lit(puvn)).
 			Dotln("Join").Call(jen.Lit("unnest('{%s}'::text[])")).
 			Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d"), jen.ID("limit"))),
 		jen.Newline(),
-		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Op(":=").ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
+		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Assign().ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 			Dotln("FromSelect").Call(jen.ID("subqueryBuilder"), jen.Lit(puvn)).
 			Dotln("Where").Call(jen.ID("withIDsWhere")).Dot("ToSql").Call(),
 		jen.ID("query").Op("=").Qual("fmt", "Sprintf").Call(
@@ -608,10 +608,10 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 	puvn := typ.Name.PluralUnexportedVarName()
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.ID("logger").Assign().ID("q").Dot("logger"),
 		jen.Newline(),
 	}
 
@@ -630,14 +630,14 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 		jen.ID("logger").Equals().ID("logger").Dot("WithValues").Call(jen.Map(jen.String()).Interface().Valuesln(
 			jen.Lit("limit").MapAssign().ID("limit"), jen.Lit("id_count").MapAssign().ID("len").Call(jen.ID("ids")))),
 		jen.Newline(),
-		jen.List(jen.ID("query"), jen.ID("args")).Op(":=").ID("q").Dotf("buildGet%sWithIDsQuery", pn).Call(
+		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dotf("buildGet%sWithIDsQuery", pn).Call(
 			constants.CtxVar(),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
 			jen.ID("limit"),
 			jen.ID("ids"),
 		),
 		jen.Newline(),
-		jen.List(jen.ID("rows"), jen.ID("err")).Op(":=").ID("q").Dot("performReadQuery").Call(
+		jen.List(jen.ID("rows"), jen.ID("err")).Assign().ID("q").Dot("performReadQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.Litf("%s with IDs", pcn),
@@ -652,7 +652,7 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 				jen.Litf("fetching %s from database", pcn),
 			))),
 		jen.Newline(),
-		jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Op(":=").ID("q").Dotf("scan%s", pn).Call(
+		jen.List(jen.ID(puvn), jen.ID("_"), jen.ID("_"), jen.ID("err")).Assign().ID("q").Dotf("scan%s", pn).Call(
 			jen.ID("ctx"),
 			jen.ID("rows"),
 			jen.False(),
@@ -737,22 +737,22 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 	fieldValues = append(fieldValues, jen.ID("CreatedOn").MapAssign().ID("q").Dot("currentTime").Call())
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.If(jen.ID("input").Op("==").Nil()).Body(
 			jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+		jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 			jen.ID("keys").Dotf("%sIDKey", sn),
 			jen.ID("input").Dot("ID"),
 		),
 		jen.Newline(),
-		jen.ID("args").Op(":=").Index().Interface().Valuesln(argValues...),
+		jen.ID("args").Assign().Index().Interface().Valuesln(argValues...),
 		jen.Newline(),
 		jen.Commentf("create the %s.", scn),
-		jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
+		jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.Litf("%s creation", scn),
@@ -766,7 +766,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 				jen.Litf("creating %s", scn),
 			))),
 		jen.Newline(),
-		jen.ID("x").Op(":=").Op("&").ID("types").Dot(sn).Valuesln(fieldValues...),
+		jen.ID("x").Assign().Op("&").ID("types").Dot(sn).Valuesln(fieldValues...),
 		jen.Newline(),
 		jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
 			jen.ID("span"),
@@ -836,14 +836,14 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
 		jen.If(jen.ID("updated").Op("==").Nil()).Body(
 			jen.Return().ID("ErrNilInputProvided"),
 		),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger").Dot("WithValue").Call(
+		jen.ID("logger").Assign().ID("q").Dot("logger").Dot("WithValue").Call(
 			jen.ID("keys").Dotf("%sIDKey", sn),
 			jen.ID("updated").Dot("ID"),
 		),
@@ -856,9 +856,9 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 			jen.ID("updated").Dot("BelongsToAccount"),
 		),
 		jen.Newline(),
-		jen.ID("args").Op(":=").Index().Interface().Valuesln(argValues...),
+		jen.ID("args").Assign().Index().Interface().Valuesln(argValues...),
 		jen.Newline(),
-		jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
+		jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.Litf("%s update", scn),
@@ -921,10 +921,10 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 	}
 
 	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.ID("logger").Op(":=").ID("q").Dot("logger"),
+		jen.ID("logger").Assign().ID("q").Dot("logger"),
 		jen.Newline(),
 	}
 
@@ -932,10 +932,10 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("args").Op(":=").Index().Interface().Valuesln(
+		jen.ID("args").Assign().Index().Interface().Valuesln(
 			jen.ID("accountID"), jen.IDf("%sID", uvn)),
 		jen.Newline(),
-		jen.If(jen.ID("err").Op(":=").ID("q").Dot("performWriteQuery").Call(
+		jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
 			jen.ID("ctx"),
 			jen.ID("q").Dot("db"),
 			jen.Litf("%s archive", scn),

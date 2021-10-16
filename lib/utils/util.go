@@ -65,7 +65,7 @@ func BuildStructTag(value wordsmith.SuperPalabra, plural bool) map[string]string
 
 // ExpectMethod creates a test expectation for a gievn method
 func ExpectMethod(varName, method string) jen.Code {
-	return jen.ID(varName).Op(":=").Qual("net/http", method)
+	return jen.ID(varName).Assign().Qual("net/http", method)
 }
 
 // ParallelTest creates a new t.Parallel call
@@ -85,11 +85,11 @@ func DefaultQueryFilter(proj *models.Project) jen.Code {
 }
 
 func CreateNilQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil())
+	return jen.ID(constants.FilterVarName).Assign().Call(jen.PointerTo().Qual(proj.TypesPackage(), "QueryFilter")).Call(jen.Nil())
 }
 
 func CreateDefaultQueryFilter(proj *models.Project) jen.Code {
-	return jen.ID(constants.FilterVarName).Op(":=").Qual(proj.TypesPackage(), "DefaultQueryFilter").Call()
+	return jen.ID(constants.FilterVarName).Assign().Qual(proj.TypesPackage(), "DefaultQueryFilter").Call()
 }
 
 func AppendItemsToList(list jen.Code, items ...jen.Code) jen.Code {
@@ -188,7 +188,7 @@ func _buildSubtest(name string, includeContext bool, testInstructions ...jen.Cod
 
 // BuildTestServer builds a test server with an example handlerfunc
 func BuildTestServer(name string, handlerLines ...jen.Code) *jen.Statement {
-	return jen.ID(name).Op(":=").Qual("net/http/httptest", "NewTLSServer").Callln(
+	return jen.ID(name).Assign().Qual("net/http/httptest", "NewTLSServer").Callln(
 		jen.Qual("net/http", "HandlerFunc").Callln(
 			jen.Func().Params(
 				jen.ID("res").Qual("net/http", "ResponseWriter"),
@@ -253,7 +253,7 @@ func StartSpanWithVar(proj *models.Project, saveCtx bool, spanName jen.Code) jen
 				return jen.Underscore()
 			}(),
 			jen.ID(SpanVarName),
-		).Op(":=").Qual(proj.InternalTracingPackage(), "StartSpan").Call(
+		).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 			constants.CtxVar(),
 			spanName,
 		),
@@ -282,7 +282,7 @@ func StartSpanWithInlineCtx(proj *models.Project, saveCtx bool, spanName jen.Cod
 				return jen.ID("_")
 			}(),
 			jen.ID(SpanVarName),
-		).Op(":=").Qual(proj.InternalTracingPackage(), "StartSpan").Call(
+		).Assign().Qual(proj.InternalTracingPackage(), "StartSpan").Call(
 			constants.InlineCtx(),
 			spanName,
 		),

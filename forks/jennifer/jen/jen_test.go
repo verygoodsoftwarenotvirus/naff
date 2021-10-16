@@ -263,7 +263,7 @@ var cases = []tc{
 	},
 	{
 		desc:   `short var decl`,
-		code:   Id("a").Op(":=").Lit("b"),
+		code:   Id("a").Assign().Lit("b"),
 		expect: `a := "b"`,
 	},
 	{
@@ -440,7 +440,7 @@ var cases = []tc{
 	},
 	{
 		desc: `literal func`,
-		code: Id("a").Op(":=").LitFunc(func() interface{} {
+		code: Id("a").Assign().LitFunc(func() interface{} {
 			return "b"
 		}),
 		expect: `a := "b"`,

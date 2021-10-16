@@ -69,7 +69,7 @@ func buildProvidePreUpdatesWorker(proj *models.Project) []jen.Code {
 		}
 
 		bodyLines = append(bodyLines,
-			jen.List(jen.IDf("%sIndexManager", puvn), jen.ID("err")).Op(":=").ID("searchIndexProvider").Call(
+			jen.List(jen.IDf("%sIndexManager", puvn), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
 				append([]jen.Code{
 					jen.ID("ctx"),
 					jen.ID("logger"),
@@ -92,7 +92,7 @@ func buildProvidePreUpdatesWorker(proj *models.Project) []jen.Code {
 	}
 
 	bodyLines = append(bodyLines,
-		jen.ID("w").Op(":=").Op("&").ID("PreUpdatesWorker").Valuesln(
+		jen.ID("w").Assign().Op("&").ID("PreUpdatesWorker").Valuesln(
 			valuesLines...,
 		),
 		jen.Newline(),
@@ -128,7 +128,7 @@ func buildHandlePreUpdatesWorkerMessage(proj *models.Project) []jen.Code {
 
 		switchCases = append(switchCases,
 			jen.Case(jen.Qualf(proj.TypesPackage(), "%sDataType", sn)).Body(
-				jen.If(jen.ID("err").Op(":=").ID("w").Dot("dataManager").Dotf("Update%s", sn).Call(
+				jen.If(jen.ID("err").Assign().ID("w").Dot("dataManager").Dotf("Update%s", sn).Call(
 					jen.ID("ctx"),
 					jen.ID("msg").Dot(sn),
 				), jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -139,7 +139,7 @@ func buildHandlePreUpdatesWorkerMessage(proj *models.Project) []jen.Code {
 						jen.Litf("creating %s", scn),
 					)),
 				jen.Newline(),
-				jen.If(jen.ID("err").Op(":=").ID("w").Dotf("%sIndexManager", puvn).Dot("Index").Call(
+				jen.If(jen.ID("err").Assign().ID("w").Dotf("%sIndexManager", puvn).Dot("Index").Call(
 					jen.ID("ctx"),
 					jen.ID("msg").Dot(sn).Dot("ID"),
 					jen.ID("msg").Dot(sn),
@@ -152,7 +152,7 @@ func buildHandlePreUpdatesWorkerMessage(proj *models.Project) []jen.Code {
 					)),
 				jen.Newline(),
 				jen.If(jen.ID("w").Dot("postUpdatesPublisher").DoesNotEqual().Nil()).Body(
-					jen.ID("dcm").Op(":=").Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
+					jen.ID("dcm").Assign().Op("&").Qual(proj.TypesPackage(), "DataChangeMessage").Valuesln(
 						jen.ID("DataType").MapAssign().ID("msg").Dot("DataType"),
 						jen.ID(sn).MapAssign().ID("msg").Dot(sn),
 						jen.ID("AttributableToUserID").MapAssign().ID("msg").Dot("AttributableToUserID"),
@@ -160,7 +160,7 @@ func buildHandlePreUpdatesWorkerMessage(proj *models.Project) []jen.Code {
 					),
 					jen.Newline(),
 					jen.If(
-						jen.ID("err").Op(":=").ID("w").Dot("postUpdatesPublisher").Dot("Publish").Call(jen.ID("ctx"), jen.ID("dcm")),
+						jen.ID("err").Assign().ID("w").Dot("postUpdatesPublisher").Dot("Publish").Call(jen.ID("ctx"), jen.ID("dcm")),
 						jen.ID("err").DoesNotEqual().Nil(),
 					).Body(
 						jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
@@ -183,12 +183,12 @@ func buildHandlePreUpdatesWorkerMessage(proj *models.Project) []jen.Code {
 		jen.Comment("HandleMessage handles a pending update."),
 		jen.Newline(),
 		jen.Func().Params(jen.ID("w").Op("*").ID("PreUpdatesWorker")).ID("HandleMessage").Params(jen.ID("ctx").Qual("context", "Context"), jen.ID("message").Index().ID("byte")).Params(jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Op(":=").ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("w").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.Var().ID("msg").Op("*").Qual(proj.TypesPackage(), "PreUpdateMessage"),
 			jen.Newline(),
-			jen.If(jen.ID("err").Op(":=").ID("w").Dot("encoder").Dot("Unmarshal").Call(
+			jen.If(jen.ID("err").Assign().ID("w").Dot("encoder").Dot("Unmarshal").Call(
 				jen.ID("ctx"),
 				jen.ID("message"),
 				jen.Op("&").ID("msg"),
@@ -203,7 +203,7 @@ func buildHandlePreUpdatesWorkerMessage(proj *models.Project) []jen.Code {
 				jen.ID("span"),
 				jen.ID("msg").Dot("AttributableToUserID"),
 			),
-			jen.ID("logger").Op(":=").ID("w").Dot("logger").Dot("WithValue").Call(
+			jen.ID("logger").Assign().ID("w").Dot("logger").Dot("WithValue").Call(
 				jen.Lit("data_type"),
 				jen.ID("msg").Dot("DataType"),
 			),

@@ -17,6 +17,9 @@ import (
 const (
 	cookieAuthType = "cookie"
 	pasetoAuthType = "PASETO"
+
+	creationTimeout = 10 * time.Second
+	waitPeriod      = 100 * time.Millisecond
 )
 
 var (
