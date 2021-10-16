@@ -15,7 +15,7 @@ func preArchivesWorkerDotGo(proj *models.Project) *jen.File {
 
 	code.Add(buildPreArchivesWorker(proj)...)
 	code.Add(buildProvidePreArchivesWorker(proj)...)
-	code.Add(buildHandleMessage(proj)...)
+	code.Add(buildHandlePreArchivesWorkerMessage(proj)...)
 
 	return code
 }
@@ -109,7 +109,8 @@ func buildProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 
 	return lines
 }
-func buildHandleMessage(proj *models.Project) []jen.Code {
+
+func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 	switchCases := []jen.Code{}
 	for _, typ := range proj.DataTypes {
 		puvn := typ.Name.PluralUnexportedVarName()
