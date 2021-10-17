@@ -687,7 +687,10 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			),
 			jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.IDf("%sCreationErr", uvn)),
 			jen.Newline(),
-			jen.Var().IDf("created%s", sn).PointerTo().Qual(proj.TypesPackage(), sn),
+			jen.Var().Defs(
+				jen.IDf("created%s", sn).PointerTo().Qual(proj.TypesPackage(), sn),
+				jen.Err().Error(),
+			),
 			jen.ID("checkFunc").Assign().Func().Params().Params(jen.Bool()).Body(
 				jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Equals().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
 					buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
@@ -799,7 +802,17 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 	}
 
-	firstSubtest := append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+	firstSubtest := append(bodyLines,
+		jen.ID("stopChan").Assign().Make(jen.Chan().Bool(), jen.One()),
+		jen.List(jen.ID("notificationsChan"), jen.Err()).Assign().ID("testClients").Dot("main").Dot("SubscribeToDataChangeNotifications").Call(constants.CtxVar(), jen.ID("stopChan")),
+		utils.RequireNotNil(jen.ID("notificationsChan"), nil),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Newline(),
+		jen.Var().ID("n").PointerTo().Qual(proj.TypesPackage(), "DataChangeMessage"),
+		jen.Newline(),
+	)
+
+	firstSubtest = append(firstSubtest, buildRequisiteCreationCode(proj, typ, false)...)
 	secondSubtest := append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
 
 	firstSubtest = append(firstSubtest,
@@ -828,7 +841,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.ID("n").Equals().ReceiveFromChannel().ID("notificationsChan"),
 			utils.AssertEqual(jen.ID("n").Dot("DataType"), jen.Qualf(proj.TypesPackage(), "%sDataType", sn), nil),
 			utils.RequireNotNil(jen.ID("n").Dot(sn), nil),
-			jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("example%s", sn), jen.ID("n").Dot(sn)),
+			utils.AssertEqual(jen.ID("n").Dot(sn).Dot("ID"), jen.IDf("created%sID", sn), nil),
 			jen.Newline(),
 			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
 				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("created%sID", sn))...,
@@ -895,13 +908,26 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.ID("i"),
 			),
 			jen.Newline(),
-			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
+			jen.List(jen.IDf("created%sID", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
 			),
+			utils.RequireNoError(jen.IDf("%sCreationErr", uvn), nil),
+			jen.Newline(),
+			jen.Var().Defs(
+				jen.IDf("created%s", sn).PointerTo().Qual(proj.TypesPackage(), sn),
+				jen.Err().Error(),
+			),
+			jen.ID("checkFunc").Assign().Func().Params().Params(jen.Bool()).Body(
+				jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Equals().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+					buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+				),
+				jen.Return(jen.Qual(constants.AssertionLibrary, "NotNil").Call(jen.ID("t"), jen.IDf("created%s", sn)).And().Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.Err())),
+			),
+			jen.Qual(constants.AssertionLibrary, "Eventually").Call(jen.ID("t"), jen.ID("checkFunc"), jen.ID("creationTimeout"), jen.ID("waitPeriod")),
 			jen.ID("requireNotNilAndNoProblems").Call(
 				jen.ID("t"),
 				jen.IDf("created%s", sn),
-				jen.IDf("%sCreationErr", uvn),
+				jen.ID("err"),
 			),
 			jen.Newline(),
 			jen.ID("expected").Equals().ID("append").Call(

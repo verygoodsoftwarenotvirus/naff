@@ -70,23 +70,6 @@ func exiterTestDotGoString(proj *models.Project) string {
 
 func buildInitializers(proj *models.Project) []jen.Code {
 	initializers := []jen.Code{}
-	/*
-		wg.Add(1)
-		go func(wg *sync.WaitGroup) {
-			for j := 0; j < int(dataCount); j++ {
-				iterationLogger := userLogger.WithValue("creating", "items").WithValue("iteration", j)
-
-				// create item
-				createdItem, itemCreationErr := userClient.CreateItem(ctx, fakes.BuildFakeItemCreationInput())
-				if itemCreationErr != nil {
-					quitter.ComplainAndQuit(fmt.Errorf("creating item #%d: %w", j, itemCreationErr))
-				}
-
-				iterationLogger.WithValue(keys.WebhookIDKey, createdItem.ID).Debug("created item")
-			}
-			wg.Done()
-		}(wg)
-	*/
 
 	for _, typ := range proj.DataTypes {
 		if len(proj.FindOwnerTypeChain(typ)) == 0 {
