@@ -813,21 +813,32 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		}(),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
-			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 			jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s %d"),
 				jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()),
 				jen.ID("i"),
 			),
 			jen.Newline(),
-			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
+			jen.List(jen.IDf("created%sID", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
+			),
+			jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.IDf("%sCreationErr", uvn)),
+			jen.Newline(),
+			jen.ID("n").Equals().ReceiveFromChannel().ID("notificationsChan"),
+			utils.AssertEqual(jen.ID("n").Dot("DataType"), jen.Qualf(proj.TypesPackage(), "%sDataType", sn), nil),
+			utils.RequireNotNil(jen.ID("n").Dot(sn), nil),
+			jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("example%s", sn), jen.ID("n").Dot(sn)),
+			jen.Newline(),
+			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("created%sID", sn))...,
 			),
 			jen.ID("requireNotNilAndNoProblems").Call(
 				jen.ID("t"),
 				jen.IDf("created%s", sn),
 				jen.IDf("%sCreationErr", uvn),
 			),
+			jen.Newline(),
 			jen.Newline(),
 			jen.ID("expected").Equals().ID("append").Call(
 				jen.ID("expected"),
@@ -836,7 +847,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.ID("exampleLimit").Assign().ID("uint8").Call(jen.Lit(20)),
-		jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
+		jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")).Comment("give the index a moment"),
 		jen.Newline(),
 		jen.Commentf("assert %s list equality", scn),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Search%s", pn).Call(
@@ -877,7 +888,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		}(),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
 		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
-			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
 			jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
 				jen.Lit("%s %d"),
 				jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()),
@@ -900,7 +911,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.ID("exampleLimit").Assign().ID("uint8").Call(jen.Lit(20)),
-		jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
+		jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")).Comment("give the index a moment"),
 		jen.Newline(),
 		jen.Commentf("assert %s list equality", scn),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Search%s", pn).Call(
