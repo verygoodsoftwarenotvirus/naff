@@ -418,13 +418,8 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	if typ.SearchEnabled {
 		code.Add(buildTestSearching(proj, typ)...)
-		if typ.RestrictedToAccountMembers {
-			code.Add(buildTestSearching_ReturnsOnlySomething(proj, typ)...)
-		}
 	}
 
-	code.Add(buildTestExistenceChecking_ReturnsFalseForNonexistentSomething(proj, typ)...)
-	code.Add(buildTestExistenceChecking_ReturnsTrueForValidSomething(proj, typ)...)
 	code.Add(buildTestReading_Returns404ForNonexistentSomething(proj, typ)...)
 	code.Add(buildTestUpdating_Returns404ForNonexistentSomething(proj, typ)...)
 	code.Add(buildTestArchiving_Returns404ForNonexistentSomething(proj, typ)...)
@@ -596,9 +591,20 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 	}
 
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+	firstSubtest := append(bodyLines,
+		jen.ID("stopChan").Assign().Make(jen.Chan().Bool(), jen.One()),
+		jen.List(jen.ID("notificationsChan"), jen.Err()).Assign().ID("testClients").Dot("main").Dot("SubscribeToDataChangeNotifications").Call(constants.CtxVar(), jen.ID("stopChan")),
+		utils.RequireNotNil(jen.ID("notificationsChan"), nil),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Newline(),
+		jen.Var().ID("n").PointerTo().Qual(proj.TypesPackage(), "DataChangeMessage"),
+		jen.Newline(),
+	)
 
-	bodyLines = append(bodyLines,
+	firstSubtest = append(firstSubtest, buildRequisiteIDCreationCode(proj, typ, true, false)...)
+	secondSubtest := append(bodyLines, buildRequisiteIDCreationCode(proj, typ, false, false)...)
+
+	firstSubtest = append(firstSubtest,
 		jen.Newline(),
 		jen.Commentf("create %s", pcn),
 		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
@@ -610,10 +616,19 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 				}
 				return jen.Null()
 			}(),
-			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
-			jen.Newline(),
-			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
+			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+			jen.List(jen.IDf("created%sID", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
 				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
+			),
+			jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.IDf("%sCreationErr", uvn)),
+			jen.Newline(),
+			jen.ID("n").Equals().ReceiveFromChannel().ID("notificationsChan"),
+			utils.AssertEqual(jen.ID("n").Dot("DataType"), jen.Qualf(proj.TypesPackage(), "%sDataType", sn), nil),
+			utils.RequireNotNil(jen.ID("n").Dot(sn), nil),
+			jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("example%s", sn), jen.ID("n").Dot(sn)),
+			jen.Newline(),
+			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("created%sID", sn))...,
 			),
 			jen.ID("requireNotNilAndNoProblems").Call(
 				jen.ID("t"),
@@ -654,17 +669,92 @@ func buildTestListing(proj *models.Project, typ models.DataType) []jen.Code {
 			),
 		),
 	)
+	secondSubtest = append(secondSubtest,
+		jen.Newline(),
+		jen.Commentf("create %s", pcn),
+		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
+			jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+			jen.List(jen.IDf("created%sID", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
+				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
+			),
+			jen.Qual(constants.MustAssertPkg, "NoError").Call(jen.ID("t"), jen.IDf("%sCreationErr", uvn)),
+			jen.Newline(),
+			jen.Var().IDf("created%s", sn).PointerTo().Qual(proj.TypesPackage(), sn),
+			jen.ID("checkFunc").Assign().Func().Params().Params(jen.Bool()).Body(
+				jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Equals().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+					buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+				),
+				jen.Return(jen.Qual(constants.AssertionLibrary, "NotNil").Call(jen.ID("t"), jen.IDf("created%s", sn)).And().Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.Err())),
+			),
+			jen.Qual(constants.AssertionLibrary, "Eventually").Call(jen.ID("t"), jen.ID("checkFunc"), jen.ID("creationTimeout"), jen.ID("waitPeriod")),
+			jen.Newline(),
+			jen.ID("requireNotNilAndNoProblems").Call(
+				jen.ID("t"),
+				jen.IDf("created%s", sn),
+				jen.Err(),
+			),
+			jen.Newline(),
+			jen.ID("expected").Equals().ID("append").Call(
+				jen.ID("expected"),
+				jen.IDf("created%s", sn),
+			),
+		),
+		jen.Newline(),
+		jen.Commentf("assert %s list equality", scn),
+		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Get%s", pn).Call(
+			buildListArguments(proj, createdVarPrefix, typ)...,
+		),
+		jen.ID("requireNotNilAndNoProblems").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+			jen.ID("err"),
+		),
+		jen.Qual(constants.AssertionLibrary, "True").Callln(
+			jen.ID("t"),
+			jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual").Dot(pn)),
+			jen.Lit("expected %d to be <= %d"),
+			jen.ID("len").Call(jen.ID("expected")),
+			jen.ID("len").Call(jen.ID("actual").Dot(pn)),
+		),
+		jen.Newline(),
+		jen.Comment("clean up"),
+		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("actual").Dot(pn)).Body(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
+				jen.ID("t"),
+				jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
+					buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnly(proj, typ)...,
+				),
+			),
+		),
+	)
 
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
+	firstSubtest = append(firstSubtest, buildRequisiteCleanupCode(proj, typ, false)...)
+	secondSubtest = append(secondSubtest, buildRequisiteCleanupCode(proj, typ, false)...)
 
 	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Listing", pn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
+			jen.ID("s").Dot("runForCookieClient").Call(
 				jen.Lit("should be readable in paginated form"),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
+					firstSubtest...,
 				)),
-			)),
+			),
+			jen.Newline(),
+			jen.ID("s").Dot("runForPASETOClient").Call(
+				jen.Lit("should be readable in paginated form"),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					secondSubtest...,
+				)),
+			),
+		),
 		jen.Newline(),
 	}
 
@@ -709,9 +799,10 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Newline(),
 	}
 
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+	firstSubtest := append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+	secondSubtest := append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
 
-	bodyLines = append(bodyLines,
+	firstSubtest = append(firstSubtest,
 		jen.Commentf("create %s", pcn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
@@ -775,16 +866,89 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 	)
 
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
+	secondSubtest = append(secondSubtest,
+		jen.Commentf("create %s", pcn),
+		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		func() jen.Code {
+			if typ.BelongsToStruct != nil {
+				return jen.IDf("example%s", sn).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("created%s", typ.BelongsToStruct.Singular()).Dot("ID")
+			}
+			return jen.Null()
+		}(),
+		jen.Var().ID("expected").Index().PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.For(jen.ID("i").Assign().Zero(), jen.ID("i").Op("<").Lit(5), jen.ID("i").Op("++")).Body(
+			jen.IDf("example%sInput", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%sCreationInputFrom%s", sn, sn)).Call(jen.IDf("example%s", sn)),
+			jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()).Equals().Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s %d"),
+				jen.IDf("example%sInput", sn).Dot(firstStringField.Singular()),
+				jen.ID("i"),
+			),
+			jen.Newline(),
+			jen.List(jen.IDf("created%s", sn), jen.IDf("%sCreationErr", uvn)).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
+				append(buildCreationArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))...,
+			),
+			jen.ID("requireNotNilAndNoProblems").Call(
+				jen.ID("t"),
+				jen.IDf("created%s", sn),
+				jen.IDf("%sCreationErr", uvn),
+			),
+			jen.Newline(),
+			jen.ID("expected").Equals().ID("append").Call(
+				jen.ID("expected"),
+				jen.IDf("created%s", sn),
+			),
+		),
+		jen.Newline(),
+		jen.ID("exampleLimit").Assign().ID("uint8").Call(jen.Lit(20)),
+		jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
+		jen.Newline(),
+		jen.Commentf("assert %s list equality", scn),
+		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Search%s", pn).Call(
+			searchArgs...,
+		),
+		jen.ID("requireNotNilAndNoProblems").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+			jen.ID("err"),
+		),
+		jen.Qual(constants.AssertionLibrary, "True").Callln(
+			jen.ID("t"),
+			jen.ID("len").Call(jen.ID("expected")).Op("<=").ID("len").Call(jen.ID("actual")),
+			jen.Lit("expected results length %d to be <= %d"),
+			jen.ID("len").Call(jen.ID("expected")),
+			jen.ID("len").Call(jen.ID("actual")),
+		),
+		jen.Newline(),
+		jen.Comment("clean up"),
+		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("expected")).Body(
+			jen.Qual(constants.AssertionLibrary, "NoError").Call(
+				jen.ID("t"),
+				jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
+					buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnly(proj, typ)...,
+				),
+			),
+		),
+	)
+
+	firstSubtest = append(firstSubtest, buildRequisiteCleanupCode(proj, typ, false)...)
+	secondSubtest = append(secondSubtest, buildRequisiteCleanupCode(proj, typ, false)...)
 
 	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Searching", pn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
+			jen.ID("s").Dot("runForCookieClient").Call(
 				jen.Litf("should be able to be search for %s", pcn),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
+					firstSubtest...,
 				)),
-			)),
+			),
+			jen.Newline(),
+			jen.ID("s").Dot("runForPASETOClient").Call(
+				jen.Litf("should be able to be search for %s", pcn),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					secondSubtest...,
+				)),
+			),
+		),
 		jen.Newline(),
 	}
 
@@ -809,9 +973,10 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 		jen.Newline(),
 	}
 
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+	firstSubtest := append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+	secondSubtest := append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
 
-	bodyLines = append(bodyLines,
+	firstSubtest = append(firstSubtest,
 		jen.Commentf("create %s", pcn),
 		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 		func() jen.Code {
@@ -866,9 +1031,10 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 		),
 	)
 
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
+	firstSubtest = append(firstSubtest, buildRequisiteCleanupCode(proj, typ, false)...)
+	secondSubtest = append(secondSubtest, buildRequisiteCleanupCode(proj, typ, false)...)
 
-	bodyLines = append(bodyLines,
+	firstSubtest = append(firstSubtest,
 		jen.Newline(),
 		jen.Comment("clean up"),
 		jen.For(jen.List(jen.Underscore(), jen.IDf("created%s", sn)).Assign().Range().ID("expected")).Body(
@@ -883,12 +1049,20 @@ func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.Da
 
 	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Searching_ReturnsOnly%sThatBelongToYou", pn, pn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Litf("should only receive your own %s", pcn),
+			jen.ID("s").Dot("runForCookieClient").Call(
+				jen.Litf("should be able to be search for %s", pcn),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
+					firstSubtest...,
 				)),
-			)),
+			),
+			jen.Newline(),
+			jen.ID("s").Dot("runForPASETOClient").Call(
+				jen.Litf("should be able to be search for %s", pcn),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					secondSubtest...,
+				)),
+			),
+		),
 		jen.Newline(),
 	}
 
