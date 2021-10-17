@@ -36,6 +36,27 @@ func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj
 	return params
 }
 
+func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndUsesStrings(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	listParams := []jen.Code{}
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for i, pt := range parents {
+			if i != len(parents)-1 {
+				listParams = append(listParams, jen.IDf("created%sID", pt.Name.Singular()))
+			}
+		}
+
+		if len(listParams) > 0 {
+			params = append(params, listParams...)
+		}
+	}
+	params = append(params, jen.IDf("created%s", typ.Name.Singular()))
+
+	return params
+}
+
 func buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructsFor404Tests(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	listParams := []jen.Code{}
@@ -66,6 +87,21 @@ func buildCreationArguments(proj *models.Project, varPrefix string, typ models.D
 			continue
 		} else {
 			args = append(args, jen.IDf("%s%s", varPrefix, ot.Name.Singular()).Dot("ID"))
+		}
+	}
+
+	return args
+}
+
+func buildCreationIDArguments(proj *models.Project, varPrefix string, typ models.DataType) []jen.Code {
+	args := []jen.Code{constants.CtxVar()}
+
+	owners := proj.FindOwnerTypeChain(typ)
+	for i, ot := range owners {
+		if i == len(owners)-1 && typ.BelongsToStruct != nil {
+			continue
+		} else {
+			args = append(args, jen.IDf("%s%sID", varPrefix, ot.Name.Singular()))
 		}
 	}
 
@@ -144,6 +180,98 @@ func buildRequisiteCreationCode(proj *models.Project, typ models.DataType, inclu
 	return lines
 }
 
+func buildRequisiteIDCreationCode(proj *models.Project, typ models.DataType, async, includeSelf bool) (lines []jen.Code) {
+	sn := typ.Name.Singular()
+
+	for _, ot := range proj.FindOwnerTypeChain(typ) {
+		ots := ot.Name.Singular()
+
+		creationArgs := append(buildCreationIDArguments(proj, createdVarPrefix, ot), jen.IDf("example%sInput", ots))
+
+		lines = append(lines,
+			jen.Commentf("Create %s.", ot.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, ots),
+			func() jen.Code {
+				if ot.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(ots)).Dotf("BelongsTo%s", ot.BelongsToStruct.Singular()).Equals().IDf("%s%sID", createdVarPrefix, ot.BelongsToStruct.Singular())
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", ots),
+				fmt.Sprintf("BuildFake%sCreationInputFrom%s", ots, ots),
+				jen.ID(utils.BuildFakeVarName(ots)),
+			),
+			jen.List(jen.IDf("%s%sID", createdVarPrefix, ots), jen.Err()).Assign().ID("testClients").Dot("main").Dotf("Create%s", ots).Call(
+				creationArgs...,
+			),
+			utils.RequireNoError(jen.Err(), nil),
+			jen.Newline(),
+			jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+			),
+			jen.ID("requireNotNilAndNoProblems").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, ots), jen.Err()),
+			jen.Newline(),
+		)
+	}
+
+	creationArgs := append(buildCreationIDArguments(proj, createdVarPrefix, typ), jen.IDf("example%sInput", sn))
+
+	if includeSelf {
+		lines = append(lines,
+			jen.Commentf("Create %s.", typ.Name.SingularCommonName()),
+			utils.BuildFakeVar(proj, sn),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(utils.BuildFakeVarName(sn)).Dotf("BelongsTo%s", typ.BelongsToStruct.Singular()).Equals().IDf("%s%s", createdVarPrefix, typ.BelongsToStruct.Singular()).Dot("ID")
+				}
+				return jen.Null()
+			}(),
+			utils.BuildFakeVarWithCustomName(
+				proj,
+				fmt.Sprintf("example%sInput", sn),
+				fmt.Sprintf("BuildFake%sCreationRequestInputFrom%s", sn, sn),
+				jen.ID(utils.BuildFakeVarName(sn)),
+			),
+			jen.List(jen.IDf("%s%sID", createdVarPrefix, sn), jen.Err()).Assign().ID("testClients").Dot("main").Dotf("Create%s", sn).Call(
+				creationArgs...,
+			),
+			utils.RequireNoError(jen.Err(), nil),
+			jen.Newline(),
+		)
+
+		if async {
+			lines = append(lines,
+				jen.ID("n").Equals().ReceiveFromChannel().ID("notificationsChan"),
+				utils.AssertEqual(jen.ID("n").Dot("DataType"), jen.Qualf(proj.TypesPackage(), "%sDataType", sn), nil),
+				utils.RequireNotNil(jen.ID("n").Dot(sn), nil),
+				jen.IDf("check%sEquality", sn).Call(jen.ID("t"), jen.IDf("example%s", sn), jen.ID("n").Dot(sn)),
+				jen.Newline(),
+				jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Assign().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+					buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+				),
+				jen.ID("requireNotNilAndNoProblems").Call(jen.ID("t"), jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()),
+				jen.Newline(),
+			)
+		} else {
+			lines = append(lines,
+				jen.Var().IDf("created%s", sn).PointerTo().Qual(proj.TypesPackage(), sn),
+				jen.ID("checkFunc").Assign().Func().Params().Params(jen.Bool()).Body(
+					jen.List(jen.IDf("%s%s", createdVarPrefix, sn), jen.Err()).Equals().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+						buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+					),
+					jen.Return(jen.Qual(constants.AssertionLibrary, "NotNil").Call(jen.ID("t"), jen.IDf("created%s", sn)).And().Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.Err())),
+				),
+				jen.Qual(constants.AssertionLibrary, "Eventually").Call(jen.ID("t"), jen.ID("checkFunc"), jen.ID("creationTimeout"), jen.ID("waitPeriod")),
+				jen.Newline(),
+			)
+		}
+	}
+
+	return lines
+}
+
 func buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnly(proj *models.Project, typ models.DataType) []jen.Code {
 	parents := proj.FindOwnerTypeChain(typ)
 	var listParams []jen.Code
@@ -158,6 +286,25 @@ func buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnly(proj *models.Pro
 		params = append(params, listParams...)
 	} else {
 		params = append(params, jen.IDf("created%s", typ.Name.Singular()).Dot("ID"))
+	}
+
+	return params
+}
+
+func buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj *models.Project, typ models.DataType) []jen.Code {
+	parents := proj.FindOwnerTypeChain(typ)
+	var listParams []jen.Code
+	params := []jen.Code{constants.CtxVar()}
+
+	if len(parents) > 0 {
+		for _, pt := range parents {
+			listParams = append(listParams, jen.IDf("created%sID", pt.Name.Singular()))
+		}
+		listParams = append(listParams, jen.IDf("created%sID", typ.Name.Singular()))
+
+		params = append(params, listParams...)
+	} else {
+		params = append(params, jen.IDf("created%sID", typ.Name.Singular()))
 	}
 
 	return params
@@ -301,9 +448,20 @@ func buildTestCompleteLifecycle(proj *models.Project, typ models.DataType) []jen
 		jen.Newline(),
 	}
 
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, true)...)
+	firstSubtestLines := append(bodyLines,
+		jen.ID("stopChan").Assign().Make(jen.Chan().Bool(), jen.One()),
+		jen.List(jen.ID("notificationsChan"), jen.Err()).Assign().ID("testClients").Dot("main").Dot("SubscribeToDataChangeNotifications").Call(constants.CtxVar(), jen.ID("stopChan")),
+		utils.RequireNotNil(jen.ID("notificationsChan"), nil),
+		utils.RequireNoError(jen.Err(), nil),
+		jen.Newline(),
+		jen.Var().ID("n").PointerTo().Qual(proj.TypesPackage(), "DataChangeMessage"),
+		jen.Newline(),
+	)
 
-	bodyLines = append(bodyLines,
+	firstSubtestLines = append(firstSubtestLines, buildRequisiteIDCreationCode(proj, typ, true, true)...)
+	secondSubtestLines := append(bodyLines, buildRequisiteIDCreationCode(proj, typ, false, true)...)
+
+	firstSubtestLines = append(firstSubtestLines,
 		jen.Newline(),
 		jen.Commentf("assert %s equality", scn),
 		jen.IDf("check%sEquality", sn).Call(
@@ -312,18 +470,108 @@ func buildTestCompleteLifecycle(proj *models.Project, typ models.DataType) []jen
 			jen.IDf("created%s", sn),
 		),
 		jen.Newline(),
+		jen.Commentf("change %s", scn),
+		jen.IDf("created%s", sn).Dot("Update").Call(jen.IDf("convert%sTo%sUpdateInput", sn, sn).Call(jen.IDf("example%s", sn))),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
+			jen.ID("t"),
+			jen.ID("testClients").Dot("main").Dotf("Update%s", sn).Call(
+				buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructs(proj, typ)...,
+			),
+		),
+		jen.Newline(),
+		jen.ID("n").Equals().ReceiveFromChannel().ID("notificationsChan"),
+		utils.AssertEqual(jen.ID("n").Dot("DataType"), jen.Qualf(proj.TypesPackage(), "%sDataType", sn), nil),
+		jen.Newline(),
+		jen.Commentf("retrieve changed %s", scn),
+		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+			buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+		),
+		jen.ID("requireNotNilAndNoProblems").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+			jen.ID("err"),
+		),
+		jen.Newline(),
+		jen.Commentf("assert %s equality", scn),
+		jen.IDf("check%sEquality", sn).Call(
+			jen.ID("t"),
+			jen.IDf("example%s", sn),
+			jen.ID("actual"),
+		),
+		jen.Qual(constants.AssertionLibrary, "NotNil").Call(
+			jen.ID("t"),
+			jen.ID("actual").Dot("LastUpdatedOn"),
+		),
+		jen.Newline(),
+	)
+	secondSubtestLines = append(secondSubtestLines,
+		jen.Newline(),
+		jen.Commentf("assert %s equality", scn),
+		jen.IDf("check%sEquality", sn).Call(
+			jen.ID("t"),
+			jen.IDf("example%s", sn),
+			jen.IDf("created%s", sn),
+		),
+		jen.Newline(),
+		jen.Commentf("change %s", scn),
+		jen.IDf("created%s", sn).Dot("Update").Call(jen.IDf("convert%sTo%sUpdateInput", sn, sn).Call(jen.IDf("example%s", sn))),
+		jen.Qual(constants.AssertionLibrary, "NoError").Call(
+			jen.ID("t"),
+			jen.ID("testClients").Dot("main").Dotf("Update%s", sn).Call(
+				buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndUsesStrings(proj, typ)...,
+			),
+		),
+		jen.Newline(),
+		jen.Commentf("retrieve changed %s", scn),
+		jen.Var().ID("actual").PointerTo().Qual(proj.TypesPackage(), sn),
+		jen.ID("checkFunc").Equals().Func().Params().Params(jen.Bool()).Body(
+			jen.List(jen.ID("actual"), jen.Err()).Equals().ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStringIDsOnly(proj, typ)...,
+			),
+			jen.Return(jen.Qual(constants.AssertionLibrary, "NotNil").Call(jen.ID("t"), jen.IDf("created%s", sn)).And().Qual(constants.AssertionLibrary, "NoError").Call(jen.ID("t"), jen.Err())),
+		),
+		jen.Qual(constants.AssertionLibrary, "Eventually").Call(jen.ID("t"), jen.ID("checkFunc"), jen.ID("creationTimeout"), jen.ID("waitPeriod")),
+		jen.Newline(),
+		jen.Newline(),
+		jen.ID("requireNotNilAndNoProblems").Call(
+			jen.ID("t"),
+			jen.ID("actual"),
+			jen.ID("err"),
+		),
+		jen.Newline(),
+		jen.Commentf("assert %s equality", scn),
+		jen.IDf("check%sEquality", sn).Call(
+			jen.ID("t"),
+			jen.IDf("example%s", sn),
+			jen.ID("actual"),
+		),
+		jen.Qual(constants.AssertionLibrary, "NotNil").Call(
+			jen.ID("t"),
+			jen.ID("actual").Dot("LastUpdatedOn"),
+		),
+		jen.Newline(),
 	)
 
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, true)...)
+	firstSubtestLines = append(firstSubtestLines, buildRequisiteCleanupCode(proj, typ, true)...)
+	secondSubtestLines = append(secondSubtestLines, buildRequisiteCleanupCode(proj, typ, true)...)
 
 	lines := []jen.Code{
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_CompleteLifecycle", pn).Params().Body(
 			jen.ID("s").Dot("runForCookieClient").Call(
 				jen.Lit("should be creatable and readable and updatable and deletable"),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
+					firstSubtestLines...,
 				)),
-			)),
+			),
+			jen.Newline(),
+			jen.ID("s").Dot("runForPASETOClient").Call(
+				jen.Lit("should be creatable and readable and updatable and deletable"),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					secondSubtestLines...,
+				)),
+			),
+		),
+		jen.Newline(),
 		jen.Newline(),
 	}
 
@@ -497,6 +745,7 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 		),
 		jen.Newline(),
 		jen.ID("exampleLimit").Assign().ID("uint8").Call(jen.Lit(20)),
+		jen.Qual("time", "Sleep").Call(jen.Qual("time", "Second")),
 		jen.Newline(),
 		jen.Commentf("assert %s list equality", scn),
 		jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("testClients").Dot("main").Dotf("Search%s", pn).Call(
