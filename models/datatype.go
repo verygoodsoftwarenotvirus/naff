@@ -321,36 +321,36 @@ func (c codeWrapper) Code() jen.Code {
 
 func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p *Project) squirrel.Eq {
 	n := typ.Name
-	sn := n.Singular()
+	uvn := n.UnexportedVarName()
 	tableName := typ.Name.PluralRouteName()
 
 	whereValues := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName): NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot("ID")),
+		fmt.Sprintf("%s.id", tableName): NewCodeWrapper(jen.IDf("%sID", uvn)),
 	}
 
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
 		pTableName := pt.Name.PluralRouteName()
 
-		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.Name.UnexportedVarName())).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.IDf("%sID", pt.Name.UnexportedVarName()))
 		whereValues[fmt.Sprintf("%s.archived_on", pTableName)] = nil
 
 		if pt.BelongsToAccount && pt.RestrictedToAccountMembers {
-			whereValues[fmt.Sprintf("%s.belongs_to_account", pTableName)] = NewCodeWrapper(jen.ID(buildFakeVarName("Account")).Dot("ID"))
+			whereValues[fmt.Sprintf("%s.belongs_to_account", pTableName)] = NewCodeWrapper(jen.ID("accountID"))
 		}
 
 		if pt.BelongsToStruct != nil {
-			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(pt.BelongsToStruct.Singular())).Dot("ID"))
+			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("%sID", buildFakeVarName(pt.BelongsToStruct.Singular())))
 		}
 	}
 
 	whereValues[fmt.Sprintf("%s.archived_on", tableName)] = nil
 
 	if typ.BelongsToStruct != nil {
-		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.ID(buildFakeVarName(typ.BelongsToStruct.Singular())).Dot("ID"))
+		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("%sID", buildFakeVarName(typ.BelongsToStruct.Singular())))
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
-		whereValues[fmt.Sprintf("%s.belongs_to_account", tableName)] = NewCodeWrapper(jen.ID(buildFakeVarName(sn)).Dot(constants.AccountOwnershipFieldName))
+		whereValues[fmt.Sprintf("%s.belongs_to_account", tableName)] = NewCodeWrapper(jen.ID("accountID"))
 	}
 
 	return whereValues

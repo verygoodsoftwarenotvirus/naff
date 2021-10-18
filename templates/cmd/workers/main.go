@@ -76,7 +76,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.Comment("find and validate our configuration filepath."),
 			jen.ID("configFilepath").Assign().Qual("os", "Getenv").Call(jen.ID("configFilepathEnvVar")),
-			jen.If(jen.ID("configFilepath").Op("==").Lit("")).Body(
+			jen.If(jen.ID("configFilepath").IsEqualTo().Lit("")).Body(
 				jen.Qual("log", "Fatal").Call(jen.Lit("no config provided")),
 			),
 			jen.Newline(),
@@ -91,7 +91,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.Var().ID("cfg").Op("*").Qual(proj.InternalConfigPackage(), "InstanceConfig"),
-			jen.If(jen.ID("err").Equals().ID("sm").Dot("Decrypt").Call(jen.ID("ctx"), jen.String().Call(jen.ID("configBytes")), jen.Op("&").ID("cfg")), jen.ID("err").DoesNotEqual().Nil().Op("||").ID("cfg").Op("==").Nil()).Body(
+			jen.If(jen.ID("err").Equals().ID("sm").Dot("Decrypt").Call(jen.ID("ctx"), jen.String().Call(jen.ID("configBytes")), jen.Op("&").ID("cfg")), jen.ID("err").DoesNotEqual().Nil().Op("||").ID("cfg").IsEqualTo().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
 			),
 			jen.Newline(),

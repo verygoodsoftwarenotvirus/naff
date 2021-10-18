@@ -10,7 +10,6 @@ import (
 	internalmockauthentication "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authentication/mock"
 	internalauth "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/authorization"
 	buildserver "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/server"
-	buildworker "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/build/worker"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/config"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database"
 	dbconfig "gitlab.com/verygoodsoftwarenotvirus/naff/templates/_internal_/database/config"
@@ -95,7 +94,6 @@ func RenderProject(proj *naffmodels.Project) {
 		"authenticationmock":        internalmockauthentication.RenderPackage,
 		"authorization":             internalauth.RenderPackage,
 		"buildserver":               buildserver.RenderPackage,
-		"buildworker":               buildworker.RenderPackage,
 		"config":                    config.RenderPackage,
 		"database":                  database.RenderPackage,
 		"dbconfig":                  dbconfig.RenderPackage,

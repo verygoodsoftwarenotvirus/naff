@@ -19,6 +19,9 @@ const (
 	whatever        = "fart"
 	packageName     = "postgres"
 	basePackagePath = "internal/database/queriers/postgres"
+
+	existencePrefix = "SELECT EXISTS ("
+	existenceSuffix = ")"
 )
 
 // RenderPackage renders the package

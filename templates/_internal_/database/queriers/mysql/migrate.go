@@ -69,7 +69,7 @@ func migrateDotGo(proj *models.Project) *jen.File {
 					jen.False(),
 				),
 				jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-					jen.If(jen.ID("testUserConfig").Dot("ID").Op("==").Lit("")).Body(
+					jen.If(jen.ID("testUserConfig").Dot("ID").IsEqualTo().Lit("")).Body(
 						jen.ID("testUserConfig").Dot("ID").Equals().ID("ksuid").Dot("New").Call().Dot("String").Call(),
 					),
 					jen.Newline(),

@@ -230,10 +230,10 @@ func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbve
 				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
 			jen.Newline(),
 			jen.If(jen.ID("includeCounts")).Body(
-				jen.If(jen.ID("filteredCount").Op("==").Zero()).Body(
+				jen.If(jen.ID("filteredCount").IsEqualTo().Zero()).Body(
 					jen.ID("filteredCount").Equals().ID("fc")),
 				jen.Newline(),
-				jen.If(jen.ID("totalCount").Op("==").Zero()).Body(
+				jen.If(jen.ID("totalCount").IsEqualTo().Zero()).Body(
 					jen.ID("totalCount").Equals().ID("tc")),
 			),
 			jen.Newline(),
@@ -619,7 +619,7 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 			jen.Return(jen.Nil(), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("limit").Op("==").Zero()).Body(
+		jen.If(jen.ID("limit").IsEqualTo().Zero()).Body(
 			jen.ID("limit").Equals().ID("uint8").Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 		),
 		jen.Newline(),
@@ -739,7 +739,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.If(jen.ID("input").Op("==").Nil()).Body(
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Body(
 			jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
@@ -838,7 +838,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.If(jen.ID("updated").Op("==").Nil()).Body(
+		jen.If(jen.ID("updated").IsEqualTo().Nil()).Body(
 			jen.Return().ID("ErrNilInputProvided"),
 		),
 		jen.Newline(),

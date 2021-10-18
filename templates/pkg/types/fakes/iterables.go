@@ -32,7 +32,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	fakeFields = append(fakeFields, jen.ID("CreatedOn").MapAssign().Uint64().Call(jen.ID("uint32").Call(jen.Qual(constants.FakeLibrary, "Date").Call().Dot("Unix").Call())))
 
 	if typ.BelongsToStruct != nil {
-		fakeFields = append(fakeFields, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Qual(constants.FakeLibrary, "Uint64").Call())
+		fakeFields = append(fakeFields, jen.IDf("BelongsTo%s", typ.BelongsToStruct.Singular()).MapAssign().Qual(constants.FakeLibrary, "UUID").Call())
 	}
 
 	fakeFields = append(fakeFields,

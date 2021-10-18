@@ -1009,7 +1009,9 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.If(jen.ID("s").Dot("async")).Body(
-			jen.List(jen.ID("exists"), jen.ID("existenceCheckErr")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(constants.CtxVar(), jen.IDf("%sID", uvn), jen.ID("sessionCtxData").Dot("ActiveAccountID")),
+			jen.List(jen.ID("exists"), jen.ID("existenceCheckErr")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(
+				typ.BuildDBClientExistenceMethodCallArgs(proj)...,
+			),
 			jen.If(jen.ID("existenceCheckErr").DoesNotEqual().Nil().And().Not().Qual("errors", "Is").Call(jen.ID("existenceCheckErr"), jen.Qual("database/sql", "ErrNoRows"))).Body(
 				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
 					jen.ID("existenceCheckErr"),

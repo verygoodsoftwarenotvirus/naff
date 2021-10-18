@@ -33,6 +33,15 @@ func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmit
 	return code
 }
 
+func convertArgsToCode(args []interface{}) (code []jen.Code) {
+	for _, arg := range args {
+		if c, ok := arg.(models.Coder); ok {
+			code = append(code, c.Code())
+		}
+	}
+	return
+}
+
 func determineSelectColumns(typ models.DataType) []string {
 	tableName := typ.Name.PluralRouteName()
 
@@ -230,10 +239,10 @@ func buildScanMultipleSomethings(proj *models.Project, typ models.DataType, dbve
 				jen.Return().List(jen.Nil(), jen.Zero(), jen.Zero(), jen.ID("scanErr"))),
 			jen.Newline(),
 			jen.If(jen.ID("includeCounts")).Body(
-				jen.If(jen.ID("filteredCount").Op("==").Zero()).Body(
+				jen.If(jen.ID("filteredCount").IsEqualTo().Zero()).Body(
 					jen.ID("filteredCount").Equals().ID("fc")),
 				jen.Newline(),
-				jen.If(jen.ID("totalCount").Op("==").Zero()).Body(
+				jen.If(jen.ID("totalCount").IsEqualTo().Zero()).Body(
 					jen.ID("totalCount").Equals().ID("tc")),
 			),
 			jen.Newline(),
@@ -276,20 +285,33 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	tableName := typ.Name.PluralRouteName()
-	sqlBuilder := queryBuilderForDatabase(dbvendor)
 
-	query, _, err := sqlBuilder.Select(fmt.Sprintf("%s.id", tableName)).
-		Prefix("SELECT EXISTS (").
-		From(tableName).
-		Suffix(")").
-		Where(squirrel.Eq{
-			fmt.Sprintf("%s.id", tableName):                 whatever,
-			fmt.Sprintf("%s.archived_on", tableName):        nil,
-			fmt.Sprintf("%s.belongs_to_account", tableName): whatever,
-		}).ToSql()
+	eqArgs := squirrel.Eq{
+		fmt.Sprintf("%s.id", tableName): whatever,
+	}
+	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+		eqArgs[fmt.Sprintf("%s.belongs_to_user", tableName)] = whatever
+	}
+	if typ.BelongsToStruct != nil {
+		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whatever
+	}
+
+	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(proj)
+	qb := queryBuilderForDatabase(dbvendor).Select(fmt.Sprintf("%s.id", tableName)).
+		Prefix(existencePrefix).
+		From(tableName)
+
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	qb = qb.Suffix(existenceSuffix).
+		Where(whereValues)
+
+	query, args, err := qb.ToSql()
 	if err != nil {
 		panic(err)
 	}
+
+	dbCallArgs := convertArgsToCode(args)
 
 	bodyLines := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -303,8 +325,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("args").Assign().Index().Interface().Valuesln(
-			jen.ID("accountID"), jen.IDf("%sID", uvn)),
+		jen.ID("args").Assign().Index().Interface().Valuesln(dbCallArgs...),
 		jen.Newline(),
 		jen.List(jen.ID("result"), jen.ID("err")).Assign().ID("q").Dot("performBooleanQuery").Call(
 			jen.ID("ctx"),
@@ -623,7 +644,7 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 			jen.Return(jen.Nil(), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
-		jen.If(jen.ID("limit").Op("==").Zero()).Body(
+		jen.If(jen.ID("limit").IsEqualTo().Zero()).Body(
 			jen.ID("limit").Equals().ID("uint8").Call(jen.Qual(proj.TypesPackage(), "DefaultLimit")),
 		),
 		jen.Newline(),
@@ -740,7 +761,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.If(jen.ID("input").Op("==").Nil()).Body(
+		jen.If(jen.ID("input").IsEqualTo().Nil()).Body(
 			jen.Return().List(jen.Nil(), jen.ID("ErrNilInputProvided")),
 		),
 		jen.Newline(),
@@ -839,7 +860,7 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-		jen.If(jen.ID("updated").Op("==").Nil()).Body(
+		jen.If(jen.ID("updated").IsEqualTo().Nil()).Body(
 			jen.Return().ID("ErrNilInputProvided"),
 		),
 		jen.Newline(),
@@ -891,15 +912,91 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 	return lines
 }
 
+//func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+//	uvn := typ.Name.UnexportedVarName()
+//	sn := typ.Name.Singular()
+//	scn := typ.Name.SingularCommonName()
+//	scnwp := typ.Name.SingularCommonNameWithPrefix()
+//
+//	tableName := typ.Name.PluralRouteName()
+//	sqlBuilder := queryBuilderForDatabase(dbvendor)
+//
+//	archiveWhere := squirrel.Eq{
+//		"id":          whatever,
+//		"archived_on": nil,
+//	}
+//
+//	if typ.BelongsToStruct != nil {
+//		archiveWhere[fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName())] = whatever
+//	}
+//	if typ.BelongsToAccount {
+//		archiveWhere["belongs_to_account"] = whatever
+//	}
+//
+//	query, _, err := sqlBuilder.Update(tableName).
+//		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+//		Where(archiveWhere).ToSql()
+//
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	bodyLines := []jen.Code{
+//		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+//		jen.Defer().ID("span").Dot("End").Call(),
+//		jen.Newline(),
+//		jen.ID("logger").Assign().ID("q").Dot("logger"),
+//		jen.Newline(),
+//	}
+//
+//	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.Null())...)
+//
+//	bodyLines = append(bodyLines,
+//		jen.Newline(),
+//		jen.ID("args").Assign().Index().Interface().Valuesln(
+//			jen.ID("accountID"), jen.IDf("%sID", uvn)),
+//		jen.Newline(),
+//		jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
+//			jen.ID("ctx"),
+//			jen.ID("q").Dot("db"),
+//			jen.Litf("%s archive", scn),
+//			jen.IDf("archive%sQuery", sn),
+//			jen.ID("args"),
+//		), jen.ID("err").DoesNotEqual().Nil()).Body(
+//			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+//				jen.ID("err"),
+//				jen.ID("logger"),
+//				jen.ID("span"),
+//				jen.Litf("updating %s", scn),
+//			)),
+//		jen.Newline(),
+//		jen.ID("logger").Dot("Info").Call(jen.Litf("%s archived", scn)),
+//		jen.Newline(),
+//		jen.Return().Nil(),
+//	)
+//
+//	lines := []jen.Code{
+//		jen.Const().IDf("archive%sQuery", sn).Equals().Lit(query),
+//		jen.Newline(),
+//		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
+//		jen.Newline(),
+//		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Archive%s", sn).Params(typ.BuildDBClientArchiveMethodParams()...).Params(jen.ID("error")).Body(
+//			bodyLines...,
+//		),
+//		jen.Newline(),
+//	}
+//
+//	return lines
+//}
+
 func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
-	uvn := typ.Name.UnexportedVarName()
 	sn := typ.Name.Singular()
+	uvn := typ.Name.UnexportedVarName()
 	scn := typ.Name.SingularCommonName()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	tableName := typ.Name.PluralRouteName()
 	sqlBuilder := queryBuilderForDatabase(dbvendor)
-
 	archiveWhere := squirrel.Eq{
 		"id":          whatever,
 		"archived_on": nil,
@@ -920,51 +1017,56 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 		panic(err)
 	}
 
-	bodyLines := []jen.Code{
-		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-		jen.Defer().ID("span").Dot("End").Call(),
-		jen.Newline(),
-		jen.ID("logger").Assign().ID("q").Dot("logger"),
-		jen.Newline(),
-	}
-
-	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.Null())...)
-
-	bodyLines = append(bodyLines,
-		jen.Newline(),
-		jen.ID("args").Assign().Index().Interface().Valuesln(
-			jen.ID("accountID"), jen.IDf("%sID", uvn)),
-		jen.Newline(),
-		jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
-			jen.ID("ctx"),
-			jen.ID("q").Dot("db"),
-			jen.Litf("%s archive", scn),
-			jen.IDf("archive%sQuery", sn),
-			jen.ID("args"),
-		), jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
-				jen.ID("err"),
-				jen.ID("logger"),
-				jen.ID("span"),
-				jen.Litf("updating %s", scn),
-			)),
-		jen.Newline(),
-		jen.ID("logger").Dot("Info").Call(jen.Litf("%s archived", scn)),
-		jen.Newline(),
-		jen.Return().Nil(),
-	)
-
-	lines := []jen.Code{
+	return []jen.Code{
 		jen.Const().IDf("archive%sQuery", sn).Equals().Lit(query),
-		jen.Newline(),
 		jen.Newline(),
 		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
 		jen.Newline(),
-		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Archive%s", sn).Params(typ.BuildDBClientArchiveMethodParams()...).Params(jen.ID("error")).Body(
-			bodyLines...,
+		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("Archive%s", sn).Params(typ.BuildDBClientArchiveMethodParams()...).Params(jen.ID("error")).Body(
+			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
+			jen.Defer().ID("span").Dot("End").Call(),
+			jen.Newline(),
+			jen.ID(constants.LoggerVarName).Assign().ID("q").Dot(constants.LoggerVarName),
+			jen.Newline(),
+			jen.If(jen.IDf("%sID", uvn).IsEqualTo().EmptyString()).Body(
+				jen.Return().ID("ErrInvalidIDProvided"),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.Name.Singular())), jen.IDf("%sID", typ.Name.UnexportedVarName())),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.Name.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.Name.UnexportedVarName())),
+			jen.Newline(),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.If(jen.ID("accountID").IsEqualTo().EmptyString()).Body(jen.Return().ID("ErrInvalidIDProvided"))),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), "AccountIDKey"), jen.ID("accountID"))),
+			utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(jen.ID(constants.SpanVarName), jen.ID("accountID"))),
+			jen.Newline(),
+			jen.ID("args").Assign().Index().Interface().Valuesln(
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+					}
+					return jen.Null()
+				}(),
+				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
+				jen.IDf("%sID", uvn),
+			),
+			jen.Newline(),
+			jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
+				jen.ID("ctx"),
+				jen.ID("q").Dot("db"),
+				jen.Litf("%s archive", scn),
+				jen.IDf("archive%sQuery", sn),
+				jen.ID("args"),
+			), jen.ID("err").DoesNotEqual().Nil()).Body(
+				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
+					jen.ID("err"),
+					jen.ID("logger"),
+					jen.ID("span"),
+					jen.Litf("updating %s", scn),
+				)),
+			jen.Newline(),
+			constants.LoggerVar().Dot("Info").Call(jen.Litf("%s archived", scn)),
+			jen.Newline(),
+			jen.Return().Nil(),
 		),
 		jen.Newline(),
 	}
-
-	return lines
 }

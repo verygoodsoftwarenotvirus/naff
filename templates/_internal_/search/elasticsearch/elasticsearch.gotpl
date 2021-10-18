@@ -150,16 +150,16 @@ func (sm *indexManager) search(
 		return nil, observability.PrepareError(err, logger, span, "querying elasticsearch")
 	}
 
-	results := []string{}
+	resultIDs := []string{}
 	for _, hit := range results.Hits.Hits {
 		var i *idContainer
 		if unmarshalErr := json.Unmarshal(hit.Source, &i); unmarshalErr != nil {
 			return nil, observability.PrepareError(err, logger, span, "unmarshalling search result")
 		}
-		results = append(results, i.ID)
+		resultIDs = append(resultIDs, i.ID)
 	}
 
-	return results, nil
+	return resultIDs, nil
 }
 
 // Search implements our IndexManager interface.

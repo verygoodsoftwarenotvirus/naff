@@ -69,8 +69,6 @@ func permissionsDotGo(proj *models.Project) string {
 		pn := typ.Name.Plural()
 		prn := typ.Name.PluralRouteName()
 
-		adminTypePermissions = append(adminTypePermissions, fmt.Sprintf(`// Read%sAuditLogEntriesPermission is an account admin permission.
-	Read%sAuditLogEntriesPermission Permission = "read.audit_log_entries.%s"`, pn, pn, prn))
 		memberTypePermissions = append(memberTypePermissions, fmt.Sprintf(`
 // Create%sPermission is an account user permission.
 Create%sPermission Permission = "create.%s"
@@ -83,7 +81,6 @@ Update%sPermission Permission = "update.%s"
 // Archive%sPermission is an account user permission.
 Archive%sPermission Permission = "archive.%s"
 `, pn, pn, prn, pn, pn, prn, pn, pn, prn, pn, pn, prn, pn, pn, prn))
-		accountAdminPermissionsSetDecl = append(accountAdminPermissionsSetDecl, fmt.Sprintf("Read%sAuditLogEntriesPermission.ID(): Read%sAuditLogEntriesPermission,", pn, pn))
 		accountMemberPermissionsSetDecl = append(accountMemberPermissionsSetDecl, fmt.Sprintf(`Create%sPermission.ID():  Create%sPermission,
 Read%sPermission.ID():    Read%sPermission,
 Search%sPermission.ID():  Search%sPermission,

@@ -106,9 +106,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
 	)
 
-	serviceBodyLines := []jen.Code{
-		jen.ID("client").Assign().AddressOf().Qual("net/http", "Client").Values(jen.ID("Transport").MapAssign().Qual(proj.InternalTracingPackage(), "BuildTracedHTTPTransport").Call(jen.Qual("time", "Second"))),
-	}
+	serviceBodyLines := []jen.Code{}
 
 	if typ.SearchEnabled {
 		searchFields := []jen.Code{}
@@ -119,6 +117,8 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		}
 
 		serviceBodyLines = append(serviceBodyLines,
+			jen.ID("client").Assign().AddressOf().Qual("net/http", "Client").Values(jen.ID("Transport").MapAssign().Qual(proj.InternalTracingPackage(), "BuildTracedHTTPTransport").Call(jen.Qual("time", "Second"))),
+			jen.Newline(),
 			jen.List(jen.ID("searchIndexManager"), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
 				append([]jen.Code{
 					constants.CtxVar(),
@@ -136,7 +136,6 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	}
 
 	serviceBodyLines = append(serviceBodyLines,
-		jen.Newline(),
 		jen.List(jen.ID("preWritesPublisher"), jen.Err()).Assign().ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("cfg").Dot("PreWritesTopicName")),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
 			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up queue provider: %w"), jen.Err()))),

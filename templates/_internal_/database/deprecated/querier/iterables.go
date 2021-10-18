@@ -34,7 +34,6 @@ func newIterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	code.Add(buildCreateSomething(proj, typ)...)
 	code.Add(buildUpdateSomething(proj, typ)...)
 	code.Add(buildArchiveSomething(proj, typ)...)
-	code.Add(buildGetAuditLogEntriesForSomething(proj, typ)...)
 
 	return code
 }
@@ -1035,73 +1034,6 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType) []jen.Code
 			constants.LoggerVar().Dot("Info").Call(jen.Litf("%s archived", scn)),
 			jen.Newline(),
 			jen.Return().Nil(),
-		),
-		jen.Newline(),
-	}
-}
-
-func buildGetAuditLogEntriesForSomething(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
-	scn := typ.Name.SingularCommonName()
-
-	return []jen.Code{
-		jen.Commentf("GetAuditLogEntriesFor%s fetches a list of audit log entries from the database that relate to a given %s.", sn, scn),
-		jen.Newline(),
-		jen.Func().Params(jen.ID("q").PointerTo().ID("SQLQuerier")).IDf("GetAuditLogEntriesFor%s", sn).Params(constants.CtxParam(), jen.IDf("%sID", uvn).Uint64()).Params(jen.Index().PointerTo().Qual(proj.TypesPackage(), "AuditLogEntry"), jen.ID("error")).Body(
-			jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID(constants.LoggerVarName).Assign().ID("q").Dot(constants.LoggerVarName),
-			jen.Newline(),
-			jen.If(jen.IDf("%sID", uvn).IsEqualTo().Zero()).Body(
-				jen.Return().List(jen.Nil(), jen.ID("ErrInvalidIDProvided")),
-			),
-			constants.LoggerVar().Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(
-				jen.ID("keys").Dotf("%sIDKey", sn),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("sqlQueryBuilder").Dotf("BuildGetAuditLogEntriesFor%sQuery", sn).Call(
-				jen.ID("ctx"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			jen.List(jen.ID("rows"), jen.Err()).Assign().ID("q").Dot("performReadQuery").Call(
-				jen.ID("ctx"),
-				jen.ID("q").Dot("db"),
-				jen.Litf("audit log entries for %s", scn),
-				jen.ID("query"),
-				jen.ID("args").Spread(),
-			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
-					jen.Err(),
-					constants.LoggerVar(),
-					jen.ID("span"),
-					jen.Lit("querying database for audit log entries"),
-				)),
-			),
-			jen.Newline(),
-			jen.List(jen.ID("auditLogEntries"), jen.Underscore(), jen.Err()).Assign().ID("q").Dot("scanAuditLogEntries").Call(
-				jen.ID("ctx"),
-				jen.ID("rows"),
-				jen.False(),
-			),
-			jen.If(jen.Err().DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.Qual(proj.ObservabilityPackage(), "PrepareError").Call(
-					jen.Err(),
-					constants.LoggerVar(),
-					jen.ID("span"),
-					jen.Lit("scanning audit log entries"),
-				)),
-			),
-			jen.Newline(),
-			jen.Return().List(jen.ID("auditLogEntries"), jen.Nil()),
 		),
 		jen.Newline(),
 	}

@@ -33,17 +33,12 @@ func buildSomethingConstantDefinitions(_ *models.Project, typ models.DataType) [
 	sn := n.Singular()
 	scnwp := n.SingularCommonNameWithPrefix()
 
-	lines := []jen.Code{}
-
-	if typ.SearchEnabled {
-		lines = append(
-			lines,
-			jen.Const().Defs(
-				jen.Commentf("%sDataType indicates an event is related to %s.", sn, scnwp),
-				jen.IDf("%sDataType", sn).ID("dataType").Equals().Lit(typ.Name.RouteName()),
-			),
-			jen.Newline(),
-		)
+	lines := []jen.Code{
+		jen.Const().Defs(
+			jen.Commentf("%sDataType indicates an event is related to %s.", sn, scnwp),
+			jen.IDf("%sDataType", sn).ID("dataType").Equals().Lit(typ.Name.RouteName()),
+		),
+		jen.Newline(),
 	}
 
 	return lines

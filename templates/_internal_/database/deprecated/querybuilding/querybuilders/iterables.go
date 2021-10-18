@@ -32,7 +32,6 @@ func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmit
 	code.Add(buildBuildCreateSomethingQuery(proj, typ, dbvendor)...)
 	code.Add(buildBuildUpdateSomethingQuery(proj, typ, dbvendor)...)
 	code.Add(buildBuildArchiveSomethingQuery(proj, typ, dbvendor)...)
-	code.Add(buildBuildGetAuditLogEntriesForSomethingQuery(proj, typ, dbvendor)...)
 
 	return code
 }
@@ -792,63 +791,6 @@ func buildBuildArchiveSomethingQuery(proj *models.Project, typ models.DataType, 
 						return jen.Null()
 					}(),
 					utils.ConditionalCode(typ.RestrictedToAccountMembers, jen.Qual(proj.QuerybuildingPackage(), fmt.Sprintf("%sTableAccountOwnershipColumn", pn)).MapAssign().ID("accountID")),
-				)),
-			),
-		),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
-func buildBuildGetAuditLogEntriesForSomethingQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
-	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
-	scnwp := typ.Name.SingularCommonNameWithPrefix()
-
-	keyDecl := jen.IDf("%sIDKey", typ.Name.UnexportedVarName()).Assign().Qual("fmt", "Sprintf").Callln(
-		jen.ID("jsonPluckQuery"),
-		jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
-		jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableContextColumn"),
-		utils.ConditionalCode(dbvendor.SingularPackageName() == "mysql", jen.IDf("%sID", uvn)),
-		jen.Qual(proj.InternalAuditPackage(), fmt.Sprintf("%sAssignmentKey", sn)),
-	)
-
-	keyUsage := jen.Null()
-
-	switch dbvendor.Singular() {
-	case string(models.MySQL):
-		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.IDf("%sIDKey", uvn))
-	case string(models.Postgres), string(models.Sqlite):
-		keyUsage = jen.Qual(constants.SQLGenerationLibrary, "Eq").Values(jen.IDf("%sIDKey", uvn).MapAssign().IDf("%sID", uvn))
-	}
-
-	lines := []jen.Code{
-		jen.Commentf("BuildGetAuditLogEntriesFor%sQuery constructs a SQL query for fetching audit log entries relating to %s with a given ID.", sn, scnwp),
-		jen.Newline(),
-		jen.Func().Params(jen.ID("b").PointerTo().ID(dbvendor.Singular())).IDf("BuildGetAuditLogEntriesFor%sQuery", sn).Params(jen.ID("ctx").Qual("context", "Context"),
-			jen.IDf("%sID", uvn).Uint64()).Params(jen.ID("query").String(),
-			jen.ID("args").Index().Interface()).Body(
-			jen.List(jen.Underscore(), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-			jen.Defer().ID("span").Dot("End").Call(),
-			jen.Newline(),
-			jen.ID("tracing").Dotf("Attach%sIDToSpan", sn).Call(
-				jen.ID("span"),
-				jen.IDf("%sID", uvn),
-			),
-			jen.Newline(),
-			keyDecl,
-			jen.Newline(),
-			jen.Return().ID("b").Dot("buildQuery").Callln(
-				jen.ID("span"),
-				jen.ID("b").Dot("sqlBuilder").
-					Dot("Select").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableColumns").Op("...")).
-					Dotln("From").Call(jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName")).
-					Dotln("Where").Call(keyUsage).
-					Dotln("OrderBy").Call(jen.Qual("fmt", "Sprintf").Call(
-					jen.Lit("%s.%s"),
-					jen.Qual(proj.QuerybuildingPackage(), "AuditLogEntriesTableName"),
-					jen.Qual(proj.QuerybuildingPackage(), "CreatedOnColumn"),
 				)),
 			),
 		),
