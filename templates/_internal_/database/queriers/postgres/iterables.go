@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 
@@ -17,6 +18,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType, dbvendor wordsmit
 
 	utils.AddImports(proj, code, false)
 
+	code.Add(buildTopConstBlock(proj, typ, dbvendor)...)
 	code.Add(buildTopVarBlock(proj, typ, dbvendor)...)
 	code.Add(buildScanSomething(proj, typ, dbvendor)...)
 	code.Add(buildScanMultipleSomethings(proj, typ, dbvendor)...)
@@ -61,10 +63,31 @@ func determineSelectColumns(typ models.DataType) []string {
 	return selectColumns
 }
 
+func buildTopConstBlock(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	lines := []jen.Code{
+		jen.Const().Defs(
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					prn := typ.Name.PluralRouteName()
+					puvn := typ.Name.Plural()
+					btspn := typ.BelongsToStruct.PluralUnexportedVarName()
+					btsrn := typ.BelongsToStruct.RouteName()
+					btsprn := typ.BelongsToStruct.PluralRouteName()
+
+					return jen.IDf("%sOn%sJoinClause", btspn, puvn).Equals().Litf("%s ON %s.belongs_to_%s=%s.id", btsprn, prn, btsrn, btsprn)
+				}
+				return jen.Null()
+			}(),
+		),
+	}
+
+	return lines
+}
+
 func buildTopVarBlock(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
 	puvn := typ.Name.PluralUnexportedVarName()
-
 	tableName := typ.Name.PluralRouteName()
 
 	columns := []jen.Code{
@@ -97,6 +120,10 @@ func buildTopVarBlock(proj *models.Project, typ models.DataType, dbvendor wordsm
 			jen.IDf("%sTableColumns", puvn).Equals().Index().String().Valuesln(
 				columns...,
 			),
+			jen.Newline(),
+			utils.ConditionalCode(len(proj.FindOwnerTypeChain(typ)) > 0, jen.IDf("get%sJoins", pn).Equals().Index().String().Valuesln(
+				buildJoinsListForListQuery(proj, typ)...,
+			)),
 		),
 		jen.Newline(),
 	}
@@ -290,7 +317,7 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 		fmt.Sprintf("%s.id", tableName): whatever,
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
-		eqArgs[fmt.Sprintf("%s.belongs_to_user", tableName)] = whatever
+		eqArgs[fmt.Sprintf("%s.belongs_to_account", tableName)] = whatever
 	}
 	if typ.BelongsToStruct != nil {
 		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whatever
@@ -358,33 +385,52 @@ func buildSomethingExists(proj *models.Project, typ models.DataType, dbvendor wo
 	return lines
 }
 
+func buildPrefixedStringColumns(typ models.DataType) []string {
+	tableName := typ.Name.PluralRouteName()
+	out := []string{fmt.Sprintf("%s.id", tableName)}
+
+	for _, field := range typ.Fields {
+		out = append(out, fmt.Sprintf("%s.%s", tableName, field.Name.RouteName()))
+	}
+
+	out = append(out,
+		fmt.Sprintf("%s.created_on", tableName),
+		fmt.Sprintf("%s.last_updated_on", tableName),
+		fmt.Sprintf("%s.archived_on", tableName),
+	)
+
+	if typ.BelongsToAccount {
+		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
+	}
+	if typ.BelongsToStruct != nil {
+		out = append(out, fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName()))
+	}
+
+	return out
+}
+
 func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	uvn := typ.Name.UnexportedVarName()
 	sn := typ.Name.Singular()
 	scnwp := typ.Name.SingularCommonNameWithPrefix()
 
 	tableName := typ.Name.PluralRouteName()
-	sqlBuilder := queryBuilderForDatabase(dbvendor)
-	selectColumns := determineSelectColumns(typ)
 
-	singleSelectWhereClause := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName):          whatever,
-		fmt.Sprintf("%s.archived_on", tableName): nil,
-	}
+	whereValues := typ.BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(proj)
 
-	if typ.BelongsToStruct != nil {
-		selectColumns = append(selectColumns, fmt.Sprintf("%s.belongs_to_%s", typ.BelongsToStruct.RouteName()))
-		singleSelectWhereClause[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whatever
-	}
-	if typ.BelongsToAccount {
-		selectColumns = append(selectColumns, fmt.Sprintf("%s.belongs_to_account", tableName))
-		singleSelectWhereClause[fmt.Sprintf("%s.belongs_to_account", tableName)] = whatever
-	}
+	cols := buildPrefixedStringColumns(typ)
+	qb := queryBuilderForDatabase(dbvendor).Select(cols...).
+		From(tableName)
 
-	query, _, err := sqlBuilder.Select(selectColumns...).From(tableName).Where(singleSelectWhereClause).ToSql()
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+	qb = qb.Where(whereValues)
+
+	query, args, err := qb.ToSql()
 	if err != nil {
 		panic(err)
 	}
+
+	dbCallArgs := convertArgsToCode(args)
 
 	bodyLines := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -398,8 +444,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.ID("args").Assign().Index().Interface().Valuesln(
-			jen.ID("accountID"), jen.IDf("%sID", uvn)),
+		jen.ID("args").Assign().Index().Interface().Valuesln(dbCallArgs...),
 		jen.Newline(),
 		jen.ID("row").Assign().ID("q").Dot("getOneRow").Call(
 			jen.ID("ctx"),
@@ -439,11 +484,96 @@ func buildGetSomething(proj *models.Project, typ models.DataType, dbvendor words
 	return lines
 }
 
+func buildDBQueryMethodConditionalClauses(p *models.Project, typ models.DataType, includeSelf bool) []jen.Code {
+	n := typ.Name
+	pn := n.Plural()
+	uvn := n.UnexportedVarName()
+
+	whereValues := []jen.Code{}
+	for _, pt := range p.FindOwnerTypeChain(typ) {
+		whereValues = append(
+			whereValues,
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s.%s"),
+				jen.IDf("%sTableName", pt.Name.Plural()),
+				jen.Lit("id"),
+			).MapAssign().IDf("%sID", pt.Name.UnexportedVarName()),
+			jen.Qual("fmt", "Sprintf").Call(
+				jen.Lit("%s.%s"),
+				jen.IDf("%sTableName", pt.Name.Plural()),
+				jen.Lit("archived_on"),
+			).MapAssign().Nil(),
+		)
+
+		if pt.BelongsToAccount && pt.RestrictedToAccountMembers {
+			whereValues = append(
+				whereValues,
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s.%s"),
+					jen.IDf("%sTableName", pt.Name.Plural()),
+					jen.IDf("%sTableAccountOwnershipColumn", pt.Name.Plural()),
+				).MapAssign().ID("accountID"),
+			)
+		}
+
+		if pt.BelongsToStruct != nil {
+			whereValues = append(
+				whereValues,
+				jen.Qual("fmt", "Sprintf").Call(
+					jen.Lit("%s.%s"),
+					jen.IDf("%sTableName", pt.Name.Plural()),
+					jen.IDf("%sTableBelongsTo%sColumn", pt.Name.Plural(), pt.BelongsToStruct.Singular()),
+				).MapAssign().IDf("%sID", pt.BelongsToStruct.UnexportedVarName()),
+			)
+		}
+	}
+
+	if includeSelf {
+		whereValues = append(whereValues,
+			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn)),
+			jen.Lit("id").MapAssign().IDf("%sID", uvn),
+			jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn)), jen.Lit("archived_on").MapAssign().Nil(),
+		)
+
+		if typ.BelongsToStruct != nil {
+			whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.IDf("%sTableBelongsTo%sColumn", pn, typ.BelongsToStruct.Singular())).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+		}
+		if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+			whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.IDf("%sTableAccountOwnershipColumn", pn)).MapAssign().ID("accountID"))
+		}
+	} else {
+		whereValues = append(whereValues, jen.Qual("fmt", "Sprintf").Call(jen.Lit("%s.%s"), jen.IDf("%sTableName", pn), jen.Lit("archived_on")).MapAssign().Nil())
+	}
+
+	return whereValues
+}
+
+func buildJoinsListForListQuery(p *models.Project, typ models.DataType) []jen.Code {
+	out := []jen.Code{}
+
+	if typ.BelongsToStruct != nil {
+		out = append(out, jen.IDf("%sOn%sJoinClause", typ.BelongsToStruct.PluralUnexportedVarName(), typ.Name.Plural()))
+	}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for i := len(owners) - 1; i >= 0; i-- {
+		pt := owners[i]
+
+		if pt.BelongsToStruct != nil {
+			out = append(out, jen.IDf("%sOn%sJoinClause", pt.BelongsToStruct.PluralUnexportedVarName(), pt.Name.Plural()))
+
+		}
+	}
+
+	return out
+}
+
 func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	pcn := typ.Name.PluralCommonName()
 	puvn := typ.Name.PluralUnexportedVarName()
+	prn := typ.Name.PluralRouteName()
 
 	bodyLines := []jen.Code{
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
@@ -469,12 +599,22 @@ func buildGetSomethingsList(proj *models.Project, typ models.DataType, dbvendor 
 		jen.Newline(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dot("buildListQuery").Callln(
 			jen.ID("ctx"),
-			jen.Lit(puvn),
-			jen.Nil(),
+			jen.Lit(prn),
+			func() jen.Code {
+				if len(proj.FindOwnerTypeChain(typ)) > 0 {
+					return jen.IDf("get%sJoins", pn)
+				}
+				return jen.Nil()
+			}(),
 			jen.Nil(),
 			jen.ID("accountOwnershipColumn"),
 			jen.IDf("%sTableColumns", puvn),
-			jen.ID("accountID"),
+			func() jen.Code {
+				if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+					return jen.ID("accountID")
+				}
+				return jen.EmptyString()
+			}(),
 			jen.False(),
 			jen.ID("filter"),
 		),
@@ -575,6 +715,77 @@ func buildGetTotalSomethingCount(proj *models.Project, typ models.DataType, dbve
 	return lines
 }
 
+func buildGetListOfSomethingQueryFuncDecl(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+	dbvsn := dbvendor.Singular()
+	pn := typ.Name.Plural()
+	pcn := typ.Name.PluralCommonName()
+	puvn := typ.Name.PluralUnexportedVarName()
+	dbfl := strings.ToLower(string([]byte(dbvsn)[0]))
+
+	params := typ.BuildDBQuerierListRetrievalQueryBuildingMethodParams(proj)
+
+	var firstCommentLine string
+	if (typ.RestrictedToAccountAtSomeLevel(proj) && typ.RestrictedToAccountMembers) && typ.BelongsToStruct != nil {
+		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter, and belong to a given user and %s,", pn, pcn, typ.BelongsToStruct.SingularCommonName())
+	} else if typ.RestrictedToAccountAtSomeLevel(proj) && typ.RestrictedToAccountMembers {
+		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given user,", pn, pcn)
+	} else if typ.BelongsToStruct != nil {
+		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter and belong to a given %s,", pn, pcn, typ.BelongsToStruct.SingularCommonName())
+	} else {
+		firstCommentLine = fmt.Sprintf("buildGet%sQuery builds a SQL query selecting %s that adhere to a given QueryFilter,", pn, pcn)
+	}
+
+	whereValues := typ.BuildDBQuerierListRetrievalQueryMethodConditionalClauses(proj)
+	qbStmt := jen.ID("builder").Assign().ID(dbfl).Dot("sqlBuilder").
+		Dotln("Select").Call(
+		func() jen.Code {
+			if typ.IsEnumeration {
+				return jen.Append(
+					jen.IDf("%sTableColumns", puvn),
+					jen.Qual("fmt", "Sprintf").Call(
+						jen.Lit("(%s)"),
+						jen.ID(dbfl).Dotf("buildGetAll%sCountQuery", pn).Call(),
+					),
+				).Spread()
+			} else {
+				return jen.IDf("%sTableColumns", puvn).Spread()
+			}
+		}(),
+	).
+		Dotln("From").Call(jen.IDf("%sTableName", puvn))
+
+	qbStmt = typ.ModifyQueryBuildingStatementWithJoinClauses(proj, qbStmt)
+
+	if len(whereValues) > 0 {
+		qbStmt = qbStmt.Dotln("Where").Call(jen.Qual(constants.SQLGenerationLibrary, "Eq").Valuesln(whereValues...))
+	}
+	qbStmt = qbStmt.Dotln("OrderBy").Call(utils.FormatString("%s.%s", jen.IDf("%sTableName", puvn), jen.ID("idColumn")))
+
+	return []jen.Code{
+		jen.Comment(firstCommentLine),
+		jen.Newline(),
+		jen.Commentf("and returns both the query and the relevant args to pass to the query executor."),
+		jen.Newline(),
+		jen.Func().Params(jen.ID(dbfl).PointerTo().ID(dbvsn)).IDf("buildGet%sQuery", pn).Params(
+			params...,
+		).Params(jen.ID("query").String(), jen.ID("args").Index().Interface()).Body(
+			jen.Var().Err().Error(),
+			jen.Newline(),
+			qbStmt,
+			jen.Newline(),
+			jen.If(jen.ID(constants.FilterVarName).DoesNotEqual().ID("nil")).Body(
+				jen.ID("builder").Equals().ID(constants.FilterVarName).Dot("ApplyToQueryBuilder").Call(jen.ID("builder"), jen.IDf("%sTableName", puvn)),
+			),
+			jen.Newline(),
+			jen.List(jen.ID("query"), jen.ID("args"), jen.Err()).Equals().ID("builder").Dot("ToSql").Call(),
+			jen.ID(dbfl).Dot("logQueryBuildingError").Call(jen.Err()),
+			jen.Newline(),
+			jen.Return().List(jen.ID("query"), jen.ID("args")),
+		),
+		jen.Newline(),
+	}
+}
+
 func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	pn := typ.Name.Plural()
 	puvn := typ.Name.PluralUnexportedVarName()
@@ -588,7 +799,18 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 		jen.ID("withIDsWhere").Assign().ID("squirrel").Dot("Eq").Valuesln(
 			jen.Litf("%s.id", tableName).Op(":").ID("ids"),
 			jen.Litf("%s.archived_on", tableName).Op(":").Nil(),
-			jen.Litf("%s.belongs_to_account", tableName).Op(":").ID("accountID"),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.Litf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName()).Op(":").IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+				}
+				return jen.Null()
+			}(),
+		),
+		jen.Newline(),
+		utils.ConditionalCode(typ.BelongsToAccount,
+			jen.If(jen.ID("accountID").DoesNotEqual().EmptyString()).Body(
+				jen.ID("withIDsWhere").Index(jen.Litf("%s.belongs_to_account", tableName)).Equals().ID("accountID"),
+			),
 		),
 		jen.Newline(),
 		jen.ID("subqueryBuilder").Assign().ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
@@ -636,7 +858,16 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 		jen.Newline(),
 	}
 
-	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false, jen.Nil())...)
+	if typ.BelongsToStruct != nil {
+		bodyLines = append(bodyLines,
+			jen.If(jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).IsEqualTo().EmptyString()).Body(
+				jen.Return(jen.Nil(), jen.ID("ErrInvalidIDProvided")),
+			),
+			jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qual(proj.ConstantKeysPackage(), fmt.Sprintf("%sIDKey", typ.BelongsToStruct.Singular())), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", typ.BelongsToStruct.Singular())).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())),
+			jen.Newline(),
+		)
+	}
 
 	bodyLines = append(bodyLines,
 		jen.Newline(),
@@ -653,6 +884,12 @@ func buildGetSomethingWithIDs(proj *models.Project, typ models.DataType, dbvendo
 		jen.Newline(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("q").Dotf("buildGet%sWithIDsQuery", pn).Call(
 			constants.CtxVar(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
+				}
+				return jen.Null()
+			}(),
 			utils.ConditionalCode(typ.BelongsToAccount, jen.ID("accountID")),
 			jen.ID("limit"),
 			jen.ID("ids"),
@@ -872,10 +1109,10 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 			jen.ID("span"),
 			jen.ID("updated").Dot("ID"),
 		),
-		jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
+		utils.ConditionalCode(typ.BelongsToAccount, jen.Qual(proj.InternalTracingPackage(), "AttachAccountIDToSpan").Call(
 			jen.ID("span"),
 			jen.ID("updated").Dot("BelongsToAccount"),
-		),
+		)),
 		jen.Newline(),
 		jen.ID("args").Assign().Index().Interface().Valuesln(argValues...),
 		jen.Newline(),
@@ -911,83 +1148,6 @@ func buildUpdateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 
 	return lines
 }
-
-//func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
-//	uvn := typ.Name.UnexportedVarName()
-//	sn := typ.Name.Singular()
-//	scn := typ.Name.SingularCommonName()
-//	scnwp := typ.Name.SingularCommonNameWithPrefix()
-//
-//	tableName := typ.Name.PluralRouteName()
-//	sqlBuilder := queryBuilderForDatabase(dbvendor)
-//
-//	archiveWhere := squirrel.Eq{
-//		"id":          whatever,
-//		"archived_on": nil,
-//	}
-//
-//	if typ.BelongsToStruct != nil {
-//		archiveWhere[fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName())] = whatever
-//	}
-//	if typ.BelongsToAccount {
-//		archiveWhere["belongs_to_account"] = whatever
-//	}
-//
-//	query, _, err := sqlBuilder.Update(tableName).
-//		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
-//		Where(archiveWhere).ToSql()
-//
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	bodyLines := []jen.Code{
-//		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("q").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
-//		jen.Defer().ID("span").Dot("End").Call(),
-//		jen.Newline(),
-//		jen.ID("logger").Assign().ID("q").Dot("logger"),
-//		jen.Newline(),
-//	}
-//
-//	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, true, jen.Null())...)
-//
-//	bodyLines = append(bodyLines,
-//		jen.Newline(),
-//		jen.ID("args").Assign().Index().Interface().Valuesln(
-//			jen.ID("accountID"), jen.IDf("%sID", uvn)),
-//		jen.Newline(),
-//		jen.If(jen.ID("err").Assign().ID("q").Dot("performWriteQuery").Call(
-//			jen.ID("ctx"),
-//			jen.ID("q").Dot("db"),
-//			jen.Litf("%s archive", scn),
-//			jen.IDf("archive%sQuery", sn),
-//			jen.ID("args"),
-//		), jen.ID("err").DoesNotEqual().Nil()).Body(
-//			jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
-//				jen.ID("err"),
-//				jen.ID("logger"),
-//				jen.ID("span"),
-//				jen.Litf("updating %s", scn),
-//			)),
-//		jen.Newline(),
-//		jen.ID("logger").Dot("Info").Call(jen.Litf("%s archived", scn)),
-//		jen.Newline(),
-//		jen.Return().Nil(),
-//	)
-//
-//	lines := []jen.Code{
-//		jen.Const().IDf("archive%sQuery", sn).Equals().Lit(query),
-//		jen.Newline(),
-//		jen.Commentf("Archive%s archives %s from the database by its ID.", sn, scnwp),
-//		jen.Newline(),
-//		jen.Func().Params(jen.ID("q").Op("*").ID("SQLQuerier")).IDf("Archive%s", sn).Params(typ.BuildDBClientArchiveMethodParams()...).Params(jen.ID("error")).Body(
-//			bodyLines...,
-//		),
-//		jen.Newline(),
-//	}
-//
-//	return lines
-//}
 
 func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
@@ -1027,6 +1187,25 @@ func buildArchiveSomething(proj *models.Project, typ models.DataType, dbvendor w
 			jen.Defer().ID("span").Dot("End").Call(),
 			jen.Newline(),
 			jen.ID(constants.LoggerVarName).Assign().ID("q").Dot(constants.LoggerVarName),
+			jen.Newline(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.If(jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()).IsEqualTo().EmptyString()).Body(jen.Return().ID("ErrInvalidIDProvided"))
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.ID(constants.LoggerVarName).Equals().ID(constants.LoggerVarName).Dot("WithValue").Call(jen.Qualf(proj.ConstantKeysPackage(), "%sIDKey", typ.BelongsToStruct.Singular()), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+				}
+				return jen.Null()
+			}(),
+			func() jen.Code {
+				if typ.BelongsToStruct != nil {
+					return jen.Qualf(proj.InternalTracingPackage(), "Attach%sIDToSpan", typ.BelongsToStruct.Singular()).Call(jen.ID(constants.SpanVarName), jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
+				}
+				return jen.Null()
+			}(),
 			jen.Newline(),
 			jen.If(jen.IDf("%sID", uvn).IsEqualTo().EmptyString()).Body(
 				jen.Return().ID("ErrInvalidIDProvided"),

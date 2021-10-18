@@ -340,14 +340,14 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 		}
 
 		if pt.BelongsToStruct != nil {
-			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("%sID", buildFakeVarName(pt.BelongsToStruct.Singular())))
+			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("%sID", pt.BelongsToStruct.UnexportedVarName()))
 		}
 	}
 
 	whereValues[fmt.Sprintf("%s.archived_on", tableName)] = nil
 
 	if typ.BelongsToStruct != nil {
-		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("%sID", buildFakeVarName(typ.BelongsToStruct.Singular())))
+		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("%sID", typ.BelongsToStruct.UnexportedVarName()))
 	}
 	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
 		whereValues[fmt.Sprintf("%s.belongs_to_account", tableName)] = NewCodeWrapper(jen.ID("accountID"))
@@ -356,8 +356,49 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 	return whereValues
 }
 
+func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p *Project) squirrel.Eq {
+	n := typ.Name
+	sn := n.Singular()
+	tableName := typ.Name.PluralRouteName()
+
+	whereValues := squirrel.Eq{
+		fmt.Sprintf("%s.id", tableName): NewCodeWrapper(jen.IDf("example%sID", sn)),
+	}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		pTableName := pt.Name.PluralRouteName()
+
+		whereValues[fmt.Sprintf("%s.id", pTableName)] = NewCodeWrapper(jen.IDf("example%sID", pt.Name.Singular()))
+		whereValues[fmt.Sprintf("%s.archived_on", pTableName)] = nil
+
+		if pt.BelongsToAccount && pt.RestrictedToAccountMembers {
+			whereValues[fmt.Sprintf("%s.belongs_to_account", pTableName)] = NewCodeWrapper(jen.ID("exampleAccountID"))
+		}
+
+		if pt.BelongsToStruct != nil {
+			whereValues[fmt.Sprintf("%s.belongs_to_%s", pTableName, pt.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("example%sID", pt.BelongsToStruct.Singular()))
+		}
+	}
+
+	whereValues[fmt.Sprintf("%s.archived_on", tableName)] = nil
+
+	if typ.BelongsToStruct != nil {
+		whereValues[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = NewCodeWrapper(jen.IDf("example%sID", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+		whereValues[fmt.Sprintf("%s.belongs_to_account", tableName)] = NewCodeWrapper(jen.ID("exampleAccountID"))
+	}
+
+	return whereValues
+}
+
 func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(p *Project) squirrel.Eq {
 	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
+}
+
+func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClauseForTests(p *Project) squirrel.Eq {
+	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p)
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(p *Project) squirrel.Eq {
@@ -467,7 +508,7 @@ func (typ DataType) buildGetSomethingArgs(p *Project) []jen.Code {
 	params = append(params, jen.IDf("%sID", uvn))
 
 	if typ.RestrictedToAccountAtSomeLevel(p) {
-		params = append(params, jen.ID("accountID"))
+		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
 	}
 
 	return params

@@ -30,10 +30,6 @@ func (p *Project) DatabaseQueriersPackage(parts ...string) string {
 	return p.DatabasePackage(append([]string{"queriers"}, parts...)...)
 }
 
-func (p *Project) QuerybuildingPackage(parts ...string) string {
-	return p.DatabasePackage(append([]string{"querybuilding"}, parts...)...)
-}
-
 func (p *Project) InternalPackage(parts ...string) string {
 	return p.RelativePath(append([]string{"internal"}, parts...)...)
 }

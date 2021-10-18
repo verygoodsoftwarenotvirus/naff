@@ -1,6 +1,10 @@
 package postgres
 
 import (
+	"fmt"
+
+	"github.com/Masterminds/squirrel"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
@@ -27,7 +31,70 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType, dbvendor word
 	return code
 }
 
-func buildBuildMockRowsFromSomethings(proj *models.Project, typ models.DataType, dbvendor wordsmith.SuperPalabra) []jen.Code {
+func buildPrerequisiteIDsForTest(proj *models.Project, typ models.DataType, includeAccountID, includeSelf, idOnly, skip bool, skipIndex int) []jen.Code {
+	lines := []jen.Code{}
+
+	if typ.RestrictedToAccountMembers && includeAccountID {
+		lines = append(lines, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+	}
+
+	for i, dep := range proj.FindOwnerTypeChain(typ) {
+		if !skip || (skip && i != skipIndex) {
+			lines = append(lines, jen.IDf("example%sID", dep.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+		}
+	}
+
+	if includeSelf {
+		if idOnly {
+			lines = append(lines, jen.IDf("example%sID", typ.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
+		} else {
+			lines = append(lines, jen.IDf("example%s", typ.Name.Singular()).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", typ.Name.Singular())).Call())
+		}
+	}
+
+	return lines
+}
+
+func buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(p *models.Project, typ models.DataType, skipIndex int, includeSelf, idOnly, includeAccount bool) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	owners := p.FindOwnerTypeChain(typ)
+	sn := typ.Name.Singular()
+
+	for i, pt := range owners {
+		if i == skipIndex {
+			params = append(params, jen.EmptyString())
+		} else {
+			if idOnly {
+				params = append(params, jen.IDf("example%sID", pt.Name.Singular()))
+			} else {
+				params = append(params, jen.IDf("example%s", pt.Name.Singular()).Dot("ID"))
+			}
+		}
+	}
+
+	if includeSelf {
+		if idOnly {
+			params = append(params, jen.IDf("example%sID", sn))
+		} else {
+			params = append(params, jen.IDf("example%s", sn).Dot("ID"))
+		}
+	} else {
+		params = append(params, jen.EmptyString())
+	}
+
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		if includeAccount {
+			params = append(params, jen.ID("exampleAccountID"))
+		} else {
+			params = append(params, jen.EmptyString())
+		}
+	}
+
+	return params
+}
+
+func buildBuildMockRowsFromSomethings(_ *models.Project, typ models.DataType, _ wordsmith.SuperPalabra) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
 	puvn := typ.Name.PluralUnexportedVarName()
@@ -153,182 +220,209 @@ func buildTestQuerierSomethingExists(proj *models.Project, typ models.DataType, 
 	scn := typ.Name.SingularCommonName()
 	uvn := typ.Name.UnexportedVarName()
 
+	tableName := typ.Name.PluralRouteName()
+
+	eqArgs := squirrel.Eq{
+		fmt.Sprintf("%s.id", tableName): whatever,
+	}
+	if typ.BelongsToAccount && typ.RestrictedToAccountMembers {
+		eqArgs[fmt.Sprintf("%s.belongs_to_account", tableName)] = whatever
+	}
+	if typ.BelongsToStruct != nil {
+		eqArgs[fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName())] = whatever
+	}
+
+	whereValues := typ.BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClauseForTests(proj)
+	qb := queryBuilderForDatabase(dbvendor).Select(fmt.Sprintf("%s.id", tableName)).
+		Prefix(existencePrefix).
+		From(tableName)
+
+	qb = typ.ModifyQueryBuilderWithJoinClauses(proj, qb)
+
+	qb = qb.Suffix(existenceSuffix).
+		Where(whereValues)
+
+	_, args, err := qb.ToSql()
+	if err != nil {
+		panic(err)
+	}
+
+	dbCallArgs := convertArgsToCode(args)
+
+	bodyLines := []jen.Code{jen.ID("T").Dot("Parallel").Call(),
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Lit("standard"),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.ID("t").Dot("Parallel").Call(),
+				jen.Newline(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, true, true, false, -1), true)...),
+				jen.Newline(),
+				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+				jen.ID("args").Assign().Index().Interface().Valuesln(
+					dbCallArgs...,
+				),
+				jen.Newline(),
+				jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
+					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
+					Dotln("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True())),
+				jen.Newline(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true, true)...,
+				),
+				jen.ID("assert").Dot("NoError").Call(
+					jen.ID("t"),
+					jen.ID("err"),
+				),
+				jen.ID("assert").Dot("True").Call(
+					jen.ID("t"),
+					jen.ID("actual"),
+				),
+				jen.Newline(),
+				jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
+					jen.ID("t"),
+					jen.ID("db"),
+				),
+			),
+		),
+	}
+
+	for i, owner := range proj.FindOwnerTypeChain(typ) {
+		subtestLines := []jen.Code{
+			jen.ID("t").Dot("Parallel").Call(),
+			jen.Newline(),
+			constants.CreateCtx(),
+			jen.Newline(),
+			jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, true, true, true, i), true)...),
+			jen.Newline(),
+			jen.List(jen.ID("c"), jen.Underscore()).Assign().ID("buildTestClient").Call(jen.ID("t")),
+			jen.Newline(),
+			jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
+				buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, i, true, true, true)...,
+			),
+			jen.Qual(constants.AssertionLibrary, "Error").Call(jen.ID("t"), jen.Err()),
+			jen.Qual(constants.AssertionLibrary, "False").Call(jen.ID("t"), jen.ID("actual")),
+		}
+
+		bodyLines = append(bodyLines,
+			jen.Newline(),
+			jen.ID("T").Dot("Run").Call(
+				jen.Litf("with invalid %s ID", owner.Name.SingularCommonName()),
+				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
+					subtestLines...,
+				),
+			),
+			jen.Newline(),
+		)
+	}
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Litf("with invalid %s ID", scn),
+			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
+				jen.ID("t").Dot("Parallel").Call(),
+				jen.Newline(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, false, true, false, -1), true)...),
+				jen.Newline(),
+				jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+				jen.Newline(),
+				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, false, true, true)...,
+				),
+				jen.Qual(constants.AssertionLibrary, "Error").Call(
+					jen.ID("t"),
+					jen.Err(),
+				),
+				jen.Qual(constants.AssertionLibrary, "False").Call(
+					jen.ID("t"),
+					jen.ID("actual"),
+				),
+			),
+		),
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Lit("with sql.ErrNoRows"),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.ID("t").Dot("Parallel").Call(),
+				jen.Newline(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, true, true, false, -1), true)...),
+				jen.Newline(),
+				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+				jen.ID("args").Assign().Index().Interface().Valuesln(
+					dbCallArgs...,
+				),
+				jen.Newline(),
+				jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
+					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
+					Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
+				jen.Newline(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true, true)...,
+				),
+				jen.ID("assert").Dot("NoError").Call(
+					jen.ID("t"),
+					jen.ID("err"),
+				),
+				jen.ID("assert").Dot("False").Call(
+					jen.ID("t"),
+					jen.ID("actual"),
+				),
+				jen.Newline(),
+				jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
+					jen.ID("t"),
+					jen.ID("db"),
+				),
+			),
+		),
+		jen.Newline(),
+		jen.ID("T").Dot("Run").Call(
+			jen.Lit("with error executing query"),
+			jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
+				jen.ID("t").Dot("Parallel").Call(),
+				jen.Newline(),
+				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
+				jen.Newline(),
+				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, true, true, true, false, -1), true)...),
+				jen.Newline(),
+				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
+				jen.ID("args").Assign().Index().Interface().Valuesln(
+					dbCallArgs...,
+				),
+				jen.Newline(),
+				jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
+					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
+					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
+				jen.Newline(),
+				jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
+					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, true, true)...,
+				),
+				jen.ID("assert").Dot("Error").Call(
+					jen.ID("t"),
+					jen.ID("err"),
+				),
+				jen.ID("assert").Dot("False").Call(
+					jen.ID("t"),
+					jen.ID("actual"),
+				),
+				jen.Newline(),
+				jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
+					jen.ID("t"),
+					jen.ID("db"),
+				),
+			),
+		),
+	)
+
 	lines := []jen.Code{
 		jen.Func().IDf("TestQuerier_%sExists", sn).Params(jen.ID("T").Op("*").Qual("testing", "T")).Body(
-			jen.ID("T").Dot("Parallel").Call(),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("standard"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-					jen.Newline(),
-					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Assign().Index().Interface().Valuesln(
-						jen.ID("exampleAccountID"),
-						jen.IDf("example%sID", sn),
-					),
-					jen.Newline(),
-					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
-						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
-						Dotln("WillReturnRows").Call(jen.ID("sqlmock").Dot("NewRows").Call(jen.Index().String().Values(jen.Lit("exists"))).Dot("AddRow").Call(jen.True())),
-					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
-						jen.ID("ctx"),
-						jen.IDf("example%sID", sn),
-						jen.ID("exampleAccountID"),
-					),
-					jen.ID("assert").Dot("NoError").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.ID("assert").Dot("True").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-					),
-					jen.Newline(),
-					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
-						jen.ID("t"),
-						jen.ID("db"),
-					),
-				),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Litf("with invalid %s ID", scn),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.List(jen.ID("c"), jen.ID("_")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
-						jen.ID("ctx"),
-						jen.Lit(""),
-						jen.ID("exampleAccountID"),
-					),
-					jen.ID("assert").Dot("Error").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.ID("assert").Dot("False").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-					),
-				),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with invalid account ID"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
-						jen.ID("ctx"),
-						jen.IDf("example%sID", sn),
-						jen.Lit(""),
-					),
-					jen.ID("assert").Dot("Error").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.ID("assert").Dot("False").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-					),
-					jen.Newline(),
-					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
-						jen.ID("t"),
-						jen.ID("db"),
-					),
-				),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with sql.ErrNoRows"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Assign().Index().Interface().Valuesln(
-						jen.ID("exampleAccountID"), jen.IDf("example%sID", sn)),
-					jen.Newline(),
-					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
-						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
-						Dotln("WillReturnError").Call(jen.Qual("database/sql", "ErrNoRows")),
-					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
-						jen.ID("ctx"),
-						jen.IDf("example%sID", sn),
-						jen.ID("exampleAccountID"),
-					),
-					jen.ID("assert").Dot("NoError").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.ID("assert").Dot("False").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-					),
-					jen.Newline(),
-					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
-						jen.ID("t"),
-						jen.ID("db"),
-					),
-				),
-			),
-			jen.Newline(),
-			jen.ID("T").Dot("Run").Call(
-				jen.Lit("with error executing query"),
-				jen.Func().Params(jen.ID("t").Op("*").Qual("testing", "T")).Body(
-					jen.ID("t").Dot("Parallel").Call(),
-					jen.Newline(),
-					jen.ID("ctx").Assign().Qual("context", "Background").Call(),
-					jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.IDf("example%sID", sn).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
-					jen.Newline(),
-					jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-					jen.ID("args").Assign().Index().Interface().Valuesln(
-						jen.ID("exampleAccountID"), jen.IDf("example%sID", sn)),
-					jen.Newline(),
-					jen.ID("db").Dot("ExpectQuery").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("%sExistenceQuery", uvn))).
-						Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Op("...")).
-						Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-					jen.Newline(),
-					jen.List(jen.ID("actual"), jen.ID("err")).Assign().ID("c").Dotf("%sExists", sn).Call(
-						jen.ID("ctx"),
-						jen.IDf("example%sID", sn),
-						jen.ID("exampleAccountID"),
-					),
-					jen.ID("assert").Dot("Error").Call(
-						jen.ID("t"),
-						jen.ID("err"),
-					),
-					jen.ID("assert").Dot("False").Call(
-						jen.ID("t"),
-						jen.ID("actual"),
-					),
-					jen.Newline(),
-					jen.Qual(constants.MockPkg, "AssertExpectationsForObjects").Call(
-						jen.ID("t"),
-						jen.ID("db"),
-					),
-				),
-			),
+			bodyLines...,
 		),
 		jen.Newline(),
 	}
