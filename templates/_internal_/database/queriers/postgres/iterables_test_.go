@@ -916,7 +916,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("Get%s", pn).Call(
 					jen.ID("ctx"),
-					jen.Lit(0),
+					jen.EmptyString(),
 					jen.ID("filter"),
 				),
 				jen.Qual(constants.AssertionLibrary, "Error").Call(
@@ -1565,10 +1565,6 @@ func buildTestQuerier_UpdateSomething(proj *models.Project, typ models.DataType)
 		panic(err)
 	}
 
-	if err != nil {
-		panic(err)
-	}
-
 	dbCallArgs := convertArgsToCode(args)
 
 	return []jen.Code{
@@ -1664,6 +1660,30 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
 
+	tableName := typ.Name.PluralRouteName()
+	sqlBuilder := queryBuilderForDatabase(dbvendor)
+	archiveWhere := squirrel.Eq{
+		"id":          models.NewCodeWrapper(jen.IDf("example%s", sn).Dot("ID")),
+		"archived_on": nil,
+	}
+
+	if typ.BelongsToStruct != nil {
+		archiveWhere[fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName())] = models.NewCodeWrapper(jen.IDf("example%sID", typ.BelongsToStruct.Singular()))
+	}
+	if typ.BelongsToAccount {
+		archiveWhere["belongs_to_account"] = models.NewCodeWrapper(jen.ID("exampleAccountID"))
+	}
+
+	_, args, err := sqlBuilder.Update(tableName).
+		Set("archived_on", squirrel.Expr(unixTimeForDatabase(dbvendor))).
+		Where(archiveWhere).ToSql()
+
+	if err != nil {
+		panic(err)
+	}
+
+	dbCallArgs := convertArgsToCode(args)
+
 	firstSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
@@ -1679,12 +1699,11 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 		jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 		jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 		jen.Newline(),
+		jen.ID("args").Assign().Index().Interface().Valuesln(dbCallArgs...),
 		jen.Newline(),
-		jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
-			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
-			Dotln("WillReturnResult").Call(jen.ID("newSuccessfulDatabaseResult").Call(jen.IDf("example%s", sn).Dot("ID"))),
-		jen.Newline(),
-		jen.ID("db").Dot("ExpectCommit").Call(),
+		jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("archive%sQuery", sn))).
+			Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Spread()).
+			Dotln("WillReturnResult").Call(jen.ID("newArbitraryDatabaseResult").Call(jen.IDf("example%s", sn).Dot("ID"))),
 		jen.Newline(),
 		jen.Qual(constants.AssertionLibrary, "NoError").Call(
 			jen.ID("t"),
@@ -1839,12 +1858,11 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
 				jen.Newline(),
+				jen.ID("args").Assign().Index().Interface().Valuesln(dbCallArgs...),
 				jen.Newline(),
-				jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.ID("fakeQuery"))).
-					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("fakeArgs")).Spread()).
+				jen.ID("db").Dot("ExpectExec").Call(jen.ID("formatQueryForSQLMock").Call(jen.IDf("archive%sQuery", sn))).
+					Dotln("WithArgs").Call(jen.ID("interfaceToDriverValue").Call(jen.ID("args")).Spread()).
 					Dotln("WillReturnError").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
-				jen.Newline(),
-				jen.ID("db").Dot("ExpectRollback").Call(),
 				jen.Newline(),
 				jen.Qual(constants.AssertionLibrary, "Error").Call(
 					jen.ID("t"),
