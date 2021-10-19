@@ -24,6 +24,10 @@ const (
 	existenceSuffix = ")"
 )
 
+var (
+	dbvendor = wordsmith.FromSingularPascalCase("Postgres")
+)
+
 // RenderPackage renders the package
 func RenderPackage(proj *models.Project) error {
 	dbVendor := wordsmith.FromSingularPascalCase("Postgres")
@@ -78,7 +82,7 @@ func RenderPackage(proj *models.Project) error {
 
 	for _, typ := range proj.DataTypes {
 		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ, dbVendor)
-		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ, dbVendor)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
 	}
 
 	for path, file := range jenFiles {

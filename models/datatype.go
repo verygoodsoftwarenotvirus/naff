@@ -409,6 +409,10 @@ func (typ DataType) BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(p
 	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
 }
 
+func (typ DataType) BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClauseForTests(p *Project, wholeType bool) squirrel.Eq {
+	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p, wholeType)
+}
+
 func (typ DataType) BuildDBQuerierListRetrievalQueryMethodQueryBuildingWhereClause(p *Project) squirrel.Eq {
 	tableName := typ.Name.PluralRouteName()
 
