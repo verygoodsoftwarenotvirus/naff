@@ -330,7 +330,6 @@ func buildTestQuerier_SomethingExists(proj *models.Project, typ models.DataType)
 				jen.Null().Add(utils.IntersperseWithNewlines(buildPrerequisiteIDsForTest(proj, typ, false, true, false, -1), true)...),
 				jen.Newline(),
 				jen.List(jen.ID("c"), jen.ID("db")).Assign().ID("buildTestClient").Call(jen.ID("t")),
-				jen.ID("args").Assign().Index().Interface().Valuesln(dbCallArgs...),
 				jen.Newline(),
 				jen.List(jen.ID("actual"), jen.Err()).Assign().ID("c").Dotf("%sExists", sn).Call(
 					buildSingleInstanceQueryTestCallArgsWithoutOwnerVar(proj, typ, -1, true, false)...,
@@ -738,7 +737,7 @@ func buildArgsForListRetrievalQueryBuilder(p *models.Project, typ models.DataTyp
 func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	pn := typ.Name.Plural()
-	puvn := typ.Name.PluralUnexportedVarName()
+	prn := typ.Name.PluralRouteName()
 	uvn := typ.Name.UnexportedVarName()
 
 	callArgs := buildArgsForListRetrievalQueryBuilder(proj, typ, false, false, -1)
@@ -755,7 +754,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 		jen.Newline(),
 		jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 			jen.ID("ctx"),
-			jen.Lit(puvn),
+			jen.Lit(prn),
 			func() jen.Code {
 				if len(proj.FindOwnerTypeChain(typ)) > 0 {
 					return jen.IDf("get%sJoins", pn)
@@ -856,7 +855,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.Newline(),
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 					jen.ID("ctx"),
-					jen.Lit(puvn),
+					jen.Lit(prn),
 					func() jen.Code {
 						if len(proj.FindOwnerTypeChain(typ)) > 0 {
 							return jen.IDf("get%sJoins", pn)
@@ -943,7 +942,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.Newline(),
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 					jen.ID("ctx"),
-					jen.Lit(puvn),
+					jen.Lit(prn),
 					func() jen.Code {
 						if len(proj.FindOwnerTypeChain(typ)) > 0 {
 							return jen.IDf("get%sJoins", pn)
@@ -999,7 +998,7 @@ func buildTestQuerier_GetListOfSomethings(proj *models.Project, typ models.DataT
 				jen.Newline(),
 				jen.List(jen.ID("query"), jen.ID("args")).Assign().ID("c").Dot("buildListQuery").Callln(
 					jen.ID("ctx"),
-					jen.Lit(puvn),
+					jen.Lit(prn),
 					func() jen.Code {
 						if len(proj.FindOwnerTypeChain(typ)) > 0 {
 							return jen.IDf("get%sJoins", pn)
