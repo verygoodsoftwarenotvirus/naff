@@ -20,6 +20,12 @@ const (
 	whatever    = "blah"
 
 	basePackagePath = "internal/database/queriers/mysql"
+	existencePrefix = "SELECT EXISTS ("
+	existenceSuffix = ")"
+)
+
+var (
+	dbvendor = wordsmith.FromSingularPascalCase("Mysql")
 )
 
 // RenderPackage renders the package
@@ -62,7 +68,7 @@ func RenderPackage(proj *models.Project) error {
 
 	for _, typ := range proj.DataTypes {
 		jenFiles[fmt.Sprintf("%s.go", typ.Name.PluralRouteName())] = iterablesDotGo(proj, typ, dbVendor)
-		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ, dbVendor)
+		jenFiles[fmt.Sprintf("%s_test.go", typ.Name.PluralRouteName())] = iterablesTestDotGo(proj, typ)
 	}
 
 	for path, file := range jenFiles {
