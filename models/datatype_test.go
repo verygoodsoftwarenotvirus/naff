@@ -1018,7 +1018,7 @@ func main() {
 	exampleFunction(ctx, thingID)
 }
 `
-		actual := renderCallArgsToString(t, dt.buildGetSomethingArgs(p))
+		actual := renderCallArgsToString(t, dt.buildGetSomethingArgs(p, ""))
 
 		assert.Equal(t, expected, actual)
 	})
@@ -1042,7 +1042,7 @@ func main() {
 	exampleFunction(ctx, thingID, anotherThingID, yetAnotherThingID, userID)
 }
 `
-		actual := renderCallArgsToString(t, p.LastDataType().buildGetSomethingArgs(p))
+		actual := renderCallArgsToString(t, p.LastDataType().buildGetSomethingArgs(p, ""))
 
 		assert.Equal(t, expected, actual)
 	})

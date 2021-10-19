@@ -356,13 +356,17 @@ func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(
 	return whereValues
 }
 
-func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p *Project) squirrel.Eq {
+func (typ DataType) buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p *Project, wholeType bool) squirrel.Eq {
 	n := typ.Name
 	sn := n.Singular()
 	tableName := typ.Name.PluralRouteName()
 
-	whereValues := squirrel.Eq{
-		fmt.Sprintf("%s.id", tableName): NewCodeWrapper(jen.IDf("example%sID", sn)),
+	whereValues := squirrel.Eq{}
+
+	if wholeType {
+		whereValues[fmt.Sprintf("%s.id", tableName)] = NewCodeWrapper(jen.IDf("example%s", sn).Dot("ID"))
+	} else {
+		whereValues[fmt.Sprintf("%s.id", tableName)] = NewCodeWrapper(jen.IDf("example%sID", sn))
 	}
 
 	owners := p.FindOwnerTypeChain(typ)
@@ -397,8 +401,8 @@ func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClause(p
 	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClauses(p)
 }
 
-func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClauseForTests(p *Project) squirrel.Eq {
-	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p)
+func (typ DataType) BuildDBQuerierExistenceQueryMethodQueryBuildingWhereClauseForTests(p *Project, wholeType bool) squirrel.Eq {
+	return typ.buildDBQuerierSingleInstanceQueryMethodQueryBuildingClausesForTests(p, wholeType)
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryMethodQueryBuildingWhereClause(p *Project) squirrel.Eq {
@@ -497,15 +501,23 @@ func (typ DataType) BuildDBQuerierExistenceMethodParams(p *Project) []jen.Code {
 	return typ.buildGetSomethingParams(p, true)
 }
 
-func (typ DataType) buildGetSomethingArgs(p *Project) []jen.Code {
+func (typ DataType) buildGetSomethingArgs(p *Project, prefix string) []jen.Code {
 	params := []jen.Code{ctxVar()}
-	uvn := typ.Name.UnexportedVarName()
 
 	owners := p.FindOwnerTypeChain(typ)
 	for _, pt := range owners {
-		params = append(params, jen.IDf("%sID", pt.Name.UnexportedVarName()))
+		if prefix != "" {
+			params = append(params, jen.IDf("%s%sID", prefix, pt.Name.Singular()))
+		} else {
+			params = append(params, jen.IDf("%s%sID", prefix, pt.Name.UnexportedVarName()))
+		}
 	}
-	params = append(params, jen.IDf("%sID", uvn))
+
+	if prefix != "" {
+		params = append(params, jen.IDf("%s%sID", prefix, typ.Name.Singular()))
+	} else {
+		params = append(params, jen.IDf("%s%sID", prefix, typ.Name.UnexportedVarName()))
+	}
 
 	if typ.RestrictedToAccountAtSomeLevel(p) {
 		params = append(params, jen.ID("sessionCtxData").Dot("ActiveAccountID"))
@@ -531,11 +543,11 @@ func (typ DataType) buildArchiveSomethingArgs() []jen.Code {
 }
 
 func (typ DataType) BuildDBClientExistenceMethodCallArgs(p *Project) []jen.Code {
-	return typ.buildGetSomethingArgs(p)
+	return typ.buildGetSomethingArgs(p, "")
 }
 
-func (typ DataType) BuildDBClientRetrievalMethodCallArgs(p *Project) []jen.Code {
-	return typ.buildGetSomethingArgs(p)
+func (typ DataType) BuildDBClientRetrievalMethodCallArgs(p *Project, prefix string) []jen.Code {
+	return typ.buildGetSomethingArgs(p, prefix)
 }
 
 func (typ DataType) BuildDBClientArchiveMethodCallArgs() []jen.Code {
@@ -543,13 +555,13 @@ func (typ DataType) BuildDBClientArchiveMethodCallArgs() []jen.Code {
 }
 
 func (typ DataType) BuildDBQuerierExistenceQueryBuildingArgs(p *Project) []jen.Code {
-	params := typ.buildGetSomethingArgs(p)
+	params := typ.buildGetSomethingArgs(p, "")
 
 	return params[1:]
 }
 
 func (typ DataType) BuildDBQuerierRetrievalQueryBuildingArgs(p *Project) []jen.Code {
-	params := typ.buildGetSomethingArgs(p)
+	params := typ.buildGetSomethingArgs(p, "")
 
 	return params[1:]
 }
@@ -561,11 +573,11 @@ func (typ DataType) BuildDBQuerierArchiveQueryBuildingArgs() []jen.Code {
 }
 
 func (typ DataType) BuildInterfaceDefinitionExistenceMethodCallArgs(p *Project) []jen.Code {
-	return typ.buildGetSomethingArgs(p)
+	return typ.buildGetSomethingArgs(p, "")
 }
 
 func (typ DataType) BuildInterfaceDefinitionRetrievalMethodCallArgs(p *Project) []jen.Code {
-	return typ.buildGetSomethingArgs(p)
+	return typ.buildGetSomethingArgs(p, "")
 }
 
 func (typ DataType) BuildInterfaceDefinitionArchiveMethodCallArgs() []jen.Code {
