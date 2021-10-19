@@ -1667,7 +1667,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 	firstSubtest := []jen.Code{
 		jen.ID("t").Dot("Parallel").Call(),
 		jen.Newline(),
-		jen.ID("exampleUserID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 		utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()),
 		func() jen.Code {
 			if typ.BelongsToStruct != nil {
@@ -1699,7 +1698,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				}(),
 				jen.IDf("example%s", sn).Dot("ID"),
 				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
-				jen.ID("exampleUserID"),
 			),
 		),
 		jen.Newline(),
@@ -1728,7 +1726,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleUserID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()),
 					jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
 					jen.Newline(),
@@ -1742,7 +1739,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 							jen.EmptyString(),
 							jen.IDf("example%s", sn).Dot("ID"),
 							utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
-							jen.ID("exampleUserID"),
 						),
 					),
 				),
@@ -1757,7 +1753,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleUserID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()),
 				func() jen.Code {
 					if typ.BelongsToStruct != nil {
@@ -1781,7 +1776,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 						}(),
 						jen.EmptyString(),
 						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
-						jen.ID("exampleUserID"),
 					),
 				),
 			),
@@ -1796,7 +1790,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 				jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 					jen.ID("t").Dot("Parallel").Call(),
 					jen.Newline(),
-					jen.ID("exampleUserID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 					func() jen.Code {
 						if typ.BelongsToStruct != nil {
 							return jen.IDf("example%sID", typ.BelongsToStruct.Singular()).Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()
@@ -1820,7 +1813,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 							}(),
 							jen.IDf("example%s", sn).Dot("ID"),
 							jen.EmptyString(),
-							jen.ID("exampleUserID"),
 						),
 					),
 				),
@@ -1835,7 +1827,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 			jen.Func().Params(jen.ID("t").PointerTo().Qual("testing", "T")).Body(
 				jen.ID("t").Dot("Parallel").Call(),
 				jen.Newline(),
-				jen.ID("exampleUserID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call(),
 				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID").Assign().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call()),
 				func() jen.Code {
 					if typ.BelongsToStruct != nil {
@@ -1867,7 +1858,6 @@ func buildTestQuerier_ArchiveSomething(proj *models.Project, typ models.DataType
 						}(),
 						jen.IDf("example%s", sn).Dot("ID"),
 						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("exampleAccountID")),
-						jen.ID("exampleUserID"),
 					),
 				),
 				jen.Newline(),
