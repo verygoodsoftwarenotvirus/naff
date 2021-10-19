@@ -38,7 +38,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.IDf("%sDataManager", uvn).Qual(proj.TypesPackage(), fmt.Sprintf("%sDataManager", sn)),
 	}
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
-		structLines = append(structLines, jen.IDf("%sIDFetcher", dep.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.Uint64()))
+		structLines = append(structLines, jen.IDf("%sIDFetcher", dep.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()))
 	}
 	structLines = append(structLines,
 		jen.IDf("%sIDFetcher", uvn).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
@@ -77,11 +77,10 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	for _, dep := range proj.FindOwnerTypeChain(typ) {
 		tuvn := dep.Name.UnexportedVarName()
 		tsn := dep.Name.Singular()
-		trn := dep.Name.RouteName()
 
 		serviceInitLines = append(serviceInitLines,
-			jen.IDf("%sIDFetcher", tuvn).MapAssign().ID("routeParamManager").Dot("BuildRouteParamIDFetcher").Call(
-				jen.ID("logger"), jen.Qual(proj.ServicePackage(dep.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", tsn)), jen.Lit(trn),
+			jen.IDf("%sIDFetcher", tuvn).MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
+				jen.Qual(proj.ServicePackage(dep.Name.PackageName()), fmt.Sprintf("%sIDURIParamKey", tsn)),
 			),
 		)
 	}

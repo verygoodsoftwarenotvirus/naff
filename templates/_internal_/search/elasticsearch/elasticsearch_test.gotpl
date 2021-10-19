@@ -86,7 +86,7 @@ func Test_indexManager_ensureIndices(T *testing.T) {
 			tracer:   tracing.NewTracer(t.Name()),
 			logger:   logger,
 		}
-		assert.NoError(t, im.ensureIndices(ctx))
+		assert.NoError(t, im.ensureIndices(ctx, exampleIndexName))
 
 		mock.AssertExpectationsForObjects(t, esc)
 	})
@@ -130,7 +130,7 @@ func Test_indexManager_ensureIndices(T *testing.T) {
 			tracer:   tracing.NewTracer(t.Name()),
 			logger:   logger,
 		}
-		assert.NoError(t, im.ensureIndices(ctx))
+		assert.NoError(t, im.ensureIndices(ctx, exampleIndexName))
 
 		mock.AssertExpectationsForObjects(t, esc)
 	})
@@ -164,7 +164,7 @@ func Test_indexManager_ensureIndices(T *testing.T) {
 			tracer:   tracing.NewTracer(t.Name()),
 			logger:   logger,
 		}
-		assert.Error(t, im.ensureIndices(ctx))
+		assert.Error(t, im.ensureIndices(ctx, exampleIndexName))
 
 		mock.AssertExpectationsForObjects(t, esc)
 	})
@@ -205,7 +205,7 @@ func Test_indexManager_ensureIndices(T *testing.T) {
 			tracer:   tracing.NewTracer(t.Name()),
 			logger:   logger,
 		}
-		assert.Error(t, im.ensureIndices(ctx))
+		assert.Error(t, im.ensureIndices(ctx, exampleIndexName))
 
 		mock.AssertExpectationsForObjects(t, esc)
 	})

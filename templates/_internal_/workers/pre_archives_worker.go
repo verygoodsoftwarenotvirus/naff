@@ -55,22 +55,31 @@ func buildProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 	valuesLines := []jen.Code{
 		jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(jen.Lit("topic"), jen.ID("name")),
 		jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().Qual(proj.EncodingPackage(), "ProvideClientEncoder").Call(jen.ID("logger"), jen.Qual(proj.EncodingPackage(), "ContentTypeJSON")),
+		jen.ID("postArchivesPublisher").MapAssign().ID("postArchivesPublisher"),
+		jen.ID("dataManager").MapAssign().ID("dataManager"),
 	}
 
 	for _, typ := range proj.DataTypes {
 		pcn := typ.Name.PluralCommonName()
+		prn := typ.Name.PluralRouteName()
 		puvn := typ.Name.PluralUnexportedVarName()
 
+		providerLines := []jen.Code{
+			jen.ID("ctx"),
+			jen.ID("logger"),
+			jen.ID("client"),
+			jen.ID("searchIndexLocation"),
+			jen.Lit(prn),
+		}
+
+		for _, field := range typ.Fields {
+			if field.Type == "string" {
+				providerLines = append(providerLines, jen.Lit(field.Name.UnexportedVarName()))
+			}
+		}
+
 		bodyLines = append(bodyLines,
-			jen.List(jen.IDf("%sIndexManager", puvn), jen.ID("err")).Assign().ID("searchIndexProvider").Call(
-				jen.ID("ctx"),
-				jen.ID("logger"),
-				jen.ID("client"),
-				jen.ID("searchIndexLocation"),
-				jen.Lit(puvn),
-				jen.Lit("name"),
-				jen.Lit("description"),
-			),
+			jen.List(jen.IDf("%sIndexManager", puvn), jen.ID("err")).Assign().ID("searchIndexProvider").Call(providerLines...),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(
 					jen.Lit(fmt.Sprintf("setting up %s search index manager", pcn)+": %w"),
@@ -79,7 +88,7 @@ func buildProvidePreArchivesWorker(proj *models.Project) []jen.Code {
 			jen.Newline(),
 		)
 
-		valuesLines = append(valuesLines, jen.ID("postArchivesPublisher").MapAssign().ID("postArchivesPublisher"), jen.ID("dataManager").MapAssign().ID("dataManager"), jen.IDf("%sIndexManager", puvn).MapAssign().IDf("%sIndexManager", puvn))
+		valuesLines = append(valuesLines, jen.IDf("%sIndexManager", puvn).MapAssign().IDf("%sIndexManager", puvn))
 	}
 
 	bodyLines = append(bodyLines,
@@ -120,8 +129,14 @@ func buildHandlePreArchivesWorkerMessage(proj *models.Project) []jen.Code {
 		switchCases = append(switchCases, jen.Case(jen.Qualf(proj.TypesPackage(), "%sDataType", sn)).Body(
 			jen.If(jen.ID("err").Assign().ID("w").Dot("dataManager").Dotf("Archive%s", sn).Call(
 				jen.ID("ctx"),
+				func() jen.Code {
+					if typ.BelongsToStruct != nil {
+						return jen.ID("msg").Dotf("%sID", typ.BelongsToStruct.Singular())
+					}
+					return jen.Null()
+				}(),
 				jen.ID("msg").Dotf("%sID", sn),
-				jen.ID("msg").Dot("AttributableToAccountID"),
+				utils.ConditionalCode(typ.BelongsToAccount, jen.ID("msg").Dot("AttributableToAccountID")),
 			), jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.Return().Qual(proj.ObservabilityPackage(), "PrepareError").Call(
 					jen.ID("err"),

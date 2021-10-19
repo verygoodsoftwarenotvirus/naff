@@ -42,13 +42,38 @@ func mockIterableDataManagerDotGo(proj *models.Project, typ models.DataType) *je
 	return code
 }
 
+func buildInterfaceDefinitionExistenceMethodCallArgs(p *models.Project, typ models.DataType, prefix string) []jen.Code {
+	params := []jen.Code{constants.CtxVar()}
+
+	owners := p.FindOwnerTypeChain(typ)
+	for _, pt := range owners {
+		if prefix != "" {
+			params = append(params, jen.IDf("%s%sID", prefix, pt.Name.Singular()))
+		} else {
+			params = append(params, jen.IDf("%s%sID", prefix, pt.Name.UnexportedVarName()))
+		}
+	}
+
+	if prefix != "" {
+		params = append(params, jen.IDf("%s%sID", prefix, typ.Name.Singular()))
+	} else {
+		params = append(params, jen.IDf("%s%sID", prefix, typ.Name.UnexportedVarName()))
+	}
+
+	if typ.RestrictedToAccountAtSomeLevel(p) {
+		params = append(params, jen.ID("accountID"))
+	}
+
+	return params
+}
+
 func buildSomethingExists(proj *models.Project, typ models.DataType) []jen.Code {
 	n := typ.Name
 	sn := n.Singular()
 	funcName := fmt.Sprintf("%sExists", sn)
 
 	params := typ.BuildInterfaceDefinitionExistenceMethodParams(proj)
-	callArgs := typ.BuildInterfaceDefinitionExistenceMethodCallArgs(proj)
+	callArgs := buildInterfaceDefinitionExistenceMethodCallArgs(proj, typ, "")
 
 	lines := []jen.Code{
 		jen.Commentf("%s is a mock function.", funcName),
@@ -68,7 +93,7 @@ func buildGetSomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := n.Singular()
 
 	params := typ.BuildInterfaceDefinitionRetrievalMethodParams(proj)
-	callArgs := typ.BuildInterfaceDefinitionRetrievalMethodCallArgs(proj)
+	callArgs := buildInterfaceDefinitionExistenceMethodCallArgs(proj, typ, "")
 
 	lines := []jen.Code{
 		jen.Commentf("Get%s is a mock function.", sn),

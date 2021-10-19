@@ -261,12 +261,6 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().ID("b").Dot("tracer").Dot("StartSpan").Call(jen.ID("ctx")),
 		jen.Defer().ID("span").Dot("End").Call(),
 		jen.Newline(),
-	}
-
-	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false)...)
-
-	bodyLines = append(bodyLines,
-		jen.Newline(),
 		jen.ID(constants.LoggerVarName).Assign().ID("b").Dot(constants.LoggerVarName).Dot("WithValue").Call(
 			jen.Qual(proj.TypesPackage(), "SearchQueryKey"),
 			jen.ID("query"),
@@ -274,6 +268,12 @@ func buildBuildSearchSomethingRequest(proj *models.Project, typ models.DataType)
 			jen.Qual(proj.TypesPackage(), "LimitQueryKey"),
 			jen.ID("limit"),
 		),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildIDBoilerplate(proj, typ, false)...)
+
+	bodyLines = append(bodyLines,
 		jen.Newline(),
 		jen.ID("params").Assign().Qual("net/url", "Values").Values(),
 		jen.ID("params").Dot("Set").Call(

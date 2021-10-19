@@ -17,7 +17,7 @@ func buildPreWriteFields(proj *models.Project) []jen.Code {
 
 	for _, typ := range proj.DataTypes {
 		if len(proj.FindDependentsOfType(typ)) > 0 {
-			fields = append(fields, jen.IDf("%sID", typ.Name.Singular()).String().Tag(jsonTag(typ.Name.UnexportedVarName())))
+			fields = append(fields, jen.IDf("%sID", typ.Name.Singular()).String().Tag(jsonTag(fmt.Sprintf("%sID", typ.Name.UnexportedVarName()))))
 		}
 
 		fields = append(fields, jen.ID(typ.Name.Singular()).PointerTo().IDf("%sDatabaseCreationInput", typ.Name.Singular()).Tag(jsonTagOmittingEmpty(typ.Name.UnexportedVarName())))
@@ -42,7 +42,7 @@ func buildPreUpdateFields(proj *models.Project) []jen.Code {
 
 	for _, typ := range proj.DataTypes {
 		if len(proj.FindDependentsOfType(typ)) > 0 {
-			fields = append(fields, jen.IDf("%sID", typ.Name.Singular()).String().Tag(jsonTag(typ.Name.UnexportedVarName())))
+			fields = append(fields, jen.IDf("%sID", typ.Name.Singular()).String().Tag(jsonTag(fmt.Sprintf("%sID", typ.Name.UnexportedVarName()))))
 		}
 
 		fields = append(fields, jen.ID(typ.Name.Singular()).PointerTo().ID(typ.Name.Singular()).Tag(jsonTagOmittingEmpty(typ.Name.UnexportedVarName())))
@@ -86,7 +86,7 @@ func buildDataChangeMessageFields(proj *models.Project) []jen.Code {
 
 	for _, typ := range proj.DataTypes {
 		if len(proj.FindDependentsOfType(typ)) > 0 {
-			fields = append(fields, jen.IDf("%sID", typ.Name.Singular()).String().Tag(jsonTag(typ.Name.UnexportedVarName())))
+			fields = append(fields, jen.IDf("%sID", typ.Name.Singular()).String().Tag(jsonTag(fmt.Sprintf("%sID", typ.Name.UnexportedVarName()))))
 		}
 
 		fields = append(fields, jen.ID(typ.Name.Singular()).PointerTo().ID(typ.Name.Singular()).Tag(jsonTagOmittingEmpty(typ.Name.UnexportedVarName())))

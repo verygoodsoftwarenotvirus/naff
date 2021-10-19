@@ -47,7 +47,7 @@ func buildSuiteStruct(proj *models.Project, typ models.DataType) []jen.Code {
 	}
 
 	for _, owner := range proj.FindOwnerTypeChain(typ) {
-		structFields = append(structFields, jen.IDf("example%sID", owner.Name.Singular()).Uint64())
+		structFields = append(structFields, jen.IDf("example%sID", owner.Name.Singular()).String())
 		initFields = append(initFields, jen.ID("s").Dotf("example%sID", owner.Name.Singular()).Equals().Qual(proj.FakeTypesPackage(), "BuildFakeID").Call())
 	}
 

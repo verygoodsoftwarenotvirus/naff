@@ -55,6 +55,8 @@ func buildProvidePreUpdatesWorker(proj *models.Project) []jen.Code {
 	valuesLines := []jen.Code{
 		jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("name")).Dot("WithValue").Call(jen.Lit("topic"), jen.ID("name")),
 		jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("name")), jen.ID("encoder").MapAssign().Qual(proj.EncodingPackage(), "ProvideClientEncoder").Call(jen.ID("logger"), jen.Qual(proj.EncodingPackage(), "ContentTypeJSON")),
+		jen.ID("postUpdatesPublisher").MapAssign().ID("postUpdatesPublisher"),
+		jen.ID("dataManager").MapAssign().ID("dataManager"),
 	}
 
 	for _, typ := range proj.DataTypes {
@@ -88,7 +90,7 @@ func buildProvidePreUpdatesWorker(proj *models.Project) []jen.Code {
 			jen.Newline(),
 		)
 
-		valuesLines = append(valuesLines, jen.ID("postUpdatesPublisher").MapAssign().ID("postUpdatesPublisher"), jen.ID("dataManager").MapAssign().ID("dataManager"), jen.IDf("%sIndexManager", puvn).MapAssign().IDf("%sIndexManager", puvn))
+		valuesLines = append(valuesLines, jen.IDf("%sIndexManager", puvn).MapAssign().IDf("%sIndexManager", puvn))
 	}
 
 	bodyLines = append(bodyLines,

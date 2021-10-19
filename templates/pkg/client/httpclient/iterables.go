@@ -598,7 +598,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType) []jen.Code 
 		jen.Newline(),
 	}
 
-	lines = append(lines, buildIDBoilerplateForCreation(proj, typ, false, jen.Nil())...)
+	lines = append(lines, buildIDBoilerplateForCreation(proj, typ, false, jen.EmptyString())...)
 
 	lines = append(lines,
 		jen.If(jen.ID("input").IsEqualTo().Nil()).Body(

@@ -1963,10 +1963,9 @@ func buildTestSomethingsService_UpdateHandler(proj *models.Project, typ models.D
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.ID("helper").Dot("service").Dotf("%sDataManager", uvn).Equals().IDf("%sDataManager", uvn),
 					jen.Newline(),
-					jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
-					jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager"),
-					jen.Newline(),
-					jen.Newline(),
+					utils.ConditionalCode(typ.SearchEnabled, jen.ID("indexManager").Assign().AddressOf().Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values()),
+					utils.ConditionalCode(typ.SearchEnabled, jen.ID("helper").Dot("service").Dot("search").Equals().ID("indexManager")),
+					utils.ConditionalCode(typ.SearchEnabled, jen.Newline()),
 					jen.ID("helper").Dot("service").Dot("UpdateHandler").Call(
 						jen.ID("helper").Dot("res"),
 						jen.ID("helper").Dot("req"),
@@ -2150,7 +2149,7 @@ func buildTestSomethingsService_ArchiveHandler(proj *models.Project, typ models.
 	scn := typ.Name.SingularCommonName()
 	pn := typ.Name.Plural()
 
-	expectedExistenceCallArgs := buildMockCallArgsForArchiveExistenceCheck(proj, typ)
+	expectedExistenceCallArgs := buildMockCallArgsForExistence(proj, typ)
 	expectedCallArgs := buildMockCallArgsForArchive(proj, typ)
 
 	return []jen.Code{

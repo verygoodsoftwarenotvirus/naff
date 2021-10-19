@@ -265,6 +265,7 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Newline(),
 			jen.ID("input").Assign().Qualf(proj.TypesPackage(), "%sDatabaseCreationInputFrom%sCreationInput", sn, sn).Call(jen.ID("providedInput")),
 			jen.ID("input").Dot("ID").Equals().Qual(constants.IDGenerationLibrary, "New").Call().Dot("String").Call(),
+			jen.Newline(),
 			func() jen.Code {
 				if typ.BelongsToStruct != nil {
 					return jen.Commentf("determine %s ID.", typ.BelongsToStruct.SingularCommonName()).Newline().

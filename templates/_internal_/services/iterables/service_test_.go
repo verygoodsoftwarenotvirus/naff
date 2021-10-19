@@ -63,7 +63,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		).Dot("Return").Call(jen.Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()).SingleLineBody(jen.Return().EmptyString())),
 		jen.Newline(),
 		jen.ID("cfg").Assign().ID("Config").Valuesln(
-			jen.ID("SearchIndexPath").MapAssign().Lit("example/path"),
+			utils.ConditionalCode(typ.SearchEnabled, jen.ID("SearchIndexPath").MapAssign().Lit("example/path")),
 			jen.ID("PreWritesTopicName").MapAssign().Lit("pre-writes"),
 			jen.ID("PreUpdatesTopicName").MapAssign().Lit("pre-updates"),
 			jen.ID("PreArchivesTopicName").MapAssign().Lit("pre-archives"),
@@ -134,7 +134,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	subtestOneLines = append(subtestOneLines,
 		jen.ID("cfg").Assign().ID("Config").Valuesln(
-			jen.ID("SearchIndexPath").MapAssign().Lit("example/path"),
+			utils.ConditionalCode(typ.SearchEnabled, jen.ID("SearchIndexPath").MapAssign().Lit("example/path")),
 			jen.ID("PreWritesTopicName").MapAssign().Lit("pre-writes"),
 			jen.ID("PreUpdatesTopicName").MapAssign().Lit("pre-updates"),
 			jen.ID("PreArchivesTopicName").MapAssign().Lit("pre-archives"),
@@ -202,7 +202,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	subtestTwoLines = append(subtestTwoLines,
 		jen.ID("cfg").Assign().ID("Config").Valuesln(
-			jen.ID("SearchIndexPath").MapAssign().Lit("example/path"),
+			utils.ConditionalCode(typ.SearchEnabled, jen.ID("SearchIndexPath").MapAssign().Lit("example/path")),
 			jen.ID("PreWritesTopicName").MapAssign().Lit("pre-writes"),
 			jen.ID("PreUpdatesTopicName").MapAssign().Lit("pre-updates"),
 			jen.ID("PreArchivesTopicName").MapAssign().Lit("pre-archives"),
@@ -271,7 +271,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	subtestThreeLines = append(subtestThreeLines,
 		jen.ID("cfg").Assign().ID("Config").Valuesln(
-			jen.ID("SearchIndexPath").MapAssign().Lit("example/path"),
+			utils.ConditionalCode(typ.SearchEnabled, jen.ID("SearchIndexPath").MapAssign().Lit("example/path")),
 			jen.ID("PreWritesTopicName").MapAssign().Lit("pre-writes"),
 			jen.ID("PreUpdatesTopicName").MapAssign().Lit("pre-updates"),
 			jen.ID("PreArchivesTopicName").MapAssign().Lit("pre-archives"),
@@ -341,7 +341,7 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 	searchSubtestLines = append(searchSubtestLines,
 		jen.ID("cfg").Assign().ID("Config").Valuesln(
-			jen.ID("SearchIndexPath").MapAssign().Lit("example/path"),
+			utils.ConditionalCode(typ.SearchEnabled, jen.ID("SearchIndexPath").MapAssign().Lit("example/path")),
 			jen.ID("PreWritesTopicName").MapAssign().Lit("pre-writes"),
 			jen.ID("PreUpdatesTopicName").MapAssign().Lit("pre-updates"),
 			jen.ID("PreArchivesTopicName").MapAssign().Lit("pre-archives"),

@@ -137,8 +137,14 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+						func() jen.Code {
+							if typ.BelongsToStruct != nil {
+								return jen.ID("body").Dotf("%sID", typ.BelongsToStruct.Singular())
+							}
+							return jen.Null()
+						}(),
 						jen.ID("body").Dotf("%sID", sn),
-						jen.ID("body").Dot("AttributableToAccountID"),
+						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("body").Dot("AttributableToAccountID")),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
 					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
@@ -215,8 +221,14 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+						func() jen.Code {
+							if typ.BelongsToStruct != nil {
+								return jen.ID("body").Dotf("%sID", typ.BelongsToStruct.Singular())
+							}
+							return jen.Null()
+						}(),
 						jen.ID("body").Dotf("%sID", sn),
-						jen.ID("body").Dot("AttributableToAccountID"),
+						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("body").Dot("AttributableToAccountID")),
 					).Dot("Return").Call(jen.Qual("errors", "New").Call(jen.Lit("blah"))),
 					jen.Newline(),
 					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
@@ -279,8 +291,14 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+						func() jen.Code {
+							if typ.BelongsToStruct != nil {
+								return jen.ID("body").Dotf("%sID", typ.BelongsToStruct.Singular())
+							}
+							return jen.Null()
+						}(),
 						jen.ID("body").Dotf("%sID", sn),
-						jen.ID("body").Dot("AttributableToAccountID"),
+						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("body").Dot("AttributableToAccountID")),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
 					jen.ID("searchIndexManager").Assign().Op("&").Qual(proj.InternalSearchPackage("mock"), "IndexManager").Values(),
@@ -352,8 +370,14 @@ func buildTestPreArchivesWorker_HandleMessage(proj *models.Project) []jen.Code {
 					jen.ID("dbManager").Dotf("%sDataManager", sn).Dot("On").Callln(
 						jen.Litf("Archive%s", sn),
 						jen.Qual(proj.TestUtilsPackage(), "ContextMatcher"),
+						func() jen.Code {
+							if typ.BelongsToStruct != nil {
+								return jen.ID("body").Dotf("%sID", typ.BelongsToStruct.Singular())
+							}
+							return jen.Null()
+						}(),
 						jen.ID("body").Dotf("%sID", sn),
-						jen.ID("body").Dot("AttributableToAccountID"),
+						utils.ConditionalCode(typ.BelongsToAccount, jen.ID("body").Dot("AttributableToAccountID")),
 					).Dot("Return").Call(jen.Nil()),
 					jen.Newline(),
 					jen.ID("postArchivesPublisher").Assign().Op("&").Qual(proj.InternalMessageQueuePublishersPackage("mock"), "Publisher").Values(),
