@@ -61,6 +61,7 @@ func buildProvidePreUpdatesWorker(proj *models.Project) []jen.Code {
 
 	for _, typ := range proj.DataTypes {
 		pcn := typ.Name.PluralCommonName()
+		prn := typ.Name.PluralRouteName()
 		puvn := typ.Name.PluralUnexportedVarName()
 
 		stringFields := []jen.Code{}
@@ -77,7 +78,7 @@ func buildProvidePreUpdatesWorker(proj *models.Project) []jen.Code {
 					jen.ID("logger"),
 					jen.ID("client"),
 					jen.ID("searchIndexLocation"),
-					jen.Lit(puvn),
+					jen.Lit(prn),
 				},
 					stringFields...,
 				)...,

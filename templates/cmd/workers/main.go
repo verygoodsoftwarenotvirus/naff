@@ -63,10 +63,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("main").Params().Body(
-			jen.Const().Defs(
-				jen.ID("addr").Equals().Lit("worker_queue:6379"),
-			),
-			jen.Newline(),
 			jen.ID("ctx").Assign().Qual("context", "Background").Call(),
 			jen.Newline(),
 			jen.ID("logger").Assign().Qual(proj.InternalLoggingPackage(), "ProvideLogger").Call(jen.Qual(proj.InternalLoggingPackage(), "Config").Valuesln(
@@ -120,21 +116,14 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err"))),
 			jen.Newline(),
-			jen.ID("pcfg").Assign().Op("&").Qual(proj.InternalMessageQueueConfigPackage(), "Config").Valuesln(
-				jen.ID("Provider").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "ProviderRedis"),
-				jen.ID("RedisConfig").MapAssign().Qual(proj.InternalMessageQueueConfigPackage(), "RedisConfig").Valuesln(
-					jen.ID("QueueAddress").MapAssign().ID("addr"),
-				),
-			),
-			jen.Newline(),
 			jen.ID("consumerProvider").Assign().Qual(proj.InternalMessageQueueConsumersPackage(), "ProvideRedisConsumerProvider").Call(
 				jen.ID("logger"),
-				jen.ID("addr"),
+				jen.String().Call(jen.ID("cfg").Dot("Events").Dot("RedisConfig").Dot("QueueAddress")),
 			),
 			jen.Newline(),
 			jen.List(jen.ID("publisherProvider"), jen.ID("err")).Assign().Qual(proj.InternalMessageQueueConfigPackage(), "ProvidePublisherProvider").Call(
 				jen.ID("logger"),
-				jen.ID("pcfg"),
+				jen.AddressOf().ID("cfg").Dot("Events"),
 			),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
 				jen.ID("logger").Dot("Fatal").Call(jen.ID("err")),
@@ -173,7 +162,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("client"),
 				jen.ID("dataManager"),
 				jen.ID("postWritesPublisher"),
-				jen.Lit("http://elasticsearch:9200"),
+				jen.ID("cfg").Dot("Search").Dot("Address"),
 				jen.Qual(proj.InternalSearchPackage("elasticsearch"), "NewIndexManager"),
 			),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -205,7 +194,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("client"),
 				jen.ID("dataManager"),
 				jen.ID("postUpdatesPublisher"),
-				jen.Lit("http://elasticsearch:9200"),
+				jen.ID("cfg").Dot("Search").Dot("Address"),
 				jen.Qual(proj.InternalSearchPackage("elasticsearch"), "NewIndexManager"),
 			),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -238,7 +227,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 				jen.ID("client"),
 				jen.ID("dataManager"),
 				jen.ID("postArchivesPublisher"),
-				jen.Lit("http://elasticsearch:9200"),
+				jen.ID("cfg").Dot("Search").Dot("Address"),
 				jen.Qual(proj.InternalSearchPackage("elasticsearch"), "NewIndexManager"),
 			),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
@@ -263,7 +252,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Comment("wait for signal to exit"),
 			jen.ID("sigChan").Assign().ID("make").Call(
 				jen.Chan().Qual("os", "Signal"),
-				jen.Lit(1),
+				jen.One(),
 			),
 			jen.Qual("os/signal", "Notify").Call(
 				jen.ID("sigChan"),

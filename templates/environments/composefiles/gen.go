@@ -58,15 +58,15 @@ func getDatabasePalabra(vendor string) wordsmith.SuperPalabra {
 			RouteNameStr:                          "mysql",
 			KebabNameStr:                          "mysql",
 			PluralRouteNameStr:                    "mysqls",
-			UnexportedVarNameStr:                  "mariaDB",
-			PluralUnexportedVarNameStr:            "mariaDBs",
+			UnexportedVarNameStr:                  "mysql",
+			PluralUnexportedVarNameStr:            "mysqls",
 			PackageNameStr:                        "mysqls",
 			SingularPackageNameStr:                "mysql",
-			SingularCommonNameStr:                 "maria DB",
-			ProperSingularCommonNameWithPrefixStr: "a Maria DB",
-			PluralCommonNameStr:                   "maria DBs",
-			SingularCommonNameWithPrefixStr:       "maria DB",
-			PluralCommonNameWithPrefixStr:         "maria DBs",
+			SingularCommonNameStr:                 "mysql",
+			ProperSingularCommonNameWithPrefixStr: "a MySQL",
+			PluralCommonNameStr:                   "MySQLs",
+			SingularCommonNameWithPrefixStr:       "a mysql",
+			PluralCommonNameWithPrefixStr:         "mysqls",
 		}
 	default:
 		panic(fmt.Sprintf("unknown vendor: %q", vendor))
@@ -79,6 +79,8 @@ services:
     worker_queue:
         image: redis:6-buster
         container_name: worker_queue
+        logging:
+          driver: none
     postgres:
         hostname: pgdatabase
         container_name: database
@@ -98,6 +100,8 @@ services:
         - '9300:9300'
       environment:
         discovery.type: 'single-node'
+      logging:
+        driver: none
     tracing-server:
         image: jaegertracing/all-in-one:1.22.0
         logging:
@@ -187,6 +191,7 @@ func integrationTestsDotYAML(projectName, dbName wordsmith.SuperPalabra) string 
 		return fmt.Sprintf(`version: "3.8"
 services:
     workers:
+        container_name: integration_tests_workers
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/workers.Dockerfile'
@@ -198,12 +203,18 @@ services:
               target: '/etc/service.config'
               type: 'bind'
     api_server:
+        hostname: gamut_api_server
+        container_name: integration_tests_server
         depends_on:
             - workers
+        links:
+            - redis
+            - postgres
+            - elasticsearch
         environment:
             USE_NOOP_LOGGER: 'nope'
-            %s_SERVER_LOCAL_CONFIG_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
             CONFIGURATION_FILEPATH: '/etc/service.config'
+            %s_SERVER_LOCAL_CONFIG_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
         ports:
             - '8888:8888'
         build:
@@ -213,12 +224,21 @@ services:
             - source: '../../../../environments/testing/config_files/integration-tests-postgres.config'
               target: '/etc/service.config'
               type: 'bind'
-`, strings.ToUpper(projectName.Singular()), strings.ToUpper(projectName.Singular()))
+    test:
+        environment:
+            TARGET_ADDRESS: 'http://%s_api_server:8888'
+        links:
+            - api_server
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
+        container_name: 'integration_tests'
+`, strings.ToUpper(projectName.Singular()), strings.ToUpper(projectName.Singular()), projectName.RouteName())
 	case string(models.MySQL):
 		return fmt.Sprintf(`version: "3.8"
 services:
     workers:
-        container_name: workers
+        container_name: integration_tests_workers
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/workers.Dockerfile'
@@ -230,12 +250,18 @@ services:
               target: '/etc/service.config'
               type: 'bind'
     api_server:
+        hostname: %s_api_server
+        container_name: integration_tests_server
         depends_on:
             - workers
+        links:
+            - redis
+            - postgres
+            - elasticsearch
         environment:
-            %s_SERVER_LOCAL_CONFIG_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
+            USE_NOOP_LOGGER: 'nope'
             CONFIGURATION_FILEPATH: '/etc/service.config'
-            JAEGER_DISABLED: 'false'
+            %s_SERVER_LOCAL_CONFIG_STORE_KEY: 'SUFNQVdBUkVUSEFUVEhJU1NFQ1JFVElTVU5TRUNVUkU='
         ports:
             - '8888:8888'
         build:
@@ -245,7 +271,16 @@ services:
             - source: '../../../../environments/testing/config_files/integration-tests-mysql.config'
               target: '/etc/service.config'
               type: 'bind'
-`, strings.ToUpper(projectName.Singular()), strings.ToUpper(projectName.Singular()))
+    test:
+        environment:
+            TARGET_ADDRESS: 'http://%s_api_server:8888'
+        links:
+            - api_server
+        build:
+            context: '../../../../'
+            dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
+        container_name: 'integration_tests'
+`, strings.ToUpper(projectName.Singular()), projectName.RouteName(), strings.ToUpper(projectName.Singular()), projectName.RouteName())
 	}
 
 	panic(fmt.Sprintf("invalid db: ", dbName.RouteName()))
@@ -260,6 +295,8 @@ services:
         container_name: redis
         ports:
             - '6379:6379'
+        logging:
+          driver: none
     postgres:
         container_name: postgres
         hostname: pgdatabase
@@ -293,37 +330,56 @@ services:
             - '9300:9300'
         environment:
             discovery.type: 'single-node'
-#    prometheus:
-#        image: quay.io/prometheus/prometheus:v2.25.0
-#        logging:
-#            driver: none
-#        ports:
-#            - '9090:9090'
-#        volumes:
-#            - source: "../../../../environments/testing/prometheus/config.yaml"
-#              target: "/etc/prometheus/config.yaml"
-#              type: 'bind'
-#        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
-#    grafana:
-#        image: grafana/grafana
-#        logging:
-#            driver: none
-#        ports:
-#            - '3000:3000'
-#        links:
-#            - prometheus
-#        volumes:
-#            - source: '../../../../environments/testing/grafana/grafana.ini'
-#              target: '/etc/grafana/grafana.ini'
-#              type: 'bind'
-#            - source: '../../../../environments/testing/grafana/datasources.yaml'
-#              target: '/etc/grafana/provisioning/datasources/datasources.yml'
-#              type: 'bind'
-#            - source: '../../../../environments/testing/grafana/dashboards.yaml'
-#              target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
-#              type: 'bind'
-#            - source: '../../../../environments/testing/grafana/dashboards'
-#              target: '/etc/grafana/provisioning/dashboards/dashboards'
-#              type: 'bind'
+        healthcheck:
+            test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+        logging:
+            driver: none
+    tracing-server:
+        image: jaegertracing/all-in-one:1.22.0
+        logging:
+            driver: none
+        ports:
+            - "5775:5775/udp"
+            - "6831:6831/udp"
+            - "6832:6832/udp"
+            - "5778:5778"
+            - "16686:16686"
+            - "14268:14268"
+            - "9411:9411"
+    prometheus:
+        image: quay.io/prometheus/prometheus:v2.25.0
+        logging:
+            driver: none
+        ports:
+            - '9090:9090'
+        volumes:
+            - source: "../../../../environments/testing/prometheus/config.yaml"
+              target: "/etc/prometheus/config.yaml"
+              type: 'bind'
+        command: '--config.file=/etc/prometheus/config.yaml --storage.tsdb.path=/prometheus'
+    grafana:
+        image: grafana/grafana
+        logging:
+            driver: none
+        ports:
+            - '3000:3000'
+        links:
+            - prometheus
+        volumes:
+            - source: '../../../../environments/testing/grafana/grafana.ini'
+              target: '/etc/grafana/grafana.ini'
+              type: 'bind'
+            - source: '../../../../environments/testing/grafana/datasources.yaml'
+              target: '/etc/grafana/provisioning/datasources/datasources.yml'
+              type: 'bind'
+            - source: '../../../../environments/testing/grafana/dashboards.yaml'
+              target: '/etc/grafana/provisioning/dashboards/dashboards.yml'
+              type: 'bind'
+            - source: '../../../../environments/testing/grafana/dashboards'
+              target: '/etc/grafana/provisioning/dashboards/dashboards'
+              type: 'bind'
 `, projectName.RouteName(), projectName.RouteName())
 }

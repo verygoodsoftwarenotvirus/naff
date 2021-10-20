@@ -398,11 +398,11 @@ func buildPrefixedStringColumns(typ models.DataType) []string {
 		fmt.Sprintf("%s.archived_on", tableName),
 	)
 
-	if typ.BelongsToAccount {
-		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
-	}
 	if typ.BelongsToStruct != nil {
 		out = append(out, fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName()))
+	}
+	if typ.BelongsToAccount {
+		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
 	}
 
 	return out
@@ -679,16 +679,12 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 		jen.Newline(),
 		jen.ID("subqueryBuilder").Assign().ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 			Dotln("From").Call(jen.Lit(puvn)).
-			Dotln("Join").Call(jen.Lit("unnest('{%s}'::text[])")).
+			Dotln("Join").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("unnest('{%s}'::text[])"), jen.ID("joinIDs").Call(jen.ID("ids")))).
 			Dotln("Suffix").Call(jen.Qual("fmt", "Sprintf").Call(jen.Lit("WITH ORDINALITY t(id, ord) USING (id) ORDER BY t.ord LIMIT %d"), jen.ID("limit"))),
 		jen.Newline(),
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Assign().ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 			Dotln("FromSelect").Call(jen.ID("subqueryBuilder"), jen.Lit(puvn)).
 			Dotln("Where").Call(jen.ID("withIDsWhere")).Dot("ToSql").Call(),
-		jen.ID("query").Op("=").Qual("fmt", "Sprintf").Call(
-			jen.ID("query"),
-			jen.ID("joinIDs").Call(jen.ID("ids")),
-		),
 		jen.Newline(),
 		jen.ID("q").Dot("logQueryBuildingError").Call(
 			jen.ID("span"),
@@ -821,7 +817,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 	}
 
 	if typ.BelongsToStruct != nil {
-		creationColumns = append(creationColumns, typ.BelongsToStruct.RouteName())
+		creationColumns = append(creationColumns, fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))
 		args = append(args, models.NewCodeWrapper(jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular())))
 	}
 

@@ -46,7 +46,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("pasetoSecretSize").Equals().Lit(32),
 			jen.ID("maxAttempts").Equals().Lit(50),
-			jen.ID("defaultPASETOLifetime").Equals().Lit(1).PointerTo().Qual("time", "Minute"),
+			jen.ID("defaultPASETOLifetime").Equals().One().PointerTo().Qual("time", "Minute"),
 			jen.Newline(),
 			jen.ID("contentTypeJSON").Equals().Lit("application/json"),
 			jen.ID("workerQueueAddress").Equals().Lit("worker_queue:6379"),
@@ -59,8 +59,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.ID("examplePASETOKey").Equals().ID("generatePASETOKey").Call(),
 			jen.Newline(),
 			jen.ID("noopTracingConfig").Equals().Qual(proj.InternalTracingPackage(), "Config").Valuesln(
-				jen.ID("Provider").MapAssign().Lit(""),
-				jen.ID("SpanCollectionProbability").MapAssign().Lit(1),
+				jen.ID("SpanCollectionProbability").MapAssign().Zero(),
 			),
 			jen.Newline(),
 			jen.ID("localServer").Equals().Qual(proj.HTTPServerPackage(), "Config").Valuesln(
@@ -80,7 +79,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 			jen.Newline(),
 			jen.ID("localTracingConfig").Equals().Qual(proj.InternalTracingPackage(), "Config").Valuesln(
 				jen.ID("Provider").MapAssign().Lit("jaeger"),
-				jen.ID("SpanCollectionProbability").MapAssign().Lit(1),
+				jen.ID("SpanCollectionProbability").MapAssign().One(),
 				jen.ID("Jaeger").MapAssign().AddressOf().Qual(proj.InternalTracingPackage(), "JaegerConfig").Valuesln(
 					jen.ID("CollectorEndpoint").MapAssign().Lit("http://localhost:14268/api/traces"),
 					jen.ID("ServiceName").MapAssign().Litf("%s_service", proj.Name.RouteName()),
@@ -172,9 +171,7 @@ func mainDotGo(proj *models.Project) *jen.File {
 
 	code.Add(
 		jen.Func().ID("buildLocalFrontendServiceConfig").Params().Params(jen.Qual(proj.FrontendServicePackage(), "Config")).Body(
-			jen.Return().Qual(proj.FrontendServicePackage(), "Config").Valuesln(
-				jen.ID("UseFakeData").MapAssign().False(),
-			),
+			jen.Return().Qual(proj.FrontendServicePackage(), "Config").Values(),
 		),
 		jen.Newline(),
 	)
@@ -218,7 +215,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 				}
 				return jen.Null()
 			}(),
-			jen.ID("Async").MapAssign().True(),
 			jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 			jen.ID("PreUpdatesTopicName").MapAssign().ID("preUpdatesTopicName"),
 			jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
@@ -283,13 +279,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 					),
 				),
-				jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
-					jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
+				utils.ConditionalCode(
+					proj.SearchEnabled(),
+					jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
+						jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
+						jen.ID("Address").MapAssign().ID("localElasticsearchLocation"),
+					),
 				),
 				jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
 						jen.ID("Accounts").MapAssign().Qual(proj.AccountsServicePackage(), "Config").Valuesln(
-							jen.ID("Async").MapAssign().True(),
 							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
@@ -306,7 +305,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Async").MapAssign().True(),
 							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 							jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 						),
@@ -373,13 +371,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 						jen.ID("BucketName").MapAssign().Lit("avatars"),
 					),
 				),
-				jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
-					jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
+				utils.ConditionalCode(
+					proj.SearchEnabled(),
+					jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
+						jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
+						jen.ID("Address").MapAssign().ID("localElasticsearchLocation"),
+					),
 				),
 				jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 					append([]jen.Code{
 						jen.ID("Accounts").MapAssign().Qual(proj.AccountsServicePackage(), "Config").Valuesln(
-							jen.ID("Async").MapAssign().True(),
 							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 						),
 						jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
@@ -396,7 +397,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 						),
 						jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 						jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-							jen.ID("Async").MapAssign().True(),
 							jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 							jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 						),
@@ -479,13 +479,16 @@ func mainDotGo(proj *models.Project) *jen.File {
 							jen.ID("S3Config").MapAssign().Nil(),
 						),
 					),
-					jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
-						jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
+					utils.ConditionalCode(
+						proj.SearchEnabled(),
+						jen.ID("Search").MapAssign().Qual(proj.InternalSearchPackage(), "Config").Valuesln(
+							jen.ID("Provider").MapAssign().Qual(proj.InternalSearchPackage(), "ElasticsearchProvider"),
+							jen.ID("Address").MapAssign().ID("localElasticsearchLocation"),
+						),
 					),
 					jen.ID("Services").MapAssign().Qual(proj.InternalConfigPackage(), "ServicesConfigurations").Valuesln(
 						append([]jen.Code{
 							jen.ID("Accounts").MapAssign().Qual(proj.AccountsServicePackage(), "Config").Valuesln(
-								jen.ID("Async").MapAssign().True(),
 								jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 							),
 							jen.ID("Auth").MapAssign().Qual(proj.AuthServicePackage(), "Config").Valuesln(
@@ -508,7 +511,6 @@ func mainDotGo(proj *models.Project) *jen.File {
 							),
 							jen.ID("Frontend").MapAssign().ID("buildLocalFrontendServiceConfig").Call(),
 							jen.ID("Webhooks").MapAssign().Qual(proj.WebhooksServicePackage(), "Config").Valuesln(
-								jen.ID("Async").MapAssign().True(),
 								jen.ID("PreWritesTopicName").MapAssign().ID("preWritesTopicName"),
 								jen.ID("PreArchivesTopicName").MapAssign().ID("preArchivesTopicName"),
 							),

@@ -128,7 +128,7 @@ func init() {
 	generateCmd.Flags().StringVarP(&outputPackage, "output-dir", "o", "", "package to generate")
 
 	generateCmd.Flags().BoolVarP(&postgresEnabled, "enable-postgres", "", false, "enable postgres support")
-	generateCmd.Flags().BoolVarP(&mysqlEnabled, "enable-mariadb", "", false, "enable mariadb support")
+	generateCmd.Flags().BoolVarP(&mysqlEnabled, "enable-mysql", "", false, "enable mysql support")
 
 	rootCmd.AddCommand(generateCmd)
 }

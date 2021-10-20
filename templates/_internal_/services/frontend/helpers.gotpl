@@ -1,7 +1,6 @@
 package frontend
 
 import (
-	"bytes"
 	"context"
 	"html/template"
 	"io"
@@ -85,29 +84,4 @@ func (s *service) extractFormFromRequest(ctx context.Context, req *http.Request)
 	}
 
 	return form, nil
-}
-
-func (s *service) renderTemplateIntoBaseTemplate(templateSrc string, funcMap template.FuncMap) *template.Template {
-	return parseListOfTemplates(mergeFuncMaps(s.templateFuncMap, funcMap), "dashboard", baseTemplateSrc, wrapTemplateInContentDefinition(templateSrc))
-}
-
-func (s *service) renderTemplateToResponse(ctx context.Context, tmpl *template.Template, x interface{}, res http.ResponseWriter) {
-	_, span := s.tracer.StartSpan(ctx)
-	defer span.End()
-
-	var b bytes.Buffer
-	if err := tmpl.Funcs(s.templateFuncMap).Execute(&b, x); err != nil {
-		observability.AcknowledgeError(err, s.logger, span, "rendering accounts dashboard view")
-		res.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	s.renderBytesToResponse(b.Bytes(), res)
-}
-
-func (s *service) parseTemplate(ctx context.Context, name, source string, funcMap template.FuncMap) *template.Template {
-	_, span := s.tracer.StartSpan(ctx)
-	defer span.End()
-
-	return template.Must(template.New(name).Funcs(mergeFuncMaps(s.templateFuncMap, funcMap)).Parse(source))
 }

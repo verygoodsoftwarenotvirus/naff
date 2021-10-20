@@ -191,7 +191,6 @@ func httpRoutesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 
 func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
-	uvn := typ.Name.UnexportedVarName()
 	scn := typ.Name.SingularCommonName()
 
 	lines := []jen.Code{
@@ -285,69 +284,27 @@ func buildCreateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 			jen.Qualf(proj.InternalTracingPackage(), "Attach%sIDToSpan", sn).Call(jen.ID(constants.SpanVarName), jen.ID("input").Dot("ID")),
 			jen.Newline(),
 			jen.Commentf("create %s in database.", scn),
-			jen.If(jen.ID("s").Dot("async")).Body(
-				jen.ID("preWrite").Assign().AddressOf().Qual(proj.TypesPackage(), "PreWriteMessage").Valuesln(
-					jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
-					jen.ID(sn).MapAssign().ID("input"),
-					jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
-					jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
-				),
-				jen.If(jen.Err().Equals().ID("s").Dot("preWritesPublisher").Dot("Publish").Call(constants.CtxVar(), jen.ID("preWrite")), jen.Err().DoesNotEqual().Nil()).Body(
-					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.Err(), constants.LoggerVar(), jen.ID(constants.SpanVarName), jen.Litf("publishing %s write message", scn)),
-					jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName)),
-					jen.Return(),
-				),
-				jen.Newline(),
-				jen.ID("pwr").Assign().Qual(proj.TypesPackage(), "PreWriteResponse").Values(jen.ID("ID").MapAssign().ID("input").Dot("ID")),
-				jen.Newline(),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeResponseWithStatus").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.ID("pwr"), jen.Qual("net/http", "StatusAccepted")),
-			).Else().Body(
-				jen.List(jen.ID(uvn), jen.IDf("%sCreationErr", uvn)).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("Create%s", sn).Call(
-					jen.ID("ctx"),
-					jen.ID("input"),
-				),
-				jen.If(jen.IDf("%sCreationErr", uvn).DoesNotEqual().Nil()).Body(
-					jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-						jen.IDf("%sCreationErr", uvn),
-						jen.ID("logger"),
-						jen.ID("span"),
-						jen.Litf("creating %s", scn),
-					),
-					jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
-						jen.ID("ctx"),
-						jen.ID("res"),
-					),
-					jen.Return(),
-				),
-				jen.Newline(),
-				jen.Qual(proj.InternalTracingPackage(), fmt.Sprintf("Attach%sIDToSpan", sn)).Call(
-					jen.ID("span"),
-					jen.ID(uvn).Dot("ID"),
-				),
-				utils.ConditionalCode(typ.SearchEnabled,
-					jen.ID("logger").Equals().ID("logger").Dot("WithValue").Call(
-						jen.Qual(proj.ObservabilityPackage("keys"), fmt.Sprintf("%sIDKey", sn)),
-						jen.ID(uvn).Dot("ID"),
-					),
-				),
-				jen.Newline(),
-				jen.Comment("notify interested parties."),
+			jen.ID("preWrite").Assign().AddressOf().Qual(proj.TypesPackage(), "PreWriteMessage").Valuesln(
+				jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
 				func() jen.Code {
-					if typ.SearchEnabled {
-						return jen.If(jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(jen.ID("ctx"), jen.ID(uvn).Dot("ID"), jen.ID(uvn)), jen.ID("searchIndexErr").DoesNotEqual().Nil()).Body(
-							jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.ID("err"), jen.ID("logger"), jen.ID("span"), jen.Litf("adding %s to search index", scn)),
-						)
+					if typ.BelongsToStruct != nil {
+						return jen.IDf("%sID", typ.BelongsToStruct.Singular()).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
 					}
 					return jen.Null()
 				}(),
-				jen.Newline(),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeResponseWithStatus").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-					jen.ID(uvn),
-					jen.Qual("net/http", "StatusCreated"),
-				),
+				jen.ID(sn).MapAssign().ID("input"),
+				jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+				jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
 			),
+			jen.If(jen.Err().Equals().ID("s").Dot("preWritesPublisher").Dot("Publish").Call(constants.CtxVar(), jen.ID("preWrite")), jen.Err().DoesNotEqual().Nil()).Body(
+				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.Err(), constants.LoggerVar(), jen.ID(constants.SpanVarName), jen.Litf("publishing %s write message", scn)),
+				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName)),
+				jen.Return(),
+			),
+			jen.Newline(),
+			jen.ID("pwr").Assign().Qual(proj.TypesPackage(), "PreWriteResponse").Values(jen.ID("ID").MapAssign().ID("input").Dot("ID")),
+			jen.Newline(),
+			jen.ID("s").Dot("encoderDecoder").Dot("EncodeResponseWithStatus").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.ID("pwr"), jen.Qual("net/http", "StatusAccepted")),
 		),
 		jen.Newline(),
 	}
@@ -753,66 +710,26 @@ func buildUpdateHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Commentf("update the %s.", scn),
 		jen.ID(uvn).Dot("Update").Call(jen.ID("input")),
 		jen.Newline(),
-		jen.If(jen.ID("s").Dot("async")).Body(
-			jen.ID("pum").Assign().AddressOf().Qual(proj.TypesPackage(), "PreUpdateMessage").Valuesln(
-				jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
-				jen.ID(sn).MapAssign().ID(uvn),
-				jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
-				jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
-			),
-			jen.If(jen.Err().Equals().ID("s").Dot("preUpdatesPublisher").Dot("Publish").Call(constants.CtxVar(), jen.ID("pum")), jen.Err().DoesNotEqual().Nil()).Body(
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.Err(), constants.LoggerVar(), jen.ID(constants.SpanVarName), jen.Litf("publishing %s update message", scn)),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName)),
-				jen.Return(),
-			),
-			jen.Newline(),
-			jen.Comment("encode our response and peace."),
-			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.ID(uvn)),
-		).Else().Body(
-			jen.Commentf("update %s in database.", scn),
-			jen.If(jen.ID("err").Equals().ID("s").Dotf("%sDataManager", uvn).Dotf("Update%s", sn).Call(
-				jen.ID("ctx"),
-				jen.ID(uvn),
-			), jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("updating %s", scn),
-				),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-				),
-				jen.Return(),
-			),
-			jen.Newline(),
-			jen.Comment("notify interested parties."),
+		jen.ID("pum").Assign().AddressOf().Qual(proj.TypesPackage(), "PreUpdateMessage").Valuesln(
+			jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
 			func() jen.Code {
-				if typ.SearchEnabled {
-					return jen.If(jen.ID("searchIndexErr").Assign().ID("s").Dot("search").Dot("Index").Call(
-						jen.ID("ctx"),
-						jen.ID(uvn).Dot("ID"),
-						jen.ID(uvn),
-					), jen.ID("searchIndexErr").DoesNotEqual().Nil()).Body(
-						jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-							jen.ID("err"),
-							jen.ID("logger"),
-							jen.ID("span"),
-							jen.Litf("updating %s in search index", scn),
-						),
-					)
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("%sID", typ.BelongsToStruct.Singular()).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
 				}
 				return jen.Null()
 			}(),
-			jen.Newline(),
-			jen.Comment("encode our response and peace."),
-			jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(
-				jen.ID("ctx"),
-				jen.ID("res"),
-				jen.ID(uvn),
-			),
+			jen.ID(sn).MapAssign().ID(uvn),
+			jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
 		),
+		jen.If(jen.Err().Equals().ID("s").Dot("preUpdatesPublisher").Dot("Publish").Call(constants.CtxVar(), jen.ID("pum")), jen.Err().DoesNotEqual().Nil()).Body(
+			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(jen.Err(), constants.LoggerVar(), jen.ID(constants.SpanVarName), jen.Litf("publishing %s update message", scn)),
+			jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName)),
+			jen.Return(),
+		),
+		jen.Newline(),
+		jen.Comment("encode our response and peace."),
+		jen.ID("s").Dot("encoderDecoder").Dot("RespondWithData").Call(constants.CtxVar(), jen.ID(constants.ResponseVarName), jen.ID(uvn)),
 	)
 
 	lines := []jen.Code{
@@ -873,7 +790,7 @@ func buildSearchHandler(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Comment("determine user ID."),
 		jen.List(jen.ID("sessionCtxData"), jen.ID("err")).Assign().ID("s").Dot("sessionContextDataFetcher").Call(jen.ID("req")),
 		jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-			jen.ID("s").Dot("logger").Dot("Error").Call(
+			jen.ID("logger").Dot("Error").Call(
 				jen.ID("err"),
 				jen.Lit("retrieving session context data"),
 			),
@@ -1005,101 +922,59 @@ func buildArchiveHandler(proj *models.Project, typ models.DataType) []jen.Code {
 
 	bodyLines = append(bodyLines, buildIDFetchers(proj, typ, true)...)
 
-	dbCallArgs := buildArchiveSomethingArgs(typ)
-
 	bodyLines = append(bodyLines,
 		jen.Newline(),
-		jen.If(jen.ID("s").Dot("async")).Body(
-			jen.List(jen.ID("exists"), jen.ID("existenceCheckErr")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(
-				typ.BuildDBClientExistenceMethodCallArgs(proj)...,
+		jen.List(jen.ID("exists"), jen.ID("existenceCheckErr")).Assign().ID("s").Dotf("%sDataManager", uvn).Dotf("%sExists", sn).Call(
+			typ.BuildDBClientExistenceMethodCallArgs(proj)...,
+		),
+		jen.If(jen.ID("existenceCheckErr").DoesNotEqual().Nil().And().Not().Qual("errors", "Is").Call(jen.ID("existenceCheckErr"), jen.Qual("database/sql", "ErrNoRows"))).Body(
+			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
+				jen.ID("existenceCheckErr"),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("checking %s existence", scn),
 			),
-			jen.If(jen.ID("existenceCheckErr").DoesNotEqual().Nil().And().Not().Qual("errors", "Is").Call(jen.ID("existenceCheckErr"), jen.Qual("database/sql", "ErrNoRows"))).Body(
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-					jen.ID("existenceCheckErr"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("checking %s existence", scn),
-				),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-				),
-				jen.Return(),
-			).Else().If(jen.Not().ID("exists").Or().Qual("errors", "Is").Call(jen.ID("existenceCheckErr"), jen.Qual("database/sql", "ErrNoRows"))).Body(
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-				),
-				jen.Return(),
+			jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
 			),
-			jen.Newline(),
-			jen.ID("pam").Assign().AddressOf().Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
-				jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
-				jen.IDf("%sID", sn).MapAssign().IDf("%sID", uvn),
-				jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
-				jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
+			jen.Return(),
+		).Else().If(jen.Not().ID("exists").Or().Qual("errors", "Is").Call(jen.ID("existenceCheckErr"), jen.Qual("database/sql", "ErrNoRows"))).Body(
+			jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
 			),
-			jen.If(jen.Err().Equals().ID("s").Dot("preArchivesPublisher").Dot("Publish").Call(constants.CtxVar(), jen.ID("pam")), jen.Err().DoesNotEqual().Nil()).Body(
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-					jen.Err(),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("publishing %s archive message", scn),
-				),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-				),
-				jen.Return(),
-			),
-			jen.Newline(),
-			jen.Comment("encode our response and peace."),
-			jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
-		).Else().Body(
-			jen.Commentf("archive the %s in the database.", scn),
-			jen.ID("err").Equals().ID("s").Dotf("%sDataManager", uvn).Dotf("Archive%s", sn).Call(
-				dbCallArgs...,
-			),
-			jen.If(jen.Qual("errors", "Is").Call(jen.ID("err"), jen.Qual("database/sql", "ErrNoRows"))).Body(
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeNotFoundResponse").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-				),
-				jen.Return(),
-			).Else().If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-					jen.ID("err"),
-					jen.ID("logger"),
-					jen.ID("span"),
-					jen.Litf("archiving %s", scn),
-				),
-				jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
-					jen.ID("ctx"),
-					jen.ID("res"),
-				),
-				jen.Return(),
-			),
-			jen.Newline(),
+			jen.Return(),
+		),
+		jen.Newline(),
+		jen.ID("pam").Assign().AddressOf().Qual(proj.TypesPackage(), "PreArchiveMessage").Valuesln(
+			jen.ID("DataType").MapAssign().Qualf(proj.TypesPackage(), "%sDataType", sn),
 			func() jen.Code {
-				if typ.SearchEnabled {
-					return jen.If(jen.ID("indexDeleteErr").Assign().ID("s").Dot("search").Dot("Delete").Call(
-						jen.ID("ctx"),
-						jen.IDf("%sID", uvn),
-					), jen.ID("indexDeleteErr").DoesNotEqual().Nil()).Body(
-						jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
-							jen.ID("err"),
-							jen.ID("logger"),
-							jen.ID("span"),
-							jen.Lit("removing from search index"),
-						),
-					)
+				if typ.BelongsToStruct != nil {
+					return jen.IDf("%sID", typ.BelongsToStruct.Singular()).MapAssign().IDf("%sID", typ.BelongsToStruct.UnexportedVarName())
 				}
 				return jen.Null()
 			}(),
-			jen.Newline(),
-			jen.Comment("encode our response and peace."),
-			jen.ID("res").Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
+			jen.IDf("%sID", sn).MapAssign().IDf("%sID", uvn),
+			jen.ID("AttributableToUserID").MapAssign().ID("sessionCtxData").Dot("Requester").Dot("UserID"),
+			jen.ID("AttributableToAccountID").MapAssign().ID("sessionCtxData").Dot("ActiveAccountID"),
 		),
+		jen.If(jen.Err().Equals().ID("s").Dot("preArchivesPublisher").Dot("Publish").Call(constants.CtxVar(), jen.ID("pam")), jen.Err().DoesNotEqual().Nil()).Body(
+			jen.Qual(proj.ObservabilityPackage(), "AcknowledgeError").Call(
+				jen.Err(),
+				jen.ID("logger"),
+				jen.ID("span"),
+				jen.Litf("publishing %s archive message", scn),
+			),
+			jen.ID("s").Dot("encoderDecoder").Dot("EncodeUnspecifiedInternalServerErrorResponse").Call(
+				jen.ID("ctx"),
+				jen.ID("res"),
+			),
+			jen.Return(),
+		),
+		jen.Newline(),
+		jen.Comment("encode our response and peace."),
+		jen.ID(constants.ResponseVarName).Dot("WriteHeader").Call(jen.Qual("net/http", "StatusNoContent")),
 	)
 
 	lines := []jen.Code{

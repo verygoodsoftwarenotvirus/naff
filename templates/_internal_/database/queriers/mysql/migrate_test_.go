@@ -88,7 +88,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("err").Assign().ID("c").Dot("Migrate").Call(
 						jen.ID("ctx"),
-						jen.Lit(1),
+						jen.One(),
 						jen.ID("exampleTestUserConfig"),
 					),
 					jen.ID("assert").Dot("NoError").Call(
@@ -148,7 +148,7 @@ func migrateTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("err").Assign().ID("c").Dot("Migrate").Call(
 						jen.ID("ctx"),
-						jen.Lit(1),
+						jen.One(),
 						jen.ID("exampleTestUserConfig"),
 					),
 					jen.ID("assert").Dot("Error").Call(

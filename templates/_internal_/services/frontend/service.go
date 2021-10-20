@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
@@ -19,22 +20,12 @@ func serviceDotGo(proj *models.Project) *jen.File {
 	)
 
 	structFields := []jen.Code{
-		jen.ID("useFakeData").ID("bool"),
-		jen.ID("templateFuncMap").Qual("html/template", "FuncMap"),
 		jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 		jen.ID("tracer").Qual(proj.InternalTracingPackage(), "Tracer"),
 		jen.ID("panicker").Qual(proj.InternalPackage("panicking"), "Panicker"),
-		jen.ID("localizer").PointerTo().Qual("github.com/nicksnyder/go-i18n/v2/i18n", "Localizer"),
-		jen.ID("dataStore").Qual(proj.DatabasePackage(), "DataManager"),
 		jen.ID("authService").ID("AuthService"),
-		jen.ID("usersService").ID("UsersService"),
+		jen.ID("config").PointerTo().ID("Config"),
 		jen.ID("sessionContextDataFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.PointerTo().Qual(proj.TypesPackage(), "SessionContextData"), jen.ID("error")),
-		jen.ID("accountIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
-		jen.ID("apiClientIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
-		jen.ID("webhookIDFetcher").Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()),
-	}
-	for _, typ := range proj.DataTypes {
-		structFields = append(structFields, jen.IDf("%sIDFetcher", typ.Name.UnexportedVarName()).Func().Params(jen.PointerTo().Qual("net/http", "Request")).Params(jen.String()))
 	}
 
 	code.Add(
@@ -71,7 +62,7 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			),
 			jen.Newline(),
 			jen.Comment("Service serves HTML."),
-			jen.ID("Service").Interface(jen.ID("SetupRoutes").Params(jen.ID("router").ID("routing").Dot("Router"))),
+			jen.ID("Service").Interface(jen.ID("SetupRoutes").Params(jen.ID("router").Qual(proj.RoutingPackage(), "Router"))),
 			jen.Newline(),
 			jen.ID("service").Struct(structFields...),
 		),
@@ -79,41 +70,13 @@ func serviceDotGo(proj *models.Project) *jen.File {
 	)
 
 	serviceInitFields := []jen.Code{
-		jen.ID("useFakeData").MapAssign().ID("cfg").Dot("UseFakeData"),
+		jen.ID("config").MapAssign().ID("cfg"),
 		jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "EnsureLogger").Call(jen.ID("logger")).Dot("WithName").Call(jen.ID("serviceName")),
 		jen.ID("tracer").MapAssign().Qual(proj.InternalTracingPackage(), "NewTracer").Call(jen.ID("serviceName")),
 		jen.ID("panicker").MapAssign().Qual(proj.InternalPackage("panicking"), "NewProductionPanicker").Call(),
-		jen.ID("localizer").MapAssign().ID("provideLocalizer").Call(),
 		jen.ID("sessionContextDataFetcher").MapAssign().Qual(proj.AuthServicePackage(), "FetchContextFromRequest"),
 		jen.ID("authService").MapAssign().ID("authService"),
-		jen.ID("usersService").MapAssign().ID("usersService"),
-		jen.ID("dataStore").MapAssign().ID("dataStore"),
-		jen.ID("apiClientIDFetcher").MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
-			jen.ID("apiClientIDURLParamKey"),
-		),
-		jen.ID("accountIDFetcher").MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
-			jen.ID("accountIDURLParamKey"),
-		),
-		jen.ID("webhookIDFetcher").MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
-			jen.ID("webhookIDURLParamKey"),
-		),
 	}
-
-	for _, typ := range proj.DataTypes {
-		tuvn := typ.Name.UnexportedVarName()
-		serviceInitFields = append(serviceInitFields,
-			jen.IDf("%sIDFetcher", tuvn).MapAssign().ID("routeParamManager").Dot("BuildRouteParamStringIDFetcher").Call(
-				jen.IDf("%sIDURLParamKey", tuvn),
-			),
-		)
-	}
-
-	serviceInitFields = append(serviceInitFields,
-		jen.ID("templateFuncMap").MapAssign().Map(jen.String()).Interface().Valuesln(
-			jen.Lit("relativeTime").MapAssign().ID("relativeTime"),
-			jen.Lit("relativeTimeFromPtr").MapAssign().ID("relativeTimeFromPtr"),
-		),
-	)
 
 	code.Add(
 		jen.Comment("ProvideService builds a new Service."),
@@ -122,13 +85,12 @@ func serviceDotGo(proj *models.Project) *jen.File {
 			jen.ID("cfg").PointerTo().ID("Config"),
 			jen.ID("logger").Qual(proj.InternalLoggingPackage(), "Logger"),
 			jen.ID("authService").ID("AuthService"),
-			jen.ID("usersService").ID("UsersService"),
-			jen.ID("dataStore").Qual(proj.DatabasePackage(), "DataManager"),
-			jen.ID("routeParamManager").Qual(proj.RoutingPackage(), "RouteParamManager"),
 		).Params(jen.ID("Service")).Body(
 			jen.ID("svc").Assign().AddressOf().ID("service").Valuesln(serviceInitFields...),
 			jen.Newline(),
-			jen.ID("svc").Dot("templateFuncMap").Index(jen.Lit("translate")).Equals().ID("svc").Dot("getSimpleLocalizedString"),
+			jen.If(jen.ID("cfg").Dot("Debug")).Body(
+				jen.ID("svc").Dot(constants.LoggerVarName).Dot("SetLevel").Call(jen.Qual(proj.InternalLoggingPackage(), "DebugLevel")),
+			),
 			jen.Newline(),
 			jen.Return().ID("svc"),
 		),

@@ -285,7 +285,7 @@ func BuildEveryTypeApp() *models.Project {
 func BuildForumsApp() *models.Project {
 	p := &models.Project{
 		OutputPath: "gitlab.com/verygoodsoftwarenotvirus/naff/example_output",
-		Name:       wordsmith.FromSingularPascalCase("Discussion"),
+		Name:       wordsmith.FromSingularPascalCase("Gamut"),
 		DataTypes: []models.DataType{
 			{
 				Name: wordsmith.FromSingularPascalCase("Forum"),

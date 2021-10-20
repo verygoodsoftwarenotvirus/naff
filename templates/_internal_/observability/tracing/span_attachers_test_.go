@@ -26,7 +26,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.ID("attachUint8ToSpan").Call(
 						jen.ID("span"),
 						jen.ID("t").Dot("Name").Call(),
-						jen.Lit(1),
+						jen.One(),
 					),
 				),
 			),
@@ -157,7 +157,7 @@ func spanAttachersTestDotGo(proj *models.Project) *jen.File {
 					jen.Newline(),
 					jen.ID("AttachFilterToSpan").Call(
 						jen.ID("span"),
-						jen.Lit(1),
+						jen.One(),
 						jen.Lit(2),
 						jen.ID("t").Dot("Name").Call(),
 					),

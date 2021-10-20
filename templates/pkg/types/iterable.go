@@ -507,19 +507,17 @@ func buildSomethingDatabaseCreationInputValidateWithContext(typ models.DataType)
 func buildSomethingDatabaseCreationInputFromSomething(typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 
-	lines := []jen.Code{
-		jen.ID("x").Assign().AddressOf().IDf("%sDatabaseCreationInput", sn).Values(),
-		jen.Newline(),
-	}
+	fields := []jen.Code{}
 
 	for _, field := range typ.Fields {
-		lines = append(lines, jen.ID("x").Dot(field.Name.Singular()).Equals().ID("input").Dot(field.Name.Singular()))
+		fields = append(fields, jen.ID(field.Name.Singular()).MapAssign().ID("input").Dot(field.Name.Singular()))
 	}
 
-	lines = append(lines,
+	lines := []jen.Code{
+		jen.ID("x").Assign().AddressOf().IDf("%sDatabaseCreationInput", sn).Valuesln(fields...),
 		jen.Newline(),
 		jen.Return(jen.ID("x")),
-	)
+	}
 
 	return []jen.Code{
 		jen.Commentf("%sDatabaseCreationInputFrom%sCreationInput creates a DatabaseCreationInput from a CreationInput.", sn, sn),

@@ -7,21 +7,56 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/wordsmith"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/utils"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/models"
 )
 
+func getDatabasePalabra(vendor string) wordsmith.SuperPalabra {
+	switch vendor {
+	case string(models.Postgres):
+		return wordsmith.FromSingularPascalCase("Postgres")
+	case string(models.MySQL):
+		return &wordsmith.ManualWord{
+			SingularStr:                           "MySQL",
+			PluralStr:                             "MySQLs",
+			RouteNameStr:                          "mysql",
+			KebabNameStr:                          "mysql",
+			PluralRouteNameStr:                    "mysqls",
+			UnexportedVarNameStr:                  "mysql",
+			PluralUnexportedVarNameStr:            "mysqls",
+			PackageNameStr:                        "mysqls",
+			SingularPackageNameStr:                "mysql",
+			SingularCommonNameStr:                 "mysql",
+			ProperSingularCommonNameWithPrefixStr: "a MySQL",
+			PluralCommonNameStr:                   "MySQLs",
+			SingularCommonNameWithPrefixStr:       "a mysql",
+			PluralCommonNameWithPrefixStr:         "mysqls",
+		}
+	default:
+		panic(fmt.Sprintf("unknown vendor: %q", vendor))
+	}
+}
+
 // RenderPackage renders the package
 func RenderPackage(project *models.Project) error {
 	files := map[string]func(*models.Project) string{
-		".gitignore":           gitIgnore,
-		".gitattributes":       gitAttributes,
-		"go.mod":               goMod,
-		"Makefile":             makefile,
-		".gitlab-ci.yml":       gitlabCIDotYAML,
-		"README.md":            readmeDotMD,
-		".golangci.yml":        golangCILintDotYAML,
-		"docker_security.rego": dockerSecurityDotRego,
+		".gitignore":                         gitIgnore,
+		".gitattributes":                     gitAttributes,
+		"go.mod":                             goMod,
+		"Makefile":                           makefile,
+		".gitlab-ci.yml":                     gitlabCIDotYAML,
+		"README.md":                          readmeDotMD,
+		".golangci.yml":                      golangCILintDotYAML,
+		"docker_security.rego":               dockerSecurityDotRego,
+		".run/unit tests (pkg).run.xml":      pkgUnitTestsRunDotXML,
+		".run/unit tests (internal).run.xml": internalUnitTestsRunDotXML,
+	}
+
+	for _, dbvendor := range project.EnabledDatabases() {
+		files[fmt.Sprintf(".run/server (%s).run.xml", strings.ToLower(dbvendor))] = runServerDotXML(getDatabasePalabra(dbvendor))
+		files[fmt.Sprintf(".run/workers (%s).run.xml", strings.ToLower(dbvendor))] = runWorkersDotXML(getDatabasePalabra(dbvendor))
 	}
 
 	for filename, file := range files {

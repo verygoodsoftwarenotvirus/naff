@@ -398,11 +398,11 @@ func buildPrefixedStringColumns(typ models.DataType) []string {
 		fmt.Sprintf("%s.archived_on", tableName),
 	)
 
-	if typ.BelongsToAccount {
-		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
-	}
 	if typ.BelongsToStruct != nil {
 		out = append(out, fmt.Sprintf("%s.belongs_to_%s", tableName, typ.BelongsToStruct.RouteName()))
+	}
+	if typ.BelongsToAccount {
+		out = append(out, fmt.Sprintf("%s.belongs_to_account", tableName))
 	}
 
 	return out
@@ -817,7 +817,7 @@ func buildCreateSomething(proj *models.Project, typ models.DataType, dbvendor wo
 	}
 
 	if typ.BelongsToStruct != nil {
-		creationColumns = append(creationColumns, typ.BelongsToStruct.RouteName())
+		creationColumns = append(creationColumns, fmt.Sprintf("belongs_to_%s", typ.BelongsToStruct.RouteName()))
 		args = append(args, models.NewCodeWrapper(jen.ID("input").Dotf("BelongsTo%s", typ.BelongsToStruct.Singular())))
 	}
 

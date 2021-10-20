@@ -420,11 +420,32 @@ func iterablesTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		code.Add(buildTestSearching(proj, typ)...)
 	}
 
-	code.Add(buildTestReading_Returns404ForNonexistentSomething(proj, typ)...)
-	code.Add(buildTestUpdating_Returns404ForNonexistentSomething(proj, typ)...)
-	code.Add(buildTestArchiving_Returns404ForNonexistentSomething(proj, typ)...)
-
 	return code
+}
+
+func convertSomethingToSomethingUpdateInput(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+
+	updateInputLines := []jen.Code{}
+	for _, field := range typ.Fields {
+		if field.ValidForUpdateInput {
+			fsn := field.Name.Singular()
+			updateInputLines = append(updateInputLines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
+		}
+	}
+
+	lines := []jen.Code{
+		jen.Commentf("convert%sTo%sUpdateInput creates an %sUpdateRequestInput struct from %s.", sn, sn, sn, scnwp),
+		jen.Newline(),
+		jen.Func().IDf("convert%sTo%sUpdateInput", sn, sn).Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn))).Body(
+			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Valuesln(
+				updateInputLines...,
+			)),
+		jen.Newline(),
+	}
+
+	return lines
 }
 
 func buildTestCompleteLifecycle(proj *models.Project, typ models.DataType) []jen.Code {
@@ -992,6 +1013,145 @@ func buildTestSearching(proj *models.Project, typ models.DataType) []jen.Code {
 	return lines
 }
 
+func buildTestReading_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	scnwp := typ.Name.SingularCommonNameWithPrefix()
+	pn := typ.Name.Plural()
+
+	bodyLines := []jen.Code{
+		jen.ID("t").Assign().ID("s").Dot("T").Call(),
+		jen.Newline(),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
+			jen.ID("s").Dot("ctx"),
+			jen.ID("t").Dot("Name").Call(),
+		),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+
+	op := jen.Assign()
+	if len(proj.FindOwnerTypeChain(typ)) > 0 {
+		op = jen.Equals()
+	}
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.List(jen.Underscore(), jen.ID("err")).Add(op).ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
+			buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnlyFor404Tests(proj, typ)...,
+		),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(
+			jen.ID("t"),
+			jen.ID("err"),
+		),
+	)
+
+	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
+
+	lines := []jen.Code{
+		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Reading_Returns404ForNonexistent%s", pn, sn).Params().Body(
+			jen.ID("s").Dot("runForEachClientExcept").Call(
+				jen.Litf("it should return an error when trying to read %s that does not exist", scnwp),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					bodyLines...,
+				)),
+			)),
+		jen.Newline(),
+	}
+
+	return lines
+}
+
+func buildTestUpdating_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+
+	bodyLines := []jen.Code{
+		jen.ID("t").Assign().ID("s").Dot("T").Call(),
+		jen.Newline(),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
+			jen.ID("s").Dot("ctx"),
+			jen.ID("t").Dot("Name").Call(),
+		),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
+		jen.IDf("example%s", sn).Dot("ID").Equals().ID("nonexistentID"),
+		jen.Newline(),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(
+			jen.ID("t"),
+			jen.ID("testClients").Dot("main").Dotf("Update%s", sn).Call(
+				buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructsFor404Tests(proj, typ)...,
+			),
+		),
+	)
+
+	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
+
+	lines := []jen.Code{
+		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Updating_Returns404ForNonexistent%s", pn, sn).Params().Body(
+			jen.ID("s").Dot("runForEachClientExcept").Call(
+				jen.Lit("it should return an error when trying to update something that does not exist"),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					bodyLines...,
+				)),
+			)),
+		jen.Newline(),
+	}
+
+	return lines
+}
+
+func buildTestArchiving_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
+	sn := typ.Name.Singular()
+	pn := typ.Name.Plural()
+
+	bodyLines := []jen.Code{
+		jen.ID("t").Assign().ID("s").Dot("T").Call(),
+		jen.Newline(),
+		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
+			jen.ID("s").Dot("ctx"),
+			jen.ID("t").Dot("Name").Call(),
+		),
+		jen.Defer().ID("span").Dot("End").Call(),
+		jen.Newline(),
+	}
+
+	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
+
+	bodyLines = append(bodyLines,
+		jen.Newline(),
+		jen.Qual(constants.AssertionLibrary, "Error").Call(
+			jen.ID("t"),
+			jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
+				buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnlyFor404Tests(proj, typ)...,
+			),
+		),
+	)
+
+	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
+
+	lines := []jen.Code{
+		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Archiving_Returns404ForNonexistent%s", pn, sn).Params().Body(
+			jen.ID("s").Dot("runForEachClientExcept").Call(
+				jen.Lit("it should return an error when trying to delete something that does not exist"),
+				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
+					bodyLines...,
+				)),
+			)),
+		jen.Newline(),
+	}
+
+	return lines
+}
+
 func buildTestSearching_ReturnsOnlySomething(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -1234,56 +1394,6 @@ func buildTestExistenceChecking_ReturnsTrueForValidSomething(proj *models.Projec
 	return lines
 }
 
-func buildTestReading_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-	scnwp := typ.Name.SingularCommonNameWithPrefix()
-	pn := typ.Name.Plural()
-
-	bodyLines := []jen.Code{
-		jen.ID("t").Assign().ID("s").Dot("T").Call(),
-		jen.Newline(),
-		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
-			jen.ID("s").Dot("ctx"),
-			jen.ID("t").Dot("Name").Call(),
-		),
-		jen.Defer().ID("span").Dot("End").Call(),
-		jen.Newline(),
-	}
-
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
-
-	op := jen.Assign()
-	if len(proj.FindOwnerTypeChain(typ)) > 0 {
-		op = jen.Equals()
-	}
-
-	bodyLines = append(bodyLines,
-		jen.Newline(),
-		jen.List(jen.Underscore(), jen.ID("err")).Add(op).ID("testClients").Dot("main").Dotf("Get%s", sn).Call(
-			buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnlyFor404Tests(proj, typ)...,
-		),
-		jen.Qual(constants.AssertionLibrary, "Error").Call(
-			jen.ID("t"),
-			jen.ID("err"),
-		),
-	)
-
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
-
-	lines := []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Reading_Returns404ForNonexistent%s", pn, sn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Litf("it should return an error when trying to read %s that does not exist", scnwp),
-				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
-				)),
-			)),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
 func buildTestReading(proj *models.Project, typ models.DataType) []jen.Code {
 	sn := typ.Name.Singular()
 	scn := typ.Name.SingularCommonName()
@@ -1360,77 +1470,6 @@ func buildTestReading(proj *models.Project, typ models.DataType) []jen.Code {
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
 					bodyLines...,
 				)),
-			)),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
-func buildTestUpdating_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-	pn := typ.Name.Plural()
-
-	bodyLines := []jen.Code{
-		jen.ID("t").Assign().ID("s").Dot("T").Call(),
-		jen.Newline(),
-		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
-			jen.ID("s").Dot("ctx"),
-			jen.ID("t").Dot("Name").Call(),
-		),
-		jen.Defer().ID("span").Dot("End").Call(),
-		jen.Newline(),
-	}
-
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
-
-	bodyLines = append(bodyLines,
-		jen.Newline(),
-		jen.IDf("example%s", sn).Assign().Qual(proj.FakeTypesPackage(), fmt.Sprintf("BuildFake%s", sn)).Call(),
-		jen.IDf("example%s", sn).Dot("ID").Equals().ID("nonexistentID"),
-		jen.Newline(),
-		jen.Qual(constants.AssertionLibrary, "Error").Call(
-			jen.ID("t"),
-			jen.ID("testClients").Dot("main").Dotf("Update%s", sn).Call(
-				buildParamsForMethodThatIncludesItsOwnTypeInItsParamsAndHasFullStructsFor404Tests(proj, typ)...,
-			),
-		),
-	)
-
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
-
-	lines := []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Updating_Returns404ForNonexistent%s", pn, sn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("it should return an error when trying to update something that does not exist"),
-				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
-				)),
-			)),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
-func convertSomethingToSomethingUpdateInput(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-	scnwp := typ.Name.SingularCommonNameWithPrefix()
-
-	updateInputLines := []jen.Code{}
-	for _, field := range typ.Fields {
-		if field.ValidForUpdateInput {
-			fsn := field.Name.Singular()
-			updateInputLines = append(updateInputLines, jen.ID(fsn).MapAssign().ID("x").Dot(fsn))
-		}
-	}
-
-	lines := []jen.Code{
-		jen.Commentf("convert%sTo%sUpdateInput creates an %sUpdateRequestInput struct from %s.", sn, sn, sn, scnwp),
-		jen.Newline(),
-		jen.Func().IDf("convert%sTo%sUpdateInput", sn, sn).Params(jen.ID("x").PointerTo().Qual(proj.TypesPackage(), sn)).Params(jen.PointerTo().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn))).Body(
-			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sUpdateRequestInput", sn)).Valuesln(
-				updateInputLines...,
 			)),
 		jen.Newline(),
 	}
@@ -1526,49 +1565,6 @@ func buildTestUpdating(proj *models.Project, typ models.DataType) []jen.Code {
 		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Updating", pn).Params().Body(
 			jen.ID("s").Dot("runForEachClientExcept").Call(
 				jen.Litf("it should be possible to update %s", scnwp),
-				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
-					bodyLines...,
-				)),
-			)),
-		jen.Newline(),
-	}
-
-	return lines
-}
-
-func buildTestArchiving_Returns404ForNonexistentSomething(proj *models.Project, typ models.DataType) []jen.Code {
-	sn := typ.Name.Singular()
-	pn := typ.Name.Plural()
-
-	bodyLines := []jen.Code{
-		jen.ID("t").Assign().ID("s").Dot("T").Call(),
-		jen.Newline(),
-		jen.List(jen.ID("ctx"), jen.ID("span")).Assign().Qual(proj.InternalTracingPackage(), "StartCustomSpan").Call(
-			jen.ID("s").Dot("ctx"),
-			jen.ID("t").Dot("Name").Call(),
-		),
-		jen.Defer().ID("span").Dot("End").Call(),
-		jen.Newline(),
-	}
-
-	bodyLines = append(bodyLines, buildRequisiteCreationCode(proj, typ, false)...)
-
-	bodyLines = append(bodyLines,
-		jen.Newline(),
-		jen.Qual(constants.AssertionLibrary, "Error").Call(
-			jen.ID("t"),
-			jen.ID("testClients").Dot("main").Dotf("Archive%s", sn).Call(
-				buildParamsForMethodThatHandlesAnInstanceWithStructIDsOnlyFor404Tests(proj, typ)...,
-			),
-		),
-	)
-
-	bodyLines = append(bodyLines, buildRequisiteCleanupCode(proj, typ, false)...)
-
-	lines := []jen.Code{
-		jen.Func().Params(jen.ID("s").PointerTo().ID("TestSuite")).IDf("Test%s_Archiving_Returns404ForNonexistent%s", pn, sn).Params().Body(
-			jen.ID("s").Dot("runForEachClientExcept").Call(
-				jen.Lit("it should return an error when trying to delete something that does not exist"),
 				jen.Func().Params(jen.ID("testClients").PointerTo().ID("testClientWrapper")).Params(jen.Func().Params()).Body(jen.Return().Func().Params().Body(
 					bodyLines...,
 				)),

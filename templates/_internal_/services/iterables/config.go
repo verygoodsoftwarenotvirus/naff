@@ -28,7 +28,6 @@ func configDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				}
 				return jen.Null()
 			}(),
-			jen.ID("Async").Bool().Tag(utils.BuildStructTag(wordsmith.FromSingularPascalCase("Async"), false)),
 		),
 		jen.Newline(),
 	)

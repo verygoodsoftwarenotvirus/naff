@@ -68,7 +68,7 @@ func iterablesDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Newline(),
 			jen.Return().AddressOf().Qual(proj.TypesPackage(), fmt.Sprintf("%sList", sn)).Valuesln(
 				jen.ID("Pagination").MapAssign().Qual(proj.TypesPackage(), fmt.Sprintf("Pagination")).Valuesln(
-					jen.ID("Page").MapAssign().Lit(1),
+					jen.ID("Page").MapAssign().One(),
 					jen.ID("Limit").MapAssign().Lit(20),
 					jen.ID("FilteredCount").MapAssign().ID("exampleQuantity").Op("/").Lit(2),
 					jen.ID("TotalCount").MapAssign().ID("exampleQuantity")),

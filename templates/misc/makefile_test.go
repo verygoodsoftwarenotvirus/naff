@@ -189,7 +189,7 @@ dev: vendor
 show_tree:
 	tree -d -I vendor
 `
-		actual := makefile()
+		actual := makefile(proj)
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
 	})

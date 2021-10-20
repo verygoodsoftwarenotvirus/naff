@@ -20,6 +20,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	pcn := typ.Name.PluralCommonName()
 	uvn := typ.Name.UnexportedVarName()
 	prn := typ.Name.PluralRouteName()
+	scn := typ.Name.SingularCommonName()
 
 	code.Add(
 		jen.Const().Defs(
@@ -54,7 +55,6 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			}
 			return jen.Null()
 		}(),
-		jen.ID("async").Bool(),
 	)
 
 	code.Add(
@@ -95,7 +95,6 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 		jen.ID("preUpdatesPublisher").MapAssign().ID("preUpdatesPublisher"),
 		jen.ID("preArchivesPublisher").MapAssign().ID("preArchivesPublisher"),
 		jen.ID("encoderDecoder").MapAssign().ID("encoder"),
-		jen.ID("async").MapAssign().ID("cfg").Dot("Async"),
 		func() jen.Code {
 			if typ.SearchEnabled {
 				return jen.ID("search").MapAssign().ID("searchIndexManager")
@@ -128,7 +127,7 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 				}, searchFields...)...,
 			),
 			jen.If(jen.ID("err").DoesNotEqual().Nil()).Body(
-				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up search index: %w"), jen.Err())),
+				jen.Return().List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting up %s search index", scn)+": %w"), jen.Err())),
 			),
 			jen.Newline(),
 		)
@@ -137,17 +136,17 @@ func serviceDotGo(proj *models.Project, typ models.DataType) *jen.File {
 	serviceBodyLines = append(serviceBodyLines,
 		jen.List(jen.ID("preWritesPublisher"), jen.Err()).Assign().ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("cfg").Dot("PreWritesTopicName")),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
-			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up queue provider: %w"), jen.Err()))),
+			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting up %s queue pre-writes publisher", scn)+": %w"), jen.Err()))),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("preUpdatesPublisher"), jen.Err()).Assign().ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("cfg").Dot("PreUpdatesTopicName")),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
-			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up queue provider: %w"), jen.Err()))),
+			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting up %s queue pre-updates publisher", scn)+": %w"), jen.Err()))),
 		),
 		jen.Newline(),
 		jen.List(jen.ID("preArchivesPublisher"), jen.Err()).Assign().ID("publisherProvider").Dot("ProviderPublisher").Call(jen.ID("cfg").Dot("PreArchivesTopicName")),
 		jen.If(jen.Err().DoesNotEqual().Nil()).Body(
-			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("setting up queue provider: %w"), jen.Err()))),
+			jen.Return(jen.List(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit(fmt.Sprintf("setting up %s queue pre-archives publisher", scn)+": %w"), jen.Err()))),
 		),
 		jen.Newline(),
 	)

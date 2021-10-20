@@ -23,7 +23,6 @@ func serviceTestDotGo(proj *models.Project, typ models.DataType) *jen.File {
 			jen.Return().AddressOf().ID("service").Valuesln(
 				jen.ID("logger").MapAssign().Qual(proj.InternalLoggingPackage(), "NewNoopLogger").Call(),
 				jen.IDf("%sDataManager", uvn).MapAssign().AddressOf().Qual(proj.TypesPackage("mock"), fmt.Sprintf("%sDataManager", sn)).Values(),
-				jen.ID("async").MapAssign().True(),
 				jen.IDf("%sIDFetcher", uvn).MapAssign().Func().Params(jen.ID("req").PointerTo().Qual("net/http", "Request")).Params(jen.String()).SingleLineBody(jen.Return().EmptyString()),
 				jen.ID("encoderDecoder").MapAssign().Qual(proj.EncodingPackage("mock"), "NewMockEncoderDecoder").Call(),
 				func() jen.Code {

@@ -53,7 +53,7 @@ func Test_getDatabasePalabra(T *testing.T) {
 	T.Run("mysql", func(t *testing.T) {
 		dbName := "mysql"
 
-		expected := `MariaDB`
+		expected := `MySQL`
 		actual := getDatabasePalabra(dbName).Singular()
 
 		assert.Equal(t, expected, actual, "expected and actual output do not match")
@@ -169,7 +169,7 @@ services:
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
-        container_name: 'mariadb_integration_tests'
+        container_name: 'mysql_integration_tests'
 `
 		actual := integrationTestsDotYAML(exampleProjectName, dbName)
 
