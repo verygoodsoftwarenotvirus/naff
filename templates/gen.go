@@ -58,7 +58,6 @@ import (
 	configgencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/config_gen"
 	datascaffoldercmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/data_scaffolder"
 	encodedqrcodegeneratorcmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/encoded_qr_code_generator"
-	templategencmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/tools/template_gen"
 	workerscmd "gitlab.com/verygoodsoftwarenotvirus/naff/templates/cmd/workers"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
@@ -83,7 +82,6 @@ func RenderProject(proj *naffmodels.Project) {
 	packageRenderers := map[string]func(*naffmodels.Project) error{
 		"servercmd":                 servercmd.RenderPackage,
 		"workerscmd":                workerscmd.RenderPackage,
-		"templategencmd":            templategencmd.RenderPackage,
 		"configgen":                 configgencmd.RenderPackage,
 		"datascaffoldercmd":         datascaffoldercmd.RenderPackage,
 		"encodedqrcodegeneratorcmd": encodedqrcodegeneratorcmd.RenderPackage,

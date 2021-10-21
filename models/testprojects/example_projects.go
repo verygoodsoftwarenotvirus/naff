@@ -377,7 +377,7 @@ func BuildForumsApp() *models.Project {
 				Name: wordsmith.FromSingularPascalCase("Notification"),
 				Fields: []models.DataField{
 					{
-						Name:                  wordsmith.FromSingularPascalCase("Text"),
+						Name:                  wordsmith.FromSingularPascalCase("Content"),
 						Type:                  "string",
 						IsPointer:             false,
 						ValidForCreationInput: true,

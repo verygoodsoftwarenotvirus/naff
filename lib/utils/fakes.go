@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+
 	"gitlab.com/verygoodsoftwarenotvirus/naff/forks/jennifer/jen"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/lib/constants"
 )
@@ -105,22 +106,6 @@ func FakeStringFunc() jen.Code {
 	return jen.Qual(constants.FakeLibrary, "Word").Call()
 }
 
-func FakeContentTypeFunc() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "FileMimeType").Call()
-}
-
-func FakeUUIDFunc() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "UUID").Call()
-}
-
-func FakeURLFunc() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "URL").Call()
-}
-
-func FakeHTTPMethodFunc() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "HTTPMethod").Call()
-}
-
 func FakeBoolFunc() jen.Code {
 	return jen.Qual(constants.FakeLibrary, "Bool").Call()
 }
@@ -142,11 +127,7 @@ func FakeInt32Func() jen.Code {
 }
 
 func FakeInt64Func() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "Int64").Call()
-}
-
-func FakeInt64WhichIsReallyAnInt32Func() jen.Code {
-	return jen.Int64().Call(jen.Qual(constants.FakeLibrary, "Int32").Call())
+	return jen.ID("int64").Call(jen.Qual(constants.FakeLibrary, "Int32").Call())
 }
 
 func FakeUintFunc() jen.Code {
@@ -177,29 +158,6 @@ func FakeFloat32Func() jen.Code {
 	return jen.Qual(constants.FakeLibrary, "Float32").Call()
 }
 
-func FakeFloat64WhichIsActuallyAFloat32Func() jen.Code {
-	return jen.Float64().Call(jen.Qual(constants.FakeLibrary, "Float32").Call())
-}
-
 func FakeFloat64Func() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "Float64").Call()
-}
-
-func FakeUsernameFunc() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "Username").Call()
-}
-
-func FakeUnixTimeFunc() jen.Code {
-	return jen.Uint64().Call(jen.Uint32().Call(jen.Qual(constants.FakeLibrary, "Date").Call().Dot("Unix").Call()))
-}
-
-func FakePasswordFunc() jen.Code {
-	return jen.Qual(constants.FakeLibrary, "Password").Call(
-		jen.True(),
-		jen.True(),
-		jen.True(),
-		jen.True(),
-		jen.True(),
-		jen.Lit(32),
-	)
+	return jen.Float64().Call(jen.Qual(constants.FakeLibrary, "Float32").Call())
 }
