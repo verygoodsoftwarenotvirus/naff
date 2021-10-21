@@ -202,8 +202,8 @@ services:
             - source: '../../../../environments/testing/config_files/integration-tests-postgres.config'
               target: '/etc/service.config'
               type: 'bind'
-    api_server:
-        hostname: gamut_api_server
+    %s_api_server:
+        hostname: api_server
         container_name: integration_tests_server
         depends_on:
             - workers
@@ -226,14 +226,14 @@ services:
               type: 'bind'
     test:
         environment:
-            TARGET_ADDRESS: 'http://%s_api_server:8888'
+            TARGET_ADDRESS: 'http://api_server:8888'
         links:
-            - api_server
+            - %s_api_server
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'
         container_name: 'integration_tests'
-`, strings.ToUpper(projectName.Singular()), strings.ToUpper(projectName.Singular()), projectName.RouteName())
+`, strings.ToUpper(projectName.Singular()), projectName.RouteName(), strings.ToUpper(projectName.Singular()), projectName.RouteName())
 	case string(models.MySQL):
 		return fmt.Sprintf(`version: "3.8"
 services:
@@ -249,8 +249,8 @@ services:
             - source: '../../../../environments/testing/config_files/integration-tests-mysql.config'
               target: '/etc/service.config'
               type: 'bind'
-    api_server:
-        hostname: %s_api_server
+    %s_api_server:
+        hostname: api_server
         container_name: integration_tests_server
         depends_on:
             - workers
@@ -273,9 +273,9 @@ services:
               type: 'bind'
     test:
         environment:
-            TARGET_ADDRESS: 'http://%s_api_server:8888'
+            TARGET_ADDRESS: 'http://api_server:8888'
         links:
-            - api_server
+            - %s_api_server
         build:
             context: '../../../../'
             dockerfile: 'environments/testing/dockerfiles/integration-tests.Dockerfile'

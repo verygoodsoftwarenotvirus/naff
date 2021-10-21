@@ -683,6 +683,7 @@ func buildGetSomethingWithIDsQuery(proj *models.Project, typ models.DataType, db
 		jen.List(jen.ID("query"), jen.ID("args"), jen.ID("err")).Assign().ID("q").Dot("sqlBuilder").Dot("Select").Call(jen.IDf("%sTableColumns", puvn).Op("...")).
 			Dotln("From").Call(jen.Lit(prn)).
 			Dotln("Where").Call(jen.ID("withIDsWhere")).
+			Dotln("Limit").Call(jen.Uint64().Call(jen.ID("limit"))).
 			Dotln("OrderByClause").Call(jen.Qual(constants.SQLGenerationLibrary, "Expr").Call(jen.ID("findInSetClause"))).
 			Dotln("ToSql").Call(),
 		jen.Newline(),

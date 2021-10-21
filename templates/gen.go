@@ -62,6 +62,7 @@ import (
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/composefiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/dockerfiles"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/environments/providerconfigs"
+	frontend "gitlab.com/verygoodsoftwarenotvirus/naff/templates/frontend/src"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/misc"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient"
 	"gitlab.com/verygoodsoftwarenotvirus/naff/templates/pkg/client/httpclient/requests"
@@ -82,6 +83,7 @@ func RenderProject(proj *naffmodels.Project) {
 	packageRenderers := map[string]func(*naffmodels.Project) error{
 		"servercmd":                 servercmd.RenderPackage,
 		"workerscmd":                workerscmd.RenderPackage,
+		"frontend":                  frontend.RenderPackage,
 		"configgen":                 configgencmd.RenderPackage,
 		"datascaffoldercmd":         datascaffoldercmd.RenderPackage,
 		"encodedqrcodegeneratorcmd": encodedqrcodegeneratorcmd.RenderPackage,

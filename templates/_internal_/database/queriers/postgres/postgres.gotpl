@@ -25,7 +25,6 @@ import (
 
 const (
 	name        = "db_client"
-	loggerName  = name
 	tracingName = name
 )
 

@@ -125,9 +125,8 @@ func (sm *indexManager) ensureIndices(ctx context.Context, indices ...search.Ind
 		}
 
 		if !indexExists {
-			_, err = sm.esclient.CreateIndex(strings.ToLower(string(index))).Do(ctx)
-			if err != nil {
-				return observability.PrepareError(err, logger, span, "creating index")
+			if _, err = sm.esclient.CreateIndex(strings.ToLower(string(index))).Do(ctx); err != nil && !strings.Contains(elastic.ErrorReason(err), "already exists") {
+				return observability.PrepareError(err, logger, span, elastic.ErrorReason(err))
 			}
 		}
 	}
