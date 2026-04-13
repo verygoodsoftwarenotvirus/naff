@@ -10,6 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/verygoodsoftwarenotvirus/naff/internal/builtins"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/renderer"
 )
@@ -285,12 +286,19 @@ func (p *Pipeline) findOrphans(planned []PlannedFile) []string {
 func (p *Pipeline) planFiles() []PlannedFile {
 	var files []PlannedFile
 
-	for _, domain := range p.config.Domains {
+	// Merge built-in domains with user-defined domains.
+	allDomains := builtins.BuiltinDomains(p.config.Features)
+	allDomains = append(allDomains, p.config.Domains...)
+
+	for _, domain := range allDomains {
 		for _, entity := range domain.Entities {
+			// Copy loop variables for stable pointers.
+			d := domain
+			e := entity
 			ctx := TemplateContext{
 				Project: p.config,
-				Domain:  &domain,
-				Entity:  &entity,
+				Domain:  &d,
+				Entity:  &e,
 			}
 
 			files = append(files,
