@@ -1,0 +1,51 @@
+project:
+  name: "TestProject"
+  module: "github.com/example/testproject"
+  platform_module: "github.com/primandproper/platform"
+
+features:
+  webhooks: true
+  issuereports: true
+  comments: true
+  notifications: true
+  payments: false
+  waitlists: false
+  uploadedmedia: true
+  dataprivacy: true
+
+domains:
+  - name: "recipes"
+    entities:
+      - name: "Recipe"
+        belongs_to_account: true
+        created_by_user: true
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "InspiredByRecipeID"
+            type: "*string"
+            editable: false
+            required: false
+          - name: "MinEstimatedPortions"
+            type: "float32"
+          - name: "MaxEstimatedPortions"
+            type: "*float32"
+          - name: "SealOfApproval"
+            type: "bool"
+            creatable: false
+
+      - name: "RecipeStep"
+        belongs_to: "Recipe"
+        belongs_to_account: true
+        created_by_user: true
+        fields:
+          - name: "Index"
+            type: "uint32"
+          - name: "PreparationID"
+            type: "string"
+          - name: "Notes"
+            type: "string"
+            required: false

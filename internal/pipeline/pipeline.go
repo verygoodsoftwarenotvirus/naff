@@ -129,6 +129,14 @@ func (p *Pipeline) Run(ctx context.Context) error {
 	fmt.Println()
 
 	if summary.Errors > 0 {
+		// Print first few errors for debugging.
+		errorCount := 0
+		for _, r := range summary.Results {
+			if r.Status == FileError && errorCount < 5 {
+				fmt.Fprintf(os.Stderr, "  error: %s: %v\n", r.Path, r.Err)
+				errorCount++
+			}
+		}
 		return fmt.Errorf("%d files had errors during generation", summary.Errors)
 	}
 
@@ -291,19 +299,28 @@ func (p *Pipeline) planFiles() []PlannedFile {
 	allDomains = append(allDomains, p.config.Domains...)
 
 	for _, domain := range allDomains {
-		for _, entity := range domain.Entities {
-			// Copy loop variables for stable pointers.
-			d := domain
+		d := domain
+
+		// Per-domain files are generated once, using the first entity as context.
+		if len(d.Entities) > 0 {
+			firstEntity := d.Entities[0]
+			domainCtx := TemplateContext{
+				Project: p.config,
+				Domain:  &d,
+				Entity:  &firstEntity,
+			}
+			files = append(files, p.planPerDomainFiles(domainCtx)...)
+		}
+
+		// Per-entity files are generated for each entity.
+		for _, entity := range d.Entities {
 			e := entity
-			ctx := TemplateContext{
+			entityCtx := TemplateContext{
 				Project: p.config,
 				Domain:  &d,
 				Entity:  &e,
 			}
-
-			files = append(files,
-				p.planDomainFiles(ctx)...,
-			)
+			files = append(files, p.planPerEntityFiles(entityCtx)...)
 		}
 	}
 
@@ -317,57 +334,91 @@ type TemplateContext struct {
 	Entity  *config.Entity
 }
 
-func (p *Pipeline) planDomainFiles(ctx TemplateContext) []PlannedFile {
+// planPerDomainFiles returns files generated once per domain (using the first entity).
+func (p *Pipeline) planPerDomainFiles(ctx TemplateContext) []PlannedFile {
 	domain := ctx.Domain.Name
-	entitySnake := strings.ToLower(ctx.Entity.Name)
 
-	var files []PlannedFile
-
-	// Domain layer
 	templateMappings := []struct {
 		template string
 		output   string
 		isGo     bool
 	}{
-		{"templates/domain/entity.go.tmpl", fmt.Sprintf("internal/domain/%s/%s.generated.go", domain, entitySnake), true},
-		{"templates/domain/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/repository.generated.go", domain), true},
-		{"templates/domain_keys/keys.go.tmpl", fmt.Sprintf("internal/domain/%s/keys/keys.generated.go", domain), true},
-		{"templates/domain_fakes/fake.go.tmpl", fmt.Sprintf("internal/domain/%s/fakes/fake.generated.go", domain), true},
-		{"templates/domain_converters/converters.go.tmpl", fmt.Sprintf("internal/domain/%s/converters/%s.generated.go", domain, entitySnake), true},
-		{"templates/domain_mock/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/mock/repository.generated.go", domain), true},
+		// Domain-level (shared across entities in domain)
+		{"domain/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/repository.generated.go", domain), true},
+		{"domain_keys/keys.go.tmpl", fmt.Sprintf("internal/domain/%s/keys/keys.generated.go", domain), true},
+		{"domain_fakes/fake.go.tmpl", fmt.Sprintf("internal/domain/%s/fakes/fake.generated.go", domain), true},
+		{"domain_mock/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/mock/repository.generated.go", domain), true},
 
-		// Manager layer
-		{"templates/manager/interface.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/interface.generated.go", domain), true},
-		{"templates/manager/manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/manager.generated.go", domain), true},
-		{"templates/manager/do.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/do.generated.go", domain), true},
-		{"templates/manager/mock_manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/mock/manager.generated.go", domain), true},
+		// Manager (one per domain)
+		{"manager/interface.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/interface.generated.go", domain), true},
+		{"manager/manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/manager.generated.go", domain), true},
+		{"manager/do.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/do.generated.go", domain), true},
+		{"manager/mock_manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/mock/manager.generated.go", domain), true},
 
-		// Repository layer
-		{"templates/repository/client.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/client.generated.go", domain), true},
-		{"templates/repository/entity.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/%s.generated.go", domain, entitySnake), true},
-		{"templates/repository/do.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/do.generated.go", domain), true},
+		// Repository infrastructure (one per domain)
+		{"repository/client.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/client.generated.go", domain), true},
+		{"repository/do.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/do.generated.go", domain), true},
 
-		// Query codegen
-		{"templates/codegen/queries.go.tmpl", fmt.Sprintf("cmd/tools/codegen/queries/%s_%s.generated.go", domain, entitySnake), true},
+		// gRPC infrastructure (one per domain)
+		{"grpc/service.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/service.generated.go", domain), true},
+		{"grpc/converters.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/converters/converters.generated.go", domain), true},
+		{"grpc/permissions.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/permissions.generated.go", domain), true},
+		{"grpc/do.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/do.generated.go", domain), true},
 
-		// Migrations
-		{"templates/migrations/migration.sql.tmpl", fmt.Sprintf("internal/repositories/postgres/migrations/migration_files/%s.generated.sql", domain), false},
+		// Authorization (one per domain)
+		{"authorization/permissions.go.tmpl", fmt.Sprintf("internal/authorization/%s_permissions.generated.go", domain), true},
 
-		// Proto
-		{"templates/proto/messages.proto.tmpl", fmt.Sprintf("proto/%s/%s_messages.generated.proto", domain, entitySnake), false},
-		{"templates/proto/service.proto.tmpl", fmt.Sprintf("proto/%s/%s_service.generated.proto", domain, entitySnake), false},
+		// sqlc config (one per domain)
+		{"sqlc/block.yaml.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/sqlc.generated.yaml", domain), false},
 
-		// gRPC service
-		{"templates/grpc/service.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/service.generated.go", domain), true},
-		{"templates/grpc/entity.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/%s.generated.go", domain, entitySnake), true},
-		{"templates/grpc/converters.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/converters/converters.generated.go", domain), true},
-		{"templates/grpc/permissions.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/permissions.generated.go", domain), true},
-		{"templates/grpc/do.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/do.generated.go", domain), true},
-
-		// Authorization
-		{"templates/authorization/permissions.go.tmpl", fmt.Sprintf("internal/authorization/%s_permissions.generated.go", domain), true},
+		// Build extras
+		{"build/extras.go.tmpl", fmt.Sprintf("internal/build/services/api/grpc/%s.generated.go", domain), false},
 	}
 
+	var files []PlannedFile
+	for _, m := range templateMappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         m.isGo,
+		})
+	}
+	return files
+}
+
+// planPerEntityFiles returns files generated once per entity.
+func (p *Pipeline) planPerEntityFiles(ctx TemplateContext) []PlannedFile {
+	domain := ctx.Domain.Name
+	entitySnake := strings.ToLower(ctx.Entity.Name)
+
+	templateMappings := []struct {
+		template string
+		output   string
+		isGo     bool
+	}{
+		// Domain entity types
+		{"domain/entity.go.tmpl", fmt.Sprintf("internal/domain/%s/%s.generated.go", domain, entitySnake), true},
+		{"domain_converters/converters.go.tmpl", fmt.Sprintf("internal/domain/%s/converters/%s.generated.go", domain, entitySnake), true},
+
+		// Repository entity CRUD
+		{"repository/entity.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/%s.generated.go", domain, entitySnake), true},
+
+		// Query codegen
+		{"codegen/queries.go.tmpl", fmt.Sprintf("cmd/tools/codegen/queries/%s_%s.generated.go", domain, entitySnake), true},
+
+		// Migration (one per entity)
+		{"migrations/migration.sql.tmpl", fmt.Sprintf("internal/repositories/postgres/migrations/migration_files/%s_%s.generated.sql", domain, entitySnake), false},
+
+		// Proto
+		{"proto/messages.proto.tmpl", fmt.Sprintf("proto/%s/%s_messages.generated.proto", domain, entitySnake), false},
+		{"proto/service.proto.tmpl", fmt.Sprintf("proto/%s/%s_service.generated.proto", domain, entitySnake), false},
+
+		// gRPC entity handlers
+		{"grpc/entity.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/%s.generated.go", domain, entitySnake), true},
+	}
+
+	var files []PlannedFile
 	for _, m := range templateMappings {
 		files = append(files, PlannedFile{
 			TemplatePath: m.template,
