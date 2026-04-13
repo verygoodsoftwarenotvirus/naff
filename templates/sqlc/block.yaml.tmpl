@@ -1,0 +1,17 @@
+  - engine: "postgresql"
+    schema: "internal/repositories/postgres/migrations/migration_files"
+    queries: "internal/repositories/postgres/{{ .Domain.Name }}/sqlc_queries"
+    gen:
+      go:
+        out: "internal/repositories/postgres/{{ .Domain.Name }}/generated"
+        package: "generated"
+        sql_package: "database/sql"
+        emit_interface: true
+        emit_result_struct_pointers: true
+        omit_unused_structs: true
+        output_files_suffix: "_generated"
+        output_db_file_name: "db_generated.go"
+        output_models_file_name: "models_generated.go"
+        output_querier_file_name: "querier_generated.go"
+    rules:
+      - sqlc/db-prepare

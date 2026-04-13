@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS {{ pluralSnake .Entity.Name }} (
+    id TEXT NOT NULL PRIMARY KEY,
+{{- range .Entity.Fields }}
+    {{ snake .Name }} {{ sqlType .Type }}{{ if .IsRequired }} NOT NULL{{ end }},
+{{- end }}
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    last_updated_at TIMESTAMP WITH TIME ZONE,
+    archived_at TIMESTAMP WITH TIME ZONE{{ if or .Entity.CreatedByUser (or .Entity.BelongsToAccount (ne .Entity.BelongsTo "")) }},{{ end }}
+{{- if .Entity.CreatedByUser }}
+    created_by_user TEXT NOT NULL REFERENCES users("id") ON DELETE CASCADE{{ if or .Entity.BelongsToAccount (ne .Entity.BelongsTo "") }},{{ end }}
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+    belongs_to_account TEXT NOT NULL REFERENCES accounts("id") ON DELETE CASCADE{{ if ne .Entity.BelongsTo "" }},{{ end }}
+{{- end }}
+{{- if ne .Entity.BelongsTo "" }}
+    belongs_to_{{ snake .Entity.BelongsTo }} TEXT NOT NULL REFERENCES {{ pluralSnake .Entity.BelongsTo }}("id") ON DELETE CASCADE
+{{- end }}
+);

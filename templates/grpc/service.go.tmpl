@@ -1,0 +1,41 @@
+package grpc
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication/sessions"
+	{{ .Domain.Name }}manager "{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}/manager"
+	{{ .Domain.Name }}svc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/{{ .Domain.Name }}"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing"
+)
+
+const (
+	o11yName = "{{ snake .Entity.Name }}_service"
+)
+
+var _ {{ .Domain.Name }}svc.{{ plural .Entity.Name }}ServiceServer = (*serviceImpl)(nil)
+
+type (
+	serviceImpl struct {
+		{{ .Domain.Name }}svc.Unimplemented{{ plural .Entity.Name }}ServiceServer
+		tracer                    tracing.Tracer
+		logger                    logging.Logger
+		sessionContextDataFetcher func(context.Context) (*sessions.ContextData, error)
+		{{ camel .Entity.Name }}Manager       {{ .Domain.Name }}manager.{{ plural .Entity.Name }}DataManager
+	}
+)
+
+func NewService(
+	logger logging.Logger,
+	tracerProvider tracing.TracerProvider,
+	{{ camel .Entity.Name }}Manager {{ .Domain.Name }}manager.{{ plural .Entity.Name }}DataManager,
+) {{ .Domain.Name }}svc.{{ plural .Entity.Name }}ServiceServer {
+	return &serviceImpl{
+		logger:                    logging.NewNamedLogger(logger, o11yName),
+		tracer:                    tracing.NewNamedTracer(tracerProvider, o11yName),
+		sessionContextDataFetcher: sessions.FetchContextDataFromContext,
+		{{ camel .Entity.Name }}Manager:       {{ camel .Entity.Name }}Manager,
+	}
+}

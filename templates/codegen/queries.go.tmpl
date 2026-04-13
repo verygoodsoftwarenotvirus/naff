@@ -1,0 +1,187 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/cristalhq/builq"
+)
+
+const (
+	{{ camel .Entity.Name }}TableName = "{{ pluralSnake .Entity.Name }}"
+{{- range .Entity.Fields }}
+	{{ camel .Name }}Column = "{{ snake .Name }}"
+{{- end }}
+)
+
+func init() {
+	registerTableName({{ camel .Entity.Name }}TableName)
+}
+
+var {{ camel .Entity.Name }}Columns = []string{
+	idColumn,
+{{- range .Entity.Fields }}
+	{{ camel .Name }}Column,
+{{- end }}
+	createdAtColumn,
+	lastUpdatedAtColumn,
+	archivedAtColumn,
+{{- if .Entity.CreatedByUser }}
+	createdByUserColumn,
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+	belongsToAccountColumn,
+{{- end }}
+{{- if ne .Entity.BelongsTo "" }}
+	"belongs_to_{{ snake .Entity.BelongsTo }}",
+{{- end }}
+}
+
+func build{{ plural .Entity.Name }}Queries(database string) []*Query {
+	switch database {
+	case postgres:
+		insertColumns := filterForInsert({{ camel .Entity.Name }}Columns)
+		fullSelectColumns := applyToEach({{ camel .Entity.Name }}Columns, func(_ int, s string) string {
+			return fullColumnName({{ camel .Entity.Name }}TableName, s)
+		})
+
+		return []*Query{
+			{
+				Annotation: QueryAnnotation{
+					Name: "Create{{ .Entity.Name }}",
+					Type: ExecType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`INSERT INTO %s (
+	%s
+) VALUES (
+	%s
+);`,
+					{{ camel .Entity.Name }}TableName,
+					strings.Join(insertColumns, ",\n\t"),
+					strings.Join(applyToEach(insertColumns, func(_ int, s string) string {
+						return fmt.Sprintf("sqlc.arg(%s)", s)
+					}), ",\n\t"),
+				)),
+			},
+			{
+				Annotation: QueryAnnotation{
+					Name: "Update{{ .Entity.Name }}",
+					Type: ExecRowsType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`UPDATE %s SET
+	%s,
+	%s = %s
+WHERE %s IS NULL
+	AND %s = sqlc.arg(%s);`,
+					{{ camel .Entity.Name }}TableName,
+					strings.Join(applyToEach(filterForUpdate({{ camel .Entity.Name }}Columns{{ if .Entity.CreatedByUser }}, createdByUserColumn{{ end }}{{ if .Entity.BelongsToAccount }}, belongsToAccountColumn{{ end }}), func(_ int, s string) string {
+						return fmt.Sprintf("%s = sqlc.arg(%s)", s, s)
+					}), ",\n\t"),
+					lastUpdatedAtColumn, currentTimeExpression,
+					archivedAtColumn,
+					idColumn, idColumn,
+				)),
+			},
+			{
+				Annotation: QueryAnnotation{
+					Name: "Archive{{ .Entity.Name }}",
+					Type: ExecRowsType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`UPDATE %s SET
+	%s = %s,
+	%s = %s
+WHERE %s IS NULL
+	AND %s = sqlc.arg(%s);`,
+					{{ camel .Entity.Name }}TableName,
+					lastUpdatedAtColumn, currentTimeExpression,
+					archivedAtColumn, currentTimeExpression,
+					archivedAtColumn,
+					idColumn, idColumn,
+				)),
+			},
+			{
+				Annotation: QueryAnnotation{
+					Name: "Get{{ .Entity.Name }}",
+					Type: OneType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`SELECT
+	%s
+FROM %s
+WHERE %s.%s IS NULL
+	AND %s.%s = sqlc.arg(%s);`,
+					strings.Join(fullSelectColumns, ",\n\t"),
+					{{ camel .Entity.Name }}TableName,
+					{{ camel .Entity.Name }}TableName, archivedAtColumn,
+					{{ camel .Entity.Name }}TableName, idColumn, idColumn,
+				)),
+			},
+			{
+				Annotation: QueryAnnotation{
+					Name: "Check{{ .Entity.Name }}Existence",
+					Type: OneType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`SELECT EXISTS(
+	SELECT %s.%s
+	FROM %s
+	WHERE %s.%s IS NULL
+		AND %s.%s = sqlc.arg(%s)
+);`,
+					{{ camel .Entity.Name }}TableName, idColumn,
+					{{ camel .Entity.Name }}TableName,
+					{{ camel .Entity.Name }}TableName, archivedAtColumn,
+					{{ camel .Entity.Name }}TableName, idColumn, idColumn,
+				)),
+			},
+			{
+				Annotation: QueryAnnotation{
+					Name: "Get{{ plural .Entity.Name }}",
+					Type: ManyType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`SELECT
+	%s,
+	%s,
+	%s
+FROM %s
+WHERE %s.%s IS NULL
+	%s
+%s;`,
+					strings.Join(fullSelectColumns, ",\n\t"),
+					buildFilterCountSelect({{ camel .Entity.Name }}TableName, true, true, nil),
+					buildTotalCountSelect({{ camel .Entity.Name }}TableName, true, nil),
+					{{ camel .Entity.Name }}TableName,
+					{{ camel .Entity.Name }}TableName, archivedAtColumn,
+					buildFilterConditions({{ camel .Entity.Name }}TableName, true, false),
+					buildCursorLimitClause({{ camel .Entity.Name }}TableName),
+				)),
+			},
+{{- if .Entity.BelongsToAccount }}
+			{
+				Annotation: QueryAnnotation{
+					Name: "Get{{ plural .Entity.Name }}ForAccount",
+					Type: ManyType,
+				},
+				Content: buildRawQuery((&builq.Builder{}).Addf(`SELECT
+	%s,
+	%s,
+	%s
+FROM %s
+WHERE %s.%s IS NULL
+	AND %s.%s = sqlc.arg(%s)
+	%s
+%s;`,
+					strings.Join(fullSelectColumns, ",\n\t"),
+					buildFilterCountSelect({{ camel .Entity.Name }}TableName, true, true, nil, fmt.Sprintf("%s.%s = sqlc.arg(%s)", {{ camel .Entity.Name }}TableName, belongsToAccountColumn, belongsToAccountColumn)),
+					buildTotalCountSelect({{ camel .Entity.Name }}TableName, true, nil, fmt.Sprintf("%s.%s = sqlc.arg(%s)", {{ camel .Entity.Name }}TableName, belongsToAccountColumn, belongsToAccountColumn)),
+					{{ camel .Entity.Name }}TableName,
+					{{ camel .Entity.Name }}TableName, archivedAtColumn,
+					{{ camel .Entity.Name }}TableName, belongsToAccountColumn, belongsToAccountColumn,
+					buildFilterConditions({{ camel .Entity.Name }}TableName, true, false, fmt.Sprintf("%s.%s = sqlc.arg(%s)", {{ camel .Entity.Name }}TableName, belongsToAccountColumn, belongsToAccountColumn)),
+					buildCursorLimitClause({{ camel .Entity.Name }}TableName),
+				)),
+			},
+{{- end }}
+		}
+	default:
+		return nil
+	}
+}

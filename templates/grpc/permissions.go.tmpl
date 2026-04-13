@@ -1,0 +1,35 @@
+package grpc
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/authorization"
+	{{ .Domain.Name }}svc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/{{ .Domain.Name }}"
+)
+
+// {{ plural .Entity.Name }}MethodPermissions is a named type for dependency injection.
+type {{ plural .Entity.Name }}MethodPermissions map[string][]authorization.Permission
+
+// ProvideMethodPermissions returns the {{ pluralHumanReadable .Entity.Name }} service's method permissions.
+func ProvideMethodPermissions() {{ plural .Entity.Name }}MethodPermissions {
+	return {{ plural .Entity.Name }}MethodPermissions{
+		{{ .Domain.Name }}svc.{{ plural .Entity.Name }}Service_Create{{ .Entity.Name }}_FullMethodName: {
+			authorization.Create{{ plural .Entity.Name }}Permission,
+		},
+		{{ .Domain.Name }}svc.{{ plural .Entity.Name }}Service_Get{{ .Entity.Name }}_FullMethodName: {
+			authorization.Read{{ plural .Entity.Name }}Permission,
+		},
+		{{ .Domain.Name }}svc.{{ plural .Entity.Name }}Service_Get{{ plural .Entity.Name }}_FullMethodName: {
+			authorization.Read{{ plural .Entity.Name }}Permission,
+		},
+{{- if .Entity.BelongsToAccount }}
+		{{ .Domain.Name }}svc.{{ plural .Entity.Name }}Service_Get{{ plural .Entity.Name }}ForAccount_FullMethodName: {
+			authorization.Read{{ plural .Entity.Name }}Permission,
+		},
+{{- end }}
+		{{ .Domain.Name }}svc.{{ plural .Entity.Name }}Service_Update{{ .Entity.Name }}_FullMethodName: {
+			authorization.Update{{ plural .Entity.Name }}Permission,
+		},
+		{{ .Domain.Name }}svc.{{ plural .Entity.Name }}Service_Archive{{ .Entity.Name }}_FullMethodName: {
+			authorization.Archive{{ plural .Entity.Name }}Permission,
+		},
+	}
+}

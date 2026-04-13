@@ -47,7 +47,8 @@ func FuncMap() template.FuncMap {
 		"baseType":    func(f config.Field) string { return f.BaseType() },
 		"sqlType":     sqlType,
 		"protoType":   protoType,
-		"fakeValue":   fakeValue,
+		"fakeValue":           fakeValue,
+		"pointerConversionFunc": pointerConversionFunc,
 
 		// Field filtering
 		"creatableFields": creatableFields,
@@ -205,6 +206,25 @@ func requiredFields(fields []config.Field) []config.Field {
 // columnFields returns all fields (all fields are columns by default).
 func columnFields(fields []config.Field) []config.Field {
 	return fields
+}
+
+// pointerConversionFunc returns the database helper function name for converting nullable DB types.
+func pointerConversionFunc(f config.Field) string {
+	base := f.BaseType()
+	switch base {
+	case "string":
+		return "StringPointerFromNullString"
+	case "bool":
+		return "BoolPointerFromNullBool"
+	case "int", "int32":
+		return "Int32PointerFromNullInt32"
+	case "int64":
+		return "Int64PointerFromNullInt64"
+	case "float32", "float64":
+		return "Float64PointerFromNullFloat64"
+	default:
+		return "StringPointerFromNullString"
+	}
 }
 
 // fakeValue returns a gofakeit expression for generating fake data for a field.

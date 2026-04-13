@@ -1,0 +1,24 @@
+package {{ .Domain.Name }}
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/audit"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/database"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing"
+
+	"github.com/samber/do/v2"
+)
+
+// Register{{ plural .Entity.Name }}Repository registers the {{ .Domain.Name }} repository with the injector.
+func Register{{ plural .Entity.Name }}Repository(i do.Injector) {
+	do.Provide[{{ .Domain.Name }}.Repository](i, func(i do.Injector) ({{ .Domain.Name }}.Repository, error) {
+		return Provide{{ plural .Entity.Name }}Repository(
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[audit.Repository](i),
+			do.MustInvoke[database.Client](i),
+		), nil
+	})
+}

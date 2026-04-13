@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package {{ .Domain.Name }};
+
+option go_package = "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/{{ .Domain.Name }}";
+
+import "types/response_details.proto";
+import "types/query_filter.proto";
+import "types/pagination.proto";
+import "{{ .Domain.Name }}/{{ lower .Entity.Name }}_messages.generated.proto";
+
+service {{ plural .Entity.Name }}Service {
+  rpc Create{{ .Entity.Name }}(Create{{ .Entity.Name }}Request) returns (Create{{ .Entity.Name }}Response);
+  rpc Get{{ .Entity.Name }}(Get{{ .Entity.Name }}Request) returns (Get{{ .Entity.Name }}Response);
+  rpc Get{{ plural .Entity.Name }}(Get{{ plural .Entity.Name }}Request) returns (Get{{ plural .Entity.Name }}Response);
+{{- if .Entity.BelongsToAccount }}
+  rpc Get{{ plural .Entity.Name }}ForAccount(Get{{ plural .Entity.Name }}ForAccountRequest) returns (Get{{ plural .Entity.Name }}ForAccountResponse);
+{{- end }}
+  rpc Update{{ .Entity.Name }}(Update{{ .Entity.Name }}Request) returns (Update{{ .Entity.Name }}Response);
+  rpc Archive{{ .Entity.Name }}(Archive{{ .Entity.Name }}Request) returns (Archive{{ .Entity.Name }}Response);
+}
+
+message Create{{ .Entity.Name }}Request {
+  {{ .Entity.Name }}CreationRequestInput input = 1;
+}
+
+message Create{{ .Entity.Name }}Response {
+  types.ResponseDetails response_details = 1;
+  {{ .Entity.Name }} created = 2;
+}
+
+message Get{{ .Entity.Name }}Request {
+  string {{ snake .Entity.Name }}_id = 1;
+}
+
+message Get{{ .Entity.Name }}Response {
+  types.ResponseDetails response_details = 1;
+  {{ .Entity.Name }} result = 2;
+}
+
+message Get{{ plural .Entity.Name }}Request {
+  types.QueryFilter filter = 1;
+}
+
+message Get{{ plural .Entity.Name }}Response {
+  types.ResponseDetails response_details = 1;
+  types.Pagination pagination = 2;
+  repeated {{ .Entity.Name }} results = 3;
+}
+
+{{- if .Entity.BelongsToAccount }}
+
+message Get{{ plural .Entity.Name }}ForAccountRequest {
+  types.QueryFilter filter = 1;
+}
+
+message Get{{ plural .Entity.Name }}ForAccountResponse {
+  types.ResponseDetails response_details = 1;
+  types.Pagination pagination = 2;
+  repeated {{ .Entity.Name }} results = 3;
+}
+{{- end }}
+
+message Update{{ .Entity.Name }}Request {
+  string {{ snake .Entity.Name }}_id = 1;
+  {{ .Entity.Name }}UpdateRequestInput input = 2;
+}
+
+message Update{{ .Entity.Name }}Response {
+  types.ResponseDetails response_details = 1;
+  {{ .Entity.Name }} updated = 2;
+}
+
+message Archive{{ .Entity.Name }}Request {
+  string {{ snake .Entity.Name }}_id = 1;
+}
+
+message Archive{{ .Entity.Name }}Response {
+  types.ResponseDetails response_details = 1;
+}

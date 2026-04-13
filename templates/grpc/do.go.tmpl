@@ -1,0 +1,26 @@
+package grpc
+
+import (
+	{{ .Domain.Name }}manager "{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}/manager"
+	{{ .Domain.Name }}svc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/{{ .Domain.Name }}"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing"
+
+	"github.com/samber/do/v2"
+)
+
+// Register{{ plural .Entity.Name }}Service registers the {{ pluralHumanReadable .Entity.Name }} gRPC service with the injector.
+func Register{{ plural .Entity.Name }}Service(i do.Injector) {
+	do.Provide[{{ plural .Entity.Name }}MethodPermissions](i, func(i do.Injector) ({{ plural .Entity.Name }}MethodPermissions, error) {
+		return ProvideMethodPermissions(), nil
+	})
+
+	do.Provide[{{ .Domain.Name }}svc.{{ plural .Entity.Name }}ServiceServer](i, func(i do.Injector) ({{ .Domain.Name }}svc.{{ plural .Entity.Name }}ServiceServer, error) {
+		return NewService(
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[{{ .Domain.Name }}manager.{{ plural .Entity.Name }}DataManager](i),
+		), nil
+	})
+}

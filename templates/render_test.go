@@ -239,3 +239,207 @@ func TestFakesTemplate(t *testing.T) {
 		}
 	}
 }
+
+func TestMigrationTemplate(t *testing.T) {
+	t.Parallel()
+
+	r := renderer.New(FS)
+	ctx := pipeline.TemplateContext{
+		Project: testProject(),
+		Domain:  testDomain(),
+		Entity:  testEntity(),
+	}
+
+	output, err := r.Render("migrations/migration.sql.tmpl", ctx)
+	if err != nil {
+		t.Fatalf("render error: %v", err)
+	}
+
+	checks := []string{
+		"CREATE TABLE IF NOT EXISTS issue_reports",
+		"id TEXT NOT NULL PRIMARY KEY",
+		"issue_type TEXT NOT NULL",
+		"details TEXT NOT NULL",
+		"relevant_table TEXT",
+		"created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()",
+		"last_updated_at TIMESTAMP WITH TIME ZONE",
+		"archived_at TIMESTAMP WITH TIME ZONE",
+		"created_by_user TEXT NOT NULL REFERENCES users",
+		"belongs_to_account TEXT NOT NULL REFERENCES accounts",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Errorf("expected output to contain %q\n\nOutput:\n%s", check, output)
+		}
+	}
+}
+
+func TestQueryCodegenTemplate(t *testing.T) {
+	t.Parallel()
+
+	r := renderer.New(FS)
+	ctx := pipeline.TemplateContext{
+		Project: testProject(),
+		Domain:  testDomain(),
+		Entity:  testEntity(),
+	}
+
+	output, err := r.Render("codegen/queries.go.tmpl", ctx)
+	if err != nil {
+		t.Fatalf("render error: %v", err)
+	}
+
+	checks := []string{
+		"package main",
+		`issueReportTableName = "issue_reports"`,
+		"issueReportColumns",
+		"buildIssueReportsQueries",
+		"CreateIssueReport",
+		"UpdateIssueReport",
+		"ArchiveIssueReport",
+		"GetIssueReport",
+		"CheckIssueReportExistence",
+		"GetIssueReports",
+		"GetIssueReportsForAccount",
+		"builq.Builder",
+		"filterForInsert",
+		"filterForUpdate",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Errorf("expected output to contain %q\n\nOutput:\n%s", check, output)
+		}
+	}
+}
+
+func TestRepositoryClientTemplate(t *testing.T) {
+	t.Parallel()
+
+	r := renderer.New(FS)
+	ctx := pipeline.TemplateContext{
+		Project: testProject(),
+		Domain:  testDomain(),
+		Entity:  testEntity(),
+	}
+
+	output, err := r.Render("repository/client.go.tmpl", ctx)
+	if err != nil {
+		t.Fatalf("render error: %v", err)
+	}
+
+	checks := []string{
+		"package issuereports",
+		`o11yName = "issue_report_db_client"`,
+		"type repository struct",
+		"database.Client",
+		"generatedQuerier",
+		"auditLogEntryRepo",
+		"ProvideIssueReportsRepository",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Errorf("expected output to contain %q\n\nOutput:\n%s", check, output)
+		}
+	}
+}
+
+func TestRepositoryEntityTemplate(t *testing.T) {
+	t.Parallel()
+
+	r := renderer.New(FS)
+	ctx := pipeline.TemplateContext{
+		Project: testProject(),
+		Domain:  testDomain(),
+		Entity:  testEntity(),
+	}
+
+	output, err := r.Render("repository/entity.go.tmpl", ctx)
+	if err != nil {
+		t.Fatalf("render error: %v", err)
+	}
+
+	checks := []string{
+		"package issuereports",
+		"GetIssueReport",
+		"GetIssueReports",
+		"GetIssueReportsForAccount",
+		"CreateIssueReport",
+		"UpdateIssueReport",
+		"ArchiveIssueReport",
+		"r.generatedQuerier",
+		"r.auditLogEntryRepo.CreateAuditLogEntry",
+		"tx.Commit()",
+		"r.RollbackTransaction",
+		"audit.AuditLogEventTypeCreated",
+		"audit.AuditLogEventTypeUpdated",
+		"audit.AuditLogEventTypeArchived",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Errorf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestRepositoryDoTemplate(t *testing.T) {
+	t.Parallel()
+
+	r := renderer.New(FS)
+	ctx := pipeline.TemplateContext{
+		Project: testProject(),
+		Domain:  testDomain(),
+		Entity:  testEntity(),
+	}
+
+	output, err := r.Render("repository/do.go.tmpl", ctx)
+	if err != nil {
+		t.Fatalf("render error: %v", err)
+	}
+
+	checks := []string{
+		"package issuereports",
+		"RegisterIssueReportsRepository",
+		"do.Provide",
+		"do.MustInvoke",
+		"samber/do/v2",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Errorf("expected output to contain %q", check)
+		}
+	}
+}
+
+func TestSqlcBlockTemplate(t *testing.T) {
+	t.Parallel()
+
+	r := renderer.New(FS)
+	ctx := pipeline.TemplateContext{
+		Project: testProject(),
+		Domain:  testDomain(),
+		Entity:  testEntity(),
+	}
+
+	output, err := r.Render("sqlc/block.yaml.tmpl", ctx)
+	if err != nil {
+		t.Fatalf("render error: %v", err)
+	}
+
+	checks := []string{
+		"engine: \"postgresql\"",
+		"internal/repositories/postgres/issuereports/sqlc_queries",
+		"internal/repositories/postgres/issuereports/generated",
+		"emit_interface: true",
+	}
+
+	for _, check := range checks {
+		if !strings.Contains(output, check) {
+			t.Errorf("expected output to contain %q", check)
+		}
+	}
+}

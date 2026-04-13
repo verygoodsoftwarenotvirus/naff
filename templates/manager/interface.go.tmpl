@@ -1,0 +1,11 @@
+package manager
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
+)
+
+// {{ plural .Entity.Name }}DataManager defines the interface for {{ pluralHumanReadable .Entity.Name }} business logic.
+// It embeds {{ .Domain.Name }}.Repository so the manager provides the full repository surface.
+type {{ plural .Entity.Name }}DataManager interface {
+	{{ .Domain.Name }}.Repository
+}

@@ -1,0 +1,232 @@
+package grpc
+
+import (
+	"context"
+
+	identitykeys "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/keys"
+	{{ .Domain.Name }}keys "{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}/keys"
+	grpcconverters "{{ .Project.ProjectMeta.Module }}/internal/grpc/converters"
+	{{ .Domain.Name }}svc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/{{ .Domain.Name }}"
+	"{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/types"
+	"{{ .Project.ProjectMeta.Module }}/internal/services/{{ .Domain.Name }}/grpc/converters"
+
+	platformerrors "{{ .Project.ProjectMeta.PlatformModule }}/errors"
+	errorsgrpc "{{ .Project.ProjectMeta.PlatformModule }}/errors/grpc"
+
+	"google.golang.org/grpc/codes"
+)
+
+func (s *serviceImpl) Create{{ .Entity.Name }}(ctx context.Context, request *{{ .Domain.Name }}svc.Create{{ .Entity.Name }}Request) (*{{ .Domain.Name }}svc.Create{{ .Entity.Name }}Response, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := s.logger.WithSpan(span)
+
+	sessionContextData, err := s.sessionContextDataFetcher(ctx)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Unauthenticated, "failed to fetch session context data")
+	}
+	logger = logger.WithValue(identitykeys.AccountIDKey, sessionContextData.ActiveAccountID).WithValue(identitykeys.UserIDKey, sessionContextData.Requester.UserID)
+
+	input := converters.ConvertGRPC{{ .Entity.Name }}CreationRequestInputTo{{ .Entity.Name }}DatabaseCreationInput(request.Input, sessionContextData.Requester.UserID, sessionContextData.GetActiveAccountID())
+	if err = input.ValidateWithContext(ctx); err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.InvalidArgument, "failed to validate {{ humanReadable .Entity.Name }} creation request")
+	}
+
+	created, err := s.{{ camel .Entity.Name }}Manager.Create{{ .Entity.Name }}(ctx, input)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to create {{ humanReadable .Entity.Name }}")
+	}
+
+	return &{{ .Domain.Name }}svc.Create{{ .Entity.Name }}Response{
+		ResponseDetails: &types.ResponseDetails{
+			TraceId:          span.SpanContext().TraceID().String(),
+			CurrentAccountId: sessionContextData.ActiveAccountID,
+		},
+		Created: converters.Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(created),
+	}, nil
+}
+
+func (s *serviceImpl) Get{{ .Entity.Name }}(ctx context.Context, request *{{ .Domain.Name }}svc.Get{{ .Entity.Name }}Request) (*{{ .Domain.Name }}svc.Get{{ .Entity.Name }}Response, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := s.logger.WithSpan(span).WithValue({{ .Domain.Name }}keys.{{ .Entity.Name }}IDKey, request.{{ .Entity.Name }}Id)
+
+	sessionContextData, err := s.sessionContextDataFetcher(ctx)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Unauthenticated, "failed to fetch session context data")
+	}
+	logger = logger.WithValue(identitykeys.AccountIDKey, sessionContextData.ActiveAccountID)
+
+	result, err := s.{{ camel .Entity.Name }}Manager.Get{{ .Entity.Name }}(ctx, request.{{ .Entity.Name }}Id)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to fetch {{ humanReadable .Entity.Name }}")
+	}
+
+{{- if .Entity.BelongsToAccount }}
+
+	if result.BelongsToAccount != sessionContextData.GetActiveAccountID() {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(platformerrors.New("permission denied"), logger, span, codes.PermissionDenied, "{{ humanReadable .Entity.Name }} does not belong to account")
+	}
+{{- end }}
+
+	return &{{ .Domain.Name }}svc.Get{{ .Entity.Name }}Response{
+		ResponseDetails: &types.ResponseDetails{
+			TraceId:          span.SpanContext().TraceID().String(),
+			CurrentAccountId: sessionContextData.ActiveAccountID,
+		},
+		Result: converters.Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(result),
+	}, nil
+}
+
+func (s *serviceImpl) Get{{ plural .Entity.Name }}(ctx context.Context, request *{{ .Domain.Name }}svc.Get{{ plural .Entity.Name }}Request) (*{{ .Domain.Name }}svc.Get{{ plural .Entity.Name }}Response, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := s.logger.WithSpan(span)
+
+	sessionContextData, err := s.sessionContextDataFetcher(ctx)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Unauthenticated, "failed to fetch session context data")
+	}
+	logger = logger.WithValue(identitykeys.AccountIDKey, sessionContextData.ActiveAccountID)
+
+	filter := grpcconverters.ConvertGRPCQueryFilterToQueryFilter(request.Filter)
+
+	results, err := s.{{ camel .Entity.Name }}Manager.Get{{ plural .Entity.Name }}(ctx, filter)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to fetch {{ pluralHumanReadable .Entity.Name }}")
+	}
+
+	resp := &{{ .Domain.Name }}svc.Get{{ plural .Entity.Name }}Response{
+		ResponseDetails: &types.ResponseDetails{
+			TraceId:          span.SpanContext().TraceID().String(),
+			CurrentAccountId: sessionContextData.ActiveAccountID,
+		},
+		Pagination: grpcconverters.ConvertPaginationToGRPCPagination(results.Pagination, filter),
+	}
+
+	for _, item := range results.Data {
+		resp.Results = append(resp.Results, converters.Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(item))
+	}
+
+	return resp, nil
+}
+
+{{- if .Entity.BelongsToAccount }}
+
+func (s *serviceImpl) Get{{ plural .Entity.Name }}ForAccount(ctx context.Context, request *{{ .Domain.Name }}svc.Get{{ plural .Entity.Name }}ForAccountRequest) (*{{ .Domain.Name }}svc.Get{{ plural .Entity.Name }}ForAccountResponse, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := s.logger.WithSpan(span)
+
+	sessionContextData, err := s.sessionContextDataFetcher(ctx)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Unauthenticated, "failed to fetch session context data")
+	}
+	logger = logger.WithValue(identitykeys.AccountIDKey, sessionContextData.ActiveAccountID)
+
+	filter := grpcconverters.ConvertGRPCQueryFilterToQueryFilter(request.Filter)
+
+	results, err := s.{{ camel .Entity.Name }}Manager.Get{{ plural .Entity.Name }}ForAccount(ctx, sessionContextData.ActiveAccountID, filter)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to fetch {{ pluralHumanReadable .Entity.Name }} for account")
+	}
+
+	resp := &{{ .Domain.Name }}svc.Get{{ plural .Entity.Name }}ForAccountResponse{
+		ResponseDetails: &types.ResponseDetails{
+			TraceId:          span.SpanContext().TraceID().String(),
+			CurrentAccountId: sessionContextData.ActiveAccountID,
+		},
+		Pagination: grpcconverters.ConvertPaginationToGRPCPagination(results.Pagination, filter),
+	}
+
+	for _, item := range results.Data {
+		resp.Results = append(resp.Results, converters.Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(item))
+	}
+
+	return resp, nil
+}
+{{- end }}
+
+func (s *serviceImpl) Update{{ .Entity.Name }}(ctx context.Context, request *{{ .Domain.Name }}svc.Update{{ .Entity.Name }}Request) (*{{ .Domain.Name }}svc.Update{{ .Entity.Name }}Response, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := s.logger.WithSpan(span).WithValue({{ .Domain.Name }}keys.{{ .Entity.Name }}IDKey, request.{{ .Entity.Name }}Id)
+
+	sessionContextData, err := s.sessionContextDataFetcher(ctx)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Unauthenticated, "failed to fetch session context data")
+	}
+	logger = logger.WithValue(identitykeys.AccountIDKey, sessionContextData.ActiveAccountID)
+
+	existing, err := s.{{ camel .Entity.Name }}Manager.Get{{ .Entity.Name }}(ctx, request.{{ .Entity.Name }}Id)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to fetch {{ humanReadable .Entity.Name }}")
+	}
+
+{{- if .Entity.BelongsToAccount }}
+
+	if existing.BelongsToAccount != sessionContextData.GetActiveAccountID() {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(platformerrors.New("permission denied"), logger, span, codes.PermissionDenied, "{{ humanReadable .Entity.Name }} does not belong to account")
+	}
+{{- end }}
+
+	updateInput := converters.ConvertGRPC{{ .Entity.Name }}UpdateRequestInputTo{{ .Entity.Name }}UpdateRequestInput(request.Input)
+	if err = updateInput.ValidateWithContext(ctx); err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.InvalidArgument, "failed to validate {{ humanReadable .Entity.Name }} update request")
+	}
+
+	existing.Update(updateInput)
+
+	if err = s.{{ camel .Entity.Name }}Manager.Update{{ .Entity.Name }}(ctx, existing); err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to update {{ humanReadable .Entity.Name }}")
+	}
+
+	return &{{ .Domain.Name }}svc.Update{{ .Entity.Name }}Response{
+		ResponseDetails: &types.ResponseDetails{
+			TraceId:          span.SpanContext().TraceID().String(),
+			CurrentAccountId: sessionContextData.ActiveAccountID,
+		},
+		Updated: converters.Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(existing),
+	}, nil
+}
+
+func (s *serviceImpl) Archive{{ .Entity.Name }}(ctx context.Context, request *{{ .Domain.Name }}svc.Archive{{ .Entity.Name }}Request) (*{{ .Domain.Name }}svc.Archive{{ .Entity.Name }}Response, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := s.logger.WithSpan(span).WithValue({{ .Domain.Name }}keys.{{ .Entity.Name }}IDKey, request.{{ .Entity.Name }}Id)
+
+	sessionContextData, err := s.sessionContextDataFetcher(ctx)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Unauthenticated, "failed to fetch session context data")
+	}
+	logger = logger.WithValue(identitykeys.AccountIDKey, sessionContextData.ActiveAccountID)
+
+{{- if .Entity.BelongsToAccount }}
+
+	existing, err := s.{{ camel .Entity.Name }}Manager.Get{{ .Entity.Name }}(ctx, request.{{ .Entity.Name }}Id)
+	if err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to fetch {{ humanReadable .Entity.Name }}")
+	}
+
+	if existing.BelongsToAccount != sessionContextData.GetActiveAccountID() {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(platformerrors.New("permission denied"), logger, span, codes.PermissionDenied, "{{ humanReadable .Entity.Name }} does not belong to account")
+	}
+{{- end }}
+
+	if err = s.{{ camel .Entity.Name }}Manager.Archive{{ .Entity.Name }}(ctx, request.{{ .Entity.Name }}Id); err != nil {
+		return nil, errorsgrpc.PrepareAndLogGRPCStatus(err, logger, span, codes.Internal, "failed to archive {{ humanReadable .Entity.Name }}")
+	}
+
+	return &{{ .Domain.Name }}svc.Archive{{ .Entity.Name }}Response{
+		ResponseDetails: &types.ResponseDetails{
+			TraceId:          span.SpanContext().TraceID().String(),
+			CurrentAccountId: sessionContextData.ActiveAccountID,
+		},
+	}, nil
+}
