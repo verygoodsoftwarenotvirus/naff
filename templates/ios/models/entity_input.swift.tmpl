@@ -1,0 +1,19 @@
+import Foundation
+
+/// {{ .Entity.Name }}CreationRequestInput represents input for creating {{ withArticle .Entity.Name }}.
+struct {{ .Entity.Name }}CreationRequestInput: Codable, Sendable {
+{{- range creatableFields .Entity.Fields }}
+    var {{ camel .Name }}: {{ swiftType .Type }}
+{{- end }}
+}
+
+/// {{ .Entity.Name }}UpdateRequestInput represents input for updating {{ withArticle .Entity.Name }}.
+struct {{ .Entity.Name }}UpdateRequestInput: Codable, Sendable {
+{{- range editableFields .Entity.Fields }}
+{{- if isPointer . }}
+    var {{ camel .Name }}: {{ swiftType .Type }}
+{{- else }}
+    var {{ camel .Name }}: {{ swiftType .Type }}?
+{{- end }}
+{{- end }}
+}

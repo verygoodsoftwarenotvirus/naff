@@ -67,7 +67,14 @@ func FuncMap() template.FuncMap {
 
 		// Conditional helpers
 		"and": func(a, b bool) bool { return a && b },
-		"or":  func(a, b bool) bool { return a || b },
+		"or": func(vals ...bool) bool {
+			for _, v := range vals {
+				if v {
+					return true
+				}
+			}
+			return false
+		},
 		"not": func(a bool) bool { return !a },
 
 		// Struct tag helpers
@@ -82,6 +89,15 @@ func FuncMap() template.FuncMap {
 
 		// Collection helpers
 		"last": func(i, length int) bool { return i == length-1 },
+
+		// TypeScript/frontend helpers
+		"tsType":         tsType,
+		"tsDefaultValue": tsDefaultValue,
+		"htmlInputType":  htmlInputType,
+
+		// Swift/iOS helpers
+		"swiftType":      swiftType,
+		"swiftZeroValue": swiftZeroValue,
 	}
 }
 
@@ -257,6 +273,136 @@ func fakeValueForType(typ string) string {
 		return `fake.Float64()`
 	default:
 		return `fake.Word()`
+	}
+}
+
+// tsType returns the TypeScript type for a Go type string.
+func tsType(typ string) string {
+	base := typ
+	isPtr := false
+	if len(base) > 0 && base[0] == '*' {
+		base = base[1:]
+		isPtr = true
+	}
+
+	var ts string
+	switch base {
+	case "bool":
+		ts = "boolean"
+	case "string":
+		ts = "string"
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		ts = "number"
+	default:
+		ts = "string"
+	}
+
+	if isPtr {
+		return ts + " | null"
+	}
+	return ts
+}
+
+// tsDefaultValue returns the TypeScript default value for a Go type string.
+func tsDefaultValue(typ string) string {
+	if len(typ) > 0 && typ[0] == '*' {
+		return "null"
+	}
+	switch typ {
+	case "bool":
+		return "false"
+	case "string":
+		return "''"
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		return "0"
+	default:
+		return "''"
+	}
+}
+
+// htmlInputType returns the HTML input type for a Go type string.
+func htmlInputType(typ string) string {
+	base := typ
+	if len(base) > 0 && base[0] == '*' {
+		base = base[1:]
+	}
+	switch base {
+	case "bool":
+		return "checkbox"
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		return "number"
+	default:
+		return "text"
+	}
+}
+
+// swiftType returns the Swift type for a Go type string.
+func swiftType(typ string) string {
+	base := typ
+	isPtr := false
+	if len(base) > 0 && base[0] == '*' {
+		base = base[1:]
+		isPtr = true
+	}
+
+	var swift string
+	switch base {
+	case "bool":
+		swift = "Bool"
+	case "string":
+		swift = "String"
+	case "int", "int32":
+		swift = "Int32"
+	case "int8":
+		swift = "Int8"
+	case "int16":
+		swift = "Int16"
+	case "int64":
+		swift = "Int"
+	case "uint", "uint32":
+		swift = "UInt32"
+	case "uint8":
+		swift = "UInt8"
+	case "uint16":
+		swift = "UInt16"
+	case "uint64":
+		swift = "UInt"
+	case "float32":
+		swift = "Float"
+	case "float64":
+		swift = "Double"
+	default:
+		swift = "String"
+	}
+
+	if isPtr {
+		return swift + "?"
+	}
+	return swift
+}
+
+// swiftZeroValue returns the Swift default value for a Go type string.
+func swiftZeroValue(typ string) string {
+	if len(typ) > 0 && typ[0] == '*' {
+		return "nil"
+	}
+	switch typ {
+	case "bool":
+		return "false"
+	case "string":
+		return `""`
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		return "0"
+	default:
+		return `""`
 	}
 }
 

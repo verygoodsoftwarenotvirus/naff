@@ -2,6 +2,12 @@ project:
   name: "TestProject"
   module: "github.com/example/testproject"
   platform_module: "github.com/primandproper/platform"
+  ios_bundle_id: "com.example.testproject"
+  ios_module_name: "TestProject"
+
+targets:
+  backend: true
+  ios: true
 
 features:
   webhooks: true
@@ -12,6 +18,8 @@ features:
   waitlists: false
   uploadedmedia: true
   dataprivacy: true
+  consumer_app: true
+  admin_app: true
 
 domains:
   - name: "recipes"
@@ -20,6 +28,7 @@ domains:
         belongs_to_account: true
         created_by_user: true
         searchable: true
+        consumer_editable: true
         fields:
           - name: "Name"
             type: "string"

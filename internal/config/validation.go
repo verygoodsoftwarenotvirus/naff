@@ -29,8 +29,25 @@ func (p *Project) Validate() error {
 		return fmt.Errorf("project.name is required")
 	}
 
-	if p.ProjectMeta.Module == "" {
-		return fmt.Errorf("project.module is required")
+	// Default targets: if both are false (zero value), enable both for backward compatibility.
+	if !p.Targets.Backend && !p.Targets.IOS {
+		p.Targets.Backend = true
+		p.Targets.IOS = true
+	}
+
+	if p.Targets.Backend && p.ProjectMeta.Module == "" {
+		return fmt.Errorf("project.module is required when backend target is enabled")
+	}
+
+	if p.Targets.IOS {
+		// Default IOSModuleName to project name if not set.
+		if p.ProjectMeta.IOSModuleName == "" {
+			p.ProjectMeta.IOSModuleName = p.ProjectMeta.Name
+		}
+		// Default IOSBundleID if not set.
+		if p.ProjectMeta.IOSBundleID == "" {
+			p.ProjectMeta.IOSBundleID = "com.example." + strings.ToLower(p.ProjectMeta.Name)
+		}
 	}
 
 	if len(p.Domains) == 0 {

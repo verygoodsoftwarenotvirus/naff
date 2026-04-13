@@ -10,6 +10,13 @@ import (
 const starterConfig = `project:
   name: "MyProject"
   module: "github.com/example/myproject"
+  platform_module: "github.com/example/platform"
+  ios_bundle_id: "com.example.myproject"
+  ios_module_name: "MyProject"
+
+targets:
+  backend: true
+  ios: true
 
 features:
   webhooks: true
@@ -20,6 +27,8 @@ features:
   waitlists: false
   uploadedmedia: true
   dataprivacy: true
+  consumer_app: false
+  admin_app: false
 
 domains:
   - name: "example"
@@ -27,6 +36,7 @@ domains:
       - name: "Widget"
         belongs_to_account: true
         created_by_user: true
+        consumer_editable: true
         fields:
           - name: "Name"
             type: "string"

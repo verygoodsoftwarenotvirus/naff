@@ -15,7 +15,7 @@ func TestDiffAwareWrite(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "subdir", "test.generated.go")
 
-		status, err := diffAwareWrite(path, []byte("hello"))
+		status, err := diffAwareWrite(path, []byte("hello"), 0)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -41,7 +41,7 @@ func TestDiffAwareWrite(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		status, err := diffAwareWrite(path, []byte("hello"))
+		status, err := diffAwareWrite(path, []byte("hello"), 0)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -59,7 +59,7 @@ func TestDiffAwareWrite(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		status, err := diffAwareWrite(path, []byte("new"))
+		status, err := diffAwareWrite(path, []byte("new"), 0)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

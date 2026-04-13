@@ -1,0 +1,27 @@
+import Foundation
+import GRPCNIOTransportHTTP2
+
+/// GRPCClient manages the gRPC channel and provides shared configuration for service clients.
+@Observable
+final class GRPCClient: Sendable {
+    let host: String
+    let port: Int
+    let useTLS: Bool
+
+    private var _authToken: String?
+
+    init(
+        host: String = APIConfiguration.serverHost,
+        port: Int = APIConfiguration.serverPort,
+        useTLS: Bool = APIConfiguration.useTLS
+    ) {
+        self.host = host
+        self.port = port
+        self.useTLS = useTLS
+    }
+
+    var authToken: String? {
+        get { _authToken }
+        set { _authToken = newValue }
+    }
+}

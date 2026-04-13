@@ -4,6 +4,7 @@ package config
 type Project struct {
 	ProjectMeta ProjectMeta        `yaml:"project"`
 	Features    Features           `yaml:"features"`
+	Targets     Targets            `yaml:"targets"`
 	Domains     []Domain           `yaml:"domains"`
 }
 
@@ -12,6 +13,14 @@ type ProjectMeta struct {
 	Name           string `yaml:"name"`
 	Module         string `yaml:"module"`
 	PlatformModule string `yaml:"platform_module"`
+	IOSBundleID    string `yaml:"ios_bundle_id,omitempty"`
+	IOSModuleName  string `yaml:"ios_module_name,omitempty"`
+}
+
+// Targets controls which generation targets are enabled.
+type Targets struct {
+	Backend bool `yaml:"backend"`
+	IOS     bool `yaml:"ios"`
 }
 
 // Features controls which built-in infrastructure domains are enabled.
@@ -24,6 +33,8 @@ type Features struct {
 	Waitlists     *bool `yaml:"waitlists"`
 	UploadedMedia *bool `yaml:"uploadedmedia"`
 	DataPrivacy   *bool `yaml:"dataprivacy"`
+	ConsumerApp   *bool `yaml:"consumer_app"`
+	AdminApp      *bool `yaml:"admin_app"`
 }
 
 // FeatureEnabled returns whether a feature is enabled, defaulting to the given value.
@@ -47,6 +58,7 @@ type Entity struct {
 	BelongsToAccount bool    `yaml:"belongs_to_account"`
 	CreatedByUser    bool    `yaml:"created_by_user"`
 	Searchable       bool    `yaml:"searchable"`
+	ConsumerEditable bool    `yaml:"consumer_editable"`
 	Fields           []Field `yaml:"fields"`
 }
 

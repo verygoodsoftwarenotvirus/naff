@@ -12,6 +12,7 @@ import (
 
 	"github.com/verygoodsoftwarenotvirus/naff/internal/builtins"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
+	"github.com/verygoodsoftwarenotvirus/naff/internal/naming"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/renderer"
 )
 
@@ -59,6 +60,7 @@ type PlannedFile struct {
 	OutputPath   string
 	Data         any
 	IsGo         bool
+	Mode         os.FileMode // 0 means default (0o644); use 0o755 for scripts.
 }
 
 // Pipeline orchestrates the code generation process.
@@ -218,7 +220,7 @@ func (p *Pipeline) renderOne(pf PlannedFile) FileResult {
 	}
 
 	// Diff-aware write.
-	status, err := diffAwareWrite(outPath, output)
+	status, err := diffAwareWrite(outPath, output, pf.Mode)
 	if err != nil {
 		return FileResult{Path: outPath, Status: FileError, Err: err}
 	}
@@ -227,7 +229,11 @@ func (p *Pipeline) renderOne(pf PlannedFile) FileResult {
 }
 
 // diffAwareWrite writes content to path only if it differs from existing content.
-func diffAwareWrite(path string, content []byte) (FileStatus, error) {
+func diffAwareWrite(path string, content []byte, mode os.FileMode) (FileStatus, error) {
+	if mode == 0 {
+		mode = 0o644
+	}
+
 	// Check if file exists and has same content.
 	existing, err := os.ReadFile(path)
 	if err == nil {
@@ -235,7 +241,7 @@ func diffAwareWrite(path string, content []byte) (FileStatus, error) {
 			return FileUnchanged, nil
 		}
 		// File exists but content differs.
-		if err = os.WriteFile(path, content, 0o644); err != nil {
+		if err = os.WriteFile(path, content, mode); err != nil {
 			return FileError, fmt.Errorf("writing %s: %w", path, err)
 		}
 		return FileUpdated, nil
@@ -247,7 +253,7 @@ func diffAwareWrite(path string, content []byte) (FileStatus, error) {
 		return FileError, fmt.Errorf("creating directory %s: %w", dir, err)
 	}
 
-	if err = os.WriteFile(path, content, 0o644); err != nil {
+	if err = os.WriteFile(path, content, mode); err != nil {
 		return FileError, fmt.Errorf("writing %s: %w", path, err)
 	}
 
@@ -255,6 +261,7 @@ func diffAwareWrite(path string, content []byte) (FileStatus, error) {
 }
 
 // findOrphans finds *.generated.* files in the output directory that are not in the plan.
+// It also detects orphaned frontend route directories.
 func (p *Pipeline) findOrphans(planned []PlannedFile) []string {
 	// Build set of planned output paths.
 	plannedPaths := make(map[string]bool)
@@ -286,6 +293,23 @@ func (p *Pipeline) findOrphans(planned []PlannedFile) []string {
 		return nil
 	})
 
+	// Also detect orphaned frontend route files (which don't use .generated. in names).
+	for _, appDir := range []string{"frontend/consumer/src/routes", "frontend/admin/src/routes"} {
+		routesDir := filepath.Join(p.outputDir, appDir)
+		_ = filepath.Walk(routesDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil
+			}
+			if info.IsDir() {
+				return nil
+			}
+			if !plannedPaths[path] {
+				orphans = append(orphans, path)
+			}
+			return nil
+		})
+	}
+
 	return orphans
 }
 
@@ -293,6 +317,17 @@ func (p *Pipeline) findOrphans(planned []PlannedFile) []string {
 // This is the central registry that maps templates to output paths.
 func (p *Pipeline) planFiles() []PlannedFile {
 	var files []PlannedFile
+
+	generateBackend := p.config.Targets.Backend
+	generateIOS := p.config.Targets.IOS
+
+	// Project-level files (generated once per project).
+	if generateBackend {
+		files = append(files, p.planProjectFiles()...)
+	}
+	if generateIOS {
+		files = append(files, p.planIOSProjectFiles()...)
+	}
 
 	// Merge built-in domains with user-defined domains.
 	allDomains := builtins.BuiltinDomains(p.config.Features)
@@ -309,7 +344,12 @@ func (p *Pipeline) planFiles() []PlannedFile {
 				Domain:  &d,
 				Entity:  &firstEntity,
 			}
-			files = append(files, p.planPerDomainFiles(domainCtx)...)
+			if generateBackend {
+				files = append(files, p.planPerDomainFiles(domainCtx)...)
+			}
+			if generateIOS {
+				files = append(files, p.planIOSPerDomainFiles(domainCtx)...)
+			}
 		}
 
 		// Per-entity files are generated for each entity.
@@ -320,8 +360,24 @@ func (p *Pipeline) planFiles() []PlannedFile {
 				Domain:  &d,
 				Entity:  &e,
 			}
-			files = append(files, p.planPerEntityFiles(entityCtx)...)
+			if generateBackend {
+				files = append(files, p.planPerEntityFiles(entityCtx)...)
+			}
+			if generateIOS {
+				files = append(files, p.planIOSPerEntityFiles(entityCtx)...)
+			}
 		}
+	}
+
+	// Frontend apps (feature-gated).
+	generateConsumer := p.config.Features.FeatureEnabled(p.config.Features.ConsumerApp, false)
+	generateAdmin := p.config.Features.FeatureEnabled(p.config.Features.AdminApp, false)
+
+	if generateConsumer {
+		files = append(files, p.planConsumerAppFiles(allDomains)...)
+	}
+	if generateAdmin {
+		files = append(files, p.planAdminAppFiles(allDomains)...)
 	}
 
 	return files
@@ -387,6 +443,43 @@ func (p *Pipeline) planPerDomainFiles(ctx TemplateContext) []PlannedFile {
 	return files
 }
 
+// planProjectFiles returns files generated once per project (Makefile, scripts, etc.).
+func (p *Pipeline) planProjectFiles() []PlannedFile {
+	ctx := TemplateContext{
+		Project: p.config,
+	}
+
+	type mapping struct {
+		template string
+		output   string
+		mode     os.FileMode
+	}
+
+	templateMappings := []mapping{
+		{"project/go.mod.tmpl", "go.mod", 0},
+		{"project/Makefile.tmpl", "Makefile", 0},
+		{"project/scripts/configs.sh.tmpl", "scripts/configs.sh", 0o755},
+		{"project/scripts/queries.sh.tmpl", "scripts/queries.sh", 0o755},
+		{"project/scripts/env_vars.sh.tmpl", "scripts/env_vars.sh", 0o755},
+		{"project/scripts/format_golang.sh.tmpl", "scripts/format_golang.sh", 0o755},
+		{"project/scripts/goimports.sh.tmpl", "scripts/goimports.sh", 0o755},
+		{"project/scripts/format_imports.sh.tmpl", "scripts/format_imports.sh", 0o755},
+		{"project/scripts/format_go_fieldalignment.sh.tmpl", "scripts/format_go_fieldalignment.sh", 0o755},
+		{"project/scripts/format_go_tag_alignment.sh.tmpl", "scripts/format_go_tag_alignment.sh", 0o755},
+	}
+
+	var files []PlannedFile
+	for _, m := range templateMappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			Mode:         m.mode,
+		})
+	}
+	return files
+}
+
 // planPerEntityFiles returns files generated once per entity.
 func (p *Pipeline) planPerEntityFiles(ctx TemplateContext) []PlannedFile {
 	domain := ctx.Domain.Name
@@ -426,6 +519,345 @@ func (p *Pipeline) planPerEntityFiles(ctx TemplateContext) []PlannedFile {
 			Data:         ctx,
 			IsGo:         m.isGo,
 		})
+	}
+
+	return files
+}
+
+// iosBasePath returns the base output path for iOS files.
+func (p *Pipeline) iosBasePath() string {
+	moduleName := p.config.ProjectMeta.IOSModuleName
+	return fmt.Sprintf("ios/%s", moduleName)
+}
+
+// planIOSProjectFiles returns iOS project-level files generated once per project.
+func (p *Pipeline) planIOSProjectFiles() []PlannedFile {
+	ctx := TemplateContext{
+		Project: p.config,
+	}
+
+	base := p.iosBasePath()
+	src := fmt.Sprintf("%s/Sources/%s", base, p.config.ProjectMeta.IOSModuleName)
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	templateMappings := []mapping{
+		{"ios/project/Package.swift.tmpl", fmt.Sprintf("%s/Package.swift", base)},
+		{"ios/project/App.swift.tmpl", fmt.Sprintf("%s/App.generated.swift", src)},
+		{"ios/project/ContentView.swift.tmpl", fmt.Sprintf("%s/ContentView.generated.swift", src)},
+		{"ios/project/Configuration.swift.tmpl", fmt.Sprintf("%s/Configuration.generated.swift", src)},
+		{"ios/api/GRPCClient.swift.tmpl", fmt.Sprintf("%s/API/GRPCClient.generated.swift", src)},
+		{"ios/auth/AuthManager.swift.tmpl", fmt.Sprintf("%s/Auth/AuthManager.generated.swift", src)},
+		{"ios/auth/LoginView.swift.tmpl", fmt.Sprintf("%s/Auth/LoginView.generated.swift", src)},
+		{"ios/auth/RegistrationView.swift.tmpl", fmt.Sprintf("%s/Auth/RegistrationView.generated.swift", src)},
+	}
+
+	var files []PlannedFile
+	for _, m := range templateMappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+		})
+	}
+	return files
+}
+
+// planIOSPerDomainFiles returns iOS files generated once per domain.
+func (p *Pipeline) planIOSPerDomainFiles(ctx TemplateContext) []PlannedFile {
+	src := fmt.Sprintf("%s/Sources/%s", p.iosBasePath(), p.config.ProjectMeta.IOSModuleName)
+	domain := ctx.Domain.Name
+
+	return []PlannedFile{
+		{
+			TemplatePath: "ios/api/entity_service.swift.tmpl",
+			OutputPath:   fmt.Sprintf("%s/API/%sService.generated.swift", src, strings.Title(domain)), //nolint:staticcheck
+			Data:         ctx,
+		},
+	}
+}
+
+// planIOSPerEntityFiles returns iOS files generated once per entity.
+func (p *Pipeline) planIOSPerEntityFiles(ctx TemplateContext) []PlannedFile {
+	src := fmt.Sprintf("%s/Sources/%s", p.iosBasePath(), p.config.ProjectMeta.IOSModuleName)
+	entityName := ctx.Entity.Name
+
+	return []PlannedFile{
+		{
+			TemplatePath: "ios/models/entity.swift.tmpl",
+			OutputPath:   fmt.Sprintf("%s/Models/%s.generated.swift", src, entityName),
+			Data:         ctx,
+		},
+		{
+			TemplatePath: "ios/models/entity_input.swift.tmpl",
+			OutputPath:   fmt.Sprintf("%s/Models/%sInput.generated.swift", src, entityName),
+			Data:         ctx,
+		},
+		{
+			TemplatePath: "proto/messages.proto.tmpl",
+			OutputPath:   fmt.Sprintf("%s/Proto/%s/%s_messages.generated.proto", p.iosBasePath(), ctx.Domain.Name, strings.ToLower(entityName)),
+			Data:         ctx,
+		},
+		{
+			TemplatePath: "proto/service.proto.tmpl",
+			OutputPath:   fmt.Sprintf("%s/Proto/%s/%s_service.generated.proto", p.iosBasePath(), ctx.Domain.Name, strings.ToLower(entityName)),
+			Data:         ctx,
+		},
+	}
+}
+
+// planConsumerAppFiles returns all files for the consumer SvelteKit app.
+func (p *Pipeline) planConsumerAppFiles(allDomains []config.Domain) []PlannedFile {
+	var files []PlannedFile
+
+	projectCtx := TemplateContext{Project: p.config}
+
+	// Project scaffolding.
+	for _, m := range []struct{ template, output string }{
+		{"frontend/consumer/project/package.json.tmpl", "frontend/consumer/package.json"},
+		{"frontend/consumer/project/svelte.config.js.tmpl", "frontend/consumer/svelte.config.js"},
+		{"frontend/consumer/project/tsconfig.json.tmpl", "frontend/consumer/tsconfig.json"},
+		{"frontend/consumer/project/vite.config.ts.tmpl", "frontend/consumer/vite.config.ts"},
+		{"frontend/consumer/project/app.html.tmpl", "frontend/consumer/src/app.html"},
+		{"frontend/consumer/project/app.d.ts.tmpl", "frontend/consumer/src/app.d.ts"},
+	} {
+		files = append(files, PlannedFile{TemplatePath: m.template, OutputPath: m.output, Data: projectCtx})
+	}
+
+	// Shared library files.
+	for _, m := range []struct{ template, output string }{
+		{"frontend/shared/api_client.ts.tmpl", "frontend/consumer/src/lib/api/client.generated.ts"},
+		{"frontend/shared/types.ts.tmpl", "frontend/consumer/src/lib/api/types.generated.ts"},
+	} {
+		files = append(files, PlannedFile{TemplatePath: m.template, OutputPath: m.output, Data: projectCtx})
+	}
+
+	// Layout files (need full project context for nav).
+	// Build a project context with all domains for navigation.
+	navCtx := TemplateContext{
+		Project: &config.Project{
+			ProjectMeta: p.config.ProjectMeta,
+			Features:    p.config.Features,
+			Domains:     allDomains,
+		},
+	}
+	files = append(files, PlannedFile{
+		TemplatePath: "frontend/consumer/layout/layout.svelte.tmpl",
+		OutputPath:   "frontend/consumer/src/routes/+layout.svelte",
+		Data:         projectCtx,
+	})
+	files = append(files, PlannedFile{
+		TemplatePath: "frontend/consumer/layout/layout.ts.tmpl",
+		OutputPath:   "frontend/consumer/src/routes/+layout.ts",
+		Data:         projectCtx,
+	})
+	files = append(files, PlannedFile{
+		TemplatePath: "frontend/consumer/layout/nav.svelte.tmpl",
+		OutputPath:   "frontend/consumer/src/lib/components/Nav.generated.svelte",
+		Data:         navCtx,
+	})
+
+	// Per-domain files.
+	for _, domain := range allDomains {
+		d := domain
+		domainCtx := TemplateContext{
+			Project: p.config,
+			Domain:  &d,
+		}
+		files = append(files, PlannedFile{
+			TemplatePath: "frontend/consumer/domain/types.ts.tmpl",
+			OutputPath:   fmt.Sprintf("frontend/consumer/src/lib/api/%s/types.generated.ts", d.Name),
+			Data:         domainCtx,
+		})
+		files = append(files, PlannedFile{
+			TemplatePath: "frontend/consumer/domain/api.ts.tmpl",
+			OutputPath:   fmt.Sprintf("frontend/consumer/src/lib/api/%s/api.generated.ts", d.Name),
+			Data:         domainCtx,
+		})
+
+		// Per-entity route files.
+		for _, entity := range d.Entities {
+			e := entity
+			entityCtx := TemplateContext{
+				Project: p.config,
+				Domain:  &d,
+				Entity:  &e,
+			}
+			entityKebab := naming.New(e.Name).PluralKebab()
+
+			// List and detail pages (always present).
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/consumer/entity/list_page.svelte.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/+page.svelte", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/consumer/entity/list_page_ts.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/+page.ts", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/consumer/entity/detail_page.svelte.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/[id]/+page.svelte", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/consumer/entity/detail_page_ts.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/[id]/+page.ts", entityKebab),
+				Data:         entityCtx,
+			})
+
+			// Create and edit pages (only for consumer_editable entities).
+			if e.ConsumerEditable {
+				files = append(files, PlannedFile{
+					TemplatePath: "frontend/consumer/entity/create_page.svelte.tmpl",
+					OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/new/+page.svelte", entityKebab),
+					Data:         entityCtx,
+				})
+				files = append(files, PlannedFile{
+					TemplatePath: "frontend/consumer/entity/create_page_ts.tmpl",
+					OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/new/+page.ts", entityKebab),
+					Data:         entityCtx,
+				})
+				files = append(files, PlannedFile{
+					TemplatePath: "frontend/consumer/entity/edit_page.svelte.tmpl",
+					OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/[id]/edit/+page.svelte", entityKebab),
+					Data:         entityCtx,
+				})
+				files = append(files, PlannedFile{
+					TemplatePath: "frontend/consumer/entity/edit_page_ts.tmpl",
+					OutputPath:   fmt.Sprintf("frontend/consumer/src/routes/%s/[id]/edit/+page.ts", entityKebab),
+					Data:         entityCtx,
+				})
+			}
+		}
+	}
+
+	return files
+}
+
+// planAdminAppFiles returns all files for the admin SvelteKit app.
+func (p *Pipeline) planAdminAppFiles(allDomains []config.Domain) []PlannedFile {
+	var files []PlannedFile
+
+	projectCtx := TemplateContext{Project: p.config}
+
+	// Project scaffolding.
+	for _, m := range []struct{ template, output string }{
+		{"frontend/admin/project/package.json.tmpl", "frontend/admin/package.json"},
+		{"frontend/admin/project/svelte.config.js.tmpl", "frontend/admin/svelte.config.js"},
+		{"frontend/admin/project/tsconfig.json.tmpl", "frontend/admin/tsconfig.json"},
+		{"frontend/admin/project/vite.config.ts.tmpl", "frontend/admin/vite.config.ts"},
+		{"frontend/admin/project/app.html.tmpl", "frontend/admin/src/app.html"},
+		{"frontend/admin/project/app.d.ts.tmpl", "frontend/admin/src/app.d.ts"},
+	} {
+		files = append(files, PlannedFile{TemplatePath: m.template, OutputPath: m.output, Data: projectCtx})
+	}
+
+	// Shared library files.
+	for _, m := range []struct{ template, output string }{
+		{"frontend/shared/api_client.ts.tmpl", "frontend/admin/src/lib/api/client.generated.ts"},
+		{"frontend/shared/types.ts.tmpl", "frontend/admin/src/lib/api/types.generated.ts"},
+	} {
+		files = append(files, PlannedFile{TemplatePath: m.template, OutputPath: m.output, Data: projectCtx})
+	}
+
+	// Layout files.
+	navCtx := TemplateContext{
+		Project: &config.Project{
+			ProjectMeta: p.config.ProjectMeta,
+			Features:    p.config.Features,
+			Domains:     allDomains,
+		},
+	}
+	files = append(files, PlannedFile{
+		TemplatePath: "frontend/admin/layout/layout.svelte.tmpl",
+		OutputPath:   "frontend/admin/src/routes/+layout.svelte",
+		Data:         projectCtx,
+	})
+	files = append(files, PlannedFile{
+		TemplatePath: "frontend/admin/layout/layout.ts.tmpl",
+		OutputPath:   "frontend/admin/src/routes/+layout.ts",
+		Data:         projectCtx,
+	})
+	files = append(files, PlannedFile{
+		TemplatePath: "frontend/admin/layout/nav.svelte.tmpl",
+		OutputPath:   "frontend/admin/src/lib/components/Nav.generated.svelte",
+		Data:         navCtx,
+	})
+
+	// Per-domain files.
+	for _, domain := range allDomains {
+		d := domain
+		domainCtx := TemplateContext{
+			Project: p.config,
+			Domain:  &d,
+		}
+		files = append(files, PlannedFile{
+			TemplatePath: "frontend/admin/domain/types.ts.tmpl",
+			OutputPath:   fmt.Sprintf("frontend/admin/src/lib/api/%s/types.generated.ts", d.Name),
+			Data:         domainCtx,
+		})
+		files = append(files, PlannedFile{
+			TemplatePath: "frontend/admin/domain/api.ts.tmpl",
+			OutputPath:   fmt.Sprintf("frontend/admin/src/lib/api/%s/api.generated.ts", d.Name),
+			Data:         domainCtx,
+		})
+
+		// Per-entity route files (admin always has full CRUD).
+		for _, entity := range d.Entities {
+			e := entity
+			entityCtx := TemplateContext{
+				Project: p.config,
+				Domain:  &d,
+				Entity:  &e,
+			}
+			entityKebab := naming.New(e.Name).PluralKebab()
+
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/list_page.svelte.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/+page.svelte", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/list_page_ts.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/+page.ts", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/detail_page.svelte.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/[id]/+page.svelte", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/detail_page_ts.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/[id]/+page.ts", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/create_page.svelte.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/new/+page.svelte", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/create_page_ts.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/new/+page.ts", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/edit_page.svelte.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/[id]/edit/+page.svelte", entityKebab),
+				Data:         entityCtx,
+			})
+			files = append(files, PlannedFile{
+				TemplatePath: "frontend/admin/entity/edit_page_ts.tmpl",
+				OutputPath:   fmt.Sprintf("frontend/admin/src/routes/%s/[id]/edit/+page.ts", entityKebab),
+				Data:         entityCtx,
+			})
+		}
 	}
 
 	return files

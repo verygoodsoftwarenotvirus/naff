@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Generate and format env vars
+# Usage: env_vars.sh <package_prefix>
+
+PACKAGE_PREFIX="${1:-{{ .Project.ProjectMeta.Module }}}"
+
+go run "${PACKAGE_PREFIX}/cmd/tools/codegen/valid_env_vars"

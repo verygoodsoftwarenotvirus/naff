@@ -55,7 +55,7 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
-	t.Run("rejects empty module", func(t *testing.T) {
+	t.Run("rejects empty module when targets default", func(t *testing.T) {
 		t.Parallel()
 
 		p := validProject()
@@ -248,6 +248,114 @@ func TestValidate(t *testing.T) {
 			BelongsTo: "Widget",
 			Fields:    []Field{{Name: "Label", Type: "string"}},
 		})
+		if err := p.Validate(); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("defaults both targets to true when neither is set", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		// Targets zero-valued (both false)
+		if err := p.Validate(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !p.Targets.Backend {
+			t.Error("expected backend target to default to true")
+		}
+		if !p.Targets.IOS {
+			t.Error("expected iOS target to default to true")
+		}
+	})
+
+	t.Run("respects explicit target selection", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Targets.Backend = true
+		p.Targets.IOS = false
+		if err := p.Validate(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !p.Targets.Backend {
+			t.Error("expected backend target to remain true")
+		}
+		if p.Targets.IOS {
+			t.Error("expected iOS target to remain false")
+		}
+	})
+
+	t.Run("defaults IOSModuleName to project name", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Targets.Backend = true
+		p.Targets.IOS = true
+		if err := p.Validate(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if p.ProjectMeta.IOSModuleName != "Test" {
+			t.Errorf("expected IOSModuleName to default to %q, got %q", "Test", p.ProjectMeta.IOSModuleName)
+		}
+	})
+
+	t.Run("defaults IOSBundleID from project name", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Targets.Backend = true
+		p.Targets.IOS = true
+		if err := p.Validate(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if p.ProjectMeta.IOSBundleID != "com.example.test" {
+			t.Errorf("expected IOSBundleID to default to %q, got %q", "com.example.test", p.ProjectMeta.IOSBundleID)
+		}
+	})
+
+	t.Run("preserves explicit iOS fields", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Targets.Backend = true
+		p.Targets.IOS = true
+		p.ProjectMeta.IOSBundleID = "com.custom.app"
+		p.ProjectMeta.IOSModuleName = "CustomApp"
+		if err := p.Validate(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if p.ProjectMeta.IOSBundleID != "com.custom.app" {
+			t.Errorf("expected IOSBundleID %q, got %q", "com.custom.app", p.ProjectMeta.IOSBundleID)
+		}
+		if p.ProjectMeta.IOSModuleName != "CustomApp" {
+			t.Errorf("expected IOSModuleName %q, got %q", "CustomApp", p.ProjectMeta.IOSModuleName)
+		}
+	})
+
+	t.Run("rejects empty module when backend target is enabled", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Targets.Backend = true
+		p.Targets.IOS = false
+		p.ProjectMeta.Module = ""
+		err := p.Validate()
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		if !strings.Contains(err.Error(), "project.module") {
+			t.Errorf("expected error about project.module, got: %v", err)
+		}
+	})
+
+	t.Run("allows empty module when only iOS target is enabled", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Targets.Backend = false
+		p.Targets.IOS = true
+		p.ProjectMeta.Module = ""
 		if err := p.Validate(); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}

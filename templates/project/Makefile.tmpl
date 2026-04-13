@@ -1,0 +1,56 @@
+# ENVIRONMENT
+PWD      := $(shell pwd)
+
+# PATHS
+THIS        := {{ .Project.ProjectMeta.Module }}
+SCRIPTS_DIR := scripts
+
+## FORMATTING
+
+.PHONY: format_imports
+format_imports:
+	$(SCRIPTS_DIR)/format_imports.sh $(THIS) $(PWD)
+
+.PHONY: format_go_fieldalignment
+format_go_fieldalignment:
+	@$(SCRIPTS_DIR)/format_go_fieldalignment.sh
+
+.PHONY: format_go_tag_alignment
+format_go_tag_alignment:
+	@$(SCRIPTS_DIR)/format_go_tag_alignment.sh
+
+.PHONY: go_fix
+go_fix:
+	go fix ./...
+
+.PHONY: format_golang
+format_golang: go_fix goimports format_imports format_go_fieldalignment format_go_tag_alignment
+	@$(SCRIPTS_DIR)/format_golang.sh $(PWD)
+
+.PHONY: format
+format: format_golang
+
+.PHONY: fmt
+fmt: format
+
+.PHONY: goimports
+goimports:
+	$(SCRIPTS_DIR)/goimports.sh
+
+## GENERATED FILES
+
+.PHONY: configs
+configs:
+	$(SCRIPTS_DIR)/configs.sh $(THIS)
+
+.PHONY: queries
+queries:
+	$(SCRIPTS_DIR)/queries.sh $(THIS)
+
+.PHONY: env_vars
+env_vars:
+	$(SCRIPTS_DIR)/env_vars.sh $(THIS)
+	$(MAKE) format_golang
+
+.PHONY: generated_files
+generated_files: configs queries env_vars format_golang
