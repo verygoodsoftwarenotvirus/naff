@@ -7,6 +7,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// NaffConfigFileName is the name of the config file written to the output directory.
+const NaffConfigFileName = ".naff.yaml"
+
 // LoadFromFile reads and parses a YAML config file.
 func LoadFromFile(path string) (*Project, error) {
 	data, err := os.ReadFile(path)
@@ -25,4 +28,14 @@ func Parse(data []byte) (*Project, error) {
 	}
 
 	return &cfg, nil
+}
+
+// Marshal serializes a Project config to YAML bytes.
+func Marshal(cfg *Project) ([]byte, error) {
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling config: %w", err)
+	}
+
+	return data, nil
 }

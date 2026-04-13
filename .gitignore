@@ -10,6 +10,7 @@
 
 # Output
 output/
+.ddb_generated/
 
 # IDE
 .idea/

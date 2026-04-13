@@ -158,6 +158,130 @@ domains:
 	})
 }
 
+func TestMarshal(t *testing.T) {
+	t.Parallel()
+
+	t.Run("round-trips through Parse", func(t *testing.T) {
+		t.Parallel()
+
+		trueVal := true
+		falseVal := false
+
+		original := &Project{
+			ProjectMeta: ProjectMeta{
+				Name:           "RoundTrip",
+				Module:         "github.com/example/roundtrip",
+				PlatformModule: "github.com/example/platform",
+				IOSBundleID:    "com.example.roundtrip",
+				IOSModuleName:  "RoundTrip",
+			},
+			Features: Features{
+				Webhooks: &trueVal,
+				Payments: &falseVal,
+			},
+			Targets: Targets{
+				Backend: true,
+				IOS:     true,
+			},
+			Domains: []Domain{
+				{
+					Name: "widgets",
+					Entities: []Entity{
+						{
+							Name:             "Widget",
+							BelongsToAccount: true,
+							CreatedByUser:    true,
+							Searchable:       true,
+							ConsumerEditable: true,
+							Fields: []Field{
+								{Name: "Name", Type: "string", Required: &trueVal},
+								{Name: "Count", Type: "int", Creatable: &falseVal},
+								{Name: "Active", Type: "bool", Editable: &falseVal, Omitempty: true},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		data, err := Marshal(original)
+		if err != nil {
+			t.Fatalf("unexpected marshal error: %v", err)
+		}
+
+		parsed, err := Parse(data)
+		if err != nil {
+			t.Fatalf("unexpected parse error: %v", err)
+		}
+
+		if parsed.ProjectMeta.Name != original.ProjectMeta.Name {
+			t.Errorf("name: got %q, want %q", parsed.ProjectMeta.Name, original.ProjectMeta.Name)
+		}
+		if parsed.ProjectMeta.Module != original.ProjectMeta.Module {
+			t.Errorf("module: got %q, want %q", parsed.ProjectMeta.Module, original.ProjectMeta.Module)
+		}
+		if parsed.ProjectMeta.IOSBundleID != original.ProjectMeta.IOSBundleID {
+			t.Errorf("ios_bundle_id: got %q, want %q", parsed.ProjectMeta.IOSBundleID, original.ProjectMeta.IOSBundleID)
+		}
+		if parsed.Targets.Backend != original.Targets.Backend {
+			t.Errorf("backend target: got %v, want %v", parsed.Targets.Backend, original.Targets.Backend)
+		}
+		if parsed.Targets.IOS != original.Targets.IOS {
+			t.Errorf("ios target: got %v, want %v", parsed.Targets.IOS, original.Targets.IOS)
+		}
+		if parsed.Features.Webhooks == nil || *parsed.Features.Webhooks != trueVal {
+			t.Error("expected webhooks feature to be true")
+		}
+		if parsed.Features.Payments == nil || *parsed.Features.Payments != falseVal {
+			t.Error("expected payments feature to be false")
+		}
+		if len(parsed.Domains) != 1 {
+			t.Fatalf("expected 1 domain, got %d", len(parsed.Domains))
+		}
+
+		d := parsed.Domains[0]
+		if d.Name != "widgets" {
+			t.Errorf("domain name: got %q, want %q", d.Name, "widgets")
+		}
+		if len(d.Entities) != 1 {
+			t.Fatalf("expected 1 entity, got %d", len(d.Entities))
+		}
+
+		e := d.Entities[0]
+		if e.Name != "Widget" {
+			t.Errorf("entity name: got %q, want %q", e.Name, "Widget")
+		}
+		if !e.BelongsToAccount {
+			t.Error("expected belongs_to_account to be true")
+		}
+		if !e.CreatedByUser {
+			t.Error("expected created_by_user to be true")
+		}
+		if !e.Searchable {
+			t.Error("expected searchable to be true")
+		}
+		if !e.ConsumerEditable {
+			t.Error("expected consumer_editable to be true")
+		}
+		if len(e.Fields) != 3 {
+			t.Fatalf("expected 3 fields, got %d", len(e.Fields))
+		}
+
+		countField := e.Fields[1]
+		if countField.IsCreatable() {
+			t.Error("Count should not be creatable")
+		}
+
+		activeField := e.Fields[2]
+		if activeField.IsEditable() {
+			t.Error("Active should not be editable")
+		}
+		if !activeField.Omitempty {
+			t.Error("Active should have omitempty")
+		}
+	})
+}
+
 func TestLoadFromFile(t *testing.T) {
 	t.Parallel()
 

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/pipeline"
@@ -21,6 +23,15 @@ func buildGenerateCmd() *cobra.Command {
 		Use:   "generate",
 		Short: "Generate a project from a YAML config",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// If --config was not explicitly provided, check for .naff.yaml in the output directory.
+			if !cmd.Flags().Changed("config") {
+				naffConfigPath := filepath.Join(outputDir, config.NaffConfigFileName)
+				if _, err := os.Stat(naffConfigPath); err == nil {
+					configPath = naffConfigPath
+					fmt.Printf("Using %s as config source\n", naffConfigPath)
+				}
+			}
+
 			cfg, err := config.LoadFromFile(configPath)
 			if err != nil {
 				return fmt.Errorf("loading config: %w", err)

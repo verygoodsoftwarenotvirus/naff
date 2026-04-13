@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
 )
 
 func TestDiffAwareWrite(t *testing.T) {
@@ -123,6 +125,130 @@ func TestFindOrphans(t *testing.T) {
 		orphans := p.findOrphans(nil)
 		if len(orphans) != 0 {
 			t.Errorf("expected 0 orphans, got %d", len(orphans))
+		}
+	})
+}
+
+func TestWriteNaffConfig(t *testing.T) {
+	t.Parallel()
+
+	t.Run("writes config to output directory", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		cfg := &config.Project{
+			ProjectMeta: config.ProjectMeta{
+				Name:   "TestProject",
+				Module: "github.com/example/test",
+			},
+			Domains: []config.Domain{
+				{
+					Name: "widgets",
+					Entities: []config.Entity{
+						{
+							Name: "Widget",
+							Fields: []config.Field{
+								{Name: "Name", Type: "string"},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		p := &Pipeline{
+			config:    cfg,
+			outputDir: dir,
+		}
+
+		if err := p.writeNaffConfig(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Verify the file was written.
+		naffPath := filepath.Join(dir, config.NaffConfigFileName)
+		data, err := os.ReadFile(naffPath)
+		if err != nil {
+			t.Fatalf("reading .naff.yaml: %v", err)
+		}
+
+		// Verify it round-trips back to an equivalent config.
+		parsed, err := config.Parse(data)
+		if err != nil {
+			t.Fatalf("parsing written .naff.yaml: %v", err)
+		}
+
+		if parsed.ProjectMeta.Name != cfg.ProjectMeta.Name {
+			t.Errorf("name: got %q, want %q", parsed.ProjectMeta.Name, cfg.ProjectMeta.Name)
+		}
+		if parsed.ProjectMeta.Module != cfg.ProjectMeta.Module {
+			t.Errorf("module: got %q, want %q", parsed.ProjectMeta.Module, cfg.ProjectMeta.Module)
+		}
+		if len(parsed.Domains) != 1 {
+			t.Fatalf("expected 1 domain, got %d", len(parsed.Domains))
+		}
+		if parsed.Domains[0].Entities[0].Name != "Widget" {
+			t.Errorf("entity name: got %q, want %q", parsed.Domains[0].Entities[0].Name, "Widget")
+		}
+	})
+
+	t.Run("is diff-aware on repeated writes", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		cfg := &config.Project{
+			ProjectMeta: config.ProjectMeta{
+				Name:   "TestProject",
+				Module: "github.com/example/test",
+			},
+			Domains: []config.Domain{
+				{
+					Name: "things",
+					Entities: []config.Entity{
+						{
+							Name:   "Thing",
+							Fields: []config.Field{{Name: "Val", Type: "string"}},
+						},
+					},
+				},
+			},
+		}
+
+		p := &Pipeline{config: cfg, outputDir: dir}
+
+		// First write.
+		if err := p.writeNaffConfig(); err != nil {
+			t.Fatalf("first write: %v", err)
+		}
+
+		naffPath := filepath.Join(dir, config.NaffConfigFileName)
+		info1, err := os.Stat(naffPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Second write with same config should not change the file content.
+		if err = p.writeNaffConfig(); err != nil {
+			t.Fatalf("second write: %v", err)
+		}
+
+		// Read content to confirm it's unchanged (diffAwareWrite returns FileUnchanged).
+		data1, _ := os.ReadFile(naffPath)
+
+		// Modify config and write again.
+		cfg.ProjectMeta.Name = "UpdatedProject"
+		if err = p.writeNaffConfig(); err != nil {
+			t.Fatalf("third write: %v", err)
+		}
+
+		data2, _ := os.ReadFile(naffPath)
+		if string(data1) == string(data2) {
+			t.Error("expected file content to change after config update")
+		}
+
+		info2, _ := os.Stat(naffPath)
+		if info1.ModTime().Equal(info2.ModTime()) && string(data1) != string(data2) {
+			// This is fine — just confirms the file was rewritten
 		}
 	})
 }

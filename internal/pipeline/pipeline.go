@@ -119,7 +119,12 @@ func (p *Pipeline) Run(ctx context.Context) error {
 		}
 	}
 
-	// 4. Print summary.
+	// 4. Write .naff.yaml to output directory.
+	if err := p.writeNaffConfig(); err != nil {
+		return fmt.Errorf("writing %s: %w", config.NaffConfigFileName, err)
+	}
+
+	// 5. Print summary.
 	fmt.Printf("\nGeneration complete: %d created, %d updated, %d unchanged",
 		summary.Created, summary.Updated, summary.Unchanged)
 	if summary.Orphaned > 0 {
@@ -143,6 +148,18 @@ func (p *Pipeline) Run(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// writeNaffConfig serializes the project config to .naff.yaml in the output directory.
+func (p *Pipeline) writeNaffConfig() error {
+	data, err := config.Marshal(p.config)
+	if err != nil {
+		return err
+	}
+
+	outPath := filepath.Join(p.outputDir, config.NaffConfigFileName)
+	_, err = diffAwareWrite(outPath, data, 0)
+	return err
 }
 
 func (p *Pipeline) renderAndWrite(ctx context.Context, planned []PlannedFile) *Summary {
