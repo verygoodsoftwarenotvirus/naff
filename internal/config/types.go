@@ -1,0 +1,98 @@
+package config
+
+// Project is the top-level configuration for a NAFF-generated project.
+type Project struct {
+	ProjectMeta ProjectMeta        `yaml:"project"`
+	Features    Features           `yaml:"features"`
+	Domains     []Domain           `yaml:"domains"`
+}
+
+// ProjectMeta contains project-level metadata.
+type ProjectMeta struct {
+	Name           string `yaml:"name"`
+	Module         string `yaml:"module"`
+	PlatformModule string `yaml:"platform_module"`
+}
+
+// Features controls which built-in infrastructure domains are enabled.
+type Features struct {
+	Webhooks      *bool `yaml:"webhooks"`
+	IssueReports  *bool `yaml:"issuereports"`
+	Comments      *bool `yaml:"comments"`
+	Notifications *bool `yaml:"notifications"`
+	Payments      *bool `yaml:"payments"`
+	Waitlists     *bool `yaml:"waitlists"`
+	UploadedMedia *bool `yaml:"uploadedmedia"`
+	DataPrivacy   *bool `yaml:"dataprivacy"`
+}
+
+// FeatureEnabled returns whether a feature is enabled, defaulting to the given value.
+func (f Features) FeatureEnabled(val *bool, defaultVal bool) bool {
+	if val == nil {
+		return defaultVal
+	}
+	return *val
+}
+
+// Domain represents a group of related entities.
+type Domain struct {
+	Name     string   `yaml:"name"`
+	Entities []Entity `yaml:"entities"`
+}
+
+// Entity represents a single CRUD-able type.
+type Entity struct {
+	Name             string  `yaml:"name"`
+	BelongsTo        string  `yaml:"belongs_to"`
+	BelongsToAccount bool    `yaml:"belongs_to_account"`
+	CreatedByUser    bool    `yaml:"created_by_user"`
+	Searchable       bool    `yaml:"searchable"`
+	Fields           []Field `yaml:"fields"`
+}
+
+// Field represents a single field on an entity.
+type Field struct {
+	Name      string  `yaml:"name"`
+	Type      string  `yaml:"type"`
+	Required  *bool   `yaml:"required"`
+	Creatable *bool   `yaml:"creatable"`
+	Editable  *bool   `yaml:"editable"`
+	Omitempty bool    `yaml:"omitempty"`
+}
+
+// IsRequired returns whether the field is required (defaults to true).
+func (f Field) IsRequired() bool {
+	if f.Required == nil {
+		return true
+	}
+	return *f.Required
+}
+
+// IsCreatable returns whether the field is included in creation input (defaults to true).
+func (f Field) IsCreatable() bool {
+	if f.Creatable == nil {
+		return true
+	}
+	return *f.Creatable
+}
+
+// IsEditable returns whether the field is included in update input (defaults to true).
+func (f Field) IsEditable() bool {
+	if f.Editable == nil {
+		return true
+	}
+	return *f.Editable
+}
+
+// IsPointer returns whether the field's Go type is a pointer.
+func (f Field) IsPointer() bool {
+	return len(f.Type) > 0 && f.Type[0] == '*'
+}
+
+// BaseType returns the type without a pointer prefix.
+func (f Field) BaseType() string {
+	if f.IsPointer() {
+		return f.Type[1:]
+	}
+	return f.Type
+}

@@ -1,0 +1,90 @@
+package fakes
+
+import (
+	"time"
+
+	types "{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/identifiers"
+
+	fake "github.com/brianvoe/gofakeit/v7"
+)
+
+func init() {
+	if err := fake.Seed(time.Now().UnixNano()); err != nil {
+		panic(err)
+	}
+}
+
+// BuildFakeID builds a fake ID.
+func BuildFakeID() string {
+	return identifiers.New()
+}
+
+// BuildFakeTime builds a fake time.
+func BuildFakeTime() time.Time {
+	return fake.Date().Add(0).Truncate(time.Second).UTC()
+}
+
+// BuildFake{{ .Entity.Name }} builds a fake {{ humanReadable .Entity.Name }}.
+func BuildFake{{ .Entity.Name }}() *types.{{ .Entity.Name }} {
+	return &types.{{ .Entity.Name }}{
+		ID:            BuildFakeID(),
+{{- range .Entity.Fields }}
+		{{ .Name }}:   {{ fakeValue . }},
+{{- end }}
+		CreatedAt:     BuildFakeTime(),
+		LastUpdatedAt: nil,
+		ArchivedAt:    nil,
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser:    BuildFakeID(),
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount: BuildFakeID(),
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }}: BuildFakeID(),
+{{- end }}
+	}
+}
+
+// BuildFake{{ .Entity.Name }}CreationRequestInput builds a fake {{ .Entity.Name }}CreationRequestInput.
+func BuildFake{{ .Entity.Name }}CreationRequestInput() *types.{{ .Entity.Name }}CreationRequestInput {
+	return &types.{{ .Entity.Name }}CreationRequestInput{
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}:   {{ fakeValue . }},
+{{- end }}
+	}
+}
+
+// BuildFake{{ .Entity.Name }}DatabaseCreationInput builds a fake {{ .Entity.Name }}DatabaseCreationInput.
+func BuildFake{{ .Entity.Name }}DatabaseCreationInput() *types.{{ .Entity.Name }}DatabaseCreationInput {
+	return &types.{{ .Entity.Name }}DatabaseCreationInput{
+		ID:            BuildFakeID(),
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}:   {{ fakeValue . }},
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser:    BuildFakeID(),
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount: BuildFakeID(),
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }}: BuildFakeID(),
+{{- end }}
+	}
+}
+
+// BuildFake{{ .Entity.Name }}UpdateRequestInput builds a fake {{ .Entity.Name }}UpdateRequestInput.
+func BuildFake{{ .Entity.Name }}UpdateRequestInput() *types.{{ .Entity.Name }}UpdateRequestInput {
+{{- range editableFields .Entity.Fields }}
+	{{ camel .Name }} := {{ fakeValue . }}
+{{- end }}
+
+	return &types.{{ .Entity.Name }}UpdateRequestInput{
+{{- range editableFields .Entity.Fields }}
+		{{ .Name }}:   &{{ camel .Name }},
+{{- end }}
+	}
+}

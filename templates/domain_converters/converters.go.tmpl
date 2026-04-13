@@ -1,0 +1,57 @@
+package converters
+
+import (
+	types "{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/identifiers"
+)
+
+// Convert{{ .Entity.Name }}To{{ .Entity.Name }}UpdateRequestInput creates an {{ .Entity.Name }}UpdateRequestInput from {{ withArticle .Entity.Name }}.
+func Convert{{ .Entity.Name }}To{{ .Entity.Name }}UpdateRequestInput(x *types.{{ .Entity.Name }}) *types.{{ .Entity.Name }}UpdateRequestInput {
+	return &types.{{ .Entity.Name }}UpdateRequestInput{
+{{- range editableFields .Entity.Fields }}
+		{{ .Name }}: &x.{{ .Name }},
+{{- end }}
+	}
+}
+
+// Convert{{ .Entity.Name }}CreationRequestInputTo{{ .Entity.Name }}DatabaseCreationInput creates {{ withArticle .Entity.Name }}DatabaseCreationInput from {{ withArticle .Entity.Name }}CreationRequestInput.
+func Convert{{ .Entity.Name }}CreationRequestInputTo{{ .Entity.Name }}DatabaseCreationInput(x *types.{{ .Entity.Name }}CreationRequestInput{{ if .Entity.CreatedByUser }}, userID string{{ end }}{{ if .Entity.BelongsToAccount }}, accountID string{{ end }}) *types.{{ .Entity.Name }}DatabaseCreationInput {
+	return &types.{{ .Entity.Name }}DatabaseCreationInput{
+		ID: identifiers.New(),
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}: x.{{ .Name }},
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser: userID,
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount: accountID,
+{{- end }}
+	}
+}
+
+// Convert{{ .Entity.Name }}To{{ .Entity.Name }}CreationRequestInput builds {{ withArticle .Entity.Name }}CreationRequestInput from {{ withArticle .Entity.Name }}.
+func Convert{{ .Entity.Name }}To{{ .Entity.Name }}CreationRequestInput(x *types.{{ .Entity.Name }}) *types.{{ .Entity.Name }}CreationRequestInput {
+	return &types.{{ .Entity.Name }}CreationRequestInput{
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}: x.{{ .Name }},
+{{- end }}
+	}
+}
+
+// Convert{{ .Entity.Name }}To{{ .Entity.Name }}DatabaseCreationInput builds {{ withArticle .Entity.Name }}DatabaseCreationInput from {{ withArticle .Entity.Name }}.
+func Convert{{ .Entity.Name }}To{{ .Entity.Name }}DatabaseCreationInput(x *types.{{ .Entity.Name }}) *types.{{ .Entity.Name }}DatabaseCreationInput {
+	return &types.{{ .Entity.Name }}DatabaseCreationInput{
+		ID: x.ID,
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}: x.{{ .Name }},
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser: x.CreatedByUser,
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount: x.BelongsToAccount,
+{{- end }}
+	}
+}

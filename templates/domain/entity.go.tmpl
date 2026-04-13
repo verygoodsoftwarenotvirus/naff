@@ -1,0 +1,166 @@
+package {{ .Domain.Name }}
+
+import (
+	"context"
+	"encoding/gob"
+	"time"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/database/filtering"
+
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+const (
+	// {{ .Entity.Name }}CreatedServiceEventType indicates {{ withArticle .Entity.Name }} was created.
+	{{ .Entity.Name }}CreatedServiceEventType = "{{ snake .Entity.Name }}_created"
+	// {{ .Entity.Name }}UpdatedServiceEventType indicates {{ withArticle .Entity.Name }} was updated.
+	{{ .Entity.Name }}UpdatedServiceEventType = "{{ snake .Entity.Name }}_updated"
+	// {{ .Entity.Name }}ArchivedServiceEventType indicates {{ withArticle .Entity.Name }} was archived.
+	{{ .Entity.Name }}ArchivedServiceEventType = "{{ snake .Entity.Name }}_archived"
+)
+
+func init() {
+	gob.Register(new({{ .Entity.Name }}))
+	gob.Register(new({{ .Entity.Name }}CreationRequestInput))
+	gob.Register(new({{ .Entity.Name }}DatabaseCreationInput))
+	gob.Register(new({{ .Entity.Name }}UpdateRequestInput))
+}
+
+type (
+	// {{ .Entity.Name }} represents {{ withArticle .Entity.Name }}.
+	{{ .Entity.Name }} struct {
+		_             struct{}   {{ bt }}json:"-"{{ bt }}
+		CreatedAt     time.Time  {{ bt }}json:"createdAt"{{ bt }}
+		LastUpdatedAt *time.Time {{ bt }}json:"lastUpdatedAt"{{ bt }}
+		ArchivedAt    *time.Time {{ bt }}json:"archivedAt"{{ bt }}
+		ID            string     {{ bt }}json:"id"{{ bt }}
+{{- range .Entity.Fields }}
+		{{ .Name }}    {{ .Type }}  {{ bt }}json:"{{ jsonTag . }}"{{ bt }}
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser    string {{ bt }}json:"createdByUser"{{ bt }}
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount string {{ bt }}json:"belongsToAccount"{{ bt }}
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }} string {{ bt }}json:"belongsTo{{ .Entity.BelongsTo }}"{{ bt }}
+{{- end }}
+	}
+
+	// {{ .Entity.Name }}CreationRequestInput represents input for creating {{ withArticle .Entity.Name }}.
+	{{ .Entity.Name }}CreationRequestInput struct {
+		_ struct{} {{ bt }}json:"-"{{ bt }}
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}    {{ .Type }}  {{ bt }}json:"{{ jsonTag . }}"{{ bt }}
+{{- end }}
+	}
+
+	// {{ .Entity.Name }}DatabaseCreationInput is used for creating {{ withArticle .Entity.Name }} in persistence.
+	{{ .Entity.Name }}DatabaseCreationInput struct {
+		_ struct{} {{ bt }}json:"-"{{ bt }}
+		ID string  {{ bt }}json:"-"{{ bt }}
+{{- range creatableFields .Entity.Fields }}
+		{{ .Name }}    {{ .Type }}  {{ bt }}json:"-"{{ bt }}
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser    string {{ bt }}json:"-"{{ bt }}
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount string {{ bt }}json:"-"{{ bt }}
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }} string {{ bt }}json:"-"{{ bt }}
+{{- end }}
+	}
+
+	// {{ .Entity.Name }}UpdateRequestInput represents input for updating {{ withArticle .Entity.Name }}.
+	{{ .Entity.Name }}UpdateRequestInput struct {
+		_ struct{} {{ bt }}json:"-"{{ bt }}
+{{- range editableFields .Entity.Fields }}
+		{{ .Name }}    *{{ baseType . }}  {{ bt }}json:"{{ camel .Name }},omitempty"{{ bt }}
+{{- end }}
+	}
+
+	// {{ .Entity.Name }}DataManager describes a structure capable of storing {{ pluralHumanReadable .Entity.Name }}.
+	{{ .Entity.Name }}DataManager interface {
+		Get{{ .Entity.Name }}(ctx context.Context, {{ camel .Entity.Name }}ID string) (*{{ .Entity.Name }}, error)
+		Get{{ plural .Entity.Name }}(ctx context.Context, filter *filtering.QueryFilter) (*filtering.QueryFilteredResult[{{ .Entity.Name }}], error)
+{{- if .Entity.BelongsToAccount }}
+		Get{{ plural .Entity.Name }}ForAccount(ctx context.Context, accountID string, filter *filtering.QueryFilter) (*filtering.QueryFilteredResult[{{ .Entity.Name }}], error)
+{{- end }}
+		Create{{ .Entity.Name }}(ctx context.Context, input *{{ .Entity.Name }}DatabaseCreationInput) (*{{ .Entity.Name }}, error)
+		Update{{ .Entity.Name }}(ctx context.Context, {{ camel .Entity.Name }} *{{ .Entity.Name }}) error
+		Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .Entity.Name }}ID string) error
+	}
+)
+
+// Update merges {{ withArticle .Entity.Name }}UpdateRequestInput into {{ withArticle .Entity.Name }}.
+func (x *{{ .Entity.Name }}) Update(input *{{ .Entity.Name }}UpdateRequestInput) {
+{{- range editableFields .Entity.Fields }}
+{{- if isPointer . }}
+	if input.{{ .Name }} != nil {
+		x.{{ .Name }} = input.{{ .Name }}
+	}
+{{- else }}
+	if input.{{ .Name }} != nil && *input.{{ .Name }} != x.{{ .Name }} {
+		x.{{ .Name }} = *input.{{ .Name }}
+	}
+{{- end }}
+{{- end }}
+}
+
+var _ validation.ValidatableWithContext = (*{{ .Entity.Name }}CreationRequestInput)(nil)
+
+// ValidateWithContext validates {{ withArticle .Entity.Name }}CreationRequestInput.
+func (x *{{ .Entity.Name }}CreationRequestInput) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(
+		ctx,
+		x,
+{{- range creatableFields .Entity.Fields }}
+{{- if .IsRequired }}
+		validation.Field(&x.{{ .Name }}, validation.Required),
+{{- end }}
+{{- end }}
+	)
+}
+
+var _ validation.ValidatableWithContext = (*{{ .Entity.Name }}DatabaseCreationInput)(nil)
+
+// ValidateWithContext validates {{ withArticle .Entity.Name }}DatabaseCreationInput.
+func (x *{{ .Entity.Name }}DatabaseCreationInput) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(
+		ctx,
+		x,
+		validation.Field(&x.ID, validation.Required),
+{{- range creatableFields .Entity.Fields }}
+{{- if .IsRequired }}
+		validation.Field(&x.{{ .Name }}, validation.Required),
+{{- end }}
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		validation.Field(&x.CreatedByUser, validation.Required),
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		validation.Field(&x.BelongsToAccount, validation.Required),
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		validation.Field(&x.BelongsTo{{ .Entity.BelongsTo }}, validation.Required),
+{{- end }}
+	)
+}
+
+var _ validation.ValidatableWithContext = (*{{ .Entity.Name }}UpdateRequestInput)(nil)
+
+// ValidateWithContext validates {{ withArticle .Entity.Name }}UpdateRequestInput.
+func (x *{{ .Entity.Name }}UpdateRequestInput) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(
+		ctx,
+		x,
+{{- range editableFields .Entity.Fields }}
+{{- if .IsRequired }}
+		validation.Field(&x.{{ .Name }}, validation.When(x.{{ .Name }} != nil, validation.Required)),
+{{- end }}
+{{- end }}
+	)
+}
