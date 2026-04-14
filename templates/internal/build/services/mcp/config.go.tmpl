@@ -1,0 +1,31 @@
+package mcpbuild
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+
+	databasecfg "{{ .Project.ProjectMeta.PlatformModule }}/database/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability"
+	routingcfg "{{ .Project.ProjectMeta.PlatformModule }}/routing/config"
+
+	"github.com/samber/do/v2"
+)
+
+// RegisterConfigs extracts sub-fields from MCPServiceConfig into the injector.
+func RegisterConfigs(i do.Injector) {
+	do.Provide[*databasecfg.Config](i, func(i do.Injector) (*databasecfg.Config, error) {
+		cfg := do.MustInvoke[*config.MCPServiceConfig](i)
+		return &cfg.Database, nil
+	})
+	do.Provide[*observability.Config](i, func(i do.Injector) (*observability.Config, error) {
+		cfg := do.MustInvoke[*config.MCPServiceConfig](i)
+		return &cfg.Observability, nil
+	})
+	do.Provide[config.MetaSettings](i, func(i do.Injector) (config.MetaSettings, error) {
+		cfg := do.MustInvoke[*config.MCPServiceConfig](i)
+		return cfg.Meta, nil
+	})
+	do.Provide[*routingcfg.Config](i, func(i do.Injector) (*routingcfg.Config, error) {
+		cfg := do.MustInvoke[*config.MCPServiceConfig](i)
+		return &cfg.Routing, nil
+	})
+}

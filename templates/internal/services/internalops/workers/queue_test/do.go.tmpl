@@ -1,0 +1,26 @@
+package queuetest
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/internalops"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/messagequeue"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/metrics"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing"
+
+	"github.com/samber/do/v2"
+)
+
+// RegisterQueueTest registers the queue test job with the injector.
+func RegisterQueueTest(i do.Injector) {
+	do.Provide[*Job](i, func(i do.Injector) (*Job, error) {
+		return NewJob(
+			do.MustInvoke[internalops.InternalOpsDataManager](i),
+			do.MustInvoke[messagequeue.PublisherProvider](i),
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[metrics.Provider](i),
+			do.MustInvoke[*JobParams](i),
+		)
+	})
+}

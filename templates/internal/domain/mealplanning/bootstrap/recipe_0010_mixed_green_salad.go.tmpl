@@ -1,0 +1,1504 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/numbers"
+)
+
+// MixedGreenSaladRecipe creates the Mixed Green Salad (Misticanza alla Romana) recipe.
+// Source: https://www.seriouseats.com/roman-mixed-green-salad-misticanza-recipe
+func MixedGreenSaladRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	inspectPrep := enums.Preparations["inspect"]
+	rinsePrep := enums.Preparations["rinse"]
+	dryPrep := enums.Preparations["dry"]
+	slicePrep := enums.Preparations["slice"]
+	pluckPrep := enums.Preparations["pluck"]
+	mixPrep := enums.Preparations["mix"]
+	tossPrep := enums.Preparations["toss"]
+	seasonPrep := enums.Preparations["season"]
+
+	// Get ingredients
+	lettuce := enums.Ingredients["lettuce"]
+	radicchio := enums.Ingredients["radicchio"]
+	endive := enums.Ingredients["endive"]
+	frisee := enums.Ingredients["frisée"]
+	kale := enums.Ingredients["kale"]
+	dandelionGreens := enums.Ingredients["dandelion greens"]
+	purslane := enums.Ingredients["purslane"]
+	fennelFronds := enums.Ingredients["fennel fronds"]
+	parsley := enums.Ingredients["parsley"]
+	tarragon := enums.Ingredients["tarragon"]
+	chervil := enums.Ingredients["chervil"]
+	basil := enums.Ingredients["basil"]
+	mint := enums.Ingredients["mint"]
+	oliveOil := enums.Ingredients["olive oil"]
+	lemon := enums.Ingredients["lemon"]
+	salt := enums.Ingredients["salt"]
+
+	// Get measurement units
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	gramMeasurement := enums.MeasurementUnits["gram"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+
+	// Get instruments
+	knife := enums.Instruments["knife"]
+	bareHands := enums.Instruments["bare hands"]
+
+	// Get vessels
+	cuttingBoard := enums.Vessels["cutting board"]
+	largeBowl := enums.Vessels["large bowl"]
+	saladSpinner := enums.Vessels["salad spinner"]
+	servingBowl := enums.Vessels["serving bowl"]
+
+	// Get bridge table entries
+	// Inspect
+	inspectLettuceVIP := enums.IngredientPreparations[inspectPrep.ID][lettuce.ID]
+	inspectRadicchioVIP := enums.IngredientPreparations[inspectPrep.ID][radicchio.ID]
+	inspectEndiveVIP := enums.IngredientPreparations[inspectPrep.ID][endive.ID]
+	inspectFriseeVIP := enums.IngredientPreparations[inspectPrep.ID][frisee.ID]
+	inspectKaleVIP := enums.IngredientPreparations[inspectPrep.ID][kale.ID]
+	inspectDandelionGreensVIP := enums.IngredientPreparations[inspectPrep.ID][dandelionGreens.ID]
+	inspectPurslaneVIP := enums.IngredientPreparations[inspectPrep.ID][purslane.ID]
+	inspectFennelFrondsVIP := enums.IngredientPreparations[inspectPrep.ID][fennelFronds.ID]
+	inspectParsleyVIP := enums.IngredientPreparations[inspectPrep.ID][parsley.ID]
+	inspectTarragonVIP := enums.IngredientPreparations[inspectPrep.ID][tarragon.ID]
+	inspectChervilVIP := enums.IngredientPreparations[inspectPrep.ID][chervil.ID]
+	inspectBasilVIP := enums.IngredientPreparations[inspectPrep.ID][basil.ID]
+	inspectMintVIP := enums.IngredientPreparations[inspectPrep.ID][mint.ID]
+	inspectCuttingBoardVPV := enums.PreparationVessels[inspectPrep.ID][cuttingBoard.ID]
+	inspectBareHandsVPI := enums.PreparationInstruments[inspectPrep.ID][bareHands.ID]
+
+	// Slice
+	sliceLettuceVIP := enums.IngredientPreparations[slicePrep.ID][lettuce.ID]
+	sliceRadicchioVIP := enums.IngredientPreparations[slicePrep.ID][radicchio.ID]
+	sliceEndiveVIP := enums.IngredientPreparations[slicePrep.ID][endive.ID]
+	sliceCuttingBoardVPV := enums.PreparationVessels[slicePrep.ID][cuttingBoard.ID]
+	sliceKnifeVPI := enums.PreparationInstruments[slicePrep.ID][knife.ID]
+
+	// Pluck
+	pluckFennelFrondsVIP := enums.IngredientPreparations[pluckPrep.ID][fennelFronds.ID]
+	pluckParsleyVIP := enums.IngredientPreparations[pluckPrep.ID][parsley.ID]
+	pluckTarragonVIP := enums.IngredientPreparations[pluckPrep.ID][tarragon.ID]
+	pluckChervilVIP := enums.IngredientPreparations[pluckPrep.ID][chervil.ID]
+	pluckBasilVIP := enums.IngredientPreparations[pluckPrep.ID][basil.ID]
+	pluckMintVIP := enums.IngredientPreparations[pluckPrep.ID][mint.ID]
+	pluckBareHandsVPI := enums.PreparationInstruments[pluckPrep.ID][bareHands.ID]
+
+	// Rinse
+	rinseLettuceVIP := enums.IngredientPreparations[rinsePrep.ID][lettuce.ID]
+	rinseRadicchioVIP := enums.IngredientPreparations[rinsePrep.ID][radicchio.ID]
+	rinseEndiveVIP := enums.IngredientPreparations[rinsePrep.ID][endive.ID]
+	rinseFriseeVIP := enums.IngredientPreparations[rinsePrep.ID][frisee.ID]
+	rinseKaleVIP := enums.IngredientPreparations[rinsePrep.ID][kale.ID]
+	rinseDandelionGreensVIP := enums.IngredientPreparations[rinsePrep.ID][dandelionGreens.ID]
+	rinsePurslaneVIP := enums.IngredientPreparations[rinsePrep.ID][purslane.ID]
+	rinseFennelFrondsVIP := enums.IngredientPreparations[rinsePrep.ID][fennelFronds.ID]
+	rinseParsleyVIP := enums.IngredientPreparations[rinsePrep.ID][parsley.ID]
+	rinseTarragonVIP := enums.IngredientPreparations[rinsePrep.ID][tarragon.ID]
+	rinseChervilVIP := enums.IngredientPreparations[rinsePrep.ID][chervil.ID]
+	rinseBasilVIP := enums.IngredientPreparations[rinsePrep.ID][basil.ID]
+	rinseMintVIP := enums.IngredientPreparations[rinsePrep.ID][mint.ID]
+	rinseLargeBowlVPV := enums.PreparationVessels[rinsePrep.ID][largeBowl.ID]
+
+	// Dry
+	dryLettuceVIP := enums.IngredientPreparations[dryPrep.ID][lettuce.ID]
+	dryRadicchioVIP := enums.IngredientPreparations[dryPrep.ID][radicchio.ID]
+	dryEndiveVIP := enums.IngredientPreparations[dryPrep.ID][endive.ID]
+	dryFriseeVIP := enums.IngredientPreparations[dryPrep.ID][frisee.ID]
+	dryKaleVIP := enums.IngredientPreparations[dryPrep.ID][kale.ID]
+	dryDandelionGreensVIP := enums.IngredientPreparations[dryPrep.ID][dandelionGreens.ID]
+	dryPurslaneVIP := enums.IngredientPreparations[dryPrep.ID][purslane.ID]
+	dryFennelFrondsVIP := enums.IngredientPreparations[dryPrep.ID][fennelFronds.ID]
+	dryParsleyVIP := enums.IngredientPreparations[dryPrep.ID][parsley.ID]
+	dryTarragonVIP := enums.IngredientPreparations[dryPrep.ID][tarragon.ID]
+	dryChervilVIP := enums.IngredientPreparations[dryPrep.ID][chervil.ID]
+	dryBasilVIP := enums.IngredientPreparations[dryPrep.ID][basil.ID]
+	dryMintVIP := enums.IngredientPreparations[dryPrep.ID][mint.ID]
+	drySaladSpinnerVPV := enums.PreparationVessels[dryPrep.ID][saladSpinner.ID]
+
+	// Mix
+	mixLettuceVIP := enums.IngredientPreparations[mixPrep.ID][lettuce.ID]
+	mixRadicchioVIP := enums.IngredientPreparations[mixPrep.ID][radicchio.ID]
+	mixEndiveVIP := enums.IngredientPreparations[mixPrep.ID][endive.ID]
+	mixFriseeVIP := enums.IngredientPreparations[mixPrep.ID][frisee.ID]
+	mixKaleVIP := enums.IngredientPreparations[mixPrep.ID][kale.ID]
+	mixDandelionGreensVIP := enums.IngredientPreparations[mixPrep.ID][dandelionGreens.ID]
+	mixPurslaneVIP := enums.IngredientPreparations[mixPrep.ID][purslane.ID]
+	mixFennelFrondsVIP := enums.IngredientPreparations[mixPrep.ID][fennelFronds.ID]
+	mixParsleyVIP := enums.IngredientPreparations[mixPrep.ID][parsley.ID]
+	mixTarragonVIP := enums.IngredientPreparations[mixPrep.ID][tarragon.ID]
+	mixChervilVIP := enums.IngredientPreparations[mixPrep.ID][chervil.ID]
+	mixBasilVIP := enums.IngredientPreparations[mixPrep.ID][basil.ID]
+	mixMintVIP := enums.IngredientPreparations[mixPrep.ID][mint.ID]
+	mixLargeBowlVPV := enums.PreparationVessels[mixPrep.ID][largeBowl.ID]
+	mixBareHandsVPI := enums.PreparationInstruments[mixPrep.ID][bareHands.ID]
+
+	// Toss
+	tossOliveOilVIP := enums.IngredientPreparations[tossPrep.ID][oliveOil.ID]
+	tossServingBowlVPV := enums.PreparationVessels[tossPrep.ID][servingBowl.ID]
+	tossBareHandsVPI := enums.PreparationInstruments[tossPrep.ID][bareHands.ID]
+
+	// Season
+	seasonLemonVIP := enums.IngredientPreparations[seasonPrep.ID][lemon.ID]
+	seasonSaltVIP := enums.IngredientPreparations[seasonPrep.ID][salt.ID]
+	seasonServingBowlVPV := enums.PreparationVessels[seasonPrep.ID][servingBowl.ID]
+
+	// Measurement unit bridges
+	lettuceCupVIMU := enums.IngredientMeasurementUnits[lettuce.ID][cupMeasurement.ID]
+	radicchioCupVIMU := enums.IngredientMeasurementUnits[radicchio.ID][cupMeasurement.ID]
+	endiveCupVIMU := enums.IngredientMeasurementUnits[endive.ID][cupMeasurement.ID]
+	friseeCupVIMU := enums.IngredientMeasurementUnits[frisee.ID][cupMeasurement.ID]
+	kaleCupVIMU := enums.IngredientMeasurementUnits[kale.ID][cupMeasurement.ID]
+	dandelionGreensCupVIMU := enums.IngredientMeasurementUnits[dandelionGreens.ID][cupMeasurement.ID]
+	purslaneCupVIMU := enums.IngredientMeasurementUnits[purslane.ID][cupMeasurement.ID]
+	fennelFrondsCupVIMU := enums.IngredientMeasurementUnits[fennelFronds.ID][cupMeasurement.ID]
+	parsleyCupVIMU := enums.IngredientMeasurementUnits[parsley.ID][cupMeasurement.ID]
+	tarragonCupVIMU := enums.IngredientMeasurementUnits[tarragon.ID][cupMeasurement.ID]
+	chervilCupVIMU := enums.IngredientMeasurementUnits[chervil.ID][cupMeasurement.ID]
+	basilCupVIMU := enums.IngredientMeasurementUnits[basil.ID][cupMeasurement.ID]
+	mintCupVIMU := enums.IngredientMeasurementUnits[mint.ID][cupMeasurement.ID]
+	oliveOilTablespoonVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][tablespoonMeasurement.ID]
+	lemonTablespoonVIMU := enums.IngredientMeasurementUnits[lemon.ID][tablespoonMeasurement.ID]
+	saltGramVIMU := enums.IngredientMeasurementUnits[salt.ID][gramMeasurement.ID]
+
+	// Step 0: Pick over the leafy vegetables, discarding any wilted or damaged leaves
+	step0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        inspectPrep.ID,
+		Index:                0,
+		ExplicitInstructions: "Pick over the leafy vegetables, discarding any wilted or damaged leaves.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &inspectLettuceVIP.ID,
+				ValidIngredientMeasurementUnitID: &lettuceCupVIMU.ID,
+				Name:                             "lettuce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectRadicchioVIP.ID,
+				ValidIngredientMeasurementUnitID: &radicchioCupVIMU.ID,
+				Name:                             "radicchio",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectEndiveVIP.ID,
+				ValidIngredientMeasurementUnitID: &endiveCupVIMU.ID,
+				Name:                             "endive",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectFriseeVIP.ID,
+				ValidIngredientMeasurementUnitID: &friseeCupVIMU.ID,
+				Name:                             "frisée",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectKaleVIP.ID,
+				ValidIngredientMeasurementUnitID: &kaleCupVIMU.ID,
+				Name:                             "kale",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectDandelionGreensVIP.ID,
+				ValidIngredientMeasurementUnitID: &dandelionGreensCupVIMU.ID,
+				Name:                             "dandelion greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectPurslaneVIP.ID,
+				ValidIngredientMeasurementUnitID: &purslaneCupVIMU.ID,
+				Name:                             "purslane",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectFennelFrondsVIP.ID,
+				ValidIngredientMeasurementUnitID: &fennelFrondsCupVIMU.ID,
+				Name:                             "fennel fronds",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectParsleyVIP.ID,
+				ValidIngredientMeasurementUnitID: &parsleyCupVIMU.ID,
+				Name:                             "parsley",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectTarragonVIP.ID,
+				ValidIngredientMeasurementUnitID: &tarragonCupVIMU.ID,
+				Name:                             "tarragon",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectChervilVIP.ID,
+				ValidIngredientMeasurementUnitID: &chervilCupVIMU.ID,
+				Name:                             "chervil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectBasilVIP.ID,
+				ValidIngredientMeasurementUnitID: &basilCupVIMU.ID,
+				Name:                             "basil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &inspectMintVIP.ID,
+				ValidIngredientMeasurementUnitID: &mintCupVIMU.ID,
+				Name:                             "mint",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &inspectBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &inspectCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "inspected lettuce",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:              "inspected radicchio",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "inspected endive",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             2,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "inspected frisée",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             3,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "inspected kale",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             4,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "inspected dandelion greens",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             5,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "inspected purslane",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             6,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "inspected fennel fronds",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             7,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "inspected parsley",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             8,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "inspected tarragon",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             9,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "inspected chervil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             10,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "inspected basil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             11,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "inspected mint",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             12,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+		},
+	}
+
+	// Step 1: Wash everything in several changes of water until no dirt or grit remains
+	step1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        rinsePrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Wash everything in several changes of water until no dirt or grit remains.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &rinseLettuceVIP.ID,
+				Name:                            "inspected lettuce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidIngredientPreparationID:    &rinseRadicchioVIP.ID,
+				Name:                            "inspected radicchio",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(2)),
+				ValidIngredientPreparationID:    &rinseEndiveVIP.ID,
+				Name:                            "inspected endive",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(3)),
+				ValidIngredientPreparationID:    &rinseFriseeVIP.ID,
+				Name:                            "inspected frisée",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(4)),
+				ValidIngredientPreparationID:    &rinseKaleVIP.ID,
+				Name:                            "inspected kale",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(5)),
+				ValidIngredientPreparationID:    &rinseDandelionGreensVIP.ID,
+				Name:                            "inspected dandelion greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(6)),
+				ValidIngredientPreparationID:    &rinsePurslaneVIP.ID,
+				Name:                            "inspected purslane",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(7)),
+				ValidIngredientPreparationID:    &rinseFennelFrondsVIP.ID,
+				Name:                            "inspected fennel fronds",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(8)),
+				ValidIngredientPreparationID:    &rinseParsleyVIP.ID,
+				Name:                            "inspected parsley",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(9)),
+				ValidIngredientPreparationID:    &rinseTarragonVIP.ID,
+				Name:                            "inspected tarragon",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(10)),
+				ValidIngredientPreparationID:    &rinseChervilVIP.ID,
+				Name:                            "inspected chervil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(11)),
+				ValidIngredientPreparationID:    &rinseBasilVIP.ID,
+				Name:                            "inspected basil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(12)),
+				ValidIngredientPreparationID:    &rinseMintVIP.ID,
+				Name:                            "inspected mint",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &rinseLargeBowlVPV.ID,
+				Name:                     "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "washed lettuce",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:              "washed radicchio",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "washed endive",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             2,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "washed frisée",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             3,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "washed kale",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             4,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "washed dandelion greens",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             5,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "washed purslane",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             6,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "washed fennel fronds",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             7,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "washed parsley",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             8,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "washed tarragon",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             9,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "washed chervil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             10,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "washed basil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             11,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "washed mint",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             12,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+		},
+	}
+
+	// Step 2: Dry well in a salad spinner
+	step2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        dryPrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Dry well in a salad spinner.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &dryLettuceVIP.ID,
+				Name:                            "washed lettuce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidIngredientPreparationID:    &dryRadicchioVIP.ID,
+				Name:                            "washed radicchio",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(2)),
+				ValidIngredientPreparationID:    &dryEndiveVIP.ID,
+				Name:                            "washed endive",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(3)),
+				ValidIngredientPreparationID:    &dryFriseeVIP.ID,
+				Name:                            "washed frisée",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(4)),
+				ValidIngredientPreparationID:    &dryKaleVIP.ID,
+				Name:                            "washed kale",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(5)),
+				ValidIngredientPreparationID:    &dryDandelionGreensVIP.ID,
+				Name:                            "washed dandelion greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(6)),
+				ValidIngredientPreparationID:    &dryPurslaneVIP.ID,
+				Name:                            "washed purslane",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(7)),
+				ValidIngredientPreparationID:    &dryFennelFrondsVIP.ID,
+				Name:                            "washed fennel fronds",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(8)),
+				ValidIngredientPreparationID:    &dryParsleyVIP.ID,
+				Name:                            "washed parsley",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(9)),
+				ValidIngredientPreparationID:    &dryTarragonVIP.ID,
+				Name:                            "washed tarragon",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(10)),
+				ValidIngredientPreparationID:    &dryChervilVIP.ID,
+				Name:                            "washed chervil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(11)),
+				ValidIngredientPreparationID:    &dryBasilVIP.ID,
+				Name:                            "washed basil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(12)),
+				ValidIngredientPreparationID:    &dryMintVIP.ID,
+				Name:                            "washed mint",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &drySaladSpinnerVPV.ID,
+				Name:                     "salad spinner",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "dried lettuce",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:              "dried radicchio",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "dried endive",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             2,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "dried frisée",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             3,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "dried kale",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             4,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "dried dandelion greens",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             5,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "dried purslane",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             6,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+			{
+				Name:              "dried fennel fronds",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             7,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "dried parsley",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             8,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "dried tarragon",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             9,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "dried chervil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             10,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "dried basil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             11,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "dried mint",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             12,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+		},
+	}
+
+	// Step 3: Cut lettuce leaves free of their cores
+	step3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        slicePrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Cut lettuce leaves free of their cores.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &sliceLettuceVIP.ID,
+				Name:                            "dried lettuce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &sliceKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &sliceCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "sliced lettuce",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+		},
+	}
+
+	// Step 4: Pick tender herbs from stems
+	step4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        pluckPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Pick tender herbs from stems.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(7)),
+				ValidIngredientPreparationID:    &pluckFennelFrondsVIP.ID,
+				Name:                            "dried fennel fronds",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(8)),
+				ValidIngredientPreparationID:    &pluckParsleyVIP.ID,
+				Name:                            "dried parsley",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(9)),
+				ValidIngredientPreparationID:    &pluckTarragonVIP.ID,
+				Name:                            "dried tarragon",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(10)),
+				ValidIngredientPreparationID:    &pluckChervilVIP.ID,
+				Name:                            "dried chervil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(11)),
+				ValidIngredientPreparationID:    &pluckBasilVIP.ID,
+				Name:                            "dried basil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(12)),
+				ValidIngredientPreparationID:    &pluckMintVIP.ID,
+				Name:                            "dried mint",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &pluckBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "plucked fennel fronds",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "plucked parsley",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "plucked tarragon",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             2,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "plucked chervil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             3,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "plucked basil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             4,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:              "plucked mint",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             5,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+		},
+	}
+
+	// Step 5: Quarter, core, and slice tight leafy heads like radicchio and endive
+	step5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        slicePrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Quarter, core, and slice tight leafy heads like radicchio and endive.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidIngredientPreparationID:    &sliceRadicchioVIP.ID,
+				Name:                            "dried radicchio",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(2)),
+				ValidIngredientPreparationID:    &sliceEndiveVIP.ID,
+				Name:                            "dried endive",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &sliceKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &sliceCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "sliced radicchio",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "sliced endive",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 6: Combine all the dried greens into a mixed greens mixture
+	step6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        mixPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Combine all the dried greens and herbs together in a large bowl.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &mixLettuceVIP.ID,
+				Name:                            "sliced lettuce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &mixRadicchioVIP.ID,
+				Name:                            "sliced radicchio",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidIngredientPreparationID:    &mixEndiveVIP.ID,
+				Name:                            "sliced endive",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(3)),
+				ValidIngredientPreparationID:    &mixFriseeVIP.ID,
+				Name:                            "dried frisée",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(4)),
+				ValidIngredientPreparationID:    &mixKaleVIP.ID,
+				Name:                            "dried kale",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(5)),
+				ValidIngredientPreparationID:    &mixDandelionGreensVIP.ID,
+				Name:                            "dried dandelion greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(6)),
+				ValidIngredientPreparationID:    &mixPurslaneVIP.ID,
+				Name:                            "dried purslane",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &mixFennelFrondsVIP.ID,
+				Name:                            "plucked fennel fronds",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidIngredientPreparationID:    &mixParsleyVIP.ID,
+				Name:                            "plucked parsley",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(2)),
+				ValidIngredientPreparationID:    &mixTarragonVIP.ID,
+				Name:                            "plucked tarragon",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(3)),
+				ValidIngredientPreparationID:    &mixChervilVIP.ID,
+				Name:                            "plucked chervil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(4)),
+				ValidIngredientPreparationID:    &mixBasilVIP.ID,
+				Name:                            "plucked basil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(5)),
+				ValidIngredientPreparationID:    &mixMintVIP.ID,
+				Name:                            "plucked mint",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &mixBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &mixLargeBowlVPV.ID,
+				Name:                     "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "mixed greens",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(8)),
+				},
+			},
+		},
+	}
+
+	// Step 7: In a large serving bowl, gently toss salad with just enough olive oil to gently coat leaves
+	coatedState := enums.IngredientStates["coated"]
+	step7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        tossPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "In a large serving bowl, gently toss the salad with just enough olive oil to gently coat the leaves.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "mixed greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 8,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &tossOliveOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &oliveOilTablespoonVIMU.ID,
+				Name:                             "extra-virgin olive oil",
+				QuantityNotes:                    "just enough to gently coat leaves",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+					Max: new(float32(3)),
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &tossBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &tossServingBowlVPV.ID,
+				Name:                     "large serving bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: coatedState.ID,
+				Notes:             "Leaves should be evenly coated in olive oil",
+				Ingredients:       []uint64{0}, // Index of mixed greens ingredient in the step
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "dressed greens",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "serving bowl with salad",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 8: Add splash of lemon juice and salt to taste, tossing to combine
+	step8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Add a splash of lemon juice and salt to taste, tossing to combine.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "dressed greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonLemonVIP.ID,
+				ValidIngredientMeasurementUnitID: &lemonTablespoonVIMU.ID,
+				Name:                             "fresh lemon juice",
+				QuantityNotes:                    "a splash",
+				ToTaste:                          true,
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+					Max: new(float32(1)),
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltGramVIMU.ID,
+				Name:                             "salt",
+				ToTaste:                          true,
+				Quantity: numbers.MinRange[float32]{
+					Min: 1.5,
+					Max: new(float32(3)),
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &seasonServingBowlVPV.ID,
+				Name:                            "serving bowl with salad",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: coatedState.ID,
+				Notes:             "Leaves should be evenly coated in olive oil",
+				Ingredients:       []uint64{0}, // Index of dressed greens ingredient in the step
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "mixed green salad",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	prepTask1 := &mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{
+		Name:                        "Wash, dry, and prepare salad greens",
+		Description:                 "Inspect, wash, dry, slice, and combine all greens and herbs ahead of time. Washed and dried greens keep 2-3 days when wrapped in paper towels in the fridge.",
+		Notes:                       "Make sure greens are thoroughly dried to prevent wilting and to help the dressing cling properly.",
+		Optional:                    true,
+		ExplicitStorageInstructions: "Store the washed, dried, and prepared greens in an airtight container lined with paper towels in the refrigerator for up to 2 days.",
+		StorageType:                 mealplanning.RecipePrepTaskStorageTypeAirtightContainer,
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: new(float32(4)),
+		},
+		TimeBufferBeforeRecipeInSeconds: numbers.MinRange[uint32]{
+			Min: 0,
+			Max: new(uint32(172800)), // 2 days
+		},
+		RecipeSteps: []*mealplanning.RecipePrepTaskStepWithinRecipeCreationRequestInput{
+			{BelongsToRecipeStepIndex: 0, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 1, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 2, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 3, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 4, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 5, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 6, SatisfiesRecipeStep: true},
+		},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		{
+			Name:                "Mixed Green Salad",
+			Slug:                "mixed-green-salad",
+			Source:              "https://www.seriouseats.com/roman-mixed-green-salad-misticanza-recipe",
+			Description:         "A Roman-inspired mixed green salad (Misticanza alla Romana) made with a variety of fresh leafy greens and tender herbs, dressed simply with extra-virgin olive oil, fresh lemon juice, and salt.",
+			YieldsComponentType: mealplanning.MealComponentTypesSalad,
+			EstimatedPortions: numbers.MinRange[float32]{
+				Min: 4,
+			},
+			PortionName:       "serving",
+			PluralPortionName: "servings",
+			EligibleForMeals:  true,
+			Steps:             []*mealplanning.RecipeStepCreationRequestInput{step0, step1, step2, step3, step4, step5, step6, step7, step8},
+			PrepTasks:         []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{prepTask1},
+			AlsoCreateMeal:    false,
+		},
+	}
+}

@@ -1,0 +1,28 @@
+package grpc
+
+import (
+	domaininternalops "{{ .Project.ProjectMeta.Module }}/internal/domain/internalops"
+	settingssvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/internalops"
+
+	msgconfig "{{ .Project.ProjectMeta.PlatformModule }}/messagequeue/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing"
+
+	"github.com/samber/do/v2"
+)
+
+// RegisterInternalOpsService registers the internal ops gRPC service with the injector.
+func RegisterInternalOpsService(i do.Injector) {
+	do.Provide[InternalOpsMethodPermissions](i, func(i do.Injector) (InternalOpsMethodPermissions, error) {
+		return ProvideMethodPermissions(), nil
+	})
+
+	do.Provide[settingssvc.InternalOperationsServer](i, func(i do.Injector) (settingssvc.InternalOperationsServer, error) {
+		return NewService(
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[*msgconfig.Config](i),
+			do.MustInvoke[domaininternalops.InternalOpsDataManager](i),
+		), nil
+	})
+}

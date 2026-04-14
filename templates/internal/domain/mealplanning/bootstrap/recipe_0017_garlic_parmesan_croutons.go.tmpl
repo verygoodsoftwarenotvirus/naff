@@ -1,0 +1,668 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/numbers"
+)
+
+// GarlicParmesanCroutonsRecipe creates the Garlic Parmesan Croutons recipe.
+// Source: https://www.seriouseats.com/the-best-caesar-salad-recipe
+// Note: This recipe references the Caesar Dressing recipe for "garlic-infused olive oil", which must be created first.
+// The createdRecipes map should contain the "caesar-dressing" recipe keyed by its slug.
+func GarlicParmesanCroutonsRecipe(enums *Enumerations, createdRecipes map[string]*mealplanning.Recipe) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	grindPrep := enums.Preparations["grind"]
+	preheatPrep := enums.Preparations["preheat"]
+	addPrep := enums.Preparations["add"]
+	tossPrep := enums.Preparations["toss"]
+	seasonPrep := enums.Preparations["season"]
+	transferPrep := enums.Preparations["transfer"]
+	bakePrep := enums.Preparations["bake"]
+	coolPrep := enums.Preparations["cool"]
+	cubePrep := enums.Preparations["cube"]
+	gratePrep := enums.Preparations["grate"]
+
+	// Get ingredients
+	oliveOil := enums.Ingredients["olive oil"]
+	heartyBread := enums.Ingredients["hearty bread"]
+	parmesanCheese := enums.Ingredients["parmesan cheese"]
+	salt := enums.Ingredients["salt"]
+	wholePeppercorns := enums.Ingredients["whole black peppercorns"]
+
+	// Get measurement units
+	gramMeasurement := enums.MeasurementUnits["gram"]
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	teaspoonMeasurement := enums.MeasurementUnits["teaspoon"]
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+
+	// Get instruments
+	mortarAndPestle := enums.Instruments["mortar and pestle"]
+	spiceGrinder := enums.Instruments["spice grinder"]
+	knife := enums.Instruments["knife"]
+	cheeseGrater := enums.Instruments["cheese grater"]
+
+	// Get vessels
+	largeBowl := enums.Vessels["large bowl"]
+	bakingSheet := enums.Vessels["baking sheet"]
+	oven := enums.Vessels["oven"]
+	cuttingBoard := enums.Vessels["cutting board"]
+
+	// Get ingredient states for completion conditions
+	goldenBrownState := enums.IngredientStates["browned"]
+
+	// === CROUTONS BRIDGE TABLE ENTRIES ===
+	// Grind preparation bridges
+	grindPeppercornsVIP := enums.IngredientPreparations[grindPrep.ID][wholePeppercorns.ID]
+	peppercornsGramVIMU := enums.IngredientMeasurementUnits[wholePeppercorns.ID][gramMeasurement.ID]
+	grindMortarAndPestleVPI := enums.PreparationInstruments[grindPrep.ID][mortarAndPestle.ID]
+	grindSpiceGrinderVPI := enums.PreparationInstruments[grindPrep.ID][spiceGrinder.ID]
+
+	// Preheat preparation bridges
+	preheatOvenVPV := enums.PreparationVessels[preheatPrep.ID][oven.ID]
+
+	// Cube preparation bridges
+	cubeBreadVIP := enums.IngredientPreparations[cubePrep.ID][heartyBread.ID]
+	cubeKnifeVPI := enums.PreparationInstruments[cubePrep.ID][knife.ID]
+	cubeCuttingBoardVPV := enums.PreparationVessels[cubePrep.ID][cuttingBoard.ID]
+
+	// Grate preparation bridges
+	grateParmesanVIP := enums.IngredientPreparations[gratePrep.ID][parmesanCheese.ID]
+	grateCheeseGraterVPI := enums.PreparationInstruments[gratePrep.ID][cheeseGrater.ID]
+	grateCuttingBoardVPV := enums.PreparationVessels[gratePrep.ID][cuttingBoard.ID]
+
+	// Add preparation bridges
+	addBreadVIP := enums.IngredientPreparations[addPrep.ID][heartyBread.ID]
+	addLargeBowlVPV := enums.PreparationVessels[addPrep.ID][largeBowl.ID]
+
+	// Toss preparation bridges
+	tossBreadVIP := enums.IngredientPreparations[tossPrep.ID][heartyBread.ID]
+	tossParmesanVIP := enums.IngredientPreparations[tossPrep.ID][parmesanCheese.ID]
+
+	// Season preparation bridges
+	seasonSaltVIP := enums.IngredientPreparations[seasonPrep.ID][salt.ID]
+
+	// Transfer preparation bridges
+	transferBreadVIP := enums.IngredientPreparations[transferPrep.ID][heartyBread.ID]
+	transferBakingSheetVPV := enums.PreparationVessels[transferPrep.ID][bakingSheet.ID]
+
+	// Bake preparation bridges
+	bakeBreadVIP := enums.IngredientPreparations[bakePrep.ID][heartyBread.ID]
+	bakeOvenVPV := enums.PreparationVessels[bakePrep.ID][oven.ID]
+
+	// Cool preparation bridges
+	coolBreadVIP := enums.IngredientPreparations[coolPrep.ID][heartyBread.ID]
+
+	// Measurement unit bridges
+	oliveOilTablespoonVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][tablespoonMeasurement.ID]
+	breadCupVIMU := enums.IngredientMeasurementUnits[heartyBread.ID][cupMeasurement.ID]
+	parmesanTablespoonVIMU := enums.IngredientMeasurementUnits[parmesanCheese.ID][tablespoonMeasurement.ID]
+	saltTeaspoonVIMU := enums.IngredientMeasurementUnits[salt.ID][teaspoonMeasurement.ID]
+
+	// ==================== CROUTONS RECIPE STEPS ====================
+
+	// Step 0: Grind whole black peppercorns
+	crStep0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        grindPrep.ID,
+		Index:                0,
+		Optional:             false,
+		ExplicitInstructions: "Using a mortar and pestle or spice grinder, coarsely grind the whole black peppercorns.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &grindPeppercornsVIP.ID,
+				ValidIngredientMeasurementUnitID: &peppercornsGramVIMU.ID,
+				Name:                             "whole black peppercorns",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1, // approximately 0.5 teaspoon
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &grindMortarAndPestleVPI.ID,
+				Name:                         "mortar and pestle",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 0,
+			},
+			{
+				ValidPreparationInstrumentID: &grindSpiceGrinderVPI.ID,
+				Name:                         "spice grinder",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 1,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "freshly ground black pepper",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &gramMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 1: Preheat oven to 375°F
+	crStep1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        preheatPrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Adjust the oven rack to the middle position and preheat the oven to 375°F (190°C).",
+		TemperatureInCelsius: numbers.OpenRange[float32]{
+			Min: new(float32(190)),
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &preheatOvenVPV.ID,
+				Name:                     "oven",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "preheated oven",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 2: Cut bread into 3/4-inch cubes
+	crStep2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        cubePrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Cut the hearty bread into 3/4-inch cubes.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &cubeBreadVIP.ID,
+				ValidIngredientMeasurementUnitID: &breadCupVIMU.ID,
+				Name:                             "hearty bread",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &cubeKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &cubeCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "hearty bread, cut into 3/4-inch cubes",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+		},
+	}
+
+	// Step 3: Add bread cubes to garlic-infused olive oil and toss to coat
+	crStep3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Add the bread cubes to the garlic-infused olive oil from the dressing recipe and toss to coat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				// RecipeStepProductRecipeID references the "Caesar Dressing" recipe (slug: "caesar-dressing")
+				// The product "garlic-infused olive oil" is from step 3 (index 3) after grind was added at step 0, product index 0
+				// Note: ProductOfRecipeStepIndex refers to the step index in the OTHER recipe, not this one
+				ProductOfRecipeStepIndex:         new(uint64(3)),
+				ProductOfRecipeStepProductIndex:  new(uint64(0)),
+				RecipeStepProductRecipeID:        getRecipeIDBySlug(createdRecipes, "caesar-dressing"),
+				RecipeStepProductRecipeSlug:      new("caesar-dressing"),
+				ValidIngredientMeasurementUnitID: &oliveOilTablespoonVIMU.ID,
+				Name:                             "garlic-infused olive oil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &addBreadVIP.ID,
+				Name:                            "hearty bread, cut into 3/4-inch cubes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &addLargeBowlVPV.ID,
+				Name:                     "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "oiled bread cubes",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large bowl",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 4: Grate parmesan cheese
+	crStep4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        gratePrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Finely grate 4 tablespoons parmesan cheese.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &grateParmesanVIP.ID,
+				ValidIngredientMeasurementUnitID: &parmesanTablespoonVIMU.ID,
+				Name:                             "parmesan cheese",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &grateCheeseGraterVPI.ID,
+				Name:                         "cheese grater",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &grateCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "finely grated parmesan cheese",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &tablespoonMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(4)),
+				},
+			},
+		},
+	}
+
+	// Step 5: Add parmesan, toss, and season
+	crStep5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        tossPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Add 2 tablespoons grated parmesan cheese, toss again, and season to taste with salt and pepper.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &tossBreadVIP.ID,
+				Name:                            "oiled bread cubes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &tossParmesanVIP.ID,
+				Name:                            "finely grated parmesan cheese",
+				QuantityNotes:                   "2 tablespoons",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "cheesy bread cubes",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large bowl",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 6: Season bread cubes with salt and pepper
+	crStep6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Season to taste with salt and pepper.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "cheesy bread cubes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltTeaspoonVIMU.ID,
+				Name:                             "kosher salt",
+				QuantityNotes:                    "to taste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+				Optional: true,
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "freshly ground black pepper",
+				QuantityNotes:                   "to taste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+				Optional: true,
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "seasoned bread cubes",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large bowl",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 7: Transfer to rimmed baking sheet
+	crStep7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Transfer to a rimmed baking sheet.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &transferBreadVIP.ID,
+				Name:                            "seasoned bread cubes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &transferBakingSheetVPV.ID,
+				Name:                     "rimmed baking sheet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "bread cubes on baking sheet",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "rimmed baking sheet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 8: Bake until pale golden brown and crisp
+	crStep8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        bakePrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Bake until the croutons are pale golden brown and crisp, about 15 minutes.",
+		TemperatureInCelsius: numbers.OpenRange[float32]{
+			Min: new(float32(190)),
+		},
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(900)), // 15 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &bakeBreadVIP.ID,
+				Name:                            "bread cubes on baking sheet",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "rimmed baking sheet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &bakeOvenVPV.ID,
+				Name:                            "preheated oven",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: goldenBrownState.ID,
+				Notes:             "croutons should be pale golden brown and crisp",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "baked croutons",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "rimmed baking sheet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 9: Toss with more parmesan
+	crStep9 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        tossPrep.ID,
+		Index:                9,
+		ExplicitInstructions: "Remove from the oven and toss with 2 more tablespoons grated parmesan.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &tossBreadVIP.ID,
+				Name:                            "baked croutons",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &tossParmesanVIP.ID,
+				Name:                            "finely grated parmesan cheese",
+				QuantityNotes:                   "2 tablespoons",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "parmesan croutons",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 10: Allow to cool
+	crStep10 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        coolPrep.ID,
+		Index:                10,
+		ExplicitInstructions: "Allow the croutons to cool.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(600)), // 10 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(9)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &coolBreadVIP.ID,
+				Name:                            "parmesan croutons",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "rimmed baking sheet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "garlic parmesan croutons",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+		},
+	}
+
+	croutonsRecipe := &mealplanning.RecipeCreationRequestInput{
+		Name:                "Garlic Parmesan Croutons",
+		Slug:                "garlic-parmesan-croutons",
+		Source:              "https://www.seriouseats.com/the-best-caesar-salad-recipe",
+		Description:         "Homemade croutons with garlic-infused olive oil and parmesan cheese, perfect for Caesar salad.",
+		YieldsComponentType: mealplanning.MealComponentTypesSide,
+		EstimatedPortions: numbers.MinRange[float32]{
+			Min: 4,
+		},
+		PortionName:       "cup",
+		PluralPortionName: "cups",
+		EligibleForMeals:  false,
+		Steps: []*mealplanning.RecipeStepCreationRequestInput{
+			crStep0, crStep1, crStep2, crStep3, crStep4, crStep5, crStep6, crStep7, crStep8, crStep9, crStep10,
+		},
+		PrepTasks: []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		croutonsRecipe,
+	}
+}

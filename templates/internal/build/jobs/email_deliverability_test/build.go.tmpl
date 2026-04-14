@@ -1,0 +1,49 @@
+package emaildeliverabilitytest
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	emaildeliverabilitytest "{{ .Project.ProjectMeta.Module }}/internal/services/email/workers/email_deliverability_test"
+
+	emailcfg "{{ .Project.ProjectMeta.PlatformModule }}/email/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/httpclient"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability"
+	loggingcfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/logging/config"
+	metricscfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/metrics/config"
+	tracingcfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing/config"
+
+	"github.com/samber/do/v2"
+)
+
+// BuildInjector creates and configures the dependency injection container.
+func BuildInjector(
+	ctx context.Context,
+	cfg *config.EmailDeliverabilityTestConfig,
+) *do.RootScope {
+	i := do.New()
+
+	do.ProvideValue(i, ctx)
+	do.ProvideValue(i, cfg)
+
+	RegisterConfigs(i)
+
+	observability.RegisterO11yConfigs(i)
+	tracingcfg.RegisterTracerProvider(i)
+	loggingcfg.RegisterLogger(i)
+	metricscfg.RegisterMetricsProvider(i)
+	httpclient.RegisterHTTPClient(i)
+	emailcfg.RegisterEmailer(i)
+	emaildeliverabilitytest.RegisterEmailDeliverabilityTest(i)
+
+	return i
+}
+
+// Build builds the email deliverability test job.
+func Build(
+	ctx context.Context,
+	cfg *config.EmailDeliverabilityTestConfig,
+) (*emaildeliverabilitytest.Job, error) {
+	i := BuildInjector(ctx, cfg)
+	return do.MustInvoke[*emaildeliverabilitytest.Job](i), nil
+}

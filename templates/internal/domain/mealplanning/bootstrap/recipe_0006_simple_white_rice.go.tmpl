@@ -1,0 +1,559 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/numbers"
+)
+
+// SimpleWhiteRiceRecipe creates the Simple White Rice recipe.
+// Source: https://www.seriouseats.com/essentials-how-to-cook-rice
+func SimpleWhiteRiceRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	rinsePrep := enums.Preparations["rinse"]
+	combinePrep := enums.Preparations["combine"]
+	simmerPrep := enums.Preparations["simmer"]
+	stirPrep := enums.Preparations["stir"]
+	coverPrep := enums.Preparations["cover"]
+	adjustPrep := enums.Preparations["adjust"]
+	removeFromHeatPrep := enums.Preparations["remove from heat"]
+	restPrep := enums.Preparations["rest"]
+	fluffPrep := enums.Preparations["fluff"]
+
+	// Get ingredients
+	rice := enums.Ingredients["rice"]
+	water := enums.Ingredients["water"]
+	salt := enums.Ingredients["salt"]
+	oliveOil := enums.Ingredients["olive oil"]
+
+	// Get measurement units
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	gramMeasurement := enums.MeasurementUnits["gram"]
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+
+	// Get instruments
+	fork := enums.Instruments["fork"]
+	woodenSpoon := enums.Instruments["wooden spoon"]
+
+	// Get vessels
+	saucepan := enums.Vessels["saucepan"]
+	smallBowl := enums.Vessels["small bowl"]
+
+	// Get bridge table entries
+	// Rinse preparation bridges
+	rinseRiceVIP := enums.IngredientPreparations[rinsePrep.ID][rice.ID]
+	rinseWaterVIP := enums.IngredientPreparations[rinsePrep.ID][water.ID]
+	rinseBowlVPV := enums.PreparationVessels[rinsePrep.ID][smallBowl.ID]
+
+	// Combine preparation bridges
+	combineWaterVIP := enums.IngredientPreparations[combinePrep.ID][water.ID]
+	combineSaltVIP := enums.IngredientPreparations[combinePrep.ID][salt.ID]
+	combineOliveOilVIP := enums.IngredientPreparations[combinePrep.ID][oliveOil.ID]
+	combineSaucepanVPV := enums.PreparationVessels[combinePrep.ID][saucepan.ID]
+
+	// Stir preparation bridges
+	stirWoodenSpoonVPI := enums.PreparationInstruments[stirPrep.ID][woodenSpoon.ID]
+
+	// Fluff preparation bridges
+	fluffForkVPI := enums.PreparationInstruments[fluffPrep.ID][fork.ID]
+
+	// Measurement unit bridges
+	riceCupVIMU := enums.IngredientMeasurementUnits[rice.ID][cupMeasurement.ID]
+	waterCupVIMU := enums.IngredientMeasurementUnits[water.ID][cupMeasurement.ID]
+	saltGramVIMU := enums.IngredientMeasurementUnits[salt.ID][gramMeasurement.ID]
+	oliveOilTbspVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][tablespoonMeasurement.ID]
+
+	// Step 0: Rinse rice until water runs clear
+	step0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        rinsePrep.ID,
+		Index:                0,
+		ExplicitInstructions: "Rinse the rice in a bowl with cold water, swishing it around with your hand. Drain and repeat until the water runs clear.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &rinseRiceVIP.ID,
+				ValidIngredientMeasurementUnitID: &riceCupVIMU.ID,
+				Name:                             "long-grain white rice",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &rinseWaterVIP.ID,
+				ValidIngredientMeasurementUnitID: &waterCupVIMU.ID,
+				Name:                             "cold water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &rinseBowlVPV.ID,
+				Name:                     "bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "rinsed rice",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 1: Combine all ingredients in saucepan
+	step1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        combinePrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Combine all ingredients in a 2-quart saucepan.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "rinsed rice",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineWaterVIP.ID,
+				ValidIngredientMeasurementUnitID: &waterCupVIMU.ID,
+				Name:                             "water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1.75, // 1 3/4 cups
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltGramVIMU.ID,
+				Name:                             "salt",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1, // approximately 1 pinch
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineOliveOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &oliveOilTbspVIMU.ID,
+				Name:                             "olive oil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &combineSaucepanVPV.ID,
+				Name:                     "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "rice mixture in saucepan",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2.75)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 2: Bring to a simmer
+	step2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        simmerPrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Bring to a simmer.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "rice mixture in saucepan",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2.75,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "simmering rice mixture",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2.75)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 3: Stir everything when it reaches a lively simmer
+	step3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        stirPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "As soon as the water reaches a lively simmer, give everything a good stir.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "simmering rice mixture",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2.75,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &stirWoodenSpoonVPI.ID,
+				Name:                         "wooden spoon",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "stirred rice mixture",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2.75)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 4: Cover the pot
+	step4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        coverPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Cover the pot.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "stirred rice mixture",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2.75,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "rice mixture in covered pot",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2.75)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 5: Lower heat
+	step5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        adjustPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Lower the heat as much as possible.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "rice mixture in covered pot",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2.75,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "rice mixture in covered pot",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2.75)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 6: Simmer for 15 minutes
+	step6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        simmerPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Cook for 15 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(900)), // 15 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "rice mixture in covered pot",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2.75,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "cooked rice in covered pot",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 7: Remove from heat
+	step7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        removeFromHeatPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Turn off the burner and remove the pot from the heat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "cooked rice in covered pot",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "cooked rice removed from heat",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 8: Rest
+	step8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        restPrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Let the pot sit for at least 5 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(300)), // 5 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "cooked rice removed from heat",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "rested rice",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+			{
+				Name:  "2-quart saucepan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 9: Fluff with fork
+	step9 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        fluffPrep.ID,
+		Index:                9,
+		ExplicitInstructions: "Fluff with a fork.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "rested rice",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &fluffForkVPI.ID,
+				Name:                         "fork",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "2-quart saucepan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "simple white rice",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+		},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		{
+			Name:                "Simple White Rice",
+			Slug:                "simple-white-rice",
+			Source:              "https://www.seriouseats.com/essentials-how-to-cook-rice",
+			Description:         "",
+			YieldsComponentType: mealplanning.MealComponentTypesSide,
+			EstimatedPortions: numbers.MinRange[float32]{
+				Min: 3,
+				Max: new(float32(4)),
+			},
+			PortionName:       "serving",
+			PluralPortionName: "servings",
+			EligibleForMeals:  true,
+			Steps:             []*mealplanning.RecipeStepCreationRequestInput{step0, step1, step2, step3, step4, step5, step6, step7, step8, step9},
+			PrepTasks:         []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{},
+			AlsoCreateMeal:    false,
+		},
+	}
+}

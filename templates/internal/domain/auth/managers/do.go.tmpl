@@ -1,0 +1,39 @@
+package managers
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/auth"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/identity"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/authentication/totp"
+	"{{ .Project.ProjectMeta.PlatformModule }}/messagequeue"
+	msgconfig "{{ .Project.ProjectMeta.PlatformModule }}/messagequeue/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing"
+	"{{ .Project.ProjectMeta.PlatformModule }}/qrcodes"
+	"{{ .Project.ProjectMeta.PlatformModule }}/random"
+
+	"github.com/samber/do/v2"
+)
+
+// RegisterAuthManager registers the auth manager with the injector.
+func RegisterAuthManager(i do.Injector) {
+	do.Provide[AuthManagerInterface](i, func(i do.Injector) (AuthManagerInterface, error) {
+		return ProvideAuthManager(
+			do.MustInvoke[context.Context](i),
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[auth.PasswordResetTokenDataManager](i),
+			do.MustInvoke[auth.UserSessionDataManager](i),
+			do.MustInvoke[identity.UserDataManager](i),
+			do.MustInvoke[authentication.Authenticator](i),
+			do.MustInvoke[totp.Verifier](i),
+			do.MustInvoke[messagequeue.PublisherProvider](i),
+			do.MustInvoke[random.Generator](i),
+			do.MustInvoke[qrcodes.Builder](i),
+			do.MustInvoke[*msgconfig.QueuesConfig](i),
+		)
+	})
+}

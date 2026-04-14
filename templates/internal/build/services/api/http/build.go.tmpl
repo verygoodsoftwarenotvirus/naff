@@ -1,0 +1,105 @@
+package api
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication"
+	authcfg "{{ .Project.ProjectMeta.Module }}/internal/authentication/config"
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	identitymgr "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/manager"
+	paymentsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/payments/manager"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories"
+	auditrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/audit"
+	identityrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/identity"
+	oauthrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/oauth"
+	paymentsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/payments"
+	authservice "{{ .Project.ProjectMeta.Module }}/internal/services/auth/handlers/authentication"
+	paymentsadapters "{{ .Project.ProjectMeta.Module }}/internal/services/payments/adapters"
+	paymentshttp "{{ .Project.ProjectMeta.Module }}/internal/services/payments/http"
+
+	analyticscfg "{{ .Project.ProjectMeta.PlatformModule }}/analytics/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/database"
+	databasecfg "{{ .Project.ProjectMeta.PlatformModule }}/database/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/encoding"
+	"{{ .Project.ProjectMeta.PlatformModule }}/healthcheck"
+	msgconfig "{{ .Project.ProjectMeta.PlatformModule }}/messagequeue/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability"
+	loggingcfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/logging/config"
+	metricscfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/metrics/config"
+	tracingcfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/random"
+	routingcfg "{{ .Project.ProjectMeta.PlatformModule }}/routing/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/server/http"
+
+	"github.com/samber/do/v2"
+)
+
+// BuildInjector creates and configures the dependency injection container.
+func BuildInjector(
+	ctx context.Context,
+	cfg *config.APIServiceConfig,
+) *do.RootScope {
+	i := do.New()
+
+	do.ProvideValue(i, ctx)
+	do.ProvideValue(i, cfg)
+
+	// config field extraction
+	RegisterConfigs(i)
+
+	// platform providers
+	observability.RegisterO11yConfigs(i)
+	loggingcfg.RegisterLogger(i)
+	tracingcfg.RegisterTracerProvider(i)
+	metricscfg.RegisterMetricsProvider(i)
+	encoding.RegisterServerEncoderDecoder(i)
+	msgconfig.RegisterMessageQueue(i)
+	analyticscfg.RegisterEventReporter(i)
+	repositories.RegisterMigrator(i)
+	databasecfg.RegisterDatabase(i)
+	do.Provide[healthcheck.Registry](i, func(i do.Injector) (healthcheck.Registry, error) {
+		registry := healthcheck.NewRegistry()
+		dbClient := do.MustInvoke[database.Client](i)
+		if checker, ok := dbClient.(healthcheck.DatabaseReadyChecker); ok {
+			registry.Register(healthcheck.NewDatabaseChecker("database", checker))
+		}
+		return registry, nil
+	})
+	routingcfg.RegisterRouteParamManager(i)
+	random.RegisterGenerator(i)
+	http.RegisterHTTPServer(i, "api_server")
+
+	// authentication
+	authentication.RegisterAuth(i)
+	authcfg.RegisterConfigs(i)
+
+	// repos
+	auditrepo.RegisterAuditLogRepository(i)
+	identityrepo.RegisterIdentityRepository(i)
+	oauthrepo.RegisterOAuthRepository(i)
+	paymentsrepo.RegisterPaymentsRepository(i)
+
+	// managers
+	identitymgr.RegisterIdentityDataManager(i)
+	paymentsmanager.RegisterPaymentsDataManager(i)
+	paymentsadapters.RegisterPaymentProcessorRegistry(i)
+
+	// services
+	authservice.RegisterAuthHTTPService(i)
+	paymentshttp.RegisterPaymentsHTTP(i)
+
+	// searchers & routes
+	RegisterSearchers(i)
+	RegisterAPIRouter(i)
+
+	return i
+}
+
+// Build builds a server.
+func Build(
+	ctx context.Context,
+	cfg *config.APIServiceConfig,
+) (http.Server, error) {
+	i := BuildInjector(ctx, cfg)
+	return do.MustInvoke[http.Server](i), nil
+}

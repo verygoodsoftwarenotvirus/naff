@@ -1,0 +1,104 @@
+package datachangemessagehandler
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	mealplanningregistration "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/registration"
+	notificationsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/notifications/manager"
+	settingsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/settings/manager"
+	waitlistsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/waitlists/manager"
+	"{{ .Project.ProjectMeta.Module }}/internal/functions/datachangemessagehandler"
+	auditlogentries "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/audit"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/auth"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/dataprivacy"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/identity"
+	internalopsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/internalops"
+	issue_reports "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/issuereports"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/uploadedmedia"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/webhooks"
+	identityindexing "{{ .Project.ProjectMeta.Module }}/internal/services/identity/indexing"
+
+	analyticscfg "{{ .Project.ProjectMeta.PlatformModule }}/analytics/config"
+	databasecfg "{{ .Project.ProjectMeta.PlatformModule }}/database/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/database/postgres"
+	emailcfg "{{ .Project.ProjectMeta.PlatformModule }}/email/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/encoding"
+	"{{ .Project.ProjectMeta.PlatformModule }}/httpclient"
+	msgconfig "{{ .Project.ProjectMeta.PlatformModule }}/messagequeue/config"
+	notificationscfg "{{ .Project.ProjectMeta.PlatformModule }}/notifications/mobile/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability"
+	loggingcfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/logging/config"
+	metricscfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/metrics/config"
+	tracingcfg "{{ .Project.ProjectMeta.PlatformModule }}/observability/tracing/config"
+	"{{ .Project.ProjectMeta.PlatformModule }}/uploads/objectstorage"
+
+	"github.com/samber/do/v2"
+)
+
+// BuildInjector creates and configures the dependency injection container.
+func BuildInjector(
+	ctx context.Context,
+	cfg *config.AsyncMessageHandlerConfig,
+) *do.RootScope {
+	i := do.New()
+
+	do.ProvideValue(i, ctx)
+	do.ProvideValue(i, cfg)
+
+	// config field extraction
+	RegisterConfigs(i)
+
+	// platform providers
+	observability.RegisterO11yConfigs(i)
+	tracingcfg.RegisterTracerProvider(i)
+	loggingcfg.RegisterLogger(i)
+	metricscfg.RegisterMetricsProvider(i)
+	msgconfig.RegisterMessageQueue(i)
+	httpclient.RegisterHTTPClient(i)
+	encoding.RegisterServerEncoderDecoder(i)
+	analyticscfg.RegisterEventReporter(i)
+	emailcfg.RegisterEmailer(i)
+	databasecfg.RegisterClientConfig(i)
+	postgres.RegisterDatabaseClient(i)
+	objectstorage.RegisterUploadManager(i)
+	notificationscfg.RegisterPushSender(i)
+
+	// Domain: mealplanning
+	mealplanningregistration.RegisterForDataChangeHandler(i)
+
+	// repos
+	auditlogentries.RegisterAuditLogRepository(i)
+	auth.RegisterAuthRepository(i)
+	dataprivacy.RegisterDataPrivacyRepository(i)
+	identity.RegisterIdentityRepository(i)
+	issue_reports.RegisterIssueReportsRepository(i)
+	uploadedmedia.RegisterUploadedMediaRepository(i)
+	webhooks.RegisterWebhooksRepository(i)
+	internalopsrepo.RegisterInternalOpsRepository(i)
+
+	// managers
+	notificationsmanager.RegisterNotificationsDataManager(i)
+	settingsmanager.RegisterSettingsDataManager(i)
+	waitlistsmanager.RegisterWaitlistDataManager(i)
+
+	// indexing
+	identityindexing.RegisterCoreDataIndexer(i)
+
+	// searchers
+	RegisterSearchers(i)
+
+	// main handler
+	datachangemessagehandler.RegisterAsyncDataChangeMessageHandler(i)
+
+	return i
+}
+
+// Build builds a server.
+func Build(
+	ctx context.Context,
+	cfg *config.AsyncMessageHandlerConfig,
+) (*datachangemessagehandler.AsyncDataChangeMessageHandler, error) {
+	i := BuildInjector(ctx, cfg)
+	return do.MustInvoke[*datachangemessagehandler.AsyncDataChangeMessageHandler](i), nil
+}

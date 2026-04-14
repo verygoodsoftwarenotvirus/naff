@@ -1,0 +1,910 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/numbers"
+)
+
+// OnePanPastaRecipe creates the One-Pan Pasta with Tomatoes and Greens recipe.
+func OnePanPastaRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	halvePrep := enums.Preparations["halve"]
+	zestPrep := enums.Preparations["zest"]
+	rinsePrep := enums.Preparations["rinse"]
+	chopPrep := enums.Preparations["chop"]
+	boilPrep := enums.Preparations["boil"]
+	addPrep := enums.Preparations["add"]
+	coverPrep := enums.Preparations["cover"]
+	uncoverPrep := enums.Preparations["uncover"]
+	simmerPrep := enums.Preparations["simmer"]
+	cookPrep := enums.Preparations["cook"]
+	seasonPrep := enums.Preparations["season"]
+	topPrep := enums.Preparations["top"]
+
+	// Get ingredients
+	cherryTomatoes := enums.Ingredients["cherry tomatoes"]
+	lemon := enums.Ingredients["lemon"]
+	water := enums.Ingredients["water"]
+	spaghetti := enums.Ingredients["spaghetti"]
+	oliveOil := enums.Ingredients["olive oil"]
+	salt := enums.Ingredients["salt"]
+	kale := enums.Ingredients["kale"]
+	spinach := enums.Ingredients["spinach"]
+	blackPepper := enums.Ingredients["black pepper"]
+	parmesan := enums.Ingredients["parmesan cheese"]
+
+	// Get measurement units
+	poundMeasurement := enums.MeasurementUnits["pound"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+	teaspoonMeasurement := enums.MeasurementUnits["teaspoon"]
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	quartMeasurement := enums.MeasurementUnits["quart"]
+	cupMeasurement := enums.MeasurementUnits["cup"]
+
+	// Get instruments
+	microplane := enums.Instruments["microplane"]
+	tongs := enums.Instruments["tongs"]
+	knife := enums.Instruments["knife"]
+
+	// Get vessels
+	pot := enums.Vessels["pot"]
+	sautePan := enums.Vessels["sauté pan"]
+	cuttingBoard := enums.Vessels["cutting board"]
+	largeBowl := enums.Vessels["large bowl"]
+
+	// Get bridge table entries
+	halveCherryTomatoVIP := enums.IngredientPreparations[halvePrep.ID][cherryTomatoes.ID]
+	halveKnifeVPI := enums.PreparationInstruments[halvePrep.ID][knife.ID]
+	halveCuttingBoardVPV := enums.PreparationVessels[halvePrep.ID][cuttingBoard.ID]
+
+	zestLemonVIP := enums.IngredientPreparations[zestPrep.ID][lemon.ID]
+	zestMicroplaneVPI := enums.PreparationInstruments[zestPrep.ID][microplane.ID]
+
+	rinseKaleVIP := enums.IngredientPreparations[rinsePrep.ID][kale.ID]
+	rinseSpinachVIP := enums.IngredientPreparations[rinsePrep.ID][spinach.ID]
+	rinseLargeBowlVPV := enums.PreparationVessels[rinsePrep.ID][largeBowl.ID]
+
+	chopKaleVIP := enums.IngredientPreparations[chopPrep.ID][kale.ID]
+	chopSpinachVIP := enums.IngredientPreparations[chopPrep.ID][spinach.ID]
+	chopKnifeVPI := enums.PreparationInstruments[chopPrep.ID][knife.ID]
+	chopCuttingBoardVPV := enums.PreparationVessels[chopPrep.ID][cuttingBoard.ID]
+
+	boilWaterVIP := enums.IngredientPreparations[boilPrep.ID][water.ID]
+	boilPotVPV := enums.PreparationVessels[boilPrep.ID][pot.ID]
+
+	addSpaghettiVIP := enums.IngredientPreparations[addPrep.ID][spaghetti.ID]
+	addCherryTomatoVIP := enums.IngredientPreparations[addPrep.ID][cherryTomatoes.ID]
+	addOliveOilVIP := enums.IngredientPreparations[addPrep.ID][oliveOil.ID]
+	addSaltVIP := enums.IngredientPreparations[addPrep.ID][salt.ID]
+	addWaterVIP := enums.IngredientPreparations[addPrep.ID][water.ID]
+	addSautePanVPV := enums.PreparationVessels[addPrep.ID][sautePan.ID]
+
+	coverSautePanVPV := enums.PreparationVessels[coverPrep.ID][sautePan.ID]
+	uncoverSautePanVPV := enums.PreparationVessels[uncoverPrep.ID][sautePan.ID]
+
+	simmerSpaghettiVIP := enums.IngredientPreparations[simmerPrep.ID][spaghetti.ID]
+	simmerTongsVPI := enums.PreparationInstruments[simmerPrep.ID][tongs.ID]
+	simmerSautePanVPV := enums.PreparationVessels[simmerPrep.ID][sautePan.ID]
+
+	cookSpaghettiVIP := enums.IngredientPreparations[cookPrep.ID][spaghetti.ID]
+	cookTongsVPI := enums.PreparationInstruments[cookPrep.ID][tongs.ID]
+	cookSautePanVPV := enums.PreparationVessels[cookPrep.ID][sautePan.ID]
+
+	seasonSaltVIP := enums.IngredientPreparations[seasonPrep.ID][salt.ID]
+	seasonPepperVIP := enums.IngredientPreparations[seasonPrep.ID][blackPepper.ID]
+	seasonSautePanVPV := enums.PreparationVessels[seasonPrep.ID][sautePan.ID]
+
+	topParmesanVIP := enums.IngredientPreparations[topPrep.ID][parmesan.ID]
+	topSautePanVPV := enums.PreparationVessels[topPrep.ID][sautePan.ID]
+
+	// Measurement unit bridges (2 pints cherry tomatoes ≈ 4 cups)
+	cherryTomatoCupVIMU := enums.IngredientMeasurementUnits[cherryTomatoes.ID][cupMeasurement.ID]
+	lemonUnitVIMU := enums.IngredientMeasurementUnits[lemon.ID][unitMeasurement.ID]
+	waterQuartVIMU := enums.IngredientMeasurementUnits[water.ID][quartMeasurement.ID]
+	spaghettiPoundVIMU := enums.IngredientMeasurementUnits[spaghetti.ID][poundMeasurement.ID]
+	oliveOilTablespoonVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][tablespoonMeasurement.ID]
+	saltTeaspoonVIMU := enums.IngredientMeasurementUnits[salt.ID][teaspoonMeasurement.ID]
+	kaleCupVIMU := enums.IngredientMeasurementUnits[kale.ID][cupMeasurement.ID]
+	spinachCupVIMU := enums.IngredientMeasurementUnits[spinach.ID][cupMeasurement.ID]
+
+	// Ingredient states
+	atTemperatureState := enums.IngredientStates["at temperature"]
+	tenderState := enums.IngredientStates["tender"]
+	desiredConsistencyState := enums.IngredientStates["at desired consistency"]
+
+	// Step 0: Halve cherry tomatoes
+	step0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        halvePrep.ID,
+		Index:                0,
+		ExplicitInstructions: "Halve the cherry tomatoes.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &halveCherryTomatoVIP.ID,
+				ValidIngredientMeasurementUnitID: &cherryTomatoCupVIMU.ID,
+				Name:                             "cherry tomatoes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &halveKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &halveCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "halved cherry tomatoes",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(4)),
+				},
+			},
+		},
+	}
+
+	// Step 1: Zest the lemons
+	step1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        zestPrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Zest the lemons.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &zestLemonVIP.ID,
+				ValidIngredientMeasurementUnitID: &lemonUnitVIMU.ID,
+				Name:                             "lemons",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &zestMicroplaneVPI.ID,
+				Name:                         "microplane",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "lemon zest",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 2: Bring water to a boil
+	step2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        boilPrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Bring just over a quart of water to a boil in a pot.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &boilWaterVIP.ID,
+				ValidIngredientMeasurementUnitID: &waterQuartVIMU.ID,
+				Name:                             "water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1.25,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &boilPotVPV.ID,
+				Name:                     "pot",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "boiling water",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &quartMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1.25)),
+				},
+			},
+			{
+				Name:  "pot",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 3: Place spaghetti, tomatoes, lemon zest, oil, and salt in the pan
+	step3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Place spaghetti, halved tomatoes, lemon zest, olive oil, and 2 teaspoons kosher salt in a large, dry, shallow pan. The pan should be large enough that the dry spaghetti can lie flat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &addSpaghettiVIP.ID,
+				ValidIngredientMeasurementUnitID: &spaghettiPoundVIMU.ID,
+				Name:                             "spaghetti",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &addCherryTomatoVIP.ID,
+				Name:                            "halved cherry tomatoes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "lemon zest",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &addOliveOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &oliveOilTablespoonVIMU.ID,
+				Name:                             "olive oil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 7,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &addSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltTeaspoonVIMU.ID,
+				Name:                             "kosher salt",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &addSautePanVPV.ID,
+				Name:                     "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "dry spaghetti with tomatoes, zest, oil, and salt",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 4: Add boiling water to the pan
+	step4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Carefully add the boiling water to the pan with the spaghetti.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &addWaterVIP.ID,
+				Name:                            "boiling water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "spaghetti in water",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 5: Cover and bring to a boil
+	step5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        coverPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Cover the pan and bring to a boil.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "spaghetti in water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &coverSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: atTemperatureState.ID,
+				Notes:             "water should be at a rolling boil",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "covered spaghetti at boil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 6: Uncover
+	step6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        uncoverPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Remove the lid.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "covered spaghetti at boil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &uncoverSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "uncovered spaghetti at boil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 7: Reduce to simmer and cook, stirring with tongs
+	step7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        simmerPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Reduce the heat to a simmer and cook for about 6 minutes, using tongs to move the spaghetti around now and then so it doesn't stick.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(360)),
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &simmerSpaghettiVIP.ID,
+				Name:                            "uncovered spaghetti at boil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &simmerTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &simmerSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "simmered spaghetti",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 8: Wash kale or spinach
+	step8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        rinsePrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Wash the kale or spinach leaves.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &rinseKaleVIP.ID,
+				ValidIngredientMeasurementUnitID: &kaleCupVIMU.ID,
+				Name:                             "kale (leaves only)",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 0,
+			},
+			{
+				ValidIngredientPreparationID:     &rinseSpinachVIP.ID,
+				ValidIngredientMeasurementUnitID: &spinachCupVIMU.ID,
+				Name:                             "spinach (leaves only)",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 1,
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &rinseLargeBowlVPV.ID,
+				Name:                     "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "washed kale or spinach",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(4)),
+				},
+			},
+		},
+	}
+
+	// Step 9: Chop kale or spinach
+	step9 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        chopPrep.ID,
+		Index:                9,
+		ExplicitInstructions: "Remove stems from kale (if using) and chop the leaves. If using spinach, chop the leaves.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:         new(uint64(8)),
+				ProductOfRecipeStepProductIndex:  new(uint64(0)),
+				ValidIngredientPreparationID:     &chopKaleVIP.ID,
+				ValidIngredientMeasurementUnitID: &kaleCupVIMU.ID,
+				Name:                             "washed kale",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 0,
+			},
+			{
+				ProductOfRecipeStepIndex:         new(uint64(8)),
+				ProductOfRecipeStepProductIndex:  new(uint64(0)),
+				ValidIngredientPreparationID:     &chopSpinachVIP.ID,
+				ValidIngredientMeasurementUnitID: &spinachCupVIMU.ID,
+				Name:                             "washed spinach",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 1,
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &chopKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &chopCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "chopped kale or spinach",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(4)),
+				},
+			},
+		},
+	}
+
+	// Step 10: Add kale or spinach
+	step10 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                10,
+		ExplicitInstructions: "Add the chopped kale or spinach and continue cooking.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "simmered spaghetti",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(9)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "chopped kale or spinach",
+				Quantity: numbers.MinRange[float32]{
+					Min: 4,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &addSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "spaghetti with greens",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 11: Cook until liquid reduces to sauce and pasta is tender
+	step11 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        cookPrep.ID,
+		Index:                11,
+		ExplicitInstructions: "Continue cooking until the remaining liquid has reduced to a sauce and the spaghetti is cooked through.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(10)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &cookSpaghettiVIP.ID,
+				Name:                            "spaghetti with greens",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &cookTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(10)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &cookSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: tenderState.ID,
+				Notes:             "spaghetti should be cooked through",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+			{
+				IngredientStateID: desiredConsistencyState.ID,
+				Notes:             "liquid should have reduced to a sauce",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "one-pan pasta",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 12: Season and top with Parmesan
+	step12 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                12,
+		ExplicitInstructions: "Taste, season with salt and pepper to taste.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(11)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "one-pan pasta",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID: &seasonSaltVIP.ID,
+				QuantityNotes:                "to taste",
+				Name:                         "salt",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0,
+				},
+			},
+			{
+				ValidIngredientPreparationID: &seasonPepperVIP.ID,
+				QuantityNotes:                "to taste",
+				Name:                         "black pepper",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(11)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &seasonSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "seasoned one-pan pasta",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "large shallow pan",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 13: Top with Parmesan
+	step13 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        topPrep.ID,
+		Index:                13,
+		ExplicitInstructions: "Top with Parmesan for serving.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(12)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "seasoned one-pan pasta",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID: &topParmesanVIP.ID,
+				QuantityNotes:                "for serving",
+				Name:                         "Parmesan",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(12)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &topSautePanVPV.ID,
+				Name:                            "large shallow pan",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "one-pan pasta with Parmesan",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	prepTask1 := &mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{
+		Name:                        "Halve cherry tomatoes and zest lemons",
+		Description:                 "Halve the cherry tomatoes and zest the lemons. Halved cherry tomatoes keep 1 to 2 days refrigerated; lemon zest keeps 1 to 2 days in an airtight container.",
+		Notes:                       "Having these ready ahead makes the spaghetti come together quickly once the water boils.",
+		Optional:                    true,
+		ExplicitStorageInstructions: "Store halved tomatoes and lemon zest in separate airtight containers in the refrigerator for up to 2 days.",
+		StorageType:                 mealplanning.RecipePrepTaskStorageTypeAirtightContainer,
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: new(float32(4)),
+		},
+		TimeBufferBeforeRecipeInSeconds: numbers.MinRange[uint32]{
+			Min: 0,
+			Max: new(uint32(172800)), // 2 days
+		},
+		RecipeSteps: []*mealplanning.RecipePrepTaskStepWithinRecipeCreationRequestInput{
+			{BelongsToRecipeStepIndex: 0, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 1, SatisfiesRecipeStep: true},
+		},
+	}
+
+	prepTask2 := &mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{
+		Name:                        "Wash and chop kale or spinach",
+		Description:                 "Wash the kale or spinach leaves, remove stems from kale (if using), and chop the leaves. Washed and chopped kale keeps 2 to 3 days; spinach keeps 1 to 2 days.",
+		Notes:                       "Prepared greens wilt quickly into the spaghetti when added near the end.",
+		Optional:                    true,
+		ExplicitStorageInstructions: "Store the washed and chopped greens in an airtight container in the refrigerator for up to 2 days (spinach) or 3 days (kale).",
+		StorageType:                 mealplanning.RecipePrepTaskStorageTypeAirtightContainer,
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: new(float32(4)),
+		},
+		TimeBufferBeforeRecipeInSeconds: numbers.MinRange[uint32]{
+			Min: 0,
+			Max: new(uint32(259200)), // 3 days
+		},
+		RecipeSteps: []*mealplanning.RecipePrepTaskStepWithinRecipeCreationRequestInput{
+			{BelongsToRecipeStepIndex: 8, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 9, SatisfiesRecipeStep: true},
+		},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		{
+			Name:                "One-Pan Pasta with Tomatoes and Greens",
+			Slug:                "one-pan-pasta-tomatoes-greens",
+			Source:              "https://cooking.nytimes.com/recipes/1018322-one-pot-spaghetti-with-cherry-tomatoes-and-kale",
+			Description:         "A simple one-pan pasta where spaghetti cooks directly with cherry tomatoes, lemon zest, and olive oil. Add kale or spinach near the end and top with Parmesan.",
+			YieldsComponentType: mealplanning.MealComponentTypesMain,
+			EstimatedPortions: numbers.MinRange[float32]{
+				Min: 4,
+			},
+			PortionName:       "serving",
+			PluralPortionName: "servings",
+			EligibleForMeals:  true,
+			Steps: []*mealplanning.RecipeStepCreationRequestInput{
+				step0, step1, step2, step3, step4, step5, step6, step7, step8, step9, step10, step11, step12, step13,
+			},
+			PrepTasks: []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{prepTask1, prepTask2},
+		},
+	}
+}
