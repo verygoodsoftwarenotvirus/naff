@@ -350,9 +350,18 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		files = append(files, p.planAuthenticationFiles()...)
 		files = append(files, p.planConfigFiles()...)
 		files = append(files, p.planRepositoriesFiles()...)
-		files = append(files, p.planLocalDevFiles()...)
+		// planLocalDevFiles emits internal/localdev/server.go, shipped verbatim
+		// from target in Phase 4b.4. It imports internal/build/services/api,
+		// internal/domain/mealplanning, internal/repositories/postgres/auth+identity+oauth,
+		// and internal/grpc/generated/services/auth — all DDB-specific or
+		// codegen-dependent. Skipped in the generic path.
+		// files = append(files, p.planLocalDevFiles()...)
 		files = append(files, p.planDomainExtrasFiles()...)
-		files = append(files, p.planAuthHandlerFiles()...)
+		// planAuthHandlerFiles ships internal/services/auth/handlers/
+		// authentication/*.go verbatim from target. Its do.go imports internal/
+		// domain/identity/manager — a hand-rolled target package naff doesn't
+		// emit. Omitted in the generic path.
+		// files = append(files, p.planAuthHandlerFiles()...)
 	}
 	if generateIOS {
 		files = append(files, p.planIOSProjectFiles()...)
@@ -491,9 +500,11 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 		{"project/scripts/format_imports.sh.tmpl", "scripts/format_imports.sh", 0o755},
 		{"project/scripts/format_go_fieldalignment.sh.tmpl", "scripts/format_go_fieldalignment.sh", 0o755},
 		{"project/scripts/format_go_tag_alignment.sh.tmpl", "scripts/format_go_tag_alignment.sh", 0o755},
-		// Top-level shared proto: filtering (QueryFilter, Pagination) — imported
-		// by every service's *_service.proto and by testing/integration.
+		// Top-level shared protos:
+		// - filtering.proto: QueryFilter + Pagination (imported by per-domain services)
+		// - types/common.proto: ResponseDetails + NamedID (imported by per-domain services)
 		{"proto/filtering.proto.tmpl", "proto/filtering.proto", 0},
+		{"proto/common.proto.tmpl", "proto/types/common.proto", 0},
 	}
 
 	var files []PlannedFile
@@ -613,15 +624,16 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		{"testutils/matchers.go.tmpl", "internal/testutils/matchers.generated.go"},
 		{"testing/integration/apiserver/doc.go.tmpl", "testing/integration/apiserver/doc.generated.go"},
 		{"testing/integration/apiserver/constants.go.tmpl", "testing/integration/apiserver/constants.generated.go"},
-		{"testing/integration/apiserver/init.go.tmpl", "testing/integration/apiserver/init.generated.go"},
-		{"testing/integration/apiserver/helpers.go.tmpl", "testing/integration/apiserver/helpers.generated.go"},
-		{"testing/integration/apiserver/audit_helpers.go.tmpl", "testing/integration/apiserver/audit_helpers.generated.go"},
+		// init.go/helpers.go/audit_helpers.go omitted in the generic path — they
+		// reference internal/localdev (DDB-specific, dropped), internal/services/
+		// identity/grpc/converters (the per-entity converters, not emitted
+		// generically), and internal/grpc/generated/filtering (protoc output).
+		// Re-enable per project once those are either shipped or stubbed.
 
-		// Phase 3d — pkg/client. Single 248-LOC client plumbing file: gRPC+HTTP
-		// transport, OAuth2 token integration, TLS config. Per-entity client methods
-		// come from gRPC stubs in internal/grpc/generated/ — target-only protoc
-		// output, not naff's concern.
-		{"pkg/client/client.go.tmpl", "pkg/client/client.generated.go"},
+		// pkg/client/client.go omitted in the generic path — target's version
+		// hardcodes imports for every DDB service's protoc output. A future
+		// templated version should iterate .AllDomains.
+		// {"pkg/client/client.go.tmpl", "pkg/client/client.generated.go"},
 
 		// Phase 5 — hand-rolled postgres repos + identity adjuncts. Target ships
 		// auth/identity/oauth as hand-rolled domain packages (3b) AND hand-rolled
@@ -629,39 +641,30 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// services/auth/handlers, or the integration harness. Ship verbatim
 		// modulo module paths — the exact 3b/4b pattern.
 
-		// postgres repos for hand-rolled domains (auth/identity/oauth).
-		// {sqlc}/generated + {sqlc_queries}/ subdirs are consumer's protoc/sqlc
-		// responsibility — not emitted here.
-		{"repositories/postgres/auth/client.go.tmpl", "internal/repositories/postgres/auth/client.generated.go"},
-		{"repositories/postgres/auth/do.go.tmpl", "internal/repositories/postgres/auth/do.generated.go"},
-		{"repositories/postgres/auth/password_reset_tokens.go.tmpl", "internal/repositories/postgres/auth/password_reset_tokens.generated.go"},
-		{"repositories/postgres/auth/user_sessions.go.tmpl", "internal/repositories/postgres/auth/user_sessions.generated.go"},
+		// Phase 5 postgres repos for auth/identity/oauth are omitted in the
+		// generic path: their client.go and entity files reference `generated.
+		// Querier` from internal/repositories/postgres/<X>/generated (sqlc
+		// output from queries that target hand-writes and naff doesn't ship).
+		// Without those SQL queries, sqlc emits an empty package and the
+		// Phase 5 repos fail to compile. Re-enable after naff ships the auth/
+		// identity/oauth SQL query sources.
+		// postgres/testing is similarly dropped — its helpers.go uses
+		// identity/fakes which is present, but its audit.go imports the full
+		// DDB auditlogentries + transitive dependencies, not generic.
 
-		{"repositories/postgres/identity/account_invitations.go.tmpl", "internal/repositories/postgres/identity/account_invitations.generated.go"},
-		{"repositories/postgres/identity/account_user_memberships.go.tmpl", "internal/repositories/postgres/identity/account_user_memberships.generated.go"},
-		{"repositories/postgres/identity/accounts.go.tmpl", "internal/repositories/postgres/identity/accounts.generated.go"},
-		{"repositories/postgres/identity/client.go.tmpl", "internal/repositories/postgres/identity/client.generated.go"},
-		{"repositories/postgres/identity/data_privacy.go.tmpl", "internal/repositories/postgres/identity/data_privacy.generated.go"},
-		{"repositories/postgres/identity/do.go.tmpl", "internal/repositories/postgres/identity/do.generated.go"},
-		{"repositories/postgres/identity/users.go.tmpl", "internal/repositories/postgres/identity/users.generated.go"},
-		{"repositories/postgres/identity/webauthn_credentials.go.tmpl", "internal/repositories/postgres/identity/webauthn_credentials.generated.go"},
-
-		{"repositories/postgres/oauth/client.go.tmpl", "internal/repositories/postgres/oauth/client.generated.go"},
-		{"repositories/postgres/oauth/do.go.tmpl", "internal/repositories/postgres/oauth/do.generated.go"},
-		{"repositories/postgres/oauth/oauth2_client_tokens.go.tmpl", "internal/repositories/postgres/oauth/oauth2_client_tokens.generated.go"},
-		{"repositories/postgres/oauth/oauth2_clients.go.tmpl", "internal/repositories/postgres/oauth/oauth2_clients.generated.go"},
-
-		// postgres/testing — `pgtesting.BuildDatabaseContainer` + audit sentinel
-		// used by localdev.BuildInProcessServer.
-		{"repositories/postgres/testing/audit.go.tmpl", "internal/repositories/postgres/testing/audit.generated.go"},
-		{"repositories/postgres/testing/helpers.go.tmpl", "internal/repositories/postgres/testing/helpers.generated.go"},
+		// Ship grpc/converters — generic helpers for gRPC<->domain type
+		// conversions, used by naff's per-domain grpc/*.generated.go output.
+		{"internal/grpc/converters/helpers.go.tmpl", "internal/grpc/converters/helpers.generated.go"},
+		{"internal/grpc/converters/query_filter.go.tmpl", "internal/grpc/converters/query_filter.generated.go"},
 
 		// identity adjuncts — converters imported by localdev; fakes imported by
 		// postgres/testing; keys (auth/identity/oauth) imported across repos.
 		{"identity/converters/account_invitations.go.tmpl", "internal/domain/identity/converters/account_invitations.generated.go"},
 		{"identity/converters/account_user_memberships.go.tmpl", "internal/domain/identity/converters/account_user_memberships.generated.go"},
 		{"identity/converters/accounts.go.tmpl", "internal/domain/identity/converters/accounts.generated.go"},
-		{"identity/converters/admin.go.tmpl", "internal/domain/identity/converters/admin.generated.go"},
+		// identity/converters/admin.go omitted — its only contents is a single
+		// GRPC → domain converter that imports grpc/generated/services/identity
+		// (protoc output, absent in a fresh project before `make generate`).
 		{"identity/converters/users.go.tmpl", "internal/domain/identity/converters/users.generated.go"},
 
 		{"identity/fakes/account_invitation.go.tmpl", "internal/domain/identity/fakes/account_invitation.generated.go"},
@@ -792,7 +795,10 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 		{"config/environment.go.tmpl", "internal/config/environment.generated.go"},
 		{"config/mealplanning_configs.go.tmpl", "internal/config/mealplanning_configs.generated.go"},
 		{"config/mealplanning_environment.go.tmpl", "internal/config/mealplanning_environment.generated.go"},
-		{"config/services_config.go.tmpl", "internal/config/services_config.generated.go"},
+		// config/services_config.go is DDB-specific (hardcoded service list:
+		// dataprivacy/identity/mealplanning/oauth/payments/uploadedmedia). It
+		// imports services/<X>/config packages that naff doesn't emit in the
+		// generic path. Omitted until we template it on .AllDomains.
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -888,64 +894,30 @@ func (p *Pipeline) planCmdFiles(allDomains []config.Domain) []PlannedFile {
 	}
 
 	mappings := []m{
-		// services/api root + grpc + http
+		// services/api root — generic API server entry point. Simplified to
+		// inline DI; does not depend on internal/build/services/api/*.
 		{"cmd/services/api/main.go.tmpl", "cmd/services/api/main.go", true, projectCtx},
 		{"cmd/services/api/doc.go.tmpl", "cmd/services/api/doc.go", true, projectCtx},
-		{"cmd/services/api/grpc/main.go.tmpl", "cmd/services/api/grpc/main.go", true, projectCtx},
-		{"cmd/services/api/grpc/doc.go.tmpl", "cmd/services/api/grpc/doc.go", true, projectCtx},
-		{"cmd/services/api/http/main.go.tmpl", "cmd/services/api/http/main.go", true, projectCtx},
-		{"cmd/services/api/http/doc.go.tmpl", "cmd/services/api/http/doc.go", true, projectCtx},
 
-		// services/mcp
-		{"cmd/services/mcp/main.go.tmpl", "cmd/services/mcp/main.go", true, projectCtx},
-		{"cmd/services/mcp/auth.go.tmpl", "cmd/services/mcp/auth.go", true, projectCtx},
-		{"cmd/services/mcp/oauth2_handler.go.tmpl", "cmd/services/mcp/oauth2_handler.go", true, projectCtx},
-		{"cmd/services/mcp/schema.go.tmpl", "cmd/services/mcp/schema.go", true, projectCtx},
-
-		// tools/codegen/queries — main.go drives a per-entity dispatch map
+		// tools/codegen/queries — emits the per-entity sqlc query SQL files that
+		// feed `sqlc generate`. Required by `make generate` in the fresh-project
+		// flow. main.go uses a per-entity dispatch map (needs codegenCtx).
 		{"cmd/tools/codegen/queries/main.go.tmpl", "cmd/tools/codegen/queries/main.go", true, codegenCtx},
 		{"cmd/tools/codegen/queries/helpers.go.tmpl", "cmd/tools/codegen/queries/helpers.go", true, projectCtx},
 		{"cmd/tools/codegen/queries/sqlc.go.tmpl", "cmd/tools/codegen/queries/sqlc.go", true, projectCtx},
 
-		// tools/codegen/configs
-		{"cmd/tools/codegen/configs/main.go.tmpl", "cmd/tools/codegen/configs/main.go", true, projectCtx},
-		{"cmd/tools/codegen/configs/doc.go.tmpl", "cmd/tools/codegen/configs/doc.go", true, projectCtx},
-		{"cmd/tools/codegen/configs/utils.go.tmpl", "cmd/tools/codegen/configs/utils.go", true, projectCtx},
-		{"cmd/tools/codegen/configs/localdev.go.tmpl", "cmd/tools/codegen/configs/localdev.go", true, projectCtx},
-		{"cmd/tools/codegen/configs/integrationtests.go.tmpl", "cmd/tools/codegen/configs/integrationtests.go", true, projectCtx},
-		{"cmd/tools/codegen/configs/prod.go.tmpl", "cmd/tools/codegen/configs/prod.go", true, projectCtx},
-
-		// tools/codegen/valid_env_vars
-		{"cmd/tools/codegen/valid_env_vars/main.go.tmpl", "cmd/tools/codegen/valid_env_vars/main.go", true, projectCtx},
-
-		// tools/* (one main.go per tool)
-		{"cmd/tools/bootstrap/main.go.tmpl", "cmd/tools/bootstrap/main.go", true, projectCtx},
-		{"cmd/tools/migrate/main.go.tmpl", "cmd/tools/migrate/main.go", true, projectCtx},
-		{"cmd/tools/encryptor/main.go.tmpl", "cmd/tools/encryptor/main.go", true, projectCtx},
-		{"cmd/tools/data_exporter/main.go.tmpl", "cmd/tools/data_exporter/main.go", true, projectCtx},
-		{"cmd/tools/data_importer/main.go.tmpl", "cmd/tools/data_importer/main.go", true, projectCtx},
-		{"cmd/tools/search_index_initializer/main.go.tmpl", "cmd/tools/search_index_initializer/main.go", true, projectCtx},
-		{"cmd/tools/push_tester/main.go.tmpl", "cmd/tools/push_tester/main.go", true, projectCtx},
-		{"cmd/tools/aiagent/main.go.tmpl", "cmd/tools/aiagent/main.go", true, projectCtx},
-
-		// workers/*
-		{"cmd/workers/db_cleaner/main.go.tmpl", "cmd/workers/db_cleaner/main.go", true, projectCtx},
-		{"cmd/workers/email_deliverability_test/main.go.tmpl", "cmd/workers/email_deliverability_test/main.go", true, projectCtx},
-		{"cmd/workers/meal_plan_finalizer/main.go.tmpl", "cmd/workers/meal_plan_finalizer/main.go", true, projectCtx},
-		{"cmd/workers/meal_plan_grocery_list_initializer/main.go.tmpl", "cmd/workers/meal_plan_grocery_list_initializer/main.go", true, projectCtx},
-		{"cmd/workers/meal_plan_task_creator/main.go.tmpl", "cmd/workers/meal_plan_task_creator/main.go", true, projectCtx},
-		{"cmd/workers/mobile_notification_scheduler/main.go.tmpl", "cmd/workers/mobile_notification_scheduler/main.go", true, projectCtx},
-		{"cmd/workers/search_data_index_scheduler/main.go.tmpl", "cmd/workers/search_data_index_scheduler/main.go", true, projectCtx},
-		{"cmd/workers/queue_test/main.go.tmpl", "cmd/workers/queue_test/main.go", true, projectCtx},
-
-		// functions
-		{"cmd/functions/async_message_handler/main.go.tmpl", "cmd/functions/async_message_handler/main.go", true, projectCtx},
-
-		// localdev
-		{"cmd/localdev/server/main.go.tmpl", "cmd/localdev/server/main.go", true, projectCtx},
-
-		// playground
+		// playground — trivial id-gen dev utility, always generic
 		{"cmd/playground/main.go.tmpl", "cmd/playground/main.go", true, projectCtx},
+
+		// DDB-specific binaries (services/api/grpc & http split, services/mcp,
+		// tools/*, workers/*, functions/*, localdev/server, tools/codegen/
+		// configs, tools/codegen/valid_env_vars) are not emitted in the generic
+		// path: their templates were lifted from target verbatim and reference
+		// packages (internal/build/services/api, internal/build/jobs/*,
+		// internal/build/functions/*, internal/domain/mealplanning/*, etc.)
+		// that don't exist in a fresh project. Re-enabling them requires either
+		// templating on .AllDomains or reintroducing those packages as
+		// project-specific extensions. See plan pivot (2026-04-14).
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))

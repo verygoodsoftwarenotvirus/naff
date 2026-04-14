@@ -4,9 +4,8 @@ package {{ .Domain.Name }};
 
 option go_package = "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/{{ .Domain.Name }}";
 
-import "types/response_details.proto";
-import "types/query_filter.proto";
-import "types/pagination.proto";
+import "types/common.proto";
+import "filtering.proto";
 import "{{ .Domain.Name }}/{{ lower .Entity.Name }}_messages.generated.proto";
 
 service {{ plural .Entity.Name }}Service {
@@ -39,24 +38,24 @@ message Get{{ .Entity.Name }}Response {
 }
 
 message Get{{ plural .Entity.Name }}Request {
-  types.QueryFilter filter = 1;
+  filtering.QueryFilter filter = 1;
 }
 
 message Get{{ plural .Entity.Name }}Response {
   types.ResponseDetails response_details = 1;
-  types.Pagination pagination = 2;
+  filtering.Pagination pagination = 2;
   repeated {{ .Entity.Name }} results = 3;
 }
 
 {{- if .Entity.BelongsToAccount }}
 
 message Get{{ plural .Entity.Name }}ForAccountRequest {
-  types.QueryFilter filter = 1;
+  filtering.QueryFilter filter = 1;
 }
 
 message Get{{ plural .Entity.Name }}ForAccountResponse {
   types.ResponseDetails response_details = 1;
-  types.Pagination pagination = 2;
+  filtering.Pagination pagination = 2;
   repeated {{ .Entity.Name }} results = 3;
 }
 {{- end }}

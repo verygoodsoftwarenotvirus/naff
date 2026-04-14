@@ -278,14 +278,14 @@ func (r *repository) Create{{ .Entity.Name }}(ctx context.Context, input *types.
 	}
 
 {{- if ne .Domain.Name "audit" }}
-	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, tx, &audit.AuditLogEntryDatabaseCreationInput{
+	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
 		BelongsToAccount: &x.BelongsToAccount,
 {{- end }}
 		ID:               identifiers.New(),
 		ResourceType:     resourceType{{ plural .Entity.Name }},
 		RelevantID:       x.ID,
-		EventType:        audit.AuditLogEventTypeCreated,
+		EventType:        "created",
 	}); err != nil {
 		r.RollbackTransaction(ctx, tx)
 		return nil, observability.PrepareError(err, span, "creating audit log entry")
@@ -340,14 +340,14 @@ func (r *repository) Update{{ .Entity.Name }}(ctx context.Context, {{ camel .Ent
 	}
 
 {{- if ne .Domain.Name "audit" }}
-	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, tx, &audit.AuditLogEntryDatabaseCreationInput{
+	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
 		BelongsToAccount: &{{ camel .Entity.Name }}.BelongsToAccount,
 {{- end }}
 		ID:               identifiers.New(),
 		ResourceType:     resourceType{{ plural .Entity.Name }},
 		RelevantID:       {{ camel .Entity.Name }}.ID,
-		EventType:        audit.AuditLogEventTypeUpdated,
+		EventType:        "updated",
 	}); err != nil {
 		r.RollbackTransaction(ctx, tx)
 		return observability.PrepareError(err, span, "creating audit log entry")
@@ -373,10 +373,12 @@ func (r *repository) Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .En
 
 	logger := r.logger.WithValue({{ .Domain.Name }}keys.{{ .Entity.Name }}IDKey, {{ camel .Entity.Name }}ID)
 
+{{- if ne .Domain.Name "audit" }}
 	{{ camel .Entity.Name }}, err := r.Get{{ .Entity.Name }}(ctx, {{ camel .Entity.Name }}ID)
 	if err != nil {
 		return observability.PrepareAndLogError(err, logger, span, "fetching {{ humanReadable .Entity.Name }} for archive")
 	}
+{{- end }}
 
 	tx, err := r.writeDB.BeginTx(ctx, nil)
 	if err != nil {
@@ -395,14 +397,14 @@ func (r *repository) Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .En
 	}
 
 {{- if ne .Domain.Name "audit" }}
-	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, tx, &audit.AuditLogEntryDatabaseCreationInput{
+	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
 		BelongsToAccount: &{{ camel .Entity.Name }}.BelongsToAccount,
 {{- end }}
 		ID:               identifiers.New(),
 		ResourceType:     resourceType{{ plural .Entity.Name }},
 		RelevantID:       {{ camel .Entity.Name }}ID,
-		EventType:        audit.AuditLogEventTypeArchived,
+		EventType:        "archived",
 	}); err != nil {
 		r.RollbackTransaction(ctx, tx)
 		return observability.PrepareError(err, span, "creating audit log entry")

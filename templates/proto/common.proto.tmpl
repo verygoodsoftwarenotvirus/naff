@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package types;
+
+option go_package = "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/types";
+
+// ResponseDetails carries common response metadata (the active account the
+// request resolved against, plus a trace ID for observability).
+message ResponseDetails {
+  string current_account_id = 1;
+  string trace_id = 2;
+}
+
+// NamedID is a simple id+name pair used in enumeration/dropdown responses.
+message NamedID {
+  string id = 1;
+  string name = 2;
+}

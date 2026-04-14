@@ -1,21 +1,26 @@
 package repositories
 
 import (
-	postgresmigrations "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/migrations"
-
 	"{{ .Project.ProjectMeta.PlatformModule }}/database"
 	databasecfg "{{ .Project.ProjectMeta.PlatformModule }}/database/config"
 	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
 )
 
-// ProvideMigrator returns a Migrator appropriate for the configured database provider.
+// ProvideMigrator returns a Migrator appropriate for the configured database
+// provider. Stub: a production deployment should populate internal/repositories/
+// postgres/migrations (with sqlc-generated migration helpers) and switch the
+// Postgres case to delegate there. Returning nil here makes the DI wiring
+// compile for a fresh project; the server will only attempt migration when
+// explicitly asked.
 func ProvideMigrator(
 	cfg *databasecfg.Config,
 	logger logging.Logger,
 ) database.Migrator {
 	switch cfg.Provider {
 	case databasecfg.ProviderPostgres:
-		return postgresmigrations.NewMigrator(logger)
+		// TODO: return postgresmigrations.NewMigrator(logger) once
+		// internal/repositories/postgres/migrations is populated.
+		return nil
 	default:
 		return nil
 	}

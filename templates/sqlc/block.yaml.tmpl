@@ -8,6 +8,8 @@
         sql_package: "database/sql"
         emit_interface: true
         emit_result_struct_pointers: true
+        emit_params_struct_pointers: true
+        emit_methods_with_db_argument: true
         omit_unused_structs: true
         output_files_suffix: "_generated"
         output_db_file_name: "db_generated.go"
