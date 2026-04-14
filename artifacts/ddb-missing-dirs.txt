@@ -183,12 +183,9 @@ internal/repositories/postgres/webhooks/generated
 internal/repositories/postgres/webhooks/sqlc_queries
 internal/services/analytics
 internal/services/analytics/grpc
-internal/services/auth
 internal/services/auth/grpc
 internal/services/auth/grpc/converters
 internal/services/auth/grpc/interceptors
-internal/services/auth/handlers
-internal/services/auth/handlers/authentication
 internal/services/auth/handlers/passkey
 internal/services/dataprivacy/config
 internal/services/email
@@ -225,7 +222,5 @@ internal/services/settings
 internal/services/settings/grpc
 internal/services/settings/grpc/converters
 internal/services/uploadedmedia/config
-pkg
-pkg/client
 testing/load
 vendor

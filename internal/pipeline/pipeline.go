@@ -350,6 +350,7 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		files = append(files, p.planAuthenticationFiles()...)
 		files = append(files, p.planConfigFiles()...)
 		files = append(files, p.planDomainExtrasFiles()...)
+		files = append(files, p.planAuthHandlerFiles()...)
 	}
 	if generateIOS {
 		files = append(files, p.planIOSProjectFiles()...)
@@ -502,6 +503,48 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 	return files
 }
 
+// planAuthHandlerFiles returns verbatim templates for
+// internal/services/auth/handlers/authentication/, target's 982-LOC hand-rolled
+// OAuth2/password/TOTP/PASETO login orchestration. Phase 3c (2026-04-14):
+// tried with the original ~2,918 LOC number, actual non-test LOC is 982 across
+// 12 files. All dependencies (domain/{auth,identity,oauth}, authentication,
+// authorization, testutils) shipped in prior phases.
+func (p *Pipeline) planAuthHandlerFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	base := "services/auth/handlers/authentication"
+	mappings := []mapping{
+		{base + "/authentication_http_routes.go.tmpl", "internal/" + base + "/authentication_http_routes.generated.go"},
+		{base + "/config.go.tmpl", "internal/" + base + "/config.generated.go"},
+		{base + "/do.go.tmpl", "internal/" + base + "/do.generated.go"},
+		{base + "/doc.go.tmpl", "internal/" + base + "/doc.generated.go"},
+		{base + "/helpers.go.tmpl", "internal/" + base + "/helpers.generated.go"},
+		{base + "/oauth2.go.tmpl", "internal/" + base + "/oauth2.generated.go"},
+		{base + "/oauth2_client_info.go.tmpl", "internal/" + base + "/oauth2_client_info.generated.go"},
+		{base + "/oauth2_client_store.go.tmpl", "internal/" + base + "/oauth2_client_store.generated.go"},
+		{base + "/oauth2_client_token.go.tmpl", "internal/" + base + "/oauth2_client_token.generated.go"},
+		{base + "/oauth2_token_store.go.tmpl", "internal/" + base + "/oauth2_token_store.generated.go"},
+		{base + "/revoke.go.tmpl", "internal/" + base + "/revoke.generated.go"},
+		{base + "/service.go.tmpl", "internal/" + base + "/service.generated.go"},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, m := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         true,
+		})
+	}
+	return files
+}
+
 // planDomainExtrasFiles returns verbatim hand-rolled domain/ content for auth,
 // identity, and oauth. Phase 3b (2026-04-14): target doesn't use naff's CRUD
 // entity template for these three domains — it hand-rolls each type with
@@ -564,6 +607,12 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		{"testutils/matchers.go.tmpl", "internal/testutils/matchers.generated.go"},
 		{"testing/integration/apiserver/doc.go.tmpl", "testing/integration/apiserver/doc.generated.go"},
 		{"testing/integration/apiserver/constants.go.tmpl", "testing/integration/apiserver/constants.generated.go"},
+
+		// Phase 3d — pkg/client. Single 248-LOC client plumbing file: gRPC+HTTP
+		// transport, OAuth2 token integration, TLS config. Per-entity client methods
+		// come from gRPC stubs in internal/grpc/generated/ — target-only protoc
+		// output, not naff's concern.
+		{"pkg/client/client.go.tmpl", "pkg/client/client.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -682,6 +731,7 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 		{"config/environment.go.tmpl", "internal/config/environment.generated.go"},
 		{"config/mealplanning_configs.go.tmpl", "internal/config/mealplanning_configs.generated.go"},
 		{"config/mealplanning_environment.go.tmpl", "internal/config/mealplanning_environment.generated.go"},
+		{"config/services_config.go.tmpl", "internal/config/services_config.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))

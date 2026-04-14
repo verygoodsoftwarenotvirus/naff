@@ -1,0 +1,47 @@
+package authentication
+
+import (
+	"context"
+	"errors"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/auth"
+	types "{{ .Project.ProjectMeta.Module }}/internal/domain/identity"
+	identitykeys "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/keys"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/authentication/totp"
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability"
+)
+
+// validateLogin takes login information and returns whether the login is valid.
+// In the event that there's an error, this function will return false and the error.
+func (s *service) validateLogin(ctx context.Context, user *types.User, loginInput *auth.UserLoginInput) (bool, error) {
+	ctx, span := s.tracer.StartSpan(ctx)
+	defer span.End()
+
+	// alias the relevant data.
+	logger := s.logger.WithValue(identitykeys.UsernameKey, user.Username)
+
+	// verify the password first; a non-match returns (false, nil) from platform's Authenticator.
+	matches, err := s.authenticator.PasswordMatches(ctx, user.HashedPassword, loginInput.Password)
+	if err != nil {
+		return false, observability.PrepareError(err, span, "validating password")
+	}
+	if !matches {
+		return false, authentication.ErrPasswordDoesNotMatch
+	}
+
+	// verify TOTP separately when required.
+	if user.TwoFactorSecretVerifiedAt != nil {
+		if verifyErr := s.totpVerifier.Verify(ctx, user.TwoFactorSecret, loginInput.TOTPToken); verifyErr != nil {
+			if errors.Is(verifyErr, totp.ErrCodeRequired) || errors.Is(verifyErr, totp.ErrInvalidCode) {
+				return false, verifyErr
+			}
+			return false, observability.PrepareError(verifyErr, span, "verifying TOTP code")
+		}
+	}
+
+	logger.Debug("login validated")
+
+	return true, nil
+}

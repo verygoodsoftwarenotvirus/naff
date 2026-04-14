@@ -124,6 +124,7 @@ internal/config/mealplanning_configs.generated.go
 internal/config/mealplanning_environment.generated.go
 internal/config/meta.generated.go
 internal/config/queues.generated.go
+internal/config/services_config.generated.go
 internal/domain/audit/auditlogentry.generated.go
 internal/domain/audit/converters/auditlogentry.generated.go
 internal/domain/audit/fakes/fake.generated.go
@@ -391,6 +392,18 @@ internal/services/audit/grpc/converters/converters.generated.go
 internal/services/audit/grpc/do.generated.go
 internal/services/audit/grpc/permissions.generated.go
 internal/services/audit/grpc/service.generated.go
+internal/services/auth/handlers/authentication/authentication_http_routes.generated.go
+internal/services/auth/handlers/authentication/config.generated.go
+internal/services/auth/handlers/authentication/do.generated.go
+internal/services/auth/handlers/authentication/doc.generated.go
+internal/services/auth/handlers/authentication/helpers.generated.go
+internal/services/auth/handlers/authentication/oauth2_client_info.generated.go
+internal/services/auth/handlers/authentication/oauth2_client_store.generated.go
+internal/services/auth/handlers/authentication/oauth2_client_token.generated.go
+internal/services/auth/handlers/authentication/oauth2_token_store.generated.go
+internal/services/auth/handlers/authentication/oauth2.generated.go
+internal/services/auth/handlers/authentication/revoke.generated.go
+internal/services/auth/handlers/authentication/service.generated.go
 internal/services/comments/grpc/comment.generated.go
 internal/services/comments/grpc/converters/converters.generated.go
 internal/services/comments/grpc/do.generated.go
@@ -611,6 +624,7 @@ ios/DinnerDoneBetter/Sources/DinnerDoneBetter/Models/WaitlistInput.generated.swi
 ios/DinnerDoneBetter/Sources/DinnerDoneBetter/Models/Webhook.generated.swift
 ios/DinnerDoneBetter/Sources/DinnerDoneBetter/Models/WebhookInput.generated.swift
 Makefile
+pkg/client/client.generated.go
 proto/audit/auditlogentry_messages.generated.proto
 proto/audit/auditlogentry_service.generated.proto
 proto/comments/comment_messages.generated.proto
