@@ -349,6 +349,7 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		files = append(files, p.planAuthorizationFiles()...)
 		files = append(files, p.planAuthenticationFiles()...)
 		files = append(files, p.planConfigFiles()...)
+		files = append(files, p.planDomainExtrasFiles()...)
 	}
 	if generateIOS {
 		files = append(files, p.planIOSProjectFiles()...)
@@ -496,6 +497,66 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 			OutputPath:   m.output,
 			Data:         ctx,
 			Mode:         m.mode,
+		})
+	}
+	return files
+}
+
+// planDomainExtrasFiles returns verbatim hand-rolled domain/ content for auth,
+// identity, and oauth. Phase 3b (2026-04-14): target doesn't use naff's CRUD
+// entity template for these three domains — it hand-rolls each type with
+// domain-specific logic (TOTP validation, password-change flows, 2FA state,
+// request DTOs, etc.). Phase 3a's authDomain/identityDomain/oauthDomain
+// entries have been pulled from builtins.go; this planner now owns all three
+// domain packages' type declarations plus their authz permissions sidecar files.
+func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	mappings := []mapping{
+		// internal/domain/auth/
+		{"auth/auth.go.tmpl", "internal/domain/auth/auth.generated.go"},
+		{"auth/do.go.tmpl", "internal/domain/auth/do.generated.go"},
+		{"auth/password_reset_token.go.tmpl", "internal/domain/auth/password_reset_token.generated.go"},
+		{"auth/repository.go.tmpl", "internal/domain/auth/repository.generated.go"},
+		{"auth/user.go.tmpl", "internal/domain/auth/user.generated.go"},
+		{"auth/user_session.go.tmpl", "internal/domain/auth/user_session.generated.go"},
+
+		// internal/domain/identity/
+		{"identity/auth.go.tmpl", "internal/domain/identity/auth.generated.go"},
+		{"identity/account.go.tmpl", "internal/domain/identity/account.generated.go"},
+		{"identity/account_invitation.go.tmpl", "internal/domain/identity/account_invitation.generated.go"},
+		{"identity/account_user_membership.go.tmpl", "internal/domain/identity/account_user_membership.generated.go"},
+		{"identity/data_privacy.go.tmpl", "internal/domain/identity/data_privacy.generated.go"},
+		{"identity/do.go.tmpl", "internal/domain/identity/do.generated.go"},
+		{"identity/password_reset_token.go.tmpl", "internal/domain/identity/password_reset_token.generated.go"},
+		{"identity/repository.go.tmpl", "internal/domain/identity/repository.generated.go"},
+		{"identity/user.go.tmpl", "internal/domain/identity/user.generated.go"},
+
+		// internal/domain/oauth/
+		{"oauth/do.go.tmpl", "internal/domain/oauth/do.generated.go"},
+		{"oauth/oauth2_client.go.tmpl", "internal/domain/oauth/oauth2_client.generated.go"},
+		{"oauth/oauth2_client_token.go.tmpl", "internal/domain/oauth/oauth2_client_token.generated.go"},
+		{"oauth/repository.go.tmpl", "internal/domain/oauth/repository.generated.go"},
+
+		// internal/authorization/ (per-domain permissions sidecar files for
+		// auth/identity/oauth, since those domains are no longer in BuiltinDomains()
+		// and thus don't trigger planPerDomainFiles' convention-based permissions template).
+		{"authorization/identity_permissions.go.tmpl", "internal/authorization/identity_permissions.generated.go"},
+		{"authorization/oauth_permissions.go.tmpl", "internal/authorization/oauth_permissions.generated.go"},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, m := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         true,
 		})
 	}
 	return files
