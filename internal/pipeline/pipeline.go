@@ -561,7 +561,10 @@ func (p *Pipeline) planAuthenticationFiles() []PlannedFile {
 		{"authentication/sessions/do.go.tmpl", "internal/authentication/sessions/do.generated.go"},
 		{"authentication/webauthn/session_store.go.tmpl", "internal/authentication/webauthn/session_store.generated.go"},
 		{"authentication/webauthn/postgres_session_store.go.tmpl", "internal/authentication/webauthn/postgres_session_store.generated.go"},
+		{"authentication/webauthn/service.go.tmpl", "internal/authentication/webauthn/service.generated.go"},
+		{"authentication/webauthn/user_adapter.go.tmpl", "internal/authentication/webauthn/user_adapter.generated.go"},
 		{"authentication/webauthn/config/config.go.tmpl", "internal/authentication/webauthn/config/config.generated.go"},
+		{"identity/webauthn_credential.go.tmpl", "internal/domain/identity/webauthn_credential.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))

@@ -91,7 +91,9 @@ internal/authentication/sessions/errors.generated.go
 internal/authentication/sessions/session_context.generated.go
 internal/authentication/webauthn/config/config.generated.go
 internal/authentication/webauthn/postgres_session_store.generated.go
+internal/authentication/webauthn/service.generated.go
 internal/authentication/webauthn/session_store.generated.go
+internal/authentication/webauthn/user_adapter.generated.go
 internal/authorization/account_role.generated.go
 internal/authorization/audit_permissions.generated.go
 internal/authorization/auth_permissions.generated.go
@@ -184,6 +186,7 @@ internal/domain/identity/manager/mock/manager.generated.go
 internal/domain/identity/mock/repository.generated.go
 internal/domain/identity/repository.generated.go
 internal/domain/identity/user.generated.go
+internal/domain/identity/webauthn_credential.generated.go
 internal/domain/issuereports/converters/issuereport.generated.go
 internal/domain/issuereports/fakes/fake.generated.go
 internal/domain/issuereports/issuereport.generated.go
