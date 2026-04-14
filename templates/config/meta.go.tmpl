@@ -6,18 +6,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-// runMode describes what method of operation the server is under.
-type runMode string
-
-const (
-	// DevelopmentRunMode is the run mode for a development environment.
-	DevelopmentRunMode runMode = "development"
-	// TestingRunMode is the run mode for a testing environment.
-	TestingRunMode runMode = "testing"
-	// ProductionRunMode is the run mode for a production environment.
-	ProductionRunMode runMode = "production"
-)
-
 // MetaSettings is primarily used for development.
 type MetaSettings struct {
 	RunMode runMode `env:"RUN_MODE" json:"runMode"`

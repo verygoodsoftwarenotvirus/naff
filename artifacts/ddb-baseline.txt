@@ -75,6 +75,9 @@ go.mod
 internal/authentication/aliases.generated.go
 internal/authentication/config/config.generated.go
 internal/authentication/config/do.generated.go
+internal/authentication/do.generated.go
+internal/authentication/manager.generated.go
+internal/authentication/mock/authentication_manager.generated.go
 internal/authentication/mock/mock_authenticator.generated.go
 internal/authentication/mocks/mock_user.generated.go
 internal/authentication/sessions/do.generated.go
@@ -101,6 +104,7 @@ internal/authorization/service_role.generated.go
 internal/authorization/uploadedmedia_permissions.generated.go
 internal/authorization/waitlists_permissions.generated.go
 internal/authorization/webhooks_permissions.generated.go
+internal/branding/branding.generated.go
 internal/build/services/api/grpc/audit.generated.go
 internal/build/services/api/grpc/comments.generated.go
 internal/build/services/api/grpc/dataprivacy.generated.go
@@ -111,7 +115,13 @@ internal/build/services/api/grpc/payments.generated.go
 internal/build/services/api/grpc/uploadedmedia.generated.go
 internal/build/services/api/grpc/waitlists.generated.go
 internal/build/services/api/grpc/webhooks.generated.go
+internal/config/configs.generated.go
+internal/config/do.generated.go
 internal/config/doc.generated.go
+internal/config/env_vars.generated.go
+internal/config/environment.generated.go
+internal/config/mealplanning_configs.generated.go
+internal/config/mealplanning_environment.generated.go
 internal/config/meta.generated.go
 internal/config/queues.generated.go
 internal/domain/audit/auditlogentry.generated.go

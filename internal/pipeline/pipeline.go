@@ -548,6 +548,12 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// and thus don't trigger planPerDomainFiles' convention-based permissions template).
 		{"authorization/identity_permissions.go.tmpl", "internal/authorization/identity_permissions.generated.go"},
 		{"authorization/oauth_permissions.go.tmpl", "internal/authorization/oauth_permissions.generated.go"},
+
+		// internal/branding/ stub — only the four constants in-scope generated
+		// code actually imports (CompanyName, CompanyNameSlug, CompanySlug,
+		// EnvVarPrefix). Users flesh out logos/email-templates/legal-text. Target's
+		// real branding.go is 109KB with base64 logo blobs → deliberately NOT shipped.
+		{"branding/branding.go.tmpl", "internal/branding/branding.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -613,9 +619,12 @@ func (p *Pipeline) planAuthenticationFiles() []PlannedFile {
 
 	mappings := []mapping{
 		{"authentication/aliases.go.tmpl", "internal/authentication/aliases.generated.go"},
+		{"authentication/manager.go.tmpl", "internal/authentication/manager.generated.go"},
+		{"authentication/do.go.tmpl", "internal/authentication/do.generated.go"},
 		{"authentication/config/config.go.tmpl", "internal/authentication/config/config.generated.go"},
 		{"authentication/config/do.go.tmpl", "internal/authentication/config/do.generated.go"},
 		{"authentication/mock/mock_authenticator.go.tmpl", "internal/authentication/mock/mock_authenticator.generated.go"},
+		{"authentication/mock/authentication_manager.go.tmpl", "internal/authentication/mock/authentication_manager.generated.go"},
 		{"authentication/mocks/mock_user.go.tmpl", "internal/authentication/mocks/mock_user.generated.go"},
 		{"authentication/sessions/errors.go.tmpl", "internal/authentication/sessions/errors.generated.go"},
 		{"authentication/sessions/session_context.go.tmpl", "internal/authentication/sessions/session_context.generated.go"},
@@ -657,6 +666,12 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 		{"config/meta.go.tmpl", "internal/config/meta.generated.go"},
 		{"config/queues.go.tmpl", "internal/config/queues.generated.go"},
 		{"config/doc.go.tmpl", "internal/config/doc.generated.go"},
+		{"config/configs.go.tmpl", "internal/config/configs.generated.go"},
+		{"config/do.go.tmpl", "internal/config/do.generated.go"},
+		{"config/env_vars.go.tmpl", "internal/config/env_vars.generated.go"},
+		{"config/environment.go.tmpl", "internal/config/environment.generated.go"},
+		{"config/mealplanning_configs.go.tmpl", "internal/config/mealplanning_configs.generated.go"},
+		{"config/mealplanning_environment.go.tmpl", "internal/config/mealplanning_environment.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
