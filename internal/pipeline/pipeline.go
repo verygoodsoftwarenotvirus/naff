@@ -622,6 +622,58 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// come from gRPC stubs in internal/grpc/generated/ — target-only protoc
 		// output, not naff's concern.
 		{"pkg/client/client.go.tmpl", "pkg/client/client.generated.go"},
+
+		// Phase 5 — hand-rolled postgres repos + identity adjuncts. Target ships
+		// auth/identity/oauth as hand-rolled domain packages (3b) AND hand-rolled
+		// postgres repos. Without these, a consumer can't compile localdev,
+		// services/auth/handlers, or the integration harness. Ship verbatim
+		// modulo module paths — the exact 3b/4b pattern.
+
+		// postgres repos for hand-rolled domains (auth/identity/oauth).
+		// {sqlc}/generated + {sqlc_queries}/ subdirs are consumer's protoc/sqlc
+		// responsibility — not emitted here.
+		{"repositories/postgres/auth/client.go.tmpl", "internal/repositories/postgres/auth/client.generated.go"},
+		{"repositories/postgres/auth/do.go.tmpl", "internal/repositories/postgres/auth/do.generated.go"},
+		{"repositories/postgres/auth/password_reset_tokens.go.tmpl", "internal/repositories/postgres/auth/password_reset_tokens.generated.go"},
+		{"repositories/postgres/auth/user_sessions.go.tmpl", "internal/repositories/postgres/auth/user_sessions.generated.go"},
+
+		{"repositories/postgres/identity/account_invitations.go.tmpl", "internal/repositories/postgres/identity/account_invitations.generated.go"},
+		{"repositories/postgres/identity/account_user_memberships.go.tmpl", "internal/repositories/postgres/identity/account_user_memberships.generated.go"},
+		{"repositories/postgres/identity/accounts.go.tmpl", "internal/repositories/postgres/identity/accounts.generated.go"},
+		{"repositories/postgres/identity/client.go.tmpl", "internal/repositories/postgres/identity/client.generated.go"},
+		{"repositories/postgres/identity/data_privacy.go.tmpl", "internal/repositories/postgres/identity/data_privacy.generated.go"},
+		{"repositories/postgres/identity/do.go.tmpl", "internal/repositories/postgres/identity/do.generated.go"},
+		{"repositories/postgres/identity/users.go.tmpl", "internal/repositories/postgres/identity/users.generated.go"},
+		{"repositories/postgres/identity/webauthn_credentials.go.tmpl", "internal/repositories/postgres/identity/webauthn_credentials.generated.go"},
+
+		{"repositories/postgres/oauth/client.go.tmpl", "internal/repositories/postgres/oauth/client.generated.go"},
+		{"repositories/postgres/oauth/do.go.tmpl", "internal/repositories/postgres/oauth/do.generated.go"},
+		{"repositories/postgres/oauth/oauth2_client_tokens.go.tmpl", "internal/repositories/postgres/oauth/oauth2_client_tokens.generated.go"},
+		{"repositories/postgres/oauth/oauth2_clients.go.tmpl", "internal/repositories/postgres/oauth/oauth2_clients.generated.go"},
+
+		// postgres/testing — `pgtesting.BuildDatabaseContainer` + audit sentinel
+		// used by localdev.BuildInProcessServer.
+		{"repositories/postgres/testing/audit.go.tmpl", "internal/repositories/postgres/testing/audit.generated.go"},
+		{"repositories/postgres/testing/helpers.go.tmpl", "internal/repositories/postgres/testing/helpers.generated.go"},
+
+		// identity adjuncts — converters imported by localdev; fakes imported by
+		// postgres/testing; keys (auth/identity/oauth) imported across repos.
+		{"identity/converters/account_invitations.go.tmpl", "internal/domain/identity/converters/account_invitations.generated.go"},
+		{"identity/converters/account_user_memberships.go.tmpl", "internal/domain/identity/converters/account_user_memberships.generated.go"},
+		{"identity/converters/accounts.go.tmpl", "internal/domain/identity/converters/accounts.generated.go"},
+		{"identity/converters/admin.go.tmpl", "internal/domain/identity/converters/admin.generated.go"},
+		{"identity/converters/users.go.tmpl", "internal/domain/identity/converters/users.generated.go"},
+
+		{"identity/fakes/account_invitation.go.tmpl", "internal/domain/identity/fakes/account_invitation.generated.go"},
+		{"identity/fakes/account_user_membership.go.tmpl", "internal/domain/identity/fakes/account_user_membership.generated.go"},
+		{"identity/fakes/account.go.tmpl", "internal/domain/identity/fakes/account.generated.go"},
+		{"identity/fakes/doc.go.tmpl", "internal/domain/identity/fakes/doc.generated.go"},
+		{"identity/fakes/fake.go.tmpl", "internal/domain/identity/fakes/fake.generated.go"},
+		{"identity/fakes/user.go.tmpl", "internal/domain/identity/fakes/user.generated.go"},
+
+		{"auth/keys/keys.go.tmpl", "internal/domain/auth/keys/keys.generated.go"},
+		{"identity/keys/keys.go.tmpl", "internal/domain/identity/keys/keys.generated.go"},
+		{"oauth/keys/keys.go.tmpl", "internal/domain/oauth/keys/keys.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
