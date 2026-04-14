@@ -225,11 +225,7 @@ internal/services/settings
 internal/services/settings/grpc
 internal/services/settings/grpc/converters
 internal/services/uploadedmedia/config
-internal/testutils
 pkg
 pkg/client
-testing
-testing/integration
-testing/integration/apiserver
 testing/load
 vendor

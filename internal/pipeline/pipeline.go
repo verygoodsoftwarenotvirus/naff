@@ -554,6 +554,16 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// EnvVarPrefix). Users flesh out logos/email-templates/legal-text. Target's
 		// real branding.go is 109KB with base64 logo blobs → deliberately NOT shipped.
 		{"branding/branding.go.tmpl", "internal/branding/branding.generated.go"},
+
+		// Phase 4a — testutils + integration-harness stubs. matchers.go is a
+		// tiny mock matcher. testing/integration/apiserver/{doc,constants}.go are
+		// trivial static files. The remaining integration harness (init.go 137,
+		// helpers.go 452, audit_helpers.go 114) depends on `pkg/client` (Phase 3d),
+		// `internal/localdev` (out of scope), and target-only protoc output at
+		// `internal/grpc/generated/`; defer until those land.
+		{"testutils/matchers.go.tmpl", "internal/testutils/matchers.generated.go"},
+		{"testing/integration/apiserver/doc.go.tmpl", "testing/integration/apiserver/doc.generated.go"},
+		{"testing/integration/apiserver/constants.go.tmpl", "testing/integration/apiserver/constants.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))

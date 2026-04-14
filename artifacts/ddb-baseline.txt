@@ -459,6 +459,7 @@ internal/services/webhooks/grpc/do.generated.go
 internal/services/webhooks/grpc/permissions.generated.go
 internal/services/webhooks/grpc/service.generated.go
 internal/services/webhooks/grpc/webhook.generated.go
+internal/testutils/matchers.generated.go
 ios/DinnerDoneBetter/Package.swift
 ios/DinnerDoneBetter/Proto/audit/auditlogentry_messages.generated.proto
 ios/DinnerDoneBetter/Proto/audit/auditlogentry_service.generated.proto
@@ -684,3 +685,5 @@ scripts/format_golang.sh
 scripts/format_imports.sh
 scripts/goimports.sh
 scripts/queries.sh
+testing/integration/apiserver/constants.generated.go
+testing/integration/apiserver/doc.generated.go
