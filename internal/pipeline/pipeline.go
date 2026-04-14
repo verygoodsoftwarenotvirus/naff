@@ -346,6 +346,7 @@ func (p *Pipeline) planFiles() []PlannedFile {
 	if generateBackend {
 		files = append(files, p.planProjectFiles()...)
 		files = append(files, p.planCmdFiles(allDomains)...)
+		files = append(files, p.planAuthorizationFiles()...)
 		files = append(files, p.planAuthenticationFiles()...)
 		files = append(files, p.planConfigFiles()...)
 	}
@@ -500,6 +501,42 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 	return files
 }
 
+// planAuthorizationFiles returns the domain-independent internal/authorization/ core.
+// Phase 2d scope (2026-04-14): the role/Permission types, AccountRole/ServiceRole
+// checkers, and the service-admin permission constants that service_role.go depends on.
+// Per-domain permission files are still emitted by planPerDomainFiles via the existing
+// authorization/permissions.go.tmpl (convention-based CRUD). The 520-LOC hand-rolled
+// permission lists in target's permissions.go (ServiceAdminPermissions etc.) are NOT
+// shipped — they reference per-entity Search/Cancel/Impersonate/etc. permissions that
+// naff's convention template doesn't emit. Phase 3 will design a YAML schema that
+// lets users declare per-entity verbs, then these lists can be templated properly.
+func (p *Pipeline) planAuthorizationFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	mappings := []mapping{
+		{"authorization/permissions_core.go.tmpl", "internal/authorization/permissions.generated.go"},
+		{"authorization/account_role.go.tmpl", "internal/authorization/account_role.generated.go"},
+		{"authorization/service_role.go.tmpl", "internal/authorization/service_role.generated.go"},
+		{"authorization/auth_permissions.go.tmpl", "internal/authorization/auth_permissions.generated.go"},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, m := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         true,
+		})
+	}
+	return files
+}
+
 // planAuthenticationFiles returns the internal/authentication/ shim layer.
 // Phase 2a scope (2026-04-14): files with no dependency on internal/domain/{auth,identity,audit}
 // or per-service config packages. Excludes manager.go, authentication/do.go, session_context.go,
@@ -520,6 +557,8 @@ func (p *Pipeline) planAuthenticationFiles() []PlannedFile {
 		{"authentication/mock/mock_authenticator.go.tmpl", "internal/authentication/mock/mock_authenticator.generated.go"},
 		{"authentication/mocks/mock_user.go.tmpl", "internal/authentication/mocks/mock_user.generated.go"},
 		{"authentication/sessions/errors.go.tmpl", "internal/authentication/sessions/errors.generated.go"},
+		{"authentication/sessions/session_context.go.tmpl", "internal/authentication/sessions/session_context.generated.go"},
+		{"authentication/sessions/do.go.tmpl", "internal/authentication/sessions/do.generated.go"},
 		{"authentication/webauthn/session_store.go.tmpl", "internal/authentication/webauthn/session_store.generated.go"},
 		{"authentication/webauthn/postgres_session_store.go.tmpl", "internal/authentication/webauthn/postgres_session_store.generated.go"},
 		{"authentication/webauthn/config/config.go.tmpl", "internal/authentication/webauthn/config/config.generated.go"},
