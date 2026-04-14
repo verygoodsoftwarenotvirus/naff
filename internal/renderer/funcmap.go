@@ -59,6 +59,12 @@ func FuncMap() template.FuncMap {
 		// JSON tag helpers
 		"jsonTag": jsonTag,
 
+		// sharedColumn reports whether a snake_case field name is one of the
+		// shared column constants defined in cmd/tools/codegen/queries/helpers.go.
+		// Per-entity query files skip redeclaring these to avoid collisions
+		// across the package main namespace.
+		"sharedColumn": sharedColumn,
+
 		// Code generation helpers
 		"importPath": func(module, pkg string) string {
 			return fmt.Sprintf("%s/%s", module, pkg)
@@ -404,6 +410,34 @@ func swiftZeroValue(typ string) string {
 	default:
 		return `""`
 	}
+}
+
+// sharedColumn reports whether the given snake_case column name is declared
+// as a constant in cmd/tools/codegen/queries/helpers.go. Per-entity files
+// must NOT redeclare these constants (Go would error: "X redeclared in this block").
+var sharedColumns = map[string]struct{}{
+	"id":                 {},
+	"name":               {},
+	"plural_name":        {},
+	"notes":              {},
+	"description":        {},
+	"icon_path":          {},
+	"slug":               {},
+	"created_at":         {},
+	"last_updated_at":    {},
+	"archived_at":        {},
+	"last_indexed_at":    {},
+	"belongs_to_account": {},
+	"belongs_to_user":    {},
+	"created_by_user":    {},
+	"content":            {},
+	"title":              {},
+	"status":             {},
+}
+
+func sharedColumn(snakeName string) bool {
+	_, ok := sharedColumns[snakeName]
+	return ok
 }
 
 // jsonTag returns the JSON struct tag value for a field.

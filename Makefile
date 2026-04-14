@@ -30,5 +30,5 @@ diff-ddb: generate-ddb
 	fi
 	meld $(DDB_OUTPUT) $(DDB_REPO)
 
-clean:
+clean:	
 	rm -rf output/ $(DDB_OUTPUT)

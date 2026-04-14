@@ -1,0 +1,39 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	mealplantaskcreator "{{ .Project.ProjectMeta.Module }}/internal/build/jobs/meal_plan_task_creator"
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+
+	_ "go.uber.org/automaxprocs"
+)
+
+func doTheThing(ctx context.Context) error {
+	config.ConditionallyCease()
+
+	cfg, err := config.LoadConfigFromEnvironment[config.MealPlanTaskCreatorConfig]()
+	if err != nil {
+		return fmt.Errorf("error getting config: %w", err)
+	}
+	cfg.Database.RunMigrations = false
+
+	worker, err := mealplantaskcreator.Build(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("error building meal plan task creator: %w", err)
+	}
+
+	if err = worker.Work(ctx); err != nil {
+		return fmt.Errorf("running meal plan task creator: %w", err)
+	}
+
+	return nil
+}
+
+func main() {
+	if err := doTheThing(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+}

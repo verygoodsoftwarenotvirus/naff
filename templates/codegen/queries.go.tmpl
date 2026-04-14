@@ -10,7 +10,9 @@ import (
 const (
 	{{ camel .Entity.Name }}TableName = "{{ pluralSnake .Entity.Name }}"
 {{- range .Entity.Fields }}
+{{- if not (sharedColumn (snake .Name)) }}
 	{{ camel .Name }}Column = "{{ snake .Name }}"
+{{- end }}
 {{- end }}
 )
 

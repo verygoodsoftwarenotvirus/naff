@@ -76,7 +76,7 @@ func TestFullPipelineIntegration(t *testing.T) {
 		"internal/repositories/postgres/recipes/recipe.generated.go",
 		"internal/repositories/postgres/recipes/do.generated.go",
 		// Recipe codegen
-		"cmd/tools/codegen/queries/recipes_recipe.generated.go",
+		"cmd/tools/codegen/queries/recipes_recipes.generated.go",
 		// Recipe migration
 		"internal/repositories/postgres/migrations/migration_files/recipes_recipe.generated.sql",
 		// Recipe proto
@@ -95,7 +95,7 @@ func TestFullPipelineIntegration(t *testing.T) {
 		"internal/domain/recipes/recipestep.generated.go",
 		"internal/domain/recipes/converters/recipestep.generated.go",
 		"internal/repositories/postgres/recipes/recipestep.generated.go",
-		"cmd/tools/codegen/queries/recipes_recipestep.generated.go",
+		"cmd/tools/codegen/queries/recipes_recipe_steps.generated.go",
 		"internal/services/recipes/grpc/recipestep.generated.go",
 
 		// Built-in domain files

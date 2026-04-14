@@ -1,0 +1,46 @@
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/spf13/cobra"
+)
+
+// bootstrap is an interactive CLI for initializing a {{ .Project.ProjectMeta.Name }} database
+// (admin user, RBAC permissions, OAuth2 clients, etc.) against either a local Postgres
+// or a production Kubernetes-managed instance.
+//
+// The body of this tool is intentionally a scaffold — populate the subcommands with
+// project-specific bootstrap logic (admin account creation, role seeding, etc.).
+func main() {
+	root := &cobra.Command{
+		Use:   "bootstrap",
+		Short: "Initialize a {{ .Project.ProjectMeta.Name }} database with seed admin/RBAC data",
+	}
+
+	root.AddCommand(&cobra.Command{
+		Use:   "local",
+		Short: "Bootstrap a locally-running database (uses --db-host etc. flags)",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return bootstrap(context.Background(), false)
+		},
+	})
+
+	root.AddCommand(&cobra.Command{
+		Use:   "prod",
+		Short: "Bootstrap a production database (reads connection details from a Kubernetes secret)",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return bootstrap(context.Background(), true)
+		},
+	})
+
+	if err := root.Execute(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func bootstrap(_ context.Context, _ bool) error {
+	// TODO: implement admin/RBAC/OAuth2 client seeding for {{ .Project.ProjectMeta.Name }}.
+	return nil
+}

@@ -1,0 +1,24 @@
+package main
+
+import (
+	"context"
+	"log"
+)
+
+// aiagent is an interactive AI agent that uses a remote MCP server (the one
+// served by cmd/services/mcp) plus a Gemini-style LLM (via the Google ADK) to
+// drive workflows over {{ .Project.ProjectMeta.Name }} domain entities.
+//
+// The body of this tool is intentionally a scaffold — wire the ADK launcher,
+// MCP client, model, and system prompt for your project's specific workflows.
+func main() {
+	if err := run(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run(_ context.Context) error {
+	// TODO: launch an interactive agent (Google ADK + MCP toolset + Gemini LLM).
+	// See cmd/services/mcp for the upstream tool surface this should connect to.
+	return nil
+}

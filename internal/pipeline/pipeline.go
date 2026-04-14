@@ -338,17 +338,20 @@ func (p *Pipeline) planFiles() []PlannedFile {
 	generateBackend := p.config.Targets.Backend
 	generateIOS := p.config.Targets.IOS
 
+	// Merge built-in domains with user-defined domains.
+	allDomains := builtins.BuiltinDomains(p.config.Features)
+	allDomains = append(allDomains, p.config.Domains...)
+
 	// Project-level files (generated once per project).
 	if generateBackend {
 		files = append(files, p.planProjectFiles()...)
+		files = append(files, p.planCmdFiles(allDomains)...)
+		files = append(files, p.planAuthenticationFiles()...)
+		files = append(files, p.planConfigFiles()...)
 	}
 	if generateIOS {
 		files = append(files, p.planIOSProjectFiles()...)
 	}
-
-	// Merge built-in domains with user-defined domains.
-	allDomains := builtins.BuiltinDomains(p.config.Features)
-	allDomains = append(allDomains, p.config.Domains...)
 
 	for _, domain := range allDomains {
 		d := domain
@@ -497,10 +500,185 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 	return files
 }
 
+// planAuthenticationFiles returns the internal/authentication/ shim layer.
+// Phase 2a scope (2026-04-14): files with no dependency on internal/domain/{auth,identity,audit}
+// or per-service config packages. Excludes manager.go, authentication/do.go, session_context.go,
+// webauthn/service.go, webauthn/user_adapter.go — those land in Phase 2b alongside the
+// auth/identity/oauth domains.
+func (p *Pipeline) planAuthenticationFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	mappings := []mapping{
+		{"authentication/aliases.go.tmpl", "internal/authentication/aliases.generated.go"},
+		{"authentication/config/config.go.tmpl", "internal/authentication/config/config.generated.go"},
+		{"authentication/config/do.go.tmpl", "internal/authentication/config/do.generated.go"},
+		{"authentication/mock/mock_authenticator.go.tmpl", "internal/authentication/mock/mock_authenticator.generated.go"},
+		{"authentication/mocks/mock_user.go.tmpl", "internal/authentication/mocks/mock_user.generated.go"},
+		{"authentication/sessions/errors.go.tmpl", "internal/authentication/sessions/errors.generated.go"},
+		{"authentication/webauthn/session_store.go.tmpl", "internal/authentication/webauthn/session_store.generated.go"},
+		{"authentication/webauthn/postgres_session_store.go.tmpl", "internal/authentication/webauthn/postgres_session_store.generated.go"},
+		{"authentication/webauthn/config/config.go.tmpl", "internal/authentication/webauthn/config/config.generated.go"},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, m := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         true,
+		})
+	}
+	return files
+}
+
+// planConfigFiles returns the internal/config/ primitives.
+// Phase 2a scope (2026-04-14): meta.go, queues.go, doc.go only. The heavier
+// configs.go / services_config.go / environment.go / do.go are Phase 2b
+// (they import internal/authentication/config, internal/services/auth/handlers/authentication,
+// and require per-domain templating).
+func (p *Pipeline) planConfigFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	mappings := []mapping{
+		{"config/meta.go.tmpl", "internal/config/meta.generated.go"},
+		{"config/queues.go.tmpl", "internal/config/queues.generated.go"},
+		{"config/doc.go.tmpl", "internal/config/doc.generated.go"},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, m := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         true,
+		})
+	}
+	return files
+}
+
+// planCmdFiles returns the cmd/ binaries that NAFF emits. Modeled on the
+// dinnerdonebetter/backend/cmd/ tree:
+//   - services/api: cobra root + grpc/http sub-binaries
+//   - services/mcp: MCP server scaffold (auth, oauth2, schema)
+//   - tools/codegen: queries, configs, valid_env_vars
+//   - tools: bootstrap, migrate, encryptor, data_exporter, data_importer,
+//     search_index_initializer, push_tester, aiagent
+//   - workers: 8 cron-style job binaries
+//   - functions/async_message_handler: pubsub consumer
+//   - localdev/server: in-process all-in-one bootstrap
+//   - playground: id-generator dev utility
+//
+// The codegen/queries main.go template needs every domain (built-in + user-defined)
+// for its dispatch map, so it gets a project context with allDomains baked in.
+func (p *Pipeline) planCmdFiles(allDomains []config.Domain) []PlannedFile {
+	projectCtx := TemplateContext{Project: p.config}
+
+	codegenCtx := TemplateContext{
+		Project: &config.Project{
+			ProjectMeta: p.config.ProjectMeta,
+			Features:    p.config.Features,
+			Targets:     p.config.Targets,
+			Domains:     allDomains,
+		},
+	}
+
+	type m struct {
+		template string
+		output   string
+		isGo     bool
+		data     TemplateContext
+	}
+
+	mappings := []m{
+		// services/api root + grpc + http
+		{"cmd/services/api/main.go.tmpl", "cmd/services/api/main.go", true, projectCtx},
+		{"cmd/services/api/doc.go.tmpl", "cmd/services/api/doc.go", true, projectCtx},
+		{"cmd/services/api/grpc/main.go.tmpl", "cmd/services/api/grpc/main.go", true, projectCtx},
+		{"cmd/services/api/grpc/doc.go.tmpl", "cmd/services/api/grpc/doc.go", true, projectCtx},
+		{"cmd/services/api/http/main.go.tmpl", "cmd/services/api/http/main.go", true, projectCtx},
+		{"cmd/services/api/http/doc.go.tmpl", "cmd/services/api/http/doc.go", true, projectCtx},
+
+		// services/mcp
+		{"cmd/services/mcp/main.go.tmpl", "cmd/services/mcp/main.go", true, projectCtx},
+		{"cmd/services/mcp/auth.go.tmpl", "cmd/services/mcp/auth.go", true, projectCtx},
+		{"cmd/services/mcp/oauth2_handler.go.tmpl", "cmd/services/mcp/oauth2_handler.go", true, projectCtx},
+		{"cmd/services/mcp/schema.go.tmpl", "cmd/services/mcp/schema.go", true, projectCtx},
+
+		// tools/codegen/queries — main.go drives a per-entity dispatch map
+		{"cmd/tools/codegen/queries/main.go.tmpl", "cmd/tools/codegen/queries/main.go", true, codegenCtx},
+		{"cmd/tools/codegen/queries/helpers.go.tmpl", "cmd/tools/codegen/queries/helpers.go", true, projectCtx},
+		{"cmd/tools/codegen/queries/sqlc.go.tmpl", "cmd/tools/codegen/queries/sqlc.go", true, projectCtx},
+
+		// tools/codegen/configs
+		{"cmd/tools/codegen/configs/main.go.tmpl", "cmd/tools/codegen/configs/main.go", true, projectCtx},
+		{"cmd/tools/codegen/configs/doc.go.tmpl", "cmd/tools/codegen/configs/doc.go", true, projectCtx},
+		{"cmd/tools/codegen/configs/utils.go.tmpl", "cmd/tools/codegen/configs/utils.go", true, projectCtx},
+		{"cmd/tools/codegen/configs/localdev.go.tmpl", "cmd/tools/codegen/configs/localdev.go", true, projectCtx},
+		{"cmd/tools/codegen/configs/integrationtests.go.tmpl", "cmd/tools/codegen/configs/integrationtests.go", true, projectCtx},
+		{"cmd/tools/codegen/configs/prod.go.tmpl", "cmd/tools/codegen/configs/prod.go", true, projectCtx},
+
+		// tools/codegen/valid_env_vars
+		{"cmd/tools/codegen/valid_env_vars/main.go.tmpl", "cmd/tools/codegen/valid_env_vars/main.go", true, projectCtx},
+
+		// tools/* (one main.go per tool)
+		{"cmd/tools/bootstrap/main.go.tmpl", "cmd/tools/bootstrap/main.go", true, projectCtx},
+		{"cmd/tools/migrate/main.go.tmpl", "cmd/tools/migrate/main.go", true, projectCtx},
+		{"cmd/tools/encryptor/main.go.tmpl", "cmd/tools/encryptor/main.go", true, projectCtx},
+		{"cmd/tools/data_exporter/main.go.tmpl", "cmd/tools/data_exporter/main.go", true, projectCtx},
+		{"cmd/tools/data_importer/main.go.tmpl", "cmd/tools/data_importer/main.go", true, projectCtx},
+		{"cmd/tools/search_index_initializer/main.go.tmpl", "cmd/tools/search_index_initializer/main.go", true, projectCtx},
+		{"cmd/tools/push_tester/main.go.tmpl", "cmd/tools/push_tester/main.go", true, projectCtx},
+		{"cmd/tools/aiagent/main.go.tmpl", "cmd/tools/aiagent/main.go", true, projectCtx},
+
+		// workers/*
+		{"cmd/workers/db_cleaner/main.go.tmpl", "cmd/workers/db_cleaner/main.go", true, projectCtx},
+		{"cmd/workers/email_deliverability_test/main.go.tmpl", "cmd/workers/email_deliverability_test/main.go", true, projectCtx},
+		{"cmd/workers/meal_plan_finalizer/main.go.tmpl", "cmd/workers/meal_plan_finalizer/main.go", true, projectCtx},
+		{"cmd/workers/meal_plan_grocery_list_initializer/main.go.tmpl", "cmd/workers/meal_plan_grocery_list_initializer/main.go", true, projectCtx},
+		{"cmd/workers/meal_plan_task_creator/main.go.tmpl", "cmd/workers/meal_plan_task_creator/main.go", true, projectCtx},
+		{"cmd/workers/mobile_notification_scheduler/main.go.tmpl", "cmd/workers/mobile_notification_scheduler/main.go", true, projectCtx},
+		{"cmd/workers/search_data_index_scheduler/main.go.tmpl", "cmd/workers/search_data_index_scheduler/main.go", true, projectCtx},
+		{"cmd/workers/queue_test/main.go.tmpl", "cmd/workers/queue_test/main.go", true, projectCtx},
+
+		// functions
+		{"cmd/functions/async_message_handler/main.go.tmpl", "cmd/functions/async_message_handler/main.go", true, projectCtx},
+
+		// localdev
+		{"cmd/localdev/server/main.go.tmpl", "cmd/localdev/server/main.go", true, projectCtx},
+
+		// playground
+		{"cmd/playground/main.go.tmpl", "cmd/playground/main.go", true, projectCtx},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, mp := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: mp.template,
+			OutputPath:   mp.output,
+			Data:         mp.data,
+			IsGo:         mp.isGo,
+		})
+	}
+	return files
+}
+
 // planPerEntityFiles returns files generated once per entity.
 func (p *Pipeline) planPerEntityFiles(ctx TemplateContext) []PlannedFile {
 	domain := ctx.Domain.Name
 	entitySnake := strings.ToLower(ctx.Entity.Name)
+	entityPluralSnake := naming.New(ctx.Entity.Name).PluralSnake()
 
 	templateMappings := []struct {
 		template string
@@ -514,8 +692,8 @@ func (p *Pipeline) planPerEntityFiles(ctx TemplateContext) []PlannedFile {
 		// Repository entity CRUD
 		{"repository/entity.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/%s.generated.go", domain, entitySnake), true},
 
-		// Query codegen
-		{"codegen/queries.go.tmpl", fmt.Sprintf("cmd/tools/codegen/queries/%s_%s.generated.go", domain, entitySnake), true},
+		// Query codegen — filename matches dinnerdonebetter pattern: <domain>_<plural_snake>.go
+		{"codegen/queries.go.tmpl", fmt.Sprintf("cmd/tools/codegen/queries/%s_%s.generated.go", domain, entityPluralSnake), true},
 
 		// Migration (one per entity)
 		{"migrations/migration.sql.tmpl", fmt.Sprintf("internal/repositories/postgres/migrations/migration_files/%s_%s.generated.sql", domain, entitySnake), false},

@@ -1,0 +1,66 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+// data_importer reads the JSON output of cmd/tools/data_exporter and writes it
+// back into a {{ .Project.ProjectMeta.Name }} database via the repository layer.
+//
+// The body of this tool is intentionally a scaffold — wire repository writes
+// here for each enumeration / reference table you want to import.
+type ImportData struct {
+	// Mirror the ExportData struct from cmd/tools/data_exporter.
+}
+
+func main() {
+	var (
+		dbHost     string
+		dbPort     uint16
+		dbUser     string
+		dbPassword string
+		dbName     string
+		inputPath  string
+	)
+
+	root := &cobra.Command{
+		Use:   "data_importer",
+		Short: "Import seed data into a {{ .Project.ProjectMeta.Name }} database from JSON",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return runImport(context.Background(), dbHost, dbPort, dbUser, dbPassword, dbName, inputPath)
+		},
+	}
+
+	root.Flags().StringVar(&dbHost, "db-host", "", "Postgres host")
+	root.Flags().Uint16Var(&dbPort, "db-port", 5432, "Postgres port")
+	root.Flags().StringVar(&dbUser, "db-user", "", "Postgres username")
+	root.Flags().StringVar(&dbPassword, "db-password", "", "Postgres password")
+	root.Flags().StringVar(&dbName, "db-name", "", "Postgres database name")
+	root.Flags().StringVar(&inputPath, "input", "export.json", "Input JSON file path")
+
+	if err := root.Execute(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runImport(_ context.Context, _ string, _ uint16, _, _, _, inputPath string) error {
+	raw, err := os.ReadFile(inputPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", inputPath, err)
+	}
+
+	var data ImportData
+	if err = json.Unmarshal(raw, &data); err != nil {
+		return fmt.Errorf("unmarshaling %s: %w", inputPath, err)
+	}
+
+	// TODO: wire repository writes for each section of ImportData.
+	fmt.Printf("Loaded import payload from %s\n", inputPath)
+	return nil
+}

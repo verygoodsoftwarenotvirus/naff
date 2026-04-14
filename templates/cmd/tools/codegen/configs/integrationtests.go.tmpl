@@ -1,0 +1,12 @@
+package main
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+)
+
+// buildIntegrationTestsConfig returns the APIServiceConfig used when running
+// integration tests. Populate fields inline and regenerate — NAFF will not
+// overwrite the hand-authored interior once you replace this stub.
+func buildIntegrationTestsConfig() *config.APIServiceConfig {
+	return &config.APIServiceConfig{}
+}

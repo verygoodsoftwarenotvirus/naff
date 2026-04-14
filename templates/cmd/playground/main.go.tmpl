@@ -1,0 +1,11 @@
+package main
+
+import (
+	"{{ .Project.ProjectMeta.PlatformModule }}/identifiers"
+)
+
+func main() {
+	for range 200 {
+		println(identifiers.New())
+	}
+}

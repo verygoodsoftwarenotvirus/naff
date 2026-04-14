@@ -1,0 +1,49 @@
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/spf13/cobra"
+)
+
+// search_index_initializer batch-loads {{ .Project.ProjectMeta.Name }} entities from
+// the database into a text-search backend (e.g. Algolia, Elasticsearch).
+//
+// The body of this tool is intentionally a scaffold — wire per-domain indexing
+// here for each searchable entity surface.
+func main() {
+	var (
+		provider  string
+		batchSize uint64
+		wipe      bool
+	)
+
+	root := &cobra.Command{
+		Use:   "search_index_initializer",
+		Short: "Initialize / refresh search indices for {{ .Project.ProjectMeta.Name }}",
+	}
+
+	initCmd := &cobra.Command{
+		Use:   "init",
+		Short: "Run a full reindex",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return runInit(context.Background(), provider, batchSize, wipe)
+		},
+	}
+	initCmd.Flags().StringVar(&provider, "provider", "algolia", "Search provider: algolia or elasticsearch")
+	initCmd.Flags().Uint64Var(&batchSize, "batch-size", 250, "Number of records per batch")
+	initCmd.Flags().BoolVar(&wipe, "wipe", false, "Wipe existing index before loading")
+
+	root.AddCommand(initCmd)
+
+	if err := root.Execute(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runInit(_ context.Context, _ string, _ uint64, _ bool) error {
+	// TODO: enumerate searchable entities (driven by NAFF entity.Searchable flag)
+	// and index each one in batches via the chosen provider.
+	return nil
+}

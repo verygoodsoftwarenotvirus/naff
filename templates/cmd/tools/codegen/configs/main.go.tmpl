@@ -1,0 +1,64 @@
+package main
+
+import (
+	"fmt"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/encoding"
+)
+
+const (
+	defaultHTTPPort = 8000
+	defaultGRPCPort = 8001
+	maxAttempts     = 50
+	otelServiceName = "api_server"
+
+	/* #nosec G101 */
+	debugCookieHashKey = "HEREISA32CHARSECRETWHICHISMADEUP"
+
+	// run modes.
+	developmentEnv = "development"
+	testingEnv     = "testing"
+
+	// message provider topics.
+	dataChangesTopicName              = "data_changes"
+	outboundEmailsTopicName           = "outbound_emails"
+	searchIndexRequestsTopicName      = "search_index_requests"
+	mobileNotificationsTopicName      = "mobile_notifications"
+	userDataAggregationTopicName      = "user_data_aggregation_requests"
+	webhookExecutionRequestsTopicName = "webhook_execution_requests"
+)
+
+var (
+	contentTypeJSON = encoding.ContentTypeToString(encoding.ContentTypeJSON)
+)
+
+func main() {
+	localdevConfig := buildLocalDevConfig()
+
+	envConfigs := map[string]*config.EnvironmentConfigSet{
+		"deploy/environments/localdev/config_files": {
+			RootConfig: localdevConfig,
+		},
+		"deploy/environments/localdev/kustomize/configs": {
+			RootConfig: localdevConfig,
+		},
+		"deploy/environments/testing/config_files": {
+			APIServiceConfigPath: "integration-tests-config.json",
+			RootConfig:           buildIntegrationTestsConfig(),
+		},
+		"deploy/environments/prod/kustomize/configs": {
+			RootConfig: buildProdConfig(),
+			// TODO: populate service->database-user mappings for each worker/function
+			// that needs distinct DB credentials in production.
+			ServiceDatabaseUsers: map[string]string{},
+		},
+	}
+
+	for p, cfg := range envConfigs {
+		if err := cfg.Render(p, true, true); err != nil {
+			panic(fmt.Errorf("validating config %s: %w", p, err))
+		}
+	}
+}

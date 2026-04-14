@@ -1,0 +1,69 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/spf13/cobra"
+)
+
+// data_exporter dumps reference / enumeration data from {{ .Project.ProjectMeta.Name }}'s
+// database to a JSON file suitable for use as a seed in a fresh environment.
+//
+// The body of this tool is intentionally a scaffold — wire repository reads here
+// for each enumeration / reference table you want to export.
+type ExportData struct {
+	GeneratedAt time.Time `json:"generatedAt"`
+	// Add per-domain slices here as you grow the export surface.
+}
+
+func main() {
+	var (
+		dbHost     string
+		dbPort     uint16
+		dbUser     string
+		dbPassword string
+		dbName     string
+		outputPath string
+	)
+
+	root := &cobra.Command{
+		Use:   "data_exporter",
+		Short: "Export reference data from a {{ .Project.ProjectMeta.Name }} database to JSON",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return runExport(context.Background(), dbHost, dbPort, dbUser, dbPassword, dbName, outputPath)
+		},
+	}
+
+	root.Flags().StringVar(&dbHost, "db-host", "", "Postgres host")
+	root.Flags().Uint16Var(&dbPort, "db-port", 5432, "Postgres port")
+	root.Flags().StringVar(&dbUser, "db-user", "", "Postgres username")
+	root.Flags().StringVar(&dbPassword, "db-password", "", "Postgres password")
+	root.Flags().StringVar(&dbName, "db-name", "", "Postgres database name")
+	root.Flags().StringVar(&outputPath, "output", "export.json", "Output JSON file path")
+
+	if err := root.Execute(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runExport(_ context.Context, _ string, _ uint16, _, _, _, outputPath string) error {
+	// TODO: connect to the database and populate ExportData via repository reads.
+	export := ExportData{GeneratedAt: time.Now().UTC()}
+
+	out, err := json.MarshalIndent(export, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshaling export: %w", err)
+	}
+
+	if err = os.WriteFile(outputPath, out, 0o600); err != nil {
+		return fmt.Errorf("writing %s: %w", outputPath, err)
+	}
+
+	fmt.Printf("Wrote export to %s\n", outputPath)
+	return nil
+}

@@ -1,0 +1,93 @@
+package main
+
+import (
+	"context"
+	"sync"
+	"time"
+
+	"github.com/modelcontextprotocol/go-sdk/auth"
+)
+
+// tokenStore maps bearer tokens to authenticated user / account context for the MCP server.
+// In production this should be backed by a persistent store; in localdev an in-memory map is fine.
+type tokenStore struct {
+	mu     sync.RWMutex
+	tokens map[string]tokenEntry
+}
+
+type tokenEntry struct {
+	userID    string
+	accountID string
+	expiresAt time.Time
+}
+
+func newTokenStore() *tokenStore {
+	return &tokenStore{
+		tokens: map[string]tokenEntry{},
+	}
+}
+
+// startCleanupLoop spawns a goroutine that periodically prunes expired tokens.
+func (s *tokenStore) startCleanupLoop(ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				s.prune()
+			}
+		}
+	}()
+}
+
+func (s *tokenStore) prune() {
+	now := time.Now()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for token, entry := range s.tokens {
+		if now.After(entry.expiresAt) {
+			delete(s.tokens, token)
+		}
+	}
+}
+
+// storeToken associates a bearer token with the given user / account for the given lifetime.
+func (s *tokenStore) storeToken(rawToken, userID, accountID string, lifetime time.Duration) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.tokens[rawToken] = tokenEntry{
+		userID:    userID,
+		accountID: accountID,
+		expiresAt: time.Now().Add(lifetime),
+	}
+}
+
+// userContextForToken resolves a bearer token to its (userID, accountID) pair.
+func (s *tokenStore) userContextForToken(rawToken string) (userID, accountID string, err error) {
+	s.mu.RLock()
+	entry, ok := s.tokens[rawToken]
+	s.mu.RUnlock()
+	if !ok {
+		return "", "", auth.ErrInvalidToken
+	}
+	if time.Now().After(entry.expiresAt) {
+		return "", "", auth.ErrInvalidToken
+	}
+	return entry.userID, entry.accountID, nil
+}
+
+// verifyToken implements the signature required by auth.RequireBearerToken.
+func (s *tokenStore) verifyToken(_ context.Context, rawToken string) (*auth.TokenInfo, error) {
+	userID, _, err := s.userContextForToken(rawToken)
+	if err != nil {
+		return nil, err
+	}
+	return &auth.TokenInfo{
+		Subject: userID,
+		Extra:   map[string]any{"raw_token": rawToken},
+	}, nil
+}

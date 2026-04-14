@@ -1,0 +1,76 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/hashicorp/go-multierror"
+	"github.com/spf13/pflag"
+)
+
+var (
+	checkOnlyFlag = pflag.Bool("check", false, "only check if files match")
+	databaseFlag  = pflag.String("database", postgres, "what database to use")
+)
+
+func main() {
+	pflag.Parse()
+
+	runErrors := &multierror.Error{}
+	databaseToUse := *databaseFlag
+
+	queryOutput := map[string][]*Query{
+{{- range $domain := .Project.Domains }}
+{{- range .Entities }}
+		"internal/repositories/postgres/{{ $domain.Name }}/sqlc_queries/{{ pluralSnake .Name }}": build{{ plural .Name }}Queries(databaseToUse),
+{{- end }}
+{{- end }}
+	}
+
+	checkOnly := *checkOnlyFlag
+
+	for filePath, queries := range queryOutput {
+		filePath += ".generated.sql"
+		existingFile, err := os.ReadFile(filePath)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				if _, err = os.Create(filePath); err != nil {
+					log.Fatal(fmt.Errorf("creating file: %w", err))
+				}
+			}
+			if err != nil {
+				log.Fatal(fmt.Errorf("opening existing file: %w", err))
+			}
+		}
+
+		var fileContent strings.Builder
+		for i, query := range queries {
+			if i != 0 {
+				fileContent.WriteString("\n")
+			}
+			fileContent.WriteString(query.Render())
+		}
+
+		var fileOutput strings.Builder
+		for line := range strings.SplitSeq(strings.TrimSpace(fileContent.String()), "\n") {
+			fileOutput.WriteString(strings.TrimSuffix(line, " ") + "\n")
+		}
+
+		if string(existingFile) != fileOutput.String() && checkOnly {
+			runErrors = multierror.Append(runErrors, fmt.Errorf("files don't match: %s", filePath))
+		}
+
+		if !checkOnly {
+			if err = os.WriteFile(filePath, []byte(fileOutput.String()), 0o600); err != nil {
+				runErrors = multierror.Append(runErrors, err)
+			}
+		}
+	}
+
+	if runErrors.ErrorOrNil() != nil {
+		log.Fatal(runErrors)
+	}
+}

@@ -1,0 +1,9 @@
+package sessions
+
+import (
+	platformerrors "{{ .Project.ProjectMeta.PlatformModule }}/errors"
+)
+
+var (
+	ErrAuthenticationNotFound = platformerrors.New("authentication not found")
+)

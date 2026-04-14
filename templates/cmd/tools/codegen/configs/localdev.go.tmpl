@@ -1,0 +1,15 @@
+package main
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+)
+
+// buildLocalDevConfig returns the APIServiceConfig used for local development
+// (docker-compose + Kustomize). Populate fields inline and regenerate —
+// NAFF will not overwrite the hand-authored interior once you replace this stub.
+//
+// See dinnerdonebetter's cmd/tools/codegen/configs/localdev.go for a full example
+// covering routing, observability, database, message queue, uploads, and services.
+func buildLocalDevConfig() *config.APIServiceConfig {
+	return &config.APIServiceConfig{}
+}
