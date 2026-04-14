@@ -1,0 +1,32 @@
+project:
+  name: "Minimal"
+  module: "github.com/example/minimal"
+  platform_module: "github.com/primandproper/platform"
+
+targets:
+  backend: true
+  ios: false
+
+features:
+  webhooks: false
+  issuereports: false
+  comments: false
+  notifications: false
+  payments: false
+  waitlists: false
+  # uploadedmedia kept default-on — identity.User has *uploadedmedia.UploadedMedia Avatar field
+  dataprivacy: false
+  consumer_app: false
+  admin_app: false
+  # settings kept default-on — localdev (if enabled) uses settings.Repository
+
+domains:
+  - name: "blog"
+    entities:
+      - name: "Post"
+        created_by_user: true
+        fields:
+          - name: "Title"
+            type: "string"
+          - name: "Body"
+            type: "string"

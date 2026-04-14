@@ -1,51 +1,20 @@
 package config
 
-import (
-	"context"
-	"fmt"
+import "context"
 
-	"{{ .Project.ProjectMeta.Module }}/internal/services/auth/handlers/authentication"
-	dataprivacycfg "{{ .Project.ProjectMeta.Module }}/internal/services/dataprivacy/config"
-	identitycfg "{{ .Project.ProjectMeta.Module }}/internal/services/identity/config"
-	mealplanningcfg "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/config"
-	oauthcfg "{{ .Project.ProjectMeta.Module }}/internal/services/oauth/config"
-	paymentscfg "{{ .Project.ProjectMeta.Module }}/internal/services/payments/config"
-	uploadedmediacfg "{{ .Project.ProjectMeta.Module }}/internal/services/uploadedmedia/config"
+// ServicesConfig collects per-service configurations. In the generic skeleton
+// this is empty; projects that want service-level config can template this
+// file on .AllDomains and embed each domain's config type here. Target's
+// version hardcodes dataprivacy/identity/mealplanning/oauth/payments/
+// uploadedmedia/auth-handlers config structs — not emitted in the generic
+// path because those service config packages are not generated.
+type ServicesConfig struct {
+	_ struct{} `json:"-"`
+}
 
-	"github.com/hashicorp/go-multierror"
-)
-
-type (
-	// ServicesConfig collects the various service configurations.
-	ServicesConfig struct {
-		_ struct{} `json:"-"`
-
-		Payments      paymentscfg.Config      `envPrefix:"PAYMENTS_"       json:"payments"`
-		Users         identitycfg.Config      `envPrefix:"USERS_"          json:"users"`
-		DataPrivacy   dataprivacycfg.Config   `envPrefix:"DATA_PRIVACY_"   json:"dataPrivacy"`
-		UploadedMedia uploadedmediacfg.Config `envPrefix:"UPLOADED_MEDIA_" json:"uploadedMedia"`
-		MealPlanning  mealplanningcfg.Config  `envPrefix:"MEAL_PLANNING_"  json:"mealPlanning"`
-		Auth          authentication.Config   `envPrefix:"AUTH_"           json:"auth"`
-		OAuth2Clients oauthcfg.Config         `envPrefix:"OAUTH2_CLIENTS_" json:"oauth2Clients"`
-	}
-)
-
-// ValidateWithContext validates a APIServiceConfig struct.
-func (cfg *ServicesConfig) ValidateWithContext(ctx context.Context) error {
-	result := &multierror.Error{}
-
-	validatorsToRun := map[string]func(context.Context) error{
-		"Users":         cfg.Users.ValidateWithContext,
-		"DataPrivacy":   cfg.DataPrivacy.ValidateWithContext,
-		"MealPlanning":  cfg.MealPlanning.ValidateWithContext,
-		"OAuth2Clients": cfg.OAuth2Clients.ValidateWithContext,
-	}
-
-	for name, validator := range validatorsToRun {
-		if err := validator(ctx); err != nil {
-			result = multierror.Append(fmt.Errorf("error validating %s config: %w", name, err), result)
-		}
-	}
-
-	return result.ErrorOrNil()
+// ValidateWithContext returns nil — nothing to validate in the empty skeleton.
+// Projects that populate ServicesConfig should override this to fan out to
+// each embedded config's ValidateWithContext.
+func (cfg *ServicesConfig) ValidateWithContext(_ context.Context) error {
+	return nil
 }

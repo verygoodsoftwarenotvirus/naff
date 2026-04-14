@@ -2,7 +2,9 @@ package keys
 
 const (
 	idSuffix = ".id"
+{{- range .Domain.Entities }}
 
-	// {{ .Entity.Name }}IDKey is the standard key for referring to {{ withArticle .Entity.Name }} ID.
-	{{ .Entity.Name }}IDKey = "{{ snake .Entity.Name }}" + idSuffix
+	// {{ .Name }}IDKey is the standard key for referring to {{ withArticle .Name }} ID.
+	{{ .Name }}IDKey = "{{ snake .Name }}" + idSuffix
+{{- end }}
 )

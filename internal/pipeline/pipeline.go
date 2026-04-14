@@ -491,6 +491,7 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 
 	templateMappings := []mapping{
 		{"project/go.mod.tmpl", "go.mod", 0},
+		{"project/go.sum.tmpl", "go.sum", 0},
 		{"project/Makefile.tmpl", "Makefile", 0},
 		{"project/scripts/configs.sh.tmpl", "scripts/configs.sh", 0o755},
 		{"project/scripts/queries.sh.tmpl", "scripts/queries.sh", 0o755},
@@ -657,6 +658,12 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		{"internal/grpc/converters/helpers.go.tmpl", "internal/grpc/converters/helpers.generated.go"},
 		{"internal/grpc/converters/query_filter.go.tmpl", "internal/grpc/converters/query_filter.generated.go"},
 
+		// audit domain extras — DataChangeMessage type + constructor used by
+		// per-domain manager templates and internal/authentication/manager.go
+		// for async worker dispatch. Target hand-rolls these in audit/; naff's
+		// CRUD only emits AuditLogEntry.
+		{"domain/audit_extras.go.tmpl", "internal/domain/audit/data_change_message.generated.go"},
+
 		// identity adjuncts — converters imported by localdev; fakes imported by
 		// postgres/testing; keys (auth/identity/oauth) imported across repos.
 		{"identity/converters/account_invitations.go.tmpl", "internal/domain/identity/converters/account_invitations.generated.go"},
@@ -792,13 +799,16 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 		{"config/configs.go.tmpl", "internal/config/configs.generated.go"},
 		{"config/do.go.tmpl", "internal/config/do.generated.go"},
 		{"config/env_vars.go.tmpl", "internal/config/env_vars.generated.go"},
-		{"config/environment.go.tmpl", "internal/config/environment.generated.go"},
-		{"config/mealplanning_configs.go.tmpl", "internal/config/mealplanning_configs.generated.go"},
-		{"config/mealplanning_environment.go.tmpl", "internal/config/mealplanning_environment.generated.go"},
+		// environment.go + mealplanning_* omitted: they hardcode references
+		// to target's ServicesConfig fields (DataPrivacy, MealPlanning, etc.)
+		// and per-entity config paths. Users write their own env→config
+		// loader. Re-enable after templating on .AllDomains.
 		// config/services_config.go is DDB-specific (hardcoded service list:
 		// dataprivacy/identity/mealplanning/oauth/payments/uploadedmedia). It
 		// imports services/<X>/config packages that naff doesn't emit in the
-		// generic path. Omitted until we template it on .AllDomains.
+		// generic path. The generic template emits an empty ServicesConfig
+		// stub so config/{configs,do}.go can still reference the type.
+		{"config/services_config.go.tmpl", "internal/config/services_config.generated.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))

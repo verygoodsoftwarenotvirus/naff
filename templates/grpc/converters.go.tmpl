@@ -10,6 +10,9 @@ import (
 )
 
 // Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }} converts a domain {{ .Entity.Name }} to its gRPC representation.
+// Field names on the gRPC side use protoc's camelCase convention (e.g.
+// `ReferencedID` → `ReferencedId`) while domain-side names keep Go's
+// uppercase-acronym convention; use `protoFieldName` when referencing LHS.
 func Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(x *types.{{ .Entity.Name }}) *{{ .Domain.Name }}svc.{{ .Entity.Name }} {
 	if x == nil {
 		return nil
@@ -18,7 +21,7 @@ func Convert{{ .Entity.Name }}ToGRPC{{ .Entity.Name }}(x *types.{{ .Entity.Name 
 	result := &{{ .Domain.Name }}svc.{{ .Entity.Name }}{
 		Id:        x.ID,
 {{- range .Entity.Fields }}
-		{{ .Name }}: x.{{ .Name }},
+		{{ protoFieldName .Name }}: x.{{ .Name }},
 {{- end }}
 		CreatedAt: timestamppb.New(x.CreatedAt),
 {{- if .Entity.CreatedByUser }}
@@ -44,7 +47,7 @@ func ConvertGRPC{{ .Entity.Name }}CreationRequestInputTo{{ .Entity.Name }}Databa
 	return &types.{{ .Entity.Name }}DatabaseCreationInput{
 		ID: identifiers.New(),
 {{- range creatableFields .Entity.Fields }}
-		{{ .Name }}: input.{{ .Name }},
+		{{ .Name }}: input.{{ protoFieldName .Name }},
 {{- end }}
 {{- if .Entity.CreatedByUser }}
 		CreatedByUser: userID,
@@ -59,7 +62,7 @@ func ConvertGRPC{{ .Entity.Name }}CreationRequestInputTo{{ .Entity.Name }}Databa
 func ConvertGRPC{{ .Entity.Name }}UpdateRequestInputTo{{ .Entity.Name }}UpdateRequestInput(input *{{ .Domain.Name }}svc.{{ .Entity.Name }}UpdateRequestInput) *types.{{ .Entity.Name }}UpdateRequestInput {
 	return &types.{{ .Entity.Name }}UpdateRequestInput{
 {{- range editableFields .Entity.Fields }}
-		{{ .Name }}: input.{{ .Name }},
+		{{ .Name }}: input.{{ protoFieldName .Name }},
 {{- end }}
 	}
 }

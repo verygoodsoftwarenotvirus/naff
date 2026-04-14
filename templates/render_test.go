@@ -23,6 +23,7 @@ func testDomain() *config.Domain {
 	return &config.Domain{
 		Name:     "issuereports",
 		TypeName: "IssueReports",
+		Entities: []config.Entity{*testEntity()},
 	}
 }
 
@@ -374,9 +375,9 @@ func TestRepositoryEntityTemplate(t *testing.T) {
 		"r.auditLogEntryRepo.CreateAuditLogEntry",
 		"tx.Commit()",
 		"r.RollbackTransaction",
-		"audit.AuditLogEventTypeCreated",
-		"audit.AuditLogEventTypeUpdated",
-		"audit.AuditLogEventTypeArchived",
+		`EventType:        "created"`,
+		`EventType:        "updated"`,
+		`EventType:        "archived"`,
 	}
 
 	for _, check := range checks {

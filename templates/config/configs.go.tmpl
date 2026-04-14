@@ -56,17 +56,7 @@ type (
 	CloserFunc func()
 
 	configurations interface {
-		APIServiceConfig |
-			DBCleanerConfig |
-			MealPlanFinalizerConfig |
-			MealPlanGroceryListInitializerConfig |
-			MealPlanTaskCreatorConfig |
-			SearchDataIndexSchedulerConfig |
-			MobileNotificationSchedulerConfig |
-			AsyncMessageHandlerConfig |
-			EmailDeliverabilityTestConfig |
-			QueueTestJobConfig |
-			MCPServiceConfig
+		APIServiceConfig
 	}
 
 	// APIServiceConfig configures an instance of the service. It is composed of all the other setting structs.

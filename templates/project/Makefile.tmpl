@@ -54,3 +54,43 @@ env_vars:
 
 .PHONY: generated_files
 generated_files: configs queries env_vars format_golang
+
+## CODEGEN (sqlc + protoc — required before build on a fresh checkout)
+
+# Top-level sqlc.yaml is composed from the per-domain fragments naff emits.
+sqlc.yaml: $(wildcard internal/repositories/postgres/*/sqlc.generated.yaml)
+	@echo 'version: "2"' > $@
+	@echo 'sql:' >> $@
+	@cat internal/repositories/postgres/*/sqlc.generated.yaml >> $@
+
+.PHONY: sqlc_queries
+sqlc_queries:
+	@# cmd/tools/codegen/queries writes to internal/repositories/postgres/<domain>/sqlc_queries/;
+	@# make sure those dirs exist first (sqlc won't create them).
+	@for d in internal/repositories/postgres/*/; do \
+		case "$$(basename $$d)" in migrations|testing) ;; *) mkdir -p "$$d/sqlc_queries" ;; esac; \
+	done
+	go run ./cmd/tools/codegen/queries
+
+.PHONY: sqlc_generate
+sqlc_generate: sqlc_queries sqlc.yaml
+	sqlc generate
+
+.PHONY: proto_generate
+proto_generate:
+	@find proto -name "*.proto" | xargs protoc --proto_path=proto \
+		--go_out=. --go_opt=module=$(THIS) \
+		--go-grpc_out=. --go-grpc_opt=module=$(THIS)
+
+.PHONY: generate
+generate: sqlc_generate proto_generate
+
+## BUILD
+
+.PHONY: build
+build:
+	go build ./...
+
+.PHONY: test
+test:
+	go test ./...

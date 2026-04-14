@@ -1,0 +1,56 @@
+package audit
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication/sessions"
+
+	"{{ .Project.ProjectMeta.PlatformModule }}/observability/logging"
+
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+// DataChangeMessage represents an event that asks a worker to write data to the
+// datastore. Imported from target verbatim — naff's CRUD generates AuditLogEntry
+// but not the orchestration types used by per-domain managers to dispatch
+// change messages to async workers.
+type DataChangeMessage struct {
+	_ struct{} `json:"-"`
+
+	EventType string         `json:"eventType"`
+	Context   map[string]any `json:"context,omitempty"`
+	UserID    string         `json:"userID"`
+	AccountID string         `json:"accountID,omitempty"`
+	TestID    string         `json:"testID,omitempty"`
+}
+
+// ValidateWithContext validates a DataChangeMessage.
+func (d *DataChangeMessage) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(ctx, d,
+		validation.Field(&d.UserID, validation.When(d.AccountID == "" && d.TestID == "", validation.Required)),
+		validation.Field(&d.AccountID, validation.When(d.UserID == "" && d.TestID == "", validation.Required)),
+		validation.Field(&d.Context, validation.When(d.TestID == "", validation.Required)),
+	)
+}
+
+// BuildDataChangeMessageFromContext constructs a DataChangeMessage from session
+// context for dispatching to async workers. Missing session context is logged
+// but does not fail — messages can still be sent with only event type + metadata.
+func BuildDataChangeMessageFromContext(ctx context.Context, logger logging.Logger, eventType string, metadata map[string]any) *DataChangeMessage {
+	sessionContext, err := sessions.FetchContextDataFromContext(ctx)
+	if err != nil {
+		logger.WithValue("event_type", eventType).Info("failed to extract session data from context")
+	}
+
+	x := &DataChangeMessage{
+		EventType: eventType,
+		Context:   metadata,
+	}
+
+	if sessionContext != nil {
+		x.UserID = sessionContext.Requester.UserID
+		x.AccountID = sessionContext.ActiveAccountID
+	}
+
+	return x
+}

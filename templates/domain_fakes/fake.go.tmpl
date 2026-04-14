@@ -16,6 +16,10 @@ func init() {
 	}
 }
 
+// ptr returns a pointer to a value. Used by fakeValue() for pointer fields so
+// the generated BuildFake* functions can assign directly into struct literals.
+func ptr[T any](v T) *T { return &v }
+
 // BuildFakeID builds a fake ID.
 func BuildFakeID() string {
 	return identifiers.New()
@@ -77,9 +81,12 @@ func BuildFake{{ .Entity.Name }}DatabaseCreationInput() *types.{{ .Entity.Name }
 }
 
 // BuildFake{{ .Entity.Name }}UpdateRequestInput builds a fake {{ .Entity.Name }}UpdateRequestInput.
+// Fields in the UpdateRequestInput struct are all pointers so we declare base
+// values and take their addresses — use fakeValueBase (not fakeValue, which
+// would double-wrap pointer fields).
 func BuildFake{{ .Entity.Name }}UpdateRequestInput() *types.{{ .Entity.Name }}UpdateRequestInput {
 {{- range editableFields .Entity.Fields }}
-	{{ camel .Name }} := {{ fakeValue . }}
+	{{ camel .Name }} := {{ fakeValueBase . }}
 {{- end }}
 
 	return &types.{{ .Entity.Name }}UpdateRequestInput{

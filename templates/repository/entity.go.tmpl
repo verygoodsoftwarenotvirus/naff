@@ -280,7 +280,7 @@ func (r *repository) Create{{ .Entity.Name }}(ctx context.Context, input *types.
 {{- if ne .Domain.Name "audit" }}
 	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
-		BelongsToAccount: &x.BelongsToAccount,
+		BelongsToAccount: x.BelongsToAccount,
 {{- end }}
 		ID:               identifiers.New(),
 		ResourceType:     resourceType{{ plural .Entity.Name }},
@@ -342,7 +342,7 @@ func (r *repository) Update{{ .Entity.Name }}(ctx context.Context, {{ camel .Ent
 {{- if ne .Domain.Name "audit" }}
 	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
-		BelongsToAccount: &{{ camel .Entity.Name }}.BelongsToAccount,
+		BelongsToAccount: {{ camel .Entity.Name }}.BelongsToAccount,
 {{- end }}
 		ID:               identifiers.New(),
 		ResourceType:     resourceType{{ plural .Entity.Name }},
@@ -373,7 +373,7 @@ func (r *repository) Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .En
 
 	logger := r.logger.WithValue({{ .Domain.Name }}keys.{{ .Entity.Name }}IDKey, {{ camel .Entity.Name }}ID)
 
-{{- if ne .Domain.Name "audit" }}
+{{- if and (ne .Domain.Name "audit") .Entity.BelongsToAccount }}
 	{{ camel .Entity.Name }}, err := r.Get{{ .Entity.Name }}(ctx, {{ camel .Entity.Name }}ID)
 	if err != nil {
 		return observability.PrepareAndLogError(err, logger, span, "fetching {{ humanReadable .Entity.Name }} for archive")
@@ -399,7 +399,7 @@ func (r *repository) Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .En
 {{- if ne .Domain.Name "audit" }}
 	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
-		BelongsToAccount: &{{ camel .Entity.Name }}.BelongsToAccount,
+		BelongsToAccount: {{ camel .Entity.Name }}.BelongsToAccount,
 {{- end }}
 		ID:               identifiers.New(),
 		ResourceType:     resourceType{{ plural .Entity.Name }},

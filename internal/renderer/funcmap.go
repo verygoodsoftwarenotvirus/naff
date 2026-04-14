@@ -5,6 +5,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/naming"
 )
@@ -48,9 +50,20 @@ func FuncMap() template.FuncMap {
 		"sqlType":     sqlType,
 		"protoType":   protoType,
 		"fakeValue":             fakeValue,
+		"fakeValueBase":         fakeValueBase,
 		"pointerConversionFunc": pointerConversionFunc,
 		"readConversionFunc":    readConversionFunc,
 		"writeConversionFunc":   writeConversionFunc,
+
+		// protoFieldName converts a Go field identifier to the name protoc-gen-go
+		// emits from the snake-cased proto field. protoc lowercases acronyms,
+		// so `ReferencedID` → `referenced_id` → `ReferencedId` (not `ReferencedID`).
+		// Use in grpc/converters templates when referencing fields on generated
+		// .pb.go structs.
+		"protoFieldName": func(s string) string {
+			n := naming.New(s)
+			return strcase.ToCamel(n.Snake())
+		},
 
 		// Field filtering
 		"creatableFields": creatableFields,
@@ -244,8 +257,10 @@ func pointerConversionFunc(f config.Field) string {
 		return "Int32PointerFromNullInt32"
 	case "int64":
 		return "Int64PointerFromNullInt64"
-	case "float32", "float64":
-		return "Float64PointerFromNullFloat64"
+	case "float32":
+		return "Float32PointerFromNullString"
+	case "float64":
+		return "Float64PointerFromNullString"
 	default:
 		return "StringPointerFromNullString"
 	}
@@ -254,7 +269,9 @@ func pointerConversionFunc(f config.Field) string {
 // readConversionFunc returns the database-to-domain conversion helper for a field.
 // Returns "" when the field is required and non-pointer (passthrough, no conversion).
 // Used by the repository template to pick the correct helper for each of {string, bool,
-// int32, int64, float64} × {required, non-required non-pointer, pointer}.
+// int32, int64, float32, float64} × {required, non-required non-pointer, pointer}.
+// Note: platform stores floats as NullString columns, so float helpers convert
+// to/from NullString, not NullFloat32/NullFloat64.
 func readConversionFunc(f config.Field) string {
 	base := f.BaseType()
 	if f.IsPointer() {
@@ -267,8 +284,10 @@ func readConversionFunc(f config.Field) string {
 			return "Int32PointerFromNullInt32"
 		case "int64":
 			return "Int64PointerFromNullInt64"
-		case "float32", "float64":
-			return "Float64PointerFromNullFloat64"
+		case "float32":
+			return "Float32PointerFromNullString"
+		case "float64":
+			return "Float64PointerFromNullString"
 		default:
 			return "StringPointerFromNullString"
 		}
@@ -283,8 +302,10 @@ func readConversionFunc(f config.Field) string {
 			return "Int32FromNullInt32"
 		case "int64":
 			return "Int64FromNullInt64"
-		case "float32", "float64":
-			return "Float64FromNullFloat64"
+		case "float32":
+			return "Float32FromNullString"
+		case "float64":
+			return "Float64FromNullString"
 		default:
 			return "StringFromNullString"
 		}
@@ -294,6 +315,8 @@ func readConversionFunc(f config.Field) string {
 
 // writeConversionFunc returns the domain-to-database conversion helper for a field.
 // Returns "" when the field is required and non-pointer (passthrough).
+// Note: platform stores floats as NullString columns, so float helpers return
+// NullString, not NullFloat*.
 func writeConversionFunc(f config.Field) string {
 	base := f.BaseType()
 	if f.IsPointer() {
@@ -306,8 +329,10 @@ func writeConversionFunc(f config.Field) string {
 			return "NullInt32FromInt32Pointer"
 		case "int64":
 			return "NullInt64FromInt64Pointer"
-		case "float32", "float64":
-			return "NullFloat64FromFloat64Pointer"
+		case "float32":
+			return "NullStringFromFloat32Pointer"
+		case "float64":
+			return "NullStringFromFloat64Pointer"
 		default:
 			return "NullStringFromStringPointer"
 		}
@@ -322,8 +347,10 @@ func writeConversionFunc(f config.Field) string {
 			return "NullInt32FromInt32"
 		case "int64":
 			return "NullInt64FromInt64"
-		case "float32", "float64":
-			return "NullFloat64FromFloat64"
+		case "float32":
+			return "NullStringFromFloat32"
+		case "float64":
+			return "NullStringFromFloat64"
 		default:
 			return "NullStringFromString"
 		}
@@ -332,13 +359,22 @@ func writeConversionFunc(f config.Field) string {
 }
 
 // fakeValue returns a gofakeit expression for generating fake data for a field.
+// For pointer fields, wraps the value in a ptr() helper so callers can assign
+// directly to struct literal fields. The fakes template must define a generic
+// `ptr[T any](v T) *T` helper for this to resolve.
 func fakeValue(f config.Field) string {
 	if f.IsPointer() {
-		// For pointer fields in fakes, we don't generate pointer values directly.
-		// The fake builder will take the address.
-		return fakeValueForType(f.BaseType())
+		return "ptr(" + fakeValueForType(f.BaseType()) + ")"
 	}
 	return fakeValueForType(f.Type)
+}
+
+// fakeValueBase returns the base (non-pointer) fake expression for a field,
+// regardless of whether the field is a pointer. Use this in fakes templates
+// where the caller takes `&var` separately (e.g. update-request inputs that
+// declare an intermediate var).
+func fakeValueBase(f config.Field) string {
+	return fakeValueForType(f.BaseType())
 }
 
 func fakeValueForType(typ string) string {
