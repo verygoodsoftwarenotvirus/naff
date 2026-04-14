@@ -15,6 +15,7 @@ features:
 
 domains:
   - name: "mealplanning"
+    type_name: "MealPlanning"
     entities:
       - name: "Recipe"
         created_by_user: true

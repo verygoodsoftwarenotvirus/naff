@@ -21,7 +21,8 @@ func testProject() *config.Project {
 
 func testDomain() *config.Domain {
 	return &config.Domain{
-		Name: "issuereports",
+		Name:     "issuereports",
+		TypeName: "IssueReports",
 	}
 }
 

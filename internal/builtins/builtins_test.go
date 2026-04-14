@@ -16,11 +16,11 @@ func TestBuiltinDomains(t *testing.T) {
 		domains := BuiltinDomains(features)
 
 		// Always-on: audit
-		// Default-on: webhooks, issuereports, comments, notifications, uploadedmedia, dataprivacy
+		// Default-on: webhooks, issuereports, comments, notifications, uploadedmedia, dataprivacy, settings
 		// Default-off: waitlists, payments
 		// auth/identity/oauth are NOT in builtins — shipped as hand-rolled templates via
 		// pipeline.planDomainExtrasFiles(). See Phase 3b note in builtins.go.
-		expectedCount := 7 // audit + 6 default-on
+		expectedCount := 8 // audit + 7 default-on
 		if len(domains) != expectedCount {
 			t.Errorf("expected %d domains with defaults, got %d", expectedCount, len(domains))
 			for _, d := range domains {
@@ -33,7 +33,7 @@ func TestBuiltinDomains(t *testing.T) {
 			names[d.Name] = true
 		}
 
-		for _, expected := range []string{"audit", "webhooks", "issuereports", "comments", "notifications", "uploadedmedia", "dataprivacy"} {
+		for _, expected := range []string{"audit", "webhooks", "issuereports", "comments", "notifications", "uploadedmedia", "dataprivacy", "settings"} {
 			if !names[expected] {
 				t.Errorf("expected domain %q to be present", expected)
 			}

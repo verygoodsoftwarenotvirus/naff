@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 
+{{- if ne .Domain.Name "audit" }}
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/audit"
+{{- end }}
 {{- if .Entity.BelongsToAccount }}
 	identitykeys "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/keys"
 {{- end }}
@@ -275,6 +277,7 @@ func (r *repository) Create{{ .Entity.Name }}(ctx context.Context, input *types.
 		CreatedAt:     r.CurrentTime(),
 	}
 
+{{- if ne .Domain.Name "audit" }}
 	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, tx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
 		BelongsToAccount: &x.BelongsToAccount,
@@ -287,6 +290,7 @@ func (r *repository) Create{{ .Entity.Name }}(ctx context.Context, input *types.
 		r.RollbackTransaction(ctx, tx)
 		return nil, observability.PrepareError(err, span, "creating audit log entry")
 	}
+{{- end }}
 
 	if err = tx.Commit(); err != nil {
 		return nil, observability.PrepareAndLogError(err, logger, span, "committing database transaction")
@@ -335,6 +339,7 @@ func (r *repository) Update{{ .Entity.Name }}(ctx context.Context, {{ camel .Ent
 		return sql.ErrNoRows
 	}
 
+{{- if ne .Domain.Name "audit" }}
 	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, tx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
 		BelongsToAccount: &{{ camel .Entity.Name }}.BelongsToAccount,
@@ -347,6 +352,7 @@ func (r *repository) Update{{ .Entity.Name }}(ctx context.Context, {{ camel .Ent
 		r.RollbackTransaction(ctx, tx)
 		return observability.PrepareError(err, span, "creating audit log entry")
 	}
+{{- end }}
 
 	if err = tx.Commit(); err != nil {
 		return observability.PrepareAndLogError(err, logger, span, "committing database transaction")
@@ -388,6 +394,7 @@ func (r *repository) Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .En
 		return sql.ErrNoRows
 	}
 
+{{- if ne .Domain.Name "audit" }}
 	if _, err = r.auditLogEntryRepo.CreateAuditLogEntry(ctx, tx, &audit.AuditLogEntryDatabaseCreationInput{
 {{- if .Entity.BelongsToAccount }}
 		BelongsToAccount: &{{ camel .Entity.Name }}.BelongsToAccount,
@@ -400,6 +407,7 @@ func (r *repository) Archive{{ .Entity.Name }}(ctx context.Context, {{ camel .En
 		r.RollbackTransaction(ctx, tx)
 		return observability.PrepareError(err, span, "creating audit log entry")
 	}
+{{- end }}
 
 	if err = tx.Commit(); err != nil {
 		return observability.PrepareAndLogError(err, logger, span, "committing database transaction")

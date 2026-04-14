@@ -1,7 +1,9 @@
 package {{ .Domain.Name }}
 
 import (
+{{- if ne .Domain.Name "audit" }}
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/audit"
+{{- end }}
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
 
 	"{{ .Project.ProjectMeta.PlatformModule }}/database"
@@ -11,13 +13,15 @@ import (
 	"github.com/samber/do/v2"
 )
 
-// Register{{ plural .Entity.Name }}Repository registers the {{ .Domain.Name }} repository with the injector.
-func Register{{ plural .Entity.Name }}Repository(i do.Injector) {
+// Register{{ .Domain.RepoTypeName }}Repository registers the {{ .Domain.Name }} repository with the injector.
+func Register{{ .Domain.RepoTypeName }}Repository(i do.Injector) {
 	do.Provide[{{ .Domain.Name }}.Repository](i, func(i do.Injector) ({{ .Domain.Name }}.Repository, error) {
-		return Provide{{ plural .Entity.Name }}Repository(
+		return Provide{{ .Domain.RepoTypeName }}Repository(
 			do.MustInvoke[logging.Logger](i),
 			do.MustInvoke[tracing.TracerProvider](i),
+{{- if ne .Domain.Name "audit" }}
 			do.MustInvoke[audit.Repository](i),
+{{- end }}
 			do.MustInvoke[database.Client](i),
 		), nil
 	})

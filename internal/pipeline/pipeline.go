@@ -349,6 +349,8 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		files = append(files, p.planAuthorizationFiles()...)
 		files = append(files, p.planAuthenticationFiles()...)
 		files = append(files, p.planConfigFiles()...)
+		files = append(files, p.planRepositoriesFiles()...)
+		files = append(files, p.planLocalDevFiles()...)
 		files = append(files, p.planDomainExtrasFiles()...)
 		files = append(files, p.planAuthHandlerFiles()...)
 	}
@@ -489,6 +491,9 @@ func (p *Pipeline) planProjectFiles() []PlannedFile {
 		{"project/scripts/format_imports.sh.tmpl", "scripts/format_imports.sh", 0o755},
 		{"project/scripts/format_go_fieldalignment.sh.tmpl", "scripts/format_go_fieldalignment.sh", 0o755},
 		{"project/scripts/format_go_tag_alignment.sh.tmpl", "scripts/format_go_tag_alignment.sh", 0o755},
+		// Top-level shared proto: filtering (QueryFilter, Pagination) — imported
+		// by every service's *_service.proto and by testing/integration.
+		{"proto/filtering.proto.tmpl", "proto/filtering.proto", 0},
 	}
 
 	var files []PlannedFile
@@ -598,15 +603,19 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// real branding.go is 109KB with base64 logo blobs → deliberately NOT shipped.
 		{"branding/branding.go.tmpl", "internal/branding/branding.generated.go"},
 
-		// Phase 4a — testutils + integration-harness stubs. matchers.go is a
-		// tiny mock matcher. testing/integration/apiserver/{doc,constants}.go are
-		// trivial static files. The remaining integration harness (init.go 137,
-		// helpers.go 452, audit_helpers.go 114) depends on `pkg/client` (Phase 3d),
-		// `internal/localdev` (out of scope), and target-only protoc output at
-		// `internal/grpc/generated/`; defer until those land.
+		// Phase 4a + 4b.5 — integration harness. 4a shipped the stubs (matchers.go,
+		// doc.go, constants.go). 4b.5 adds init.go/helpers.go/audit_helpers.go now
+		// that 4b.0–4b.4 unblocked the deps: Provide<Domain>Repository rename
+		// (4b.0), settings builtin (4b.1), top-level /internal/repositories glue
+		// (4b.2), proto/filtering.proto (4b.3), and internal/localdev/server.go
+		// (4b.4). init.go and helpers.go inherit the audit import alias from 4b.4
+		// (naff emits postgres/audit; target wrote postgres/auditlogentries).
 		{"testutils/matchers.go.tmpl", "internal/testutils/matchers.generated.go"},
 		{"testing/integration/apiserver/doc.go.tmpl", "testing/integration/apiserver/doc.generated.go"},
 		{"testing/integration/apiserver/constants.go.tmpl", "testing/integration/apiserver/constants.generated.go"},
+		{"testing/integration/apiserver/init.go.tmpl", "testing/integration/apiserver/init.generated.go"},
+		{"testing/integration/apiserver/helpers.go.tmpl", "testing/integration/apiserver/helpers.generated.go"},
+		{"testing/integration/apiserver/audit_helpers.go.tmpl", "testing/integration/apiserver/audit_helpers.generated.go"},
 
 		// Phase 3d — pkg/client. Single 248-LOC client plumbing file: gRPC+HTTP
 		// transport, OAuth2 token integration, TLS config. Per-entity client methods
@@ -744,6 +753,53 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 		})
 	}
 	return files
+}
+
+// planRepositoriesFiles returns the top-level internal/repositories/ glue —
+// ProvideMigrator + its DI registration. Used by localdev/server.go and any
+// consumer that wires a database.Migrator.
+func (p *Pipeline) planRepositoriesFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	type mapping struct {
+		template string
+		output   string
+	}
+
+	mappings := []mapping{
+		{"repositories/do.go.tmpl", "internal/repositories/do.generated.go"},
+		{"repositories/migrations.go.tmpl", "internal/repositories/migrations.generated.go"},
+	}
+
+	files := make([]PlannedFile, 0, len(mappings))
+	for _, m := range mappings {
+		files = append(files, PlannedFile{
+			TemplatePath: m.template,
+			OutputPath:   m.output,
+			Data:         ctx,
+			IsGo:         true,
+		})
+	}
+	return files
+}
+
+// planLocalDevFiles ships internal/localdev/server.go — the in-process
+// all-in-one bootstrap used by testing/integration/apiserver. Verbatim from
+// target modulo module paths, with one deliberate deviation: target imports
+// `internal/repositories/postgres/auditlogentries`; naff emits that package
+// at `postgres/audit`, so the template aliases it back to `auditlogentries`
+// in the import block and leaves all call sites unchanged.
+func (p *Pipeline) planLocalDevFiles() []PlannedFile {
+	ctx := TemplateContext{Project: p.config}
+
+	return []PlannedFile{
+		{
+			TemplatePath: "localdev/server.go.tmpl",
+			OutputPath:   "internal/localdev/server.generated.go",
+			Data:         ctx,
+			IsGo:         true,
+		},
+	}
 }
 
 // planCmdFiles returns the cmd/ binaries that NAFF emits. Modeled on the

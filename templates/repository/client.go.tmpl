@@ -3,7 +3,9 @@ package {{ .Domain.Name }}
 import (
 	"database/sql"
 
+{{- if ne .Domain.Name "audit" }}
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/audit"
+{{- end }}
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
 	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/{{ .Domain.Name }}/generated"
 
@@ -22,16 +24,20 @@ type repository struct {
 	tracer            tracing.Tracer
 	logger            logging.Logger
 	generatedQuerier  generated.Querier
+{{- if ne .Domain.Name "audit" }}
 	auditLogEntryRepo audit.Repository
+{{- end }}
 	readDB            *sql.DB
 	writeDB           *sql.DB
 }
 
-// Provide{{ plural .Entity.Name }}Repository provides a new repository.
-func Provide{{ plural .Entity.Name }}Repository(
+// Provide{{ .Domain.RepoTypeName }}Repository provides a new repository.
+func Provide{{ .Domain.RepoTypeName }}Repository(
 	logger logging.Logger,
 	tracerProvider tracing.TracerProvider,
+{{- if ne .Domain.Name "audit" }}
 	auditLogEntryRepo audit.Repository,
+{{- end }}
 	client database.Client,
 ) {{ .Domain.Name }}.Repository {
 	c := &repository{
@@ -40,7 +46,9 @@ func Provide{{ plural .Entity.Name }}Repository(
 		writeDB:           client.WriteDB(),
 		tracer:            tracing.NewNamedTracer(tracerProvider, o11yName),
 		generatedQuerier:  generated.New(),
+{{- if ne .Domain.Name "audit" }}
 		auditLogEntryRepo: auditLogEntryRepo,
+{{- end }}
 		logger:            logging.NewNamedLogger(logger, o11yName),
 	}
 

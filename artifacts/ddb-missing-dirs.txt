@@ -113,12 +113,6 @@ internal/domain/oauth/keys
 internal/domain/oauth/manager
 internal/domain/oauth/manager/mock
 internal/domain/oauth/mock
-internal/domain/settings
-internal/domain/settings/converters
-internal/domain/settings/fakes
-internal/domain/settings/keys
-internal/domain/settings/manager
-internal/domain/settings/mock
 internal/functions
 internal/functions/datachangemessagehandler
 internal/grpc
@@ -143,7 +137,6 @@ internal/grpc/generated/services/uploaded_media
 internal/grpc/generated/services/waitlists
 internal/grpc/generated/services/webhooks
 internal/grpc/generated/types
-internal/localdev
 internal/repositories/postgres/auditlogentries
 internal/repositories/postgres/auditlogentries/generated
 internal/repositories/postgres/auditlogentries/sqlc_queries
@@ -171,7 +164,6 @@ internal/repositories/postgres/oauth/generated
 internal/repositories/postgres/oauth/sqlc_queries
 internal/repositories/postgres/payments/generated
 internal/repositories/postgres/payments/sqlc_queries
-internal/repositories/postgres/settings
 internal/repositories/postgres/settings/generated
 internal/repositories/postgres/settings/sqlc_queries
 internal/repositories/postgres/testing
@@ -218,9 +210,5 @@ internal/services/oauth/workers/db_cleaner
 internal/services/payments/adapters
 internal/services/payments/config
 internal/services/payments/http
-internal/services/settings
-internal/services/settings/grpc
-internal/services/settings/grpc/converters
 internal/services/uploadedmedia/config
 testing/load
-vendor

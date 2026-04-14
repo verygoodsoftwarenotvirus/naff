@@ -38,6 +38,9 @@ func BuiltinDomains(features config.Features) []config.Domain {
 	if features.FeatureEnabled(features.DataPrivacy, true) {
 		domains = append(domains, dataPrivacyDomain())
 	}
+	if features.FeatureEnabled(features.Settings, true) {
+		domains = append(domains, settingsDomain())
+	}
 	if features.FeatureEnabled(features.Waitlists, false) {
 		domains = append(domains, waitlistsDomain())
 	}
@@ -50,7 +53,8 @@ func BuiltinDomains(features config.Features) []config.Domain {
 
 func auditDomain() config.Domain {
 	return config.Domain{
-		Name: "audit",
+		Name:     "audit",
+		TypeName: "AuditLog",
 		Entities: []config.Entity{
 			{
 				Name:             "AuditLogEntry",
@@ -87,7 +91,8 @@ func webhooksDomain() config.Domain {
 
 func issueReportsDomain() config.Domain {
 	return config.Domain{
-		Name: "issuereports",
+		Name:     "issuereports",
+		TypeName: "IssueReports",
 		Entities: []config.Entity{
 			{
 				Name:             "IssueReport",
@@ -124,7 +129,8 @@ func commentsDomain() config.Domain {
 
 func notificationsDomain() config.Domain {
 	return config.Domain{
-		Name: "notifications",
+		Name:     "notifications",
+		TypeName: "Notifications",
 		Entities: []config.Entity{
 			{
 				Name:          "UserNotification",
@@ -140,7 +146,8 @@ func notificationsDomain() config.Domain {
 
 func uploadedMediaDomain() config.Domain {
 	return config.Domain{
-		Name: "uploadedmedia",
+		Name:     "uploadedmedia",
+		TypeName: "UploadedMedia",
 		Entities: []config.Entity{
 			{
 				Name:          "UploadedMedia",
@@ -156,7 +163,8 @@ func uploadedMediaDomain() config.Domain {
 
 func dataPrivacyDomain() config.Domain {
 	return config.Domain{
-		Name: "dataprivacy",
+		Name:     "dataprivacy",
+		TypeName: "DataPrivacy",
 		Entities: []config.Entity{
 			{
 				Name:          "UserDataDisclosure",
@@ -179,6 +187,35 @@ func waitlistsDomain() config.Domain {
 				Fields: []config.Field{
 					{Name: "Name", Type: "string"},
 					{Name: "Description", Type: "string"},
+				},
+			},
+		},
+	}
+}
+
+// settingsDomain returns a minimal builtin for user/service settings storage.
+// Target's settings package is richer (two entities plus []string Enumeration
+// on ServiceSetting) — naff's CRUD template doesn't support slice fields, so we
+// ship a simpler ServiceSetting that still gives downstream code (e.g.
+// localdev) a `settings.Repository` type + `ProvideSettingsRepository(...)` it
+// can wire through.
+func settingsDomain() config.Domain {
+	return config.Domain{
+		Name:     "settings",
+		TypeName: "Settings",
+		Entities: []config.Entity{
+			{
+				Name: "ServiceSetting",
+				Fields: []config.Field{
+					{Name: "Name", Type: "string"},
+					// SettingType (not "Type") because the CRUD fakes template
+					// lower-cases Go field names into local variables, and "type"
+					// is a Go keyword. Renaming here keeps the generator's reserved-word
+					// handling out of scope for this phase.
+					{Name: "SettingType", Type: "string"},
+					{Name: "Description", Type: "string"},
+					{Name: "DefaultValue", Type: "*string", Required: boolPtr(false), Omitempty: true},
+					{Name: "AdminsOnly", Type: "bool"},
 				},
 			},
 		},

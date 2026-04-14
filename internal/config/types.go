@@ -1,5 +1,7 @@
 package config
 
+import "strings"
+
 // Project is the top-level configuration for a NAFF-generated project.
 type Project struct {
 	ProjectMeta ProjectMeta        `yaml:"project"`
@@ -33,6 +35,7 @@ type Features struct {
 	Waitlists     *bool `yaml:"waitlists"`
 	UploadedMedia *bool `yaml:"uploadedmedia"`
 	DataPrivacy   *bool `yaml:"dataprivacy"`
+	Settings      *bool `yaml:"settings"`
 	ConsumerApp   *bool `yaml:"consumer_app"`
 	AdminApp      *bool `yaml:"admin_app"`
 }
@@ -48,7 +51,27 @@ func (f Features) FeatureEnabled(val *bool, defaultVal bool) bool {
 // Domain represents a group of related entities.
 type Domain struct {
 	Name     string   `yaml:"name"`
+	TypeName string   `yaml:"type_name,omitempty"`
 	Entities []Entity `yaml:"entities"`
+}
+
+// RepoTypeName returns the PascalCase identifier used to build type/function
+// names derived from this domain (e.g. "ProvideXRepository"). It returns
+// TypeName when set; otherwise it falls back to title-casing Name. Falling
+// back produces "Audit" or "Webhooks" which is fine for single-word domains,
+// but multi-word or irregular domains (audit→"AuditLog", mealplanning→
+// "MealPlanning") should set TypeName explicitly.
+func (d Domain) RepoTypeName() string {
+	if d.TypeName != "" {
+		return d.TypeName
+	}
+	if len(d.Name) == 0 {
+		return ""
+	}
+	// Uppercase the first rune; leave the rest. Multi-word lowercase names
+	// (e.g. "mealplanning") will render as "Mealplanning" — set TypeName to
+	// override.
+	return strings.ToUpper(d.Name[:1]) + d.Name[1:]
 }
 
 // Entity represents a single CRUD-able type.
