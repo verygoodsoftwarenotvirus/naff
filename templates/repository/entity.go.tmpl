@@ -49,10 +49,9 @@ func (r *repository) Get{{ .Entity.Name }}(ctx context.Context, {{ camel .Entity
 	x := &types.{{ .Entity.Name }}{
 		ID:            result.ID,
 {{- range .Entity.Fields }}
-{{- if .IsPointer }}
-		{{ .Name }}:   database.{{ pointerConversionFunc . }}(result.{{ .Name }}),
-{{- else if not .IsRequired }}
-		{{ .Name }}:   database.StringFromNullString(result.{{ .Name }}),
+{{- $fn := readConversionFunc . }}
+{{- if $fn }}
+		{{ .Name }}:   database.{{ $fn }}(result.{{ .Name }}),
 {{- else }}
 		{{ .Name }}:   result.{{ .Name }},
 {{- end }}
@@ -105,8 +104,9 @@ func (r *repository) Get{{ plural .Entity.Name }}(ctx context.Context, filter *f
 		data = append(data, &types.{{ .Entity.Name }}{
 			ID:            result.ID,
 {{- range .Entity.Fields }}
-{{- if not .IsRequired }}
-			{{ .Name }}:   database.StringFromNullString(result.{{ .Name }}),
+{{- $fn := readConversionFunc . }}
+{{- if $fn }}
+			{{ .Name }}:   database.{{ $fn }}(result.{{ .Name }}),
 {{- else }}
 			{{ .Name }}:   result.{{ .Name }},
 {{- end }}
@@ -182,8 +182,9 @@ func (r *repository) Get{{ plural .Entity.Name }}ForAccount(ctx context.Context,
 		data = append(data, &types.{{ .Entity.Name }}{
 			ID:            result.ID,
 {{- range .Entity.Fields }}
-{{- if not .IsRequired }}
-			{{ .Name }}:   database.StringFromNullString(result.{{ .Name }}),
+{{- $fn := readConversionFunc . }}
+{{- if $fn }}
+			{{ .Name }}:   database.{{ $fn }}(result.{{ .Name }}),
 {{- else }}
 			{{ .Name }}:   result.{{ .Name }},
 {{- end }}
@@ -242,8 +243,9 @@ func (r *repository) Create{{ .Entity.Name }}(ctx context.Context, input *types.
 	if err = r.generatedQuerier.Create{{ .Entity.Name }}(ctx, tx, &generated.Create{{ .Entity.Name }}Params{
 		ID:            input.ID,
 {{- range creatableFields .Entity.Fields }}
-{{- if not .IsRequired }}
-		{{ .Name }}:   database.NullStringFromString(input.{{ .Name }}),
+{{- $fn := writeConversionFunc . }}
+{{- if $fn }}
+		{{ .Name }}:   database.{{ $fn }}(input.{{ .Name }}),
 {{- else }}
 		{{ .Name }}:   input.{{ .Name }},
 {{- end }}
@@ -316,8 +318,9 @@ func (r *repository) Update{{ .Entity.Name }}(ctx context.Context, {{ camel .Ent
 	rowsAffected, err := r.generatedQuerier.Update{{ .Entity.Name }}(ctx, tx, &generated.Update{{ .Entity.Name }}Params{
 		ID:            {{ camel .Entity.Name }}.ID,
 {{- range editableFields .Entity.Fields }}
-{{- if not .IsRequired }}
-		{{ .Name }}:   database.NullStringFromString({{ camel $.Entity.Name }}.{{ .Name }}),
+{{- $fn := writeConversionFunc . }}
+{{- if $fn }}
+		{{ .Name }}:   database.{{ $fn }}({{ camel $.Entity.Name }}.{{ .Name }}),
 {{- else }}
 		{{ .Name }}:   {{ camel $.Entity.Name }}.{{ .Name }},
 {{- end }}

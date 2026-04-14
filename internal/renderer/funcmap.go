@@ -47,8 +47,10 @@ func FuncMap() template.FuncMap {
 		"baseType":    func(f config.Field) string { return f.BaseType() },
 		"sqlType":     sqlType,
 		"protoType":   protoType,
-		"fakeValue":           fakeValue,
+		"fakeValue":             fakeValue,
 		"pointerConversionFunc": pointerConversionFunc,
+		"readConversionFunc":    readConversionFunc,
+		"writeConversionFunc":   writeConversionFunc,
 
 		// Field filtering
 		"creatableFields": creatableFields,
@@ -247,6 +249,86 @@ func pointerConversionFunc(f config.Field) string {
 	default:
 		return "StringPointerFromNullString"
 	}
+}
+
+// readConversionFunc returns the database-to-domain conversion helper for a field.
+// Returns "" when the field is required and non-pointer (passthrough, no conversion).
+// Used by the repository template to pick the correct helper for each of {string, bool,
+// int32, int64, float64} × {required, non-required non-pointer, pointer}.
+func readConversionFunc(f config.Field) string {
+	base := f.BaseType()
+	if f.IsPointer() {
+		switch base {
+		case "string":
+			return "StringPointerFromNullString"
+		case "bool":
+			return "BoolPointerFromNullBool"
+		case "int", "int32":
+			return "Int32PointerFromNullInt32"
+		case "int64":
+			return "Int64PointerFromNullInt64"
+		case "float32", "float64":
+			return "Float64PointerFromNullFloat64"
+		default:
+			return "StringPointerFromNullString"
+		}
+	}
+	if !f.IsRequired() {
+		switch base {
+		case "string":
+			return "StringFromNullString"
+		case "bool":
+			return "BoolFromNullBool"
+		case "int", "int32":
+			return "Int32FromNullInt32"
+		case "int64":
+			return "Int64FromNullInt64"
+		case "float32", "float64":
+			return "Float64FromNullFloat64"
+		default:
+			return "StringFromNullString"
+		}
+	}
+	return ""
+}
+
+// writeConversionFunc returns the domain-to-database conversion helper for a field.
+// Returns "" when the field is required and non-pointer (passthrough).
+func writeConversionFunc(f config.Field) string {
+	base := f.BaseType()
+	if f.IsPointer() {
+		switch base {
+		case "string":
+			return "NullStringFromStringPointer"
+		case "bool":
+			return "NullBoolFromBoolPointer"
+		case "int", "int32":
+			return "NullInt32FromInt32Pointer"
+		case "int64":
+			return "NullInt64FromInt64Pointer"
+		case "float32", "float64":
+			return "NullFloat64FromFloat64Pointer"
+		default:
+			return "NullStringFromStringPointer"
+		}
+	}
+	if !f.IsRequired() {
+		switch base {
+		case "string":
+			return "NullStringFromString"
+		case "bool":
+			return "NullBoolFromBool"
+		case "int", "int32":
+			return "NullInt32FromInt32"
+		case "int64":
+			return "NullInt64FromInt64"
+		case "float32", "float64":
+			return "NullFloat64FromFloat64"
+		default:
+			return "NullStringFromString"
+		}
+	}
+	return ""
 }
 
 // fakeValue returns a gofakeit expression for generating fake data for a field.
