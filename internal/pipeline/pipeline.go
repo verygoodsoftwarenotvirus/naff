@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/renderer"
@@ -116,13 +117,21 @@ type Summary struct {
 // has no effect until orphan detection is reintroduced alongside
 // parameterization.
 func (p *Pipeline) Run(ctx context.Context) error {
+	// Total elapsed time for the whole run, surfaced at the end (non-debug
+	// only — --debug deliberately leaves output untouched).
+	t0 := time.Now()
+	timersEnabled := !p.debug
+
 	// 1. Plan all output files.
 	planned := p.planFiles()
 
 	fmt.Printf("Planning %d files for project %q\n", len(planned), p.config.ProjectMeta.Name)
 
 	// 2. Render and write all files.
+	renderTimer := newPhaseTimer(fmt.Sprintf("rendering %d files", len(planned)), timersEnabled)
+	renderTimer.Start()
 	summary := p.renderAndWrite(ctx, planned)
+	renderTimer.Stop(summary.Errors == 0)
 
 	// 3. Write .naff.yaml to output directory.
 	if err := p.writeNaffConfig(); err != nil {
@@ -160,9 +169,17 @@ func (p *Pipeline) Run(ctx context.Context) error {
 		{dir: p.outputDir, args: []string{"proto"}, debug: p.debug},
 	}
 	for _, s := range steps {
-		if err := s.run(ctx); err != nil {
+		stepTimer := newPhaseTimer(fmt.Sprintf("make %s", strings.Join(s.args, " ")), timersEnabled)
+		stepTimer.Start()
+		err := s.run(ctx)
+		stepTimer.Stop(err == nil)
+		if err != nil {
 			return err
 		}
+	}
+
+	if timersEnabled {
+		fmt.Printf("\nDone in %s\n", formatDur(time.Since(t0)))
 	}
 
 	return nil
@@ -181,7 +198,12 @@ type postGenStep struct {
 // fails — keeping the default `naff generate` output uncluttered while
 // preserving diagnosability on error. A non-zero exit is fatal.
 func (s postGenStep) run(ctx context.Context) error {
-	fmt.Printf("\n→ make %s  (in %s)\n", strings.Join(s.args, " "), s.dir)
+	if s.debug {
+		// In debug mode the caller is not wrapping us in a timer, so retain
+		// the original start-of-step marker so streamed make output has a
+		// header line in front of it.
+		fmt.Printf("\n→ make %s  (in %s)\n", strings.Join(s.args, " "), s.dir)
+	}
 
 	cmd := exec.CommandContext(ctx, "make", s.args...)
 	cmd.Dir = s.dir
