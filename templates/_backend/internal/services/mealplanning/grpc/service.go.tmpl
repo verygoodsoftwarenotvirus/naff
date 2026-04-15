@@ -1,0 +1,72 @@
+package grpc
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication/sessions"
+	commentsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/comments/manager"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/managers"
+	uploadedmediamanager "{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia/manager"
+	mealplanningsvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/mealplanning"
+	_ "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/errors"
+	mealplanfinalizer "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/workers/meal_plan_finalizer"
+	mealplangrocerylistinitializer "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/workers/meal_plan_grocery_list_initializer"
+	mealplantaskcreator "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/workers/meal_plan_task_creator"
+
+	"github.com/primandproper/platform/observability/logging"
+	"github.com/primandproper/platform/observability/tracing"
+	"github.com/primandproper/platform/uploads"
+)
+
+var _ mealplanningsvc.MealPlanningServiceServer = (*serviceImpl)(nil)
+
+const (
+	o11yName = "mealplanning_service"
+)
+
+type (
+	serviceImpl struct {
+		mealplanningsvc.UnimplementedMealPlanningServiceServer
+		tracer                               tracing.Tracer
+		logger                               logging.Logger
+		sessionContextDataFetcher            func(context.Context) (*sessions.ContextData, error)
+		recipeManager                        managers.RecipeManager
+		validEnumerationsManager             managers.ValidEnumerationsManager
+		mealPlanningManager                  managers.MealPlanningManager
+		mealPlanFinalizerWorker              *mealplanfinalizer.Worker
+		mealPlanGroceryListInitializerWorker *mealplangrocerylistinitializer.Worker
+		mealPlanTaskCreatorWorker            *mealplantaskcreator.Worker
+		commentsManager                      commentsmanager.CommentsDataManager
+		uploadedMediaManager                 uploadedmediamanager.UploadedMediaManager
+		uploadManager                        uploads.UploadManager
+	}
+)
+
+func NewService(
+	logger logging.Logger,
+	tracerProvider tracing.TracerProvider,
+	recipeManager managers.RecipeManager,
+	validEnumerationsManager managers.ValidEnumerationsManager,
+	mealPlanningManager managers.MealPlanningManager,
+	mealPlanFinalizerWorker *mealplanfinalizer.Worker,
+	mealPlanGroceryListInitializerWorker *mealplangrocerylistinitializer.Worker,
+	mealPlanTaskCreatorWorker *mealplantaskcreator.Worker,
+	commentsManager commentsmanager.CommentsDataManager,
+	uploadedMediaManager uploadedmediamanager.UploadedMediaManager,
+	uploadManager uploads.UploadManager,
+) mealplanningsvc.MealPlanningServiceServer {
+	return &serviceImpl{
+		logger:                               logging.NewNamedLogger(logger, o11yName),
+		tracer:                               tracing.NewNamedTracer(tracerProvider, o11yName),
+		recipeManager:                        recipeManager,
+		validEnumerationsManager:             validEnumerationsManager,
+		mealPlanningManager:                  mealPlanningManager,
+		mealPlanFinalizerWorker:              mealPlanFinalizerWorker,
+		mealPlanGroceryListInitializerWorker: mealPlanGroceryListInitializerWorker,
+		mealPlanTaskCreatorWorker:            mealPlanTaskCreatorWorker,
+		commentsManager:                      commentsManager,
+		uploadedMediaManager:                 uploadedMediaManager,
+		uploadManager:                        uploadManager,
+		sessionContextDataFetcher:            sessions.FetchContextDataFromContext,
+	}
+}

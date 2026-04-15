@@ -1,0 +1,93 @@
+package mealplanfinalizer
+
+import (
+	"context"
+	"testing"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/fakes"
+	mealplanningmock "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/mocks"
+	"{{ .Project.ProjectMeta.Module }}/internal/testutils"
+
+	"github.com/primandproper/platform/messagequeue"
+	msgconfig "github.com/primandproper/platform/messagequeue/config"
+	mockpublishers "github.com/primandproper/platform/messagequeue/mock"
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	metricsnoop "github.com/primandproper/platform/observability/metrics/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func buildNewMealPlanFinalizerForTest(t *testing.T) *Worker {
+	t.Helper()
+
+	ctx := t.Context()
+	cfg := &msgconfig.QueuesConfig{DataChangesTopicName: "data_changes"}
+
+	pp := &mockpublishers.PublisherProviderMock{
+		ProvidePublisherFunc: func(_ context.Context, topic string) (messagequeue.Publisher, error) {
+			return &mockpublishers.PublisherMock{
+				PublishFunc:      func(_ context.Context, _ any) error { return nil },
+				PublishAsyncFunc: func(_ context.Context, _ any) {},
+				StopFunc:         func() {},
+			}, nil
+		},
+	}
+
+	x, err := NewMealPlanFinalizer(
+		ctx,
+		loggingnoop.NewLogger(),
+		tracingnoop.NewTracerProvider(),
+		&mealplanningmock.Repository{},
+		pp,
+		metricsnoop.NewMetricsProvider(),
+		cfg,
+	)
+	require.NoError(t, err)
+
+	return x
+}
+
+func TestWorker_Work(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		exampleMealPlans := fakes.BuildFakeMealPlansList().Data
+
+		dbm := &mealplanningmock.Repository{}
+		dbm.On(
+			"GetUnfinalizedMealPlansWithExpiredVotingPeriods",
+			testutils.ContextMatcher,
+		).Return(exampleMealPlans, nil)
+
+		pup := &mockpublishers.PublisherMock{
+			PublishFunc: func(_ context.Context, _ any) error { return nil },
+		}
+
+		for _, mealPlan := range exampleMealPlans {
+			dbm.On(
+				"AttemptToFinalizeMealPlan",
+				testutils.ContextMatcher,
+				mealPlan.ID,
+				mealPlan.BelongsToAccount,
+			).Return(true, nil)
+		}
+
+		worker := buildNewMealPlanFinalizerForTest(t)
+		worker.dataManager = dbm
+		worker.postUpdatesPublisher = pup
+
+		expected := int64(len(exampleMealPlans))
+
+		actual, err := worker.Work(ctx)
+		assert.Equal(t, expected, actual)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, dbm)
+	})
+}

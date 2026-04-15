@@ -1,0 +1,254 @@
+package grpcapi
+
+import (
+	"context"
+	"maps"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	analyticspb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/analytics"
+	auditsvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/audit"
+	authsvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/auth"
+	commentssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/comments"
+	dataprivacysvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/dataprivacy"
+	identitysvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/identity"
+	internalopssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/internalops"
+	issuereportssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/issue_reports"
+	mealplanningsvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/mealplanning"
+	notificationssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/notifications"
+	oauthsvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/oauth"
+	paymentssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/payments"
+	settingssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/settings"
+	uploadedmediasvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/uploaded_media"
+	waitlistssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/waitlists"
+	webhookssvcpb "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/webhooks"
+	analyticsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/analytics/grpc"
+	auditgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/audit/grpc"
+	authgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/auth/grpc"
+	"{{ .Project.ProjectMeta.Module }}/internal/services/auth/grpc/interceptors"
+	commentsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/comments/grpc"
+	identitygrpc "{{ .Project.ProjectMeta.Module }}/internal/services/identity/grpc"
+	identityindexing "{{ .Project.ProjectMeta.Module }}/internal/services/identity/indexing"
+	internalopsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/internalops/grpc"
+	issuereportsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/issuereports/grpc"
+	mealplanninggrpc "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/grpc"
+	notificationsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/notifications/grpc"
+	oauthgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/oauth/grpc"
+	paymentsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/payments/grpc"
+	settingsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/settings/grpc"
+	uploadedmediagrpc "{{ .Project.ProjectMeta.Module }}/internal/services/uploadedmedia/grpc"
+	waitlistsgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/waitlists/grpc"
+	webhooksgrpc "{{ .Project.ProjectMeta.Module }}/internal/services/webhooks/grpc"
+
+	analyticscfg "github.com/primandproper/platform/analytics/config"
+	errorsgrpc "github.com/primandproper/platform/errors/grpc"
+	"github.com/primandproper/platform/observability/logging"
+	"github.com/primandproper/platform/observability/metrics"
+	"github.com/primandproper/platform/observability/tracing"
+	textsearchcfg "github.com/primandproper/platform/search/text/config"
+	platformgrpc "github.com/primandproper/platform/server/grpc"
+
+	"github.com/samber/do/v2"
+	grpc "google.golang.org/grpc"
+)
+
+// RegisterExtras registers the helper functions with the injector.
+func RegisterExtras(i do.Injector) {
+	do.Provide(i, func(i do.Injector) (map[string]*analyticscfg.SourceConfig, error) {
+		cfg := do.MustInvoke[*config.APIServiceConfig](i)
+		return ProvideAnalyticsProxySources(cfg), nil
+	})
+
+	do.Provide(i, func(i do.Injector) (identityindexing.UserTextSearcher, error) {
+		ctx := do.MustInvoke[context.Context](i)
+		logger := do.MustInvoke[logging.Logger](i)
+		tracerProvider := do.MustInvoke[tracing.TracerProvider](i)
+		metricsProvider := do.MustInvoke[metrics.Provider](i)
+		cfg := do.MustInvoke[*textsearchcfg.Config](i)
+		return ProvideUserTextSearcher(ctx, logger, tracerProvider, metricsProvider, cfg)
+	})
+
+	do.Provide(i, func(i do.Injector) (interceptors.MethodPermissionsMap, error) {
+		return AggregateMethodPermissions(
+			do.MustInvoke[analyticsgrpc.AnalyticsMethodPermissions](i),
+			do.MustInvoke[auditgrpc.AuditMethodPermissions](i),
+			do.MustInvoke[authgrpc.AuthMethodPermissions](i),
+			do.MustInvoke[commentsgrpc.CommentsMethodPermissions](i),
+			do.MustInvoke[identitygrpc.IdentityMethodPermissions](i),
+			do.MustInvoke[internalopsgrpc.InternalOpsMethodPermissions](i),
+			do.MustInvoke[issuereportsgrpc.IssueReportsMethodPermissions](i),
+			do.MustInvoke[mealplanninggrpc.MealPlanningMethodPermissions](i),
+			do.MustInvoke[notificationsgrpc.NotificationsMethodPermissions](i),
+			do.MustInvoke[oauthgrpc.OAuthMethodPermissions](i),
+			do.MustInvoke[paymentsgrpc.PaymentsMethodPermissions](i),
+			do.MustInvoke[settingsgrpc.SettingsMethodPermissions](i),
+			do.MustInvoke[uploadedmediagrpc.UploadedMediaMethodPermissions](i),
+			do.MustInvoke[waitlistsgrpc.WaitlistsMethodPermissions](i),
+			do.MustInvoke[webhooksgrpc.WebhooksMethodPermissions](i),
+		), nil
+	})
+
+	do.Provide(i, func(i do.Injector) ([]grpc.UnaryServerInterceptor, error) {
+		authInterceptor := do.MustInvoke[*interceptors.AuthInterceptor](i)
+		return BuildUnaryServerInterceptors(authInterceptor), nil
+	})
+
+	do.Provide(i, func(i do.Injector) ([]grpc.StreamServerInterceptor, error) {
+		authInterceptor := do.MustInvoke[*interceptors.AuthInterceptor](i)
+		return BuildStreamServerInterceptors(authInterceptor), nil
+	})
+
+	do.Provide(i, func(i do.Injector) ([]platformgrpc.RegistrationFunc, error) {
+		return BuildRegistrationFuncs(
+			do.MustInvoke[analyticspb.AnalyticsServiceServer](i),
+			do.MustInvoke[auditsvcpb.AuditServiceServer](i),
+			do.MustInvoke[authsvcpb.AuthServiceServer](i),
+			do.MustInvoke[commentssvcpb.CommentsServiceServer](i),
+			do.MustInvoke[dataprivacysvcpb.DataPrivacyServiceServer](i),
+			do.MustInvoke[identitysvcpb.IdentityServiceServer](i),
+			do.MustInvoke[internalopssvcpb.InternalOperationsServer](i),
+			do.MustInvoke[issuereportssvcpb.IssueReportsServiceServer](i),
+			do.MustInvoke[mealplanningsvcpb.MealPlanningServiceServer](i),
+			do.MustInvoke[notificationssvcpb.UserNotificationsServiceServer](i),
+			do.MustInvoke[oauthsvcpb.OAuthServiceServer](i),
+			do.MustInvoke[paymentssvcpb.PaymentsServiceServer](i),
+			do.MustInvoke[settingssvcpb.SettingsServiceServer](i),
+			do.MustInvoke[uploadedmediasvcpb.UploadedMediaServiceServer](i),
+			do.MustInvoke[waitlistssvcpb.WaitlistsServiceServer](i),
+			do.MustInvoke[webhookssvcpb.WebhooksServiceServer](i),
+		), nil
+	})
+
+	do.Provide(i, func(i do.Injector) (*GRPCService, error) {
+		return NewGRPCService(
+			do.MustInvoke[auditsvcpb.AuditServiceServer](i),
+			do.MustInvoke[authsvcpb.AuthServiceServer](i),
+			do.MustInvoke[dataprivacysvcpb.DataPrivacyServiceServer](i),
+			do.MustInvoke[identitysvcpb.IdentityServiceServer](i),
+			do.MustInvoke[internalopssvcpb.InternalOperationsServer](i),
+			do.MustInvoke[issuereportssvcpb.IssueReportsServiceServer](i),
+			do.MustInvoke[mealplanningsvcpb.MealPlanningServiceServer](i),
+			do.MustInvoke[notificationssvcpb.UserNotificationsServiceServer](i),
+			do.MustInvoke[oauthsvcpb.OAuthServiceServer](i),
+			do.MustInvoke[paymentssvcpb.PaymentsServiceServer](i),
+			do.MustInvoke[settingssvcpb.SettingsServiceServer](i),
+			do.MustInvoke[uploadedmediasvcpb.UploadedMediaServiceServer](i),
+			do.MustInvoke[webhookssvcpb.WebhooksServiceServer](i),
+			do.MustInvoke[waitlistssvcpb.WaitlistsServiceServer](i),
+			do.MustInvoke[*platformgrpc.Server](i),
+		), nil
+	})
+}
+
+func BuildRegistrationFuncs(
+	analyticsService analyticspb.AnalyticsServiceServer,
+	auditLogService auditsvcpb.AuditServiceServer,
+	authService authsvcpb.AuthServiceServer,
+	commentsService commentssvcpb.CommentsServiceServer,
+	dataPrivacyServer dataprivacysvcpb.DataPrivacyServiceServer,
+	identityServiceServer identitysvcpb.IdentityServiceServer,
+	internalOpsService internalopssvcpb.InternalOperationsServer,
+	issueReportsService issuereportssvcpb.IssueReportsServiceServer,
+	mealPlanningService mealplanningsvcpb.MealPlanningServiceServer,
+	notificationsService notificationssvcpb.UserNotificationsServiceServer,
+	oauthService oauthsvcpb.OAuthServiceServer,
+	paymentsService paymentssvcpb.PaymentsServiceServer,
+	settingsService settingssvcpb.SettingsServiceServer,
+	uploadedMediaService uploadedmediasvcpb.UploadedMediaServiceServer,
+	waitlistsService waitlistssvcpb.WaitlistsServiceServer,
+	webhooksService webhookssvcpb.WebhooksServiceServer,
+) []platformgrpc.RegistrationFunc {
+	return []platformgrpc.RegistrationFunc{
+		func(server *grpc.Server) {
+			analyticspb.RegisterAnalyticsServiceServer(server, analyticsService)
+			auditsvcpb.RegisterAuditServiceServer(server, auditLogService)
+			authsvcpb.RegisterAuthServiceServer(server, authService)
+			commentssvcpb.RegisterCommentsServiceServer(server, commentsService)
+			dataprivacysvcpb.RegisterDataPrivacyServiceServer(server, dataPrivacyServer)
+			identitysvcpb.RegisterIdentityServiceServer(server, identityServiceServer)
+			internalopssvcpb.RegisterInternalOperationsServer(server, internalOpsService)
+			issuereportssvcpb.RegisterIssueReportsServiceServer(server, issueReportsService)
+			mealplanningsvcpb.RegisterMealPlanningServiceServer(server, mealPlanningService)
+			notificationssvcpb.RegisterUserNotificationsServiceServer(server, notificationsService)
+			oauthsvcpb.RegisterOAuthServiceServer(server, oauthService)
+			paymentssvcpb.RegisterPaymentsServiceServer(server, paymentsService)
+			settingssvcpb.RegisterSettingsServiceServer(server, settingsService)
+			uploadedmediasvcpb.RegisterUploadedMediaServiceServer(server, uploadedMediaService)
+			waitlistssvcpb.RegisterWaitlistsServiceServer(server, waitlistsService)
+			webhookssvcpb.RegisterWebhooksServiceServer(server, webhooksService)
+		},
+	}
+}
+
+func BuildUnaryServerInterceptors(authInterceptor *interceptors.AuthInterceptor) []grpc.UnaryServerInterceptor {
+	return []grpc.UnaryServerInterceptor{
+		authInterceptor.UnaryServerInterceptor(),
+		errorsgrpc.UnaryErrorEncodingInterceptor(),
+	}
+}
+
+func BuildStreamServerInterceptors(authInterceptor *interceptors.AuthInterceptor) []grpc.StreamServerInterceptor {
+	return []grpc.StreamServerInterceptor{
+		authInterceptor.StreamServerInterceptor(),
+		errorsgrpc.StreamErrorEncodingInterceptor(),
+	}
+}
+
+// ProvideAnalyticsProxySources extracts proxy sources config for the multisource reporter.
+func ProvideAnalyticsProxySources(cfg *config.APIServiceConfig) map[string]*analyticscfg.SourceConfig {
+	return cfg.Analytics.ProxySources.ToMap()
+}
+
+func ProvideUserTextSearcher(
+	ctx context.Context,
+	logger logging.Logger,
+	tracerProvider tracing.TracerProvider,
+	metricsProvider metrics.Provider,
+	cfg *textsearchcfg.Config,
+) (identityindexing.UserTextSearcher, error) {
+	return textsearchcfg.ProvideIndex[identityindexing.UserSearchSubset](
+		ctx,
+		logger,
+		tracerProvider, metricsProvider,
+		cfg,
+		identityindexing.IndexTypeUsers,
+	)
+}
+
+// AggregateMethodPermissions combines method permissions from all services into a single map.
+func AggregateMethodPermissions(
+	analyticsPermissions analyticsgrpc.AnalyticsMethodPermissions,
+	auditPermissions auditgrpc.AuditMethodPermissions,
+	authPermissions authgrpc.AuthMethodPermissions,
+	commentsPermissions commentsgrpc.CommentsMethodPermissions,
+	identityPermissions identitygrpc.IdentityMethodPermissions,
+	internalopsPermissions internalopsgrpc.InternalOpsMethodPermissions,
+	issuereportsPermissions issuereportsgrpc.IssueReportsMethodPermissions,
+	mealplanningPermissions mealplanninggrpc.MealPlanningMethodPermissions,
+	notificationsPermissions notificationsgrpc.NotificationsMethodPermissions,
+	oauthPermissions oauthgrpc.OAuthMethodPermissions,
+	paymentsPermissions paymentsgrpc.PaymentsMethodPermissions,
+	settingsPermissions settingsgrpc.SettingsMethodPermissions,
+	uploadedmediaPermissions uploadedmediagrpc.UploadedMediaMethodPermissions,
+	waitlistsPermissions waitlistsgrpc.WaitlistsMethodPermissions,
+	webhooksPermissions webhooksgrpc.WebhooksMethodPermissions,
+) interceptors.MethodPermissionsMap {
+	result := make(interceptors.MethodPermissionsMap)
+
+	maps.Copy(result, analyticsPermissions)
+	maps.Copy(result, auditPermissions)
+	maps.Copy(result, authPermissions)
+	maps.Copy(result, commentsPermissions)
+	maps.Copy(result, identityPermissions)
+	maps.Copy(result, internalopsPermissions)
+	maps.Copy(result, issuereportsPermissions)
+	maps.Copy(result, mealplanningPermissions)
+	maps.Copy(result, notificationsPermissions)
+	maps.Copy(result, oauthPermissions)
+	maps.Copy(result, paymentsPermissions)
+	maps.Copy(result, settingsPermissions)
+	maps.Copy(result, uploadedmediaPermissions)
+	maps.Copy(result, waitlistsPermissions)
+	maps.Copy(result, webhooksPermissions)
+
+	return result
+}

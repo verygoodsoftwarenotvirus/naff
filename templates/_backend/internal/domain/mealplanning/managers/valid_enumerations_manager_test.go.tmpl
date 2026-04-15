@@ -1,0 +1,2765 @@
+package managers
+
+import (
+	"context"
+	"testing"
+
+	types "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/fakes"
+	mealplanningkeys "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/keys"
+	mealplanningmock "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/mocks"
+	"{{ .Project.ProjectMeta.Module }}/internal/testutils"
+
+	"github.com/primandproper/platform/messagequeue"
+	msgconfig "github.com/primandproper/platform/messagequeue/config"
+	mockpublishers "github.com/primandproper/platform/messagequeue/mock"
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	metricsnoop "github.com/primandproper/platform/observability/metrics/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+	"github.com/primandproper/platform/reflection"
+	textsearchcfg "github.com/primandproper/platform/search/text/config"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func buildValidEnumerationsManagerForTest(t *testing.T) *validEnumerationManager {
+	t.Helper()
+
+	queueCfg := &msgconfig.QueuesConfig{
+		DataChangesTopicName: t.Name(),
+	}
+
+	mpp := &mockpublishers.PublisherProviderMock{
+		ProvidePublisherFunc: func(_ context.Context, _ string) (messagequeue.Publisher, error) {
+			return &mockpublishers.PublisherMock{}, nil
+		},
+	}
+
+	m, err := NewValidEnumerationsManager(
+		t.Context(),
+		loggingnoop.NewLogger(),
+		tracingnoop.NewTracerProvider(),
+		&mealplanningmock.Repository{},
+		queueCfg,
+		mpp,
+		&textsearchcfg.Config{},
+		metricsnoop.NewMetricsProvider(),
+	)
+	require.NoError(t, err)
+
+	return m.(*validEnumerationManager)
+}
+
+func setupExpectationsForValidEnumerationManager(
+	manager *validEnumerationManager,
+	dbSetupFunc func(db *mealplanningmock.Repository),
+	eventTypeMaps ...map[string][]string,
+) []any {
+	db := &mealplanningmock.Repository{}
+	if dbSetupFunc != nil {
+		dbSetupFunc(db)
+	}
+	manager.db = db
+
+	mp := &mockpublishers.PublisherMock{
+		PublishAsyncFunc: func(_ context.Context, _ any) {},
+	}
+	manager.dataChangesPublisher = mp
+
+	return []any{db}
+}
+
+func TestValidEnumerationManager_SearchValidIngredientGroups(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientGroupsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidIngredientGroups), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientGroups(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidIngredientGroups(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientGroupsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientGroups), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidIngredientGroups(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidIngredientGroup(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientGroup()
+		fakeInput := fakes.BuildFakeValidIngredientGroupCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidIngredientGroup), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientGroupDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientGroupCreatedServiceEventType: {mealplanningkeys.ValidIngredientGroupIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidIngredientGroup(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidIngredientGroup(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientGroup()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientGroup), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidIngredientGroup(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidIngredientGroup(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidIngredientGroup := fakes.BuildFakeValidIngredientGroup()
+		exampleInput := fakes.BuildFakeValidIngredientGroupUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidIngredientGroup), testutils.ContextMatcher, exampleValidIngredientGroup.ID).Return(exampleValidIngredientGroup, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidIngredientGroup), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientGroup]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientGroupUpdatedServiceEventType: {mealplanningkeys.ValidIngredientGroupIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidIngredientGroup(ctx, exampleValidIngredientGroup.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidIngredientGroup(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientGroup()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidIngredientGroup), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientGroupArchivedServiceEventType: {mealplanningkeys.ValidIngredientGroupIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidIngredientGroup(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidIngredientMeasurementUnits(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientMeasurementUnitsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientMeasurementUnits), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidIngredientMeasurementUnits(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidIngredientMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientMeasurementUnit()
+		fakeInput := fakes.BuildFakeValidIngredientMeasurementUnitCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidIngredientMeasurementUnit), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientMeasurementUnitDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientMeasurementUnitCreatedServiceEventType: {mealplanningkeys.ValidIngredientMeasurementUnitIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidIngredientMeasurementUnit(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidIngredientMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientMeasurementUnit()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientMeasurementUnit), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidIngredientMeasurementUnit(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidIngredientMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidIngredientMeasurementUnit := fakes.BuildFakeValidIngredientMeasurementUnit()
+		exampleInput := fakes.BuildFakeValidIngredientMeasurementUnitUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidIngredientMeasurementUnit), testutils.ContextMatcher, exampleValidIngredientMeasurementUnit.ID).Return(exampleValidIngredientMeasurementUnit, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidIngredientMeasurementUnit), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientMeasurementUnit]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientMeasurementUnitUpdatedServiceEventType: {mealplanningkeys.ValidIngredientMeasurementUnitIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidIngredientMeasurementUnit(ctx, exampleValidIngredientMeasurementUnit.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidIngredientMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientMeasurementUnit()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidIngredientMeasurementUnit), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientMeasurementUnitArchivedServiceEventType: {mealplanningkeys.ValidIngredientMeasurementUnitIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidIngredientMeasurementUnit(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientMeasurementUnitsByIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientMeasurementUnitsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientMeasurementUnitsForIngredient), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientMeasurementUnitsByIngredient(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientMeasurementUnitsByMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientMeasurementUnitsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientMeasurementUnitsForMeasurementUnit), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientMeasurementUnitsByMeasurementUnit(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidIngredientPreparations(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientPreparationsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientPreparations), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidIngredientPreparations(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidIngredientPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientPreparation()
+		fakeInput := fakes.BuildFakeValidIngredientPreparationCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidIngredientPreparation), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientPreparationDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientPreparationCreatedServiceEventType: {mealplanningkeys.ValidIngredientPreparationIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidIngredientPreparation(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidIngredientPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientPreparation()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientPreparation), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidIngredientPreparation(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidIngredientPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidIngredientPreparation := fakes.BuildFakeValidIngredientPreparation()
+		exampleInput := fakes.BuildFakeValidIngredientPreparationUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidIngredientPreparation), testutils.ContextMatcher, exampleValidIngredientPreparation.ID).Return(exampleValidIngredientPreparation, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidIngredientPreparation), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientPreparation]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientPreparationUpdatedServiceEventType: {mealplanningkeys.ValidIngredientPreparationIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidIngredientPreparation(ctx, exampleValidIngredientPreparation.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidIngredientPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientPreparation()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidIngredientPreparation), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientPreparationArchivedServiceEventType: {mealplanningkeys.ValidIngredientPreparationIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidIngredientPreparation(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientPreparationsByIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientPreparationsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientPreparationsForIngredient), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientPreparationsByIngredient(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientPreparationsByPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientPreparationsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientPreparationsForPreparation), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientPreparationsByPreparation(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidPrepTaskConfigs(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfigsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPrepTaskConfigs), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidPrepTaskConfigs(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidPrepTaskConfig(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfig()
+		fakeInput := fakes.BuildFakeValidPrepTaskConfigCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidPrepTaskConfig), testutils.ContextMatcher, testutils.MatchType[*types.ValidPrepTaskConfigDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidPrepTaskConfigCreatedServiceEventType: {mealplanningkeys.ValidPrepTaskConfigIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidPrepTaskConfig(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidPrepTaskConfig(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfig()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPrepTaskConfig), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidPrepTaskConfig(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidPrepTaskConfig(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidPrepTaskConfig := fakes.BuildFakeValidPrepTaskConfig()
+		exampleInput := fakes.BuildFakeValidPrepTaskConfigUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidPrepTaskConfig), testutils.ContextMatcher, exampleValidPrepTaskConfig.ID).Return(exampleValidPrepTaskConfig, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidPrepTaskConfig), testutils.ContextMatcher, testutils.MatchType[*types.ValidPrepTaskConfig]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPrepTaskConfigUpdatedServiceEventType: {mealplanningkeys.ValidPrepTaskConfigIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidPrepTaskConfig(ctx, exampleValidPrepTaskConfig.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidPrepTaskConfig(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfig()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidPrepTaskConfig), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPrepTaskConfigArchivedServiceEventType: {mealplanningkeys.ValidPrepTaskConfigIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidPrepTaskConfig(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPrepTaskConfigsByIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfigsList()
+		exampleIngredientID := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPrepTaskConfigsForIngredient), testutils.ContextMatcher, exampleIngredientID, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPrepTaskConfigsByIngredient(ctx, exampleIngredientID, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPrepTaskConfigsByPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfigsList()
+		examplePreparationID := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPrepTaskConfigsForPreparation), testutils.ContextMatcher, examplePreparationID, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPrepTaskConfigsByPreparation(ctx, examplePreparationID, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPrepTaskConfigsByIngredientAndPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPrepTaskConfigsList()
+		exampleIngredientID := fakes.BuildFakeID()
+		examplePreparationID := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPrepTaskConfigsForIngredientAndPreparation), testutils.ContextMatcher, exampleIngredientID, examplePreparationID, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPrepTaskConfigsByIngredientAndPreparation(ctx, exampleIngredientID, examplePreparationID, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredients(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidIngredients), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+				// SearchValidIngredients enriches each ingredient with media
+				for _, ing := range expected.Data {
+					db.On(reflection.GetMethodName(vem.db.GetIngredientMediaByIngredient), testutils.ContextMatcher, ing.ID).Return([]*types.IngredientMediaRow{}, nil)
+				}
+			},
+		)
+
+		actual, err := vem.SearchValidIngredients(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidIngredients(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredients), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+				// ListValidIngredients enriches each ingredient with media
+				for _, ing := range expected.Data {
+					db.On(reflection.GetMethodName(vem.db.GetIngredientMediaByIngredient), testutils.ContextMatcher, ing.ID).Return([]*types.IngredientMediaRow{}, nil)
+				}
+			},
+		)
+
+		actual, err := vem.ListValidIngredients(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredient()
+		fakeInput := fakes.BuildFakeValidIngredientCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidIngredient), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientCreatedServiceEventType: {mealplanningkeys.ValidIngredientIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidIngredient(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredient()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredient), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+				// ReadValidIngredient enriches with media; return empty slice so GetUploadedMediaWithIDs is not called
+				db.On(reflection.GetMethodName(vem.db.GetIngredientMediaByIngredient), testutils.ContextMatcher, expected.ID).Return([]*types.IngredientMediaRow{}, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidIngredient(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_RandomValidIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredient()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetRandomValidIngredient), testutils.ContextMatcher).Return(expected, nil)
+				// RandomValidIngredient enriches with media; return empty slice so GetUploadedMediaWithIDs is not called
+				db.On(reflection.GetMethodName(vem.db.GetIngredientMediaByIngredient), testutils.ContextMatcher, expected.ID).Return([]*types.IngredientMediaRow{}, nil)
+			},
+		)
+
+		actual, err := vem.RandomValidIngredient(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidIngredient := fakes.BuildFakeValidIngredient()
+		exampleInput := fakes.BuildFakeValidIngredientUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidIngredient), testutils.ContextMatcher, exampleValidIngredient.ID).Return(exampleValidIngredient, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidIngredient), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredient]()).Return(nil)
+				// UpdateValidIngredient enriches with media; return empty slice so GetUploadedMediaWithIDs is not called
+				db.On(reflection.GetMethodName(mpm.db.GetIngredientMediaByIngredient), testutils.ContextMatcher, exampleValidIngredient.ID).Return([]*types.IngredientMediaRow{}, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientUpdatedServiceEventType: {mealplanningkeys.ValidIngredientIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidIngredient(ctx, exampleValidIngredient.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredient()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidIngredient), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientArchivedServiceEventType: {mealplanningkeys.ValidIngredientIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidIngredient(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientsByPreparationAndIngredientName(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientsList()
+		preparationID := fakes.BuildFakeID()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidIngredientsForPreparation), testutils.ContextMatcher, preparationID, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+				// SearchValidIngredientsByPreparationAndIngredientName enriches each ingredient with media
+				for _, ing := range expected.Data {
+					db.On(reflection.GetMethodName(vem.db.GetIngredientMediaByIngredient), testutils.ContextMatcher, ing.ID).Return([]*types.IngredientMediaRow{}, nil)
+				}
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientsByPreparationAndIngredientName(ctx, preparationID, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidIngredientStateIngredients(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStateIngredientsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientStateIngredients), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidIngredientStateIngredients(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidIngredientStateIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStateIngredient()
+		fakeInput := fakes.BuildFakeValidIngredientStateIngredientCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidIngredientStateIngredient), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientStateIngredientDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientStateIngredientCreatedServiceEventType: {mealplanningkeys.ValidIngredientStateIngredientIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidIngredientStateIngredient(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidIngredientStateIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStateIngredient()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientStateIngredient), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidIngredientStateIngredient(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidIngredientStateIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidIngredientStateIngredient := fakes.BuildFakeValidIngredientStateIngredient()
+		exampleInput := fakes.BuildFakeValidIngredientStateIngredientUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidIngredientStateIngredient), testutils.ContextMatcher, exampleValidIngredientStateIngredient.ID).Return(exampleValidIngredientStateIngredient, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidIngredientStateIngredient), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientStateIngredient]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientStateIngredientUpdatedServiceEventType: {mealplanningkeys.ValidIngredientStateIngredientIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidIngredientStateIngredient(ctx, exampleValidIngredientStateIngredient.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidIngredientStateIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStateIngredient()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidIngredientStateIngredient), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientStateIngredientArchivedServiceEventType: {mealplanningkeys.ValidIngredientStateIngredientIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidIngredientStateIngredient(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientStateIngredientsByIngredient(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStateIngredientsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientStateIngredientsForIngredient), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientStateIngredientsByIngredient(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientStateIngredientsByIngredientState(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStateIngredientsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientStateIngredientsForIngredientState), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientStateIngredientsByIngredientState(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidIngredientStates(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStatesList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidIngredientStates), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidIngredientStates(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidIngredientStates(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientStatesList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientStates), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidIngredientStates(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidIngredientState(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientState()
+		fakeInput := fakes.BuildFakeValidIngredientStateCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidIngredientState), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientStateDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidIngredientStateCreatedServiceEventType: {mealplanningkeys.ValidIngredientStateIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidIngredientState(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidIngredientState(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientState()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidIngredientState), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidIngredientState(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidIngredientState(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidIngredientState := fakes.BuildFakeValidIngredientState()
+		exampleInput := fakes.BuildFakeValidIngredientStateUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidIngredientState), testutils.ContextMatcher, exampleValidIngredientState.ID).Return(exampleValidIngredientState, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidIngredientState), testutils.ContextMatcher, testutils.MatchType[*types.ValidIngredientState]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientStateUpdatedServiceEventType: {mealplanningkeys.ValidIngredientStateIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidIngredientState(ctx, exampleValidIngredientState.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidIngredientState(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidIngredientState()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidIngredientState), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidIngredientStateArchivedServiceEventType: {mealplanningkeys.ValidIngredientStateIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidIngredientState(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidMeasurementUnits(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidMeasurementUnits), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidMeasurementUnits(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidMeasurementUnitsByIngredientID(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ValidMeasurementUnitsForIngredientID), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidMeasurementUnitsByIngredientID(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidMeasurementUnits(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidMeasurementUnits), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidMeasurementUnits(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnit()
+		fakeInput := fakes.BuildFakeValidMeasurementUnitCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidMeasurementUnit), testutils.ContextMatcher, testutils.MatchType[*types.ValidMeasurementUnitDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidMeasurementUnitCreatedServiceEventType: {mealplanningkeys.ValidMeasurementUnitIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidMeasurementUnit(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnit()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidMeasurementUnit), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidMeasurementUnit(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidMeasurementUnit := fakes.BuildFakeValidMeasurementUnit()
+		exampleInput := fakes.BuildFakeValidMeasurementUnitUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidMeasurementUnit), testutils.ContextMatcher, exampleValidMeasurementUnit.ID).Return(exampleValidMeasurementUnit, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidMeasurementUnit), testutils.ContextMatcher, testutils.MatchType[*types.ValidMeasurementUnit]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidMeasurementUnitUpdatedServiceEventType: {mealplanningkeys.ValidMeasurementUnitIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidMeasurementUnit(ctx, exampleValidMeasurementUnit.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnit()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidMeasurementUnit), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidMeasurementUnitArchivedServiceEventType: {mealplanningkeys.ValidMeasurementUnitIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidMeasurementUnit(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidInstruments(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidInstrumentsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidInstruments), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidInstruments(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidInstruments(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidInstrumentsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidInstruments), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidInstruments(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidInstrument()
+		fakeInput := fakes.BuildFakeValidInstrumentCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidInstrument), testutils.ContextMatcher, testutils.MatchType[*types.ValidInstrumentDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidInstrumentCreatedServiceEventType: {mealplanningkeys.ValidInstrumentIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidInstrument(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidInstrument()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidInstrument), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidInstrument(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_RandomValidInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidInstrument()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetRandomValidInstrument), testutils.ContextMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.RandomValidInstrument(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidInstrument := fakes.BuildFakeValidInstrument()
+		exampleInput := fakes.BuildFakeValidInstrumentUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidInstrument), testutils.ContextMatcher, exampleValidInstrument.ID).Return(exampleValidInstrument, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidInstrument), testutils.ContextMatcher, testutils.MatchType[*types.ValidInstrument]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidInstrumentUpdatedServiceEventType: {mealplanningkeys.ValidInstrumentIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidInstrument(ctx, exampleValidInstrument.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidInstrument()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidInstrument), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidInstrumentArchivedServiceEventType: {mealplanningkeys.ValidInstrumentIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidInstrument(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ValidMeasurementUnitConversionsForMeasurementUnit(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitConversionsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidMeasurementUnitConversionsForUnit), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ValidMeasurementUnitConversionsForMeasurementUnit(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidMeasurementUnitConversion(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitConversion()
+		fakeInput := fakes.BuildFakeValidMeasurementUnitConversionCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidMeasurementUnitConversion), testutils.ContextMatcher, testutils.MatchType[*types.ValidMeasurementUnitConversionDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidMeasurementUnitConversionCreatedServiceEventType: {mealplanningkeys.ValidMeasurementUnitConversionIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidMeasurementUnitConversion(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidMeasurementUnitConversion(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitConversion()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidMeasurementUnitConversion), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidMeasurementUnitConversion(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidMeasurementUnitConversion(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidMeasurementUnitConversion := fakes.BuildFakeValidMeasurementUnitConversion()
+		exampleInput := fakes.BuildFakeValidMeasurementUnitConversionUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidMeasurementUnitConversion), testutils.ContextMatcher, exampleValidMeasurementUnitConversion.ID).Return(exampleValidMeasurementUnitConversion, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidMeasurementUnitConversion), testutils.ContextMatcher, testutils.MatchType[*types.ValidMeasurementUnitConversion]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidMeasurementUnitConversionUpdatedServiceEventType: {mealplanningkeys.ValidMeasurementUnitConversionIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidMeasurementUnitConversion(ctx, exampleValidMeasurementUnitConversion.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidMeasurementUnitConversion(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidMeasurementUnitConversion()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidMeasurementUnitConversion), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidMeasurementUnitConversionArchivedServiceEventType: {mealplanningkeys.ValidMeasurementUnitConversionIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidMeasurementUnitConversion(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidPreparationInstruments(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationInstrumentsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationInstruments), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidPreparationInstruments(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidPreparationInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationInstrument()
+		fakeInput := fakes.BuildFakeValidPreparationInstrumentCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidPreparationInstrument), testutils.ContextMatcher, testutils.MatchType[*types.ValidPreparationInstrumentDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidPreparationInstrumentCreatedServiceEventType: {mealplanningkeys.ValidPreparationInstrumentIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidPreparationInstrument(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidPreparationInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationInstrument()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationInstrument), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidPreparationInstrument(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidPreparationInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidPreparationInstrument := fakes.BuildFakeValidPreparationInstrument()
+		exampleInput := fakes.BuildFakeValidPreparationInstrumentUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidPreparationInstrument), testutils.ContextMatcher, exampleValidPreparationInstrument.ID).Return(exampleValidPreparationInstrument, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidPreparationInstrument), testutils.ContextMatcher, testutils.MatchType[*types.ValidPreparationInstrument]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPreparationInstrumentUpdatedServiceEventType: {mealplanningkeys.ValidPreparationInstrumentIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidPreparationInstrument(ctx, exampleValidPreparationInstrument.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidPreparationInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationInstrument()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidPreparationInstrument), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPreparationInstrumentArchivedServiceEventType: {mealplanningkeys.ValidPreparationInstrumentIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidPreparationInstrument(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPreparationInstrumentsByPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationInstrumentsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationInstrumentsForPreparation), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPreparationInstrumentsByPreparation(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPreparationInstrumentsByInstrument(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationInstrumentsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationInstrumentsForInstrument), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPreparationInstrumentsByInstrument(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPreparations(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidPreparations), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+				// SearchValidPreparations enriches each preparation with media
+				for _, prep := range expected.Data {
+					db.On(reflection.GetMethodName(vem.db.GetPreparationMediaByPreparation), testutils.ContextMatcher, prep.ID).Return([]*types.PreparationMediaRow{}, nil)
+				}
+			},
+		)
+
+		actual, err := vem.SearchValidPreparations(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidPreparations(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparations), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+				// ListValidPreparations enriches each preparation with media
+				for _, prep := range expected.Data {
+					db.On(reflection.GetMethodName(vem.db.GetPreparationMediaByPreparation), testutils.ContextMatcher, prep.ID).Return([]*types.PreparationMediaRow{}, nil)
+				}
+			},
+		)
+
+		actual, err := vem.ListValidPreparations(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparation()
+		fakeInput := fakes.BuildFakeValidPreparationCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidPreparation), testutils.ContextMatcher, testutils.MatchType[*types.ValidPreparationDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidPreparationCreatedServiceEventType: {mealplanningkeys.ValidPreparationIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidPreparation(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparation()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparation), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+				// ReadValidPreparation enriches with media; return empty slice so GetUploadedMediaWithIDs is not called
+				db.On(reflection.GetMethodName(vem.db.GetPreparationMediaByPreparation), testutils.ContextMatcher, expected.ID).Return([]*types.PreparationMediaRow{}, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidPreparation(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_RandomValidPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparation()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetRandomValidPreparation), testutils.ContextMatcher).Return(expected, nil)
+				// RandomValidPreparation enriches with media; return empty slice so GetUploadedMediaWithIDs is not called
+				db.On(reflection.GetMethodName(vem.db.GetPreparationMediaByPreparation), testutils.ContextMatcher, expected.ID).Return([]*types.PreparationMediaRow{}, nil)
+			},
+		)
+
+		actual, err := vem.RandomValidPreparation(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidPreparation := fakes.BuildFakeValidPreparation()
+		exampleInput := fakes.BuildFakeValidPreparationUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidPreparation), testutils.ContextMatcher, exampleValidPreparation.ID).Return(exampleValidPreparation, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidPreparation), testutils.ContextMatcher, testutils.MatchType[*types.ValidPreparation]()).Return(nil)
+				// UpdateValidPreparation enriches with media; return empty slice so GetUploadedMediaWithIDs is not called
+				db.On(reflection.GetMethodName(mpm.db.GetPreparationMediaByPreparation), testutils.ContextMatcher, exampleValidPreparation.ID).Return([]*types.PreparationMediaRow{}, nil)
+			},
+			map[string][]string{
+				types.ValidPreparationUpdatedServiceEventType: {mealplanningkeys.ValidPreparationIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidPreparation(ctx, exampleValidPreparation.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparation()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidPreparation), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPreparationArchivedServiceEventType: {mealplanningkeys.ValidPreparationIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidPreparation(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidPreparationVessels(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationVesselsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationVessels), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidPreparationVessels(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidPreparationVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationVessel()
+		fakeInput := fakes.BuildFakeValidPreparationVesselCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidPreparationVessel), testutils.ContextMatcher, testutils.MatchType[*types.ValidPreparationVesselDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidPreparationVesselCreatedServiceEventType: {mealplanningkeys.ValidPreparationVesselIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidPreparationVessel(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidPreparationVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationVessel()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationVessel), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidPreparationVessel(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidPreparationVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidPreparationVessel := fakes.BuildFakeValidPreparationVessel()
+		exampleInput := fakes.BuildFakeValidPreparationVesselUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidPreparationVessel), testutils.ContextMatcher, exampleValidPreparationVessel.ID).Return(exampleValidPreparationVessel, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidPreparationVessel), testutils.ContextMatcher, testutils.MatchType[*types.ValidPreparationVessel]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPreparationVesselUpdatedServiceEventType: {mealplanningkeys.ValidPreparationVesselIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidPreparationVessel(ctx, exampleValidPreparationVessel.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidPreparationVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationVessel()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidPreparationVessel), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidPreparationVesselArchivedServiceEventType: {mealplanningkeys.ValidPreparationVesselIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidPreparationVessel(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPreparationVesselsByPreparation(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationVesselsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationVesselsForPreparation), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPreparationVesselsByPreparation(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidPreparationVesselsByVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidPreparationVesselsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidPreparationVesselsForVessel), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidPreparationVesselsByVessel(ctx, exampleQuery, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_SearchValidVessels(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidVesselsList()
+		exampleQuery := fakes.BuildFakeID()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.SearchForValidVessels), testutils.ContextMatcher, exampleQuery, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.SearchValidVessels(ctx, exampleQuery, false, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ListValidVessels(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidVesselsList()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidVessels), testutils.ContextMatcher, testutils.QueryFilterMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ListValidVessels(ctx, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_CreateValidVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidVessel()
+		fakeInput := fakes.BuildFakeValidVesselCreationRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.CreateValidVessel), testutils.ContextMatcher, testutils.MatchType[*types.ValidVesselDatabaseCreationInput]()).Return(expected, nil)
+			},
+			map[string][]string{
+				types.ValidVesselCreatedServiceEventType: {mealplanningkeys.ValidVesselIDKey},
+			},
+		)
+
+		actual, err := vem.CreateValidVessel(ctx, fakeInput)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ReadValidVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidVessel()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetValidVessel), testutils.ContextMatcher, expected.ID).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.ReadValidVessel(ctx, expected.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_RandomValidVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidVessel()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.GetRandomValidVessel), testutils.ContextMatcher).Return(expected, nil)
+			},
+		)
+
+		actual, err := vem.RandomValidVessel(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_UpdateValidVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		mpm := buildValidEnumerationsManagerForTest(t)
+
+		exampleValidVessel := fakes.BuildFakeValidVessel()
+		exampleInput := fakes.BuildFakeValidVesselUpdateRequestInput()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			mpm,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(mpm.db.GetValidVessel), testutils.ContextMatcher, exampleValidVessel.ID).Return(exampleValidVessel, nil)
+				db.On(reflection.GetMethodName(mpm.db.UpdateValidVessel), testutils.ContextMatcher, testutils.MatchType[*types.ValidVessel]()).Return(nil)
+			},
+			map[string][]string{
+				types.ValidVesselUpdatedServiceEventType: {mealplanningkeys.ValidVesselIDKey},
+			},
+		)
+
+		result, err := mpm.UpdateValidVessel(ctx, exampleValidVessel.ID, exampleInput)
+		assert.NotNil(t, result)
+		assert.NoError(t, err)
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}
+
+func TestValidEnumerationManager_ArchiveValidVessel(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		vem := buildValidEnumerationsManagerForTest(t)
+
+		expected := fakes.BuildFakeValidVessel()
+
+		expectations := setupExpectationsForValidEnumerationManager(
+			vem,
+			func(db *mealplanningmock.Repository) {
+				db.On(reflection.GetMethodName(vem.db.ArchiveValidVessel), testutils.ContextMatcher, expected.ID).Return(nil)
+			},
+			map[string][]string{
+				types.ValidVesselArchivedServiceEventType: {mealplanningkeys.ValidVesselIDKey},
+			},
+		)
+
+		assert.NoError(t, vem.ArchiveValidVessel(ctx, expected.ID))
+
+		mock.AssertExpectationsForObjects(t, expectations...)
+	})
+}

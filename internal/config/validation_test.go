@@ -253,32 +253,36 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
-	t.Run("defaults both targets to true when neither is set", func(t *testing.T) {
+	t.Run("defaults backend to true when unset; iOS stays false", func(t *testing.T) {
 		t.Parallel()
 
 		p := validProject()
-		// Targets zero-valued (both false)
+		// Targets zero-valued: Backend nil, IOS false
 		if err := p.Validate(); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if !p.Targets.Backend {
+		if !p.Targets.BackendEnabled() {
 			t.Error("expected backend target to default to true")
 		}
-		if !p.Targets.IOS {
-			t.Error("expected iOS target to default to true")
+		if p.Targets.IOS {
+			t.Error("expected iOS target to stay false when unset")
+		}
+		if !p.Targets.AsyncMessageHandlerEnabled() {
+			t.Error("expected async_message_handler target to default to true")
 		}
 	})
 
 	t.Run("respects explicit target selection", func(t *testing.T) {
 		t.Parallel()
 
+		trueVal := true
 		p := validProject()
-		p.Targets.Backend = true
+		p.Targets.Backend = &trueVal
 		p.Targets.IOS = false
 		if err := p.Validate(); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if !p.Targets.Backend {
+		if !p.Targets.BackendEnabled() {
 			t.Error("expected backend target to remain true")
 		}
 		if p.Targets.IOS {
@@ -286,11 +290,40 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
+	t.Run("respects explicit backend opt-out", func(t *testing.T) {
+		t.Parallel()
+
+		falseVal := false
+		p := validProject()
+		p.Targets.Backend = &falseVal
+		p.Targets.IOS = true
+		p.ProjectMeta.Module = ""
+		if err := p.Validate(); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if p.Targets.BackendEnabled() {
+			t.Error("expected explicit backend:false to stay false")
+		}
+	})
+
+	t.Run("respects explicit async_message_handler opt-out", func(t *testing.T) {
+		t.Parallel()
+
+		falseVal := false
+		p := validProject()
+		p.Targets.AsyncMessageHandler = &falseVal
+		if err := p.Validate(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if p.Targets.AsyncMessageHandlerEnabled() {
+			t.Error("expected explicit async_message_handler:false to stay false")
+		}
+	})
+
 	t.Run("defaults IOSModuleName to project name", func(t *testing.T) {
 		t.Parallel()
 
 		p := validProject()
-		p.Targets.Backend = true
 		p.Targets.IOS = true
 		if err := p.Validate(); err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -304,7 +337,6 @@ func TestValidate(t *testing.T) {
 		t.Parallel()
 
 		p := validProject()
-		p.Targets.Backend = true
 		p.Targets.IOS = true
 		if err := p.Validate(); err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -318,7 +350,6 @@ func TestValidate(t *testing.T) {
 		t.Parallel()
 
 		p := validProject()
-		p.Targets.Backend = true
 		p.Targets.IOS = true
 		p.ProjectMeta.IOSBundleID = "com.custom.app"
 		p.ProjectMeta.IOSModuleName = "CustomApp"
@@ -336,8 +367,9 @@ func TestValidate(t *testing.T) {
 	t.Run("rejects empty module when backend target is enabled", func(t *testing.T) {
 		t.Parallel()
 
+		trueVal := true
 		p := validProject()
-		p.Targets.Backend = true
+		p.Targets.Backend = &trueVal
 		p.Targets.IOS = false
 		p.ProjectMeta.Module = ""
 		err := p.Validate()
@@ -352,8 +384,9 @@ func TestValidate(t *testing.T) {
 	t.Run("allows empty module when only iOS target is enabled", func(t *testing.T) {
 		t.Parallel()
 
+		falseVal := false
 		p := validProject()
-		p.Targets.Backend = false
+		p.Targets.Backend = &falseVal
 		p.Targets.IOS = true
 		p.ProjectMeta.Module = ""
 		if err := p.Validate(); err != nil {

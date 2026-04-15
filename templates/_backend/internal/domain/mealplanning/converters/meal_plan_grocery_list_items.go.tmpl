@@ -1,0 +1,106 @@
+package converters
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"github.com/primandproper/platform/identifiers"
+	"github.com/primandproper/platform/numbers"
+)
+
+// ConvertMealPlanGroceryListItemToMealPlanGroceryListItemDatabaseCreationInput builds a MealPlanGroceryListItemDatabaseCreationInput from a MealPlanGroceryListItem.
+func ConvertMealPlanGroceryListItemToMealPlanGroceryListItemDatabaseCreationInput(input *mealplanning.MealPlanGroceryListItem) *mealplanning.MealPlanGroceryListItemDatabaseCreationInput {
+	x := &mealplanning.MealPlanGroceryListItemDatabaseCreationInput{
+		ID:                     input.ID,
+		BelongsToMealPlan:      input.BelongsToMealPlan,
+		ValidIngredientID:      input.Ingredient.ID,
+		ValidMeasurementUnitID: input.MeasurementUnit.ID,
+		QuantityNeeded: numbers.MinRange[float32]{
+			Max: input.QuantityNeeded.Max,
+			Min: input.QuantityNeeded.Min,
+		},
+		QuantityPurchased:       input.QuantityPurchased,
+		PurchasedUPC:            input.PurchasedUPC,
+		PurchasePrice:           input.PurchasePrice,
+		StatusExplanation:       input.StatusExplanation,
+		Status:                  input.Status,
+		BelongsToMealPlanOption: input.BelongsToMealPlanOption,
+		RecipeID:                input.RecipeID,
+		RecipeStepID:            input.RecipeStepID,
+		IngredientIndex:         input.IngredientIndex,
+		OptionIndex:             input.OptionIndex,
+	}
+
+	if input.PurchasedMeasurementUnit != nil {
+		x.PurchasedMeasurementUnitID = &input.PurchasedMeasurementUnit.ID
+	}
+
+	return x
+}
+
+// ConvertMealPlanGroceryListItemToMealPlanGroceryListItemCreationRequestInput builds a MealPlanGroceryListItemCreationRequestInput from a MealPlanGroceryListItem.
+func ConvertMealPlanGroceryListItemToMealPlanGroceryListItemCreationRequestInput(input *mealplanning.MealPlanGroceryListItem) *mealplanning.MealPlanGroceryListItemCreationRequestInput {
+	x := &mealplanning.MealPlanGroceryListItemCreationRequestInput{
+		PurchasedUPC:           input.PurchasedUPC,
+		PurchasePrice:          input.PurchasePrice,
+		QuantityPurchased:      input.QuantityPurchased,
+		StatusExplanation:      input.StatusExplanation,
+		Status:                 input.Status,
+		BelongsToMealPlan:      input.BelongsToMealPlan,
+		ValidIngredientID:      input.Ingredient.ID,
+		ValidMeasurementUnitID: input.MeasurementUnit.ID,
+		QuantityNeeded: numbers.MinRange[float32]{
+			Max: input.QuantityNeeded.Max,
+			Min: input.QuantityNeeded.Min,
+		},
+	}
+
+	if input.PurchasedMeasurementUnit != nil {
+		x.PurchasedMeasurementUnitID = &input.PurchasedMeasurementUnit.ID
+	}
+
+	return x
+}
+
+func ConvertMealPlanGroceryListItemCreationRequestInputToMealPlanGroceryListItemDatabaseCreationInput(input *mealplanning.MealPlanGroceryListItemCreationRequestInput) *mealplanning.MealPlanGroceryListItemDatabaseCreationInput {
+	return &mealplanning.MealPlanGroceryListItemDatabaseCreationInput{
+		ID:                         identifiers.New(),
+		PurchasePrice:              input.PurchasePrice,
+		PurchasedUPC:               input.PurchasedUPC,
+		PurchasedMeasurementUnitID: input.PurchasedMeasurementUnitID,
+		QuantityPurchased:          input.QuantityPurchased,
+		Status:                     input.Status,
+		StatusExplanation:          input.StatusExplanation,
+		ValidMeasurementUnitID:     input.ValidMeasurementUnitID,
+		ValidIngredientID:          input.ValidIngredientID,
+		BelongsToMealPlan:          input.BelongsToMealPlan,
+		QuantityNeeded: numbers.MinRange[float32]{
+			Max: input.QuantityNeeded.Max,
+			Min: input.QuantityNeeded.Min,
+		},
+		// Recipe context fields are not included in creation request input
+		// They are set separately when creating items with alternatives
+	}
+}
+
+func ConvertMealPlanGroceryListItemToMealPlanGroceryListItemUpdateRequestInput(input *mealplanning.MealPlanGroceryListItem) *mealplanning.MealPlanGroceryListItemUpdateRequestInput {
+	var purchasedMeasurementUnitID *string
+	if input.PurchasedMeasurementUnit != nil {
+		purchasedMeasurementUnitID = &input.PurchasedMeasurementUnit.ID
+	}
+
+	return &mealplanning.MealPlanGroceryListItemUpdateRequestInput{
+		BelongsToMealPlan:      &input.BelongsToMealPlan,
+		ValidIngredientID:      &input.Ingredient.ID,
+		ValidMeasurementUnitID: &input.MeasurementUnit.ID,
+		QuantityNeeded: numbers.OpenRangeUpdateRequestInput[float32]{
+			Max: input.QuantityNeeded.Max,
+			Min: &input.QuantityNeeded.Min,
+		},
+		QuantityPurchased:          input.QuantityPurchased,
+		PurchasedMeasurementUnitID: purchasedMeasurementUnitID,
+		PurchasedUPC:               input.PurchasedUPC,
+		PurchasePrice:              input.PurchasePrice,
+		StatusExplanation:          &input.StatusExplanation,
+		Status:                     &input.Status,
+	}
+}

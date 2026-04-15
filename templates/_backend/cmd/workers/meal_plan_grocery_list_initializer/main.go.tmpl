@@ -1,0 +1,39 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	mealplangrocerylistinitializer "{{ .Project.ProjectMeta.Module }}/internal/build/jobs/meal_plan_grocery_list_initializer"
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+
+	_ "go.uber.org/automaxprocs"
+)
+
+func doTheThing(ctx context.Context) error {
+	config.ConditionallyCease()
+
+	cfg, err := config.LoadConfigFromEnvironment[config.MealPlanGroceryListInitializerConfig]()
+	if err != nil {
+		return fmt.Errorf("error getting config: %w", err)
+	}
+	cfg.Database.RunMigrations = false
+
+	worker, err := mealplangrocerylistinitializer.Build(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("error building mealplantaskcreator: %w", err)
+	}
+
+	if err = worker.Work(ctx); err != nil {
+		return fmt.Errorf("error building mealplantaskcreator: %w", err)
+	}
+
+	return nil
+}
+
+func main() {
+	if err := doTheThing(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+}

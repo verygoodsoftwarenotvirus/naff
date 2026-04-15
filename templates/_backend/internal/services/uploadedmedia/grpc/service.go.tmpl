@@ -1,0 +1,45 @@
+package grpc
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication/sessions"
+	uploadedmediamanager "{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia/manager"
+	uploadedmediasvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/uploaded_media"
+
+	"github.com/primandproper/platform/observability/logging"
+	"github.com/primandproper/platform/observability/tracing"
+	"github.com/primandproper/platform/uploads"
+)
+
+const (
+	o11yName = "uploaded_media_service"
+)
+
+var _ uploadedmediasvc.UploadedMediaServiceServer = (*serviceImpl)(nil)
+
+type (
+	serviceImpl struct {
+		uploadedmediasvc.UnimplementedUploadedMediaServiceServer
+		tracer                    tracing.Tracer
+		logger                    logging.Logger
+		sessionContextDataFetcher func(context.Context) (*sessions.ContextData, error)
+		uploadedMediaManager      uploadedmediamanager.UploadedMediaManager
+		uploadManager             uploads.UploadManager
+	}
+)
+
+func NewService(
+	logger logging.Logger,
+	tracerProvider tracing.TracerProvider,
+	uploadedMediaManager uploadedmediamanager.UploadedMediaManager,
+	uploadManager uploads.UploadManager,
+) uploadedmediasvc.UploadedMediaServiceServer {
+	return &serviceImpl{
+		logger:                    logging.NewNamedLogger(logger, o11yName),
+		tracer:                    tracing.NewNamedTracer(tracerProvider, o11yName),
+		sessionContextDataFetcher: sessions.FetchContextDataFromContext,
+		uploadedMediaManager:      uploadedMediaManager,
+		uploadManager:             uploadManager,
+	}
+}

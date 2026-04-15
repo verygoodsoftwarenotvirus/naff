@@ -1,0 +1,97 @@
+package grpc
+
+import (
+	"context"
+	"testing"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/comments"
+	commentsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/comments/manager"
+	mockmanagers "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/managers/mock"
+	uploadedmediamock "{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia/mock"
+	mealplanningsvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/mealplanning"
+	mealplanfinalizer "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/workers/meal_plan_finalizer"
+	mealplangrocerylistinitializer "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/workers/meal_plan_grocery_list_initializer"
+	mealplantaskcreator "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/workers/meal_plan_task_creator"
+
+	"github.com/primandproper/platform/database/filtering"
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+	mockuploads "github.com/primandproper/platform/uploads/mock"
+
+	"github.com/stretchr/testify/assert"
+)
+
+// noopCommentsManager is a stub implementation for tests that only need service construction.
+type noopCommentsManager struct{}
+
+func (n *noopCommentsManager) CreateComment(_ context.Context, _ *comments.CommentCreationRequestInput) (*comments.Comment, error) {
+	return nil, nil
+}
+func (n *noopCommentsManager) GetComment(_ context.Context, _ string) (*comments.Comment, error) {
+	return nil, nil
+}
+func (n *noopCommentsManager) GetCommentsForReference(_ context.Context, _, _ string, _ *filtering.QueryFilter) (*filtering.QueryFilteredResult[comments.Comment], error) {
+	return nil, nil
+}
+func (n *noopCommentsManager) UpdateComment(_ context.Context, _, _ string, _ *comments.CommentUpdateRequestInput) error {
+	return nil
+}
+func (n *noopCommentsManager) ArchiveComment(_ context.Context, _ string) error {
+	return nil
+}
+func (n *noopCommentsManager) ArchiveCommentsForReference(_ context.Context, _, _ string) error {
+	return nil
+}
+
+var _ commentsmanager.CommentsDataManager = (*noopCommentsManager)(nil)
+
+func TestNewService(t *testing.T) {
+	t.Parallel()
+
+	t.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		logger := loggingnoop.NewLogger()
+		tracerProvider := tracingnoop.NewTracerProvider()
+		recipeManager := &mockmanagers.MockRecipeManager{}
+		validEnumerationsManager := &mockmanagers.MockValidEnumerationsManager{}
+		mealPlanningManager := &mockmanagers.MockMealPlanningManager{}
+		mealPlanFinalizerWorker := &mealplanfinalizer.Worker{}
+		mealPlanGroceryListInitializerWorker := &mealplangrocerylistinitializer.Worker{}
+		mealPlanTaskCreatorWorker := &mealplantaskcreator.Worker{}
+		commentsManager := &noopCommentsManager{}
+		uploadedMediaManager := &uploadedmediamock.Repository{}
+		uploadManager := &mockuploads.UploadManagerMock{}
+
+		service := NewService(
+			logger,
+			tracerProvider,
+			recipeManager,
+			validEnumerationsManager,
+			mealPlanningManager,
+			mealPlanFinalizerWorker,
+			mealPlanGroceryListInitializerWorker,
+			mealPlanTaskCreatorWorker,
+			commentsManager,
+			uploadedMediaManager,
+			uploadManager,
+		)
+
+		assert.NotNil(t, service)
+		assert.Implements(t, (*mealplanningsvc.MealPlanningServiceServer)(nil), service)
+
+		// Type assertion to ensure we get the correct implementation
+		impl, ok := service.(*serviceImpl)
+		assert.True(t, ok)
+		assert.NotNil(t, impl.logger)
+		assert.NotNil(t, impl.tracer)
+		assert.Equal(t, recipeManager, impl.recipeManager)
+		assert.Equal(t, validEnumerationsManager, impl.validEnumerationsManager)
+		assert.Equal(t, mealPlanningManager, impl.mealPlanningManager)
+		assert.Equal(t, mealPlanFinalizerWorker, impl.mealPlanFinalizerWorker)
+		assert.Equal(t, mealPlanGroceryListInitializerWorker, impl.mealPlanGroceryListInitializerWorker)
+		assert.Equal(t, mealPlanTaskCreatorWorker, impl.mealPlanTaskCreatorWorker)
+		assert.Equal(t, commentsManager, impl.commentsManager)
+		assert.NotNil(t, impl.sessionContextDataFetcher)
+	})
+}

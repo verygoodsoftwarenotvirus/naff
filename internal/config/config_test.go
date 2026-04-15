@@ -180,7 +180,7 @@ func TestMarshal(t *testing.T) {
 				Payments: &falseVal,
 			},
 			Targets: Targets{
-				Backend: true,
+				Backend: &trueVal,
 				IOS:     true,
 			},
 			Domains: []Domain{
@@ -223,8 +223,8 @@ func TestMarshal(t *testing.T) {
 		if parsed.ProjectMeta.IOSBundleID != original.ProjectMeta.IOSBundleID {
 			t.Errorf("ios_bundle_id: got %q, want %q", parsed.ProjectMeta.IOSBundleID, original.ProjectMeta.IOSBundleID)
 		}
-		if parsed.Targets.Backend != original.Targets.Backend {
-			t.Errorf("backend target: got %v, want %v", parsed.Targets.Backend, original.Targets.Backend)
+		if parsed.Targets.BackendEnabled() != original.Targets.BackendEnabled() {
+			t.Errorf("backend target: got %v, want %v", parsed.Targets.BackendEnabled(), original.Targets.BackendEnabled())
 		}
 		if parsed.Targets.IOS != original.Targets.IOS {
 			t.Errorf("ios target: got %v, want %v", parsed.Targets.IOS, original.Targets.IOS)

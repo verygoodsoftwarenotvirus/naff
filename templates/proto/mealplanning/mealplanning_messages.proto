@@ -1,0 +1,743 @@
+syntax = "proto3";
+
+package mealplanning;
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+import "uploaded_media/uploaded_media_messages.proto";
+
+option go_package = "github.com/dinnerdonebetter/dinnerdonebetter/backend/internal/grpc/generated/services/mealplanning";
+
+message DataCollection {
+  repeated AccountInstrumentOwnership account_instrument_ownerships = 2;
+  repeated MealPlan meal_plans = 3;
+  repeated RecipeRating recipe_ratings = 4;
+  repeated Recipe recipes = 5;
+  repeated Meal meals = 6;
+  repeated UserIngredientPreference user_ingredient_preferences = 7;
+}
+
+message ValidIngredient {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  common.OptionalFloat32Range storage_temperature_in_celsius = 4;
+  string icon_path = 5;
+  string warning = 6;
+  string plural_name = 7;
+  string storage_instructions = 8;
+  string name = 9;
+  string id = 10;
+  string description = 11;
+  string slug = 12;
+  string shopping_suggestions = 13;
+  bool contains_shellfish = 14;
+  bool is_liquid = 15;
+  bool contains_peanut = 16;
+  bool contains_tree_nut = 17;
+  bool contains_egg = 18;
+  bool contains_wheat = 19;
+  bool contains_soy = 20;
+  bool animal_derived = 21;
+  bool restrict_to_preparations = 22;
+  bool contains_sesame = 23;
+  bool contains_fish = 24;
+  bool contains_gluten = 25;
+  bool contains_dairy = 26;
+  bool contains_alcohol = 27;
+  bool animal_flesh = 28;
+  bool is_starch = 29;
+  bool is_protein = 30;
+  bool is_grain = 31;
+  bool is_fruit = 32;
+  bool is_salt = 33;
+  bool is_fat = 34;
+  bool is_acid = 35;
+  bool is_heat = 36;
+  bool contaminates_equipment = 37;
+  repeated uploaded_media.UploadedMedia media = 38;
+}
+
+message ValidIngredientGroup {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string id = 4;
+  string name = 5;
+  string slug = 6;
+  string description = 7;
+  repeated ValidIngredientGroupMember members = 8;
+}
+
+message ValidIngredientGroupMember {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  string id = 3;
+  string belongs_to_group = 4;
+  ValidIngredient valid_ingredient = 5;
+}
+
+message ValidIngredientMeasurementUnit {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string notes = 4;
+  string id = 5;
+  common.Float32RangeWithOptionalMax allowable_quantity = 6;
+  ValidMeasurementUnit measurement_unit = 7;
+  ValidIngredient ingredient = 8;
+}
+
+message ValidIngredientPreparation {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string notes = 4;
+  string id = 5;
+  ValidPreparation preparation = 6;
+  ValidIngredient ingredient = 7;
+}
+
+message ValidPrepTaskConfig {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  common.Uint32RangeWithOptionalMax storage_duration_in_seconds = 4;
+  common.OptionalFloat32Range storage_temperature_in_celsius = 5;
+  string id = 6;
+  string storage_type = 7;
+  string storage_instructions = 8;
+  string notes = 9;
+  string source = 10;
+  ValidPreparation preparation = 11;
+  ValidIngredient ingredient = 12;
+}
+
+message ValidIngredientState {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string past_tense = 4;
+  string description = 5;
+  string icon_path = 6;
+  string id = 7;
+  string name = 8;
+  ValidIngredientStateAttributeType attribute_type = 9;
+  string slug = 10;
+}
+
+message ValidIngredientStateIngredient {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string notes = 4;
+  string id = 5;
+  ValidIngredientState ingredient_state = 6;
+  ValidIngredient ingredient = 7;
+}
+
+message ValidInstrument {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string icon_path = 4;
+  string id = 5;
+  string name = 6;
+  string plural_name = 7;
+  string description = 8;
+  string slug = 9;
+  bool display_in_summary_lists = 10;
+  bool include_in_generated_instructions = 11;
+  bool usable_for_storage = 12;
+}
+
+message ValidMeasurementUnit {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string name = 4;
+  string icon_path = 5;
+  string id = 6;
+  string description = 7;
+  string plural_name = 8;
+  string slug = 9;
+  bool volumetric = 10;
+  bool universal = 11;
+  bool metric = 12;
+  bool imperial = 13;
+}
+
+message ValidMeasurementUnitConversion {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  ValidIngredient only_for_ingredient = 4;
+  string notes = 5;
+  string id = 6;
+  ValidMeasurementUnit from = 7;
+  ValidMeasurementUnit to = 8;
+  float modifier = 9;
+}
+
+message MeasurementUnitConversionMismatch {
+  ValidIngredient ingredient = 1;
+  ValidMeasurementUnit from_unit = 2;
+  ValidMeasurementUnit to_unit = 3;
+}
+
+message ValidPreparation {
+  google.protobuf.Timestamp created_at = 1;
+  common.Uint16RangeWithOptionalMax instrument_count = 2;
+  common.Uint16RangeWithOptionalMax ingredient_count = 3;
+  common.Uint16RangeWithOptionalMax vessel_count = 4;
+  optional google.protobuf.Timestamp archived_at = 5;
+  optional google.protobuf.Timestamp last_updated_at = 6;
+  string icon_path = 7;
+  string past_tense = 8;
+  string id = 9;
+  string name = 10;
+  string description = 11;
+  string slug = 12;
+  bool restrict_to_ingredients = 13;
+  bool temperature_required = 14;
+  bool time_estimate_required = 15;
+  bool condition_expression_required = 16;
+  bool consumes_vessel = 17;
+  bool only_for_vessels = 18;
+  bool yields_nothing = 19;
+  repeated uploaded_media.UploadedMedia media = 20;
+}
+
+message ValidPreparationInstrument {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string id = 4;
+  string notes = 5;
+  ValidInstrument instrument = 6;
+  ValidPreparation preparation = 7;
+}
+
+message ValidPreparationVessel {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string id = 4;
+  string notes = 5;
+  ValidPreparation preparation = 6;
+  ValidVessel vessel = 7;
+}
+
+message ValidVessel {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  ValidMeasurementUnit capacity_unit = 4;
+  string icon_path = 5;
+  string plural_name = 6;
+  string description = 7;
+  string name = 8;
+  string slug = 9;
+  ValidVesselShape shape = 10;
+  string id = 11;
+  float width_in_millimeters = 12;
+  float length_in_millimeters = 13;
+  float height_in_millimeters = 14;
+  float capacity = 15;
+  bool include_in_generated_instructions = 16;
+  bool display_in_summary_lists = 17;
+  bool usable_for_storage = 18;
+}
+
+message UserIngredientPreference {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string id = 4;
+  string notes = 5;
+  string belongs_to_user = 6;
+  ValidIngredient ingredient = 7;
+  int32 rating = 8;
+  bool allergy = 9;
+}
+
+message Recipe {
+  google.protobuf.Timestamp created_at = 1;
+  optional string inspired_by_recipe_id = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  optional google.protobuf.Timestamp archived_at = 4;
+  common.Float32RangeWithOptionalMax estimated_portions = 5;
+  string plural_portion_name = 6;
+  string description = 7;
+  string name = 8;
+  string portion_name = 9;
+  string id = 10;
+  string created_by_user = 11;
+  string source = 12;
+  string source_isbn = 22;
+  string slug = 13;
+  MealComponentType yields_component_type = 14;
+  repeated RecipePrepTask prep_tasks = 15;
+  repeated RecipeStep steps = 16;
+  repeated RecipeMedia media = 17;
+  string status = 19;
+  bool eligible_for_meals = 20;
+  repeated Recipe associated_recipes = 21;
+}
+
+message RecipeMedia {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string id = 4;
+  optional string belongs_to_recipe = 5;
+  optional string belongs_to_recipe_step = 6;
+  string mime_type = 7;
+  string internal_path = 8;
+  string external_path = 9;
+  uint32 index = 10;
+}
+
+message RecipePrepTask {
+  google.protobuf.Timestamp created_at = 1;
+  common.OptionalFloat32Range storage_temperature_in_celsius = 2;
+  common.Uint32RangeWithOptionalMax time_buffer_before_recipe_in_seconds = 3;
+  optional google.protobuf.Timestamp archived_at = 4;
+  optional google.protobuf.Timestamp last_updated_at = 5;
+  string id = 6;
+  string storage_type = 7;
+  string belongs_to_recipe = 8;
+  string explicit_storage_instructions = 9;
+  string notes = 10;
+  string name = 11;
+  string description = 12;
+  repeated RecipePrepTaskStep task_steps = 13;
+  bool optional = 14;
+}
+
+message RecipePrepTaskStep {
+  string id = 1;
+  string belongs_to_recipe_step = 2;
+  string belongs_to_recipe_prep_task = 3;
+  bool satisfies_recipe_step = 4;
+}
+
+message RecipeRating {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string notes = 4;
+  string id = 5;
+  string recipe_id = 6;
+  string by_user = 7;
+  float taste = 8;
+  float instructions = 9;
+  float overall = 10;
+  float cleanup = 11;
+  float difficulty = 12;
+}
+
+message RecipeStep {
+  google.protobuf.Timestamp created_at = 1;
+  common.OptionalUint32Range estimated_time_in_seconds = 2;
+  common.OptionalFloat32Range temperature_in_celsius = 3;
+  optional google.protobuf.Timestamp archived_at = 4;
+  optional google.protobuf.Timestamp last_updated_at = 5;
+  string belongs_to_recipe = 6;
+  string condition_expression = 7;
+  string id = 8;
+  string notes = 9;
+  string explicit_instructions = 10;
+  repeated RecipeMedia media = 11;
+  repeated RecipeStepProduct products = 12;
+  repeated RecipeStepInstrument instruments = 13;
+  repeated RecipeStepVessel vessels = 14;
+  repeated RecipeStepCompletionCondition completion_conditions = 15;
+  repeated RecipeStepIngredient ingredients = 16;
+  ValidPreparation preparation = 17;
+  uint32 index = 18;
+  bool optional = 19;
+  bool start_timer_automatically = 20;
+  repeated uploaded_media.UploadedMedia step_images = 21;
+}
+
+message RecipeStepCompletionCondition {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  ValidIngredientState ingredient_state = 4;
+  string id = 5;
+  string belongs_to_recipe_step = 6;
+  string notes = 7;
+  repeated RecipeStepCompletionConditionIngredient ingredients = 8;
+  bool optional = 9;
+}
+
+message RecipeStepCompletionConditionIngredient {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string id = 4;
+  string belongs_to_recipe_step_completion_condition = 5;
+  string recipe_step_ingredient = 6;
+}
+
+message RecipeStepIngredient {
+  google.protobuf.Timestamp created_at = 1;
+  optional string recipe_step_product_recipe_id = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  ValidIngredient ingredient = 4;
+  optional google.protobuf.Timestamp last_updated_at = 5;
+  optional uint32 vessel_index = 6;
+  optional float product_percentage_to_use = 7;
+  optional string recipe_step_product_id = 8;
+  string belongs_to_recipe_step = 9;
+  string id = 10;
+  string quantity_notes = 11;
+  string ingredient_notes = 12;
+  string name = 13;
+  common.Float32RangeWithOptionalMax quantity = 14;
+  ValidMeasurementUnit measurement_unit = 15;
+  uint32 option_index = 16;
+  bool optional = 17;
+  bool to_taste = 18;
+  uint32 index = 19;
+  float scale_factor = 20;
+}
+
+message RecipeStepInstrument {
+  google.protobuf.Timestamp created_at = 1;
+  ValidInstrument instrument = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  optional string recipe_step_product_id = 4;
+  optional google.protobuf.Timestamp archived_at = 5;
+  string notes = 6;
+  string name = 7;
+  string belongs_to_recipe_step = 8;
+  string id = 9;
+  common.Uint32RangeWithOptionalMax quantity = 10;
+  uint32 option_index = 11;
+  uint32 preference_rank = 12;
+  bool optional = 13;
+  uint32 index = 14;
+  float scale_factor = 15;
+}
+
+message RecipeStepProduct {
+  google.protobuf.Timestamp created_at = 1;
+  common.OptionalFloat32Range storage_temperature_in_celsius = 2;
+  common.OptionalUint32Range storage_duration_in_seconds = 3;
+  common.OptionalFloat32Range measurement_quantity = 4;
+  common.OptionalFloat32Range item_quantity = 5;
+  optional google.protobuf.Timestamp archived_at = 6;
+  optional google.protobuf.Timestamp last_updated_at = 7;
+  ValidMeasurementUnit measurement_unit = 8;
+  optional uint32 contained_in_vessel_index = 9;
+  string name = 10;
+  string belongs_to_recipe_step = 11;
+  RecipeStepProductType type = 12;
+  string id = 13;
+  string storage_instructions = 14;
+  string quantity_notes = 15;
+  uint32 index = 16;
+  bool is_waste = 17;
+  bool is_liquid = 18;
+  bool compostable = 19;
+}
+
+message RecipeStepVessel {
+  google.protobuf.Timestamp created_at = 1;
+  common.Uint16RangeWithOptionalMax quantity = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  optional google.protobuf.Timestamp archived_at = 4;
+  optional string recipe_step_product_id = 5;
+  ValidVessel vessel = 6;
+  string id = 7;
+  string notes = 8;
+  string belongs_to_recipe_step = 9;
+  string vessel_preposition = 10;
+  string name = 11;
+  bool unavailable_after_step = 12;
+  uint32 index = 13;
+  uint32 option_index = 14;
+  float scale_factor = 15;
+}
+
+message Meal {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  common.Float32RangeWithOptionalMax estimated_portions = 4;
+  string id = 5;
+  string description = 6;
+  string created_by_user = 7;
+  string name = 8;
+  repeated MealComponent components = 9;
+  bool eligible_for_meal_plans = 10;
+}
+
+message MealComponent {
+  MealComponentType component_type = 1;
+  Recipe recipe = 2;
+  float recipe_scale = 3;
+}
+
+message MealPlan {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp voting_deadline = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  optional google.protobuf.Timestamp last_updated_at = 4;
+  string id = 5;
+  MealPlanStatus status = 6;
+  string notes = 7;
+  MealPlanElectionMethod election_method = 8;
+  string belongs_to_account = 9;
+  string created_by_user = 10;
+  repeated MealPlanEvent events = 11;
+  bool grocery_list_initialized = 12;
+  bool tasks_created = 13;
+  repeated MealPlanRecipeOptionSelection selections = 14;
+}
+
+message MealPlanEvent {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp starts_at = 2;
+  google.protobuf.Timestamp ends_at = 3;
+  optional google.protobuf.Timestamp archived_at = 4;
+  optional google.protobuf.Timestamp last_updated_at = 5;
+  MealPlanEventName meal_name = 6;
+  string notes = 7;
+  string belongs_to_meal_plan = 8;
+  string id = 9;
+  repeated MealPlanOption options = 10;
+}
+
+message MealPlanGroceryListItem {
+  google.protobuf.Timestamp created_at = 1;
+  optional float quantity_purchased = 2;
+  optional float purchase_price = 3;
+  optional string purchased_upc = 4;
+  optional google.protobuf.Timestamp archived_at = 5;
+  optional google.protobuf.Timestamp last_updated_at = 6;
+  ValidMeasurementUnit purchased_measurement_unit = 7;
+  string belongs_to_meal_plan = 8;
+  MealPlanGroceryListItemStatus status = 9;
+  string status_explanation = 10;
+  string id = 11;
+  common.Float32RangeWithOptionalMax quantity_needed = 12;
+  ValidMeasurementUnit measurement_unit = 13;
+  ValidIngredient ingredient = 14;
+  // Recipe context (optional - only set when item is part of a choice group)
+  optional string belongs_to_meal_plan_option = 15;
+  optional string recipe_id = 16;
+  optional string recipe_step_id = 17;
+  optional uint32 ingredient_index = 18;
+  optional uint32 option_index = 19;
+}
+
+message MealPlanOption {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional string assigned_cook = 3;
+  optional google.protobuf.Timestamp archived_at = 4;
+  optional string assigned_dishwasher = 5;
+  string notes = 6;
+  string belongs_to_meal_plan_event = 7;
+  string id = 8;
+  repeated MealPlanOptionVote votes = 9;
+  Meal meal = 10;
+  float meal_scale = 11;
+  bool chosen = 12;
+  bool tie_broken = 13;
+}
+
+message MealPlanOptionVote {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string id = 4;
+  string notes = 5;
+  string belongs_to_meal_plan_option = 6;
+  string by_user = 7;
+  uint32 rank = 8;
+  bool abstain = 9;
+}
+
+message MealPlanOptionVoteCreationInput {
+  string id = 1;
+  string notes = 2;
+  string by_user = 3;
+  string belongs_to_meal_plan_option = 4;
+  uint32 rank = 5;
+  bool abstain = 6;
+}
+
+message MealPlanRecipeOptionSelection {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  string id = 3;
+  string belongs_to_meal_plan_option = 4;
+  string recipe_id = 5;
+  string recipe_step_id = 6;
+  uint32 ingredient_index = 7;
+  uint32 selected_option_index = 8;
+  MealPlanRecipeOptionSelectionType selection_type = 9;
+  optional google.protobuf.Timestamp archived_at = 10;
+}
+
+message MissingVote {
+  string event_id = 1;
+  string option_id = 2;
+  string user_id = 3;
+}
+
+message MealList {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string id = 4;
+  string name = 5;
+  string description = 6;
+  string belongs_to_user = 7;
+  repeated MealListItem items = 8;
+}
+
+message MealListItem {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string id = 4;
+  string meal_id = 5;
+  string notes = 6;
+  string belongs_to_meal_list = 7;
+  Meal meal = 8;
+}
+
+message RecipeList {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp last_updated_at = 2;
+  optional google.protobuf.Timestamp archived_at = 3;
+  string id = 4;
+  string name = 5;
+  string description = 6;
+  string belongs_to_user = 7;
+  repeated RecipeListItem items = 8;
+}
+
+message RecipeListItem {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string id = 4;
+  string recipe_id = 5;
+  string notes = 6;
+  string belongs_to_recipe_list = 7;
+  Recipe recipe = 8;
+}
+
+message MealPlanTask {
+  RecipePrepTask recipe_prep_task = 1;
+  google.protobuf.Timestamp created_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  google.protobuf.Timestamp completed_at = 4;
+  optional string assigned_to_user = 5;
+  string id = 6;
+  MealPlanTaskStatus status = 7;
+  string creation_explanation = 8;
+  string status_explanation = 9;
+  MealPlanOption meal_plan_option = 10;
+}
+
+message AccountInstrumentOwnership {
+  google.protobuf.Timestamp created_at = 1;
+  optional google.protobuf.Timestamp archived_at = 2;
+  optional google.protobuf.Timestamp last_updated_at = 3;
+  string id = 4;
+  string notes = 5;
+  string belongs_to_account = 6;
+  ValidInstrument instrument = 7;
+  uint32 quantity = 8;
+}
+
+enum ValidIngredientStateAttributeType {
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_TEXTURE = 0;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_CONSISTENCY = 1;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_TEMPERATURE = 2;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_COLOR = 3;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_APPEARANCE = 4;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_ODOR = 5;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_TASTE = 6;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_SOUND = 7;
+  VALID_INGREDIENT_STATE_ATTRIBUTE_TYPE_OTHER = 8;
+}
+
+enum ValidVesselShape {
+  VESSEL_SHAPE_HEMISPHERE = 0;
+  VESSEL_SHAPE_RECTANGLE = 1;
+  VESSEL_SHAPE_CONE = 2;
+  VESSEL_SHAPE_PYRAMID = 3;
+  VESSEL_SHAPE_CYLINDER = 4;
+  VESSEL_SHAPE_SPHERE = 5;
+  VESSEL_SHAPE_CUBE = 6;
+  VESSEL_SHAPE_OTHER = 7;
+}
+
+enum RecipeStepProductType {
+  RECIPE_STEP_PRODUCT_TYPE_INGREDIENT = 0;
+  RECIPE_STEP_PRODUCT_TYPE_INSTRUMENT = 1;
+  RECIPE_STEP_PRODUCT_TYPE_VESSEL = 2;
+}
+
+enum MealComponentType {
+  MEAL_COMPONENT_TYPE_UNSPECIFIED = 0;
+  MEAL_COMPONENT_TYPE_AMUSE_BOUCHE = 1;
+  MEAL_COMPONENT_TYPE_APPETIZER = 2;
+  MEAL_COMPONENT_TYPE_SOUP = 3;
+  MEAL_COMPONENT_TYPE_MAIN = 4;
+  MEAL_COMPONENT_TYPE_SALAD = 5;
+  MEAL_COMPONENT_TYPE_BEVERAGE = 6;
+  MEAL_COMPONENT_TYPE_SIDE = 7;
+  MEAL_COMPONENT_TYPE_DESSERT = 8;
+}
+
+enum MealPlanElectionMethod {
+  MEAL_PLAN_ELECTION_METHOD_SCHULZE = 0;
+  MEAL_PLAN_ELECTION_METHOD_INSTANT_RUNOFF = 1;
+}
+
+enum MealPlanStatus {
+  MEAL_PLAN_STATUS_AWAITING_VOTES = 0;
+  MEAL_PLAN_STATUS_FINALIZED = 1;
+}
+
+enum MealPlanEventName {
+  MEAL_PLAN_EVENT_NAME_BREAKFAST = 0;
+  MEAL_PLAN_EVENT_NAME_SECOND_BREAKFAST = 1;
+  MEAL_PLAN_EVENT_NAME_BRUNCH = 2;
+  MEAL_PLAN_EVENT_NAME_LUNCH = 3;
+  MEAL_PLAN_EVENT_NAME_SUPPER = 4;
+  MEAL_PLAN_EVENT_NAME_DINNER = 5;
+}
+
+enum MealPlanGroceryListItemStatus {
+  MEAL_PLAN_GROCERY_LIST_ITEM_STATUS_UNKNOWN = 0;
+  MEAL_PLAN_GROCERY_LIST_ITEM_STATUS_ALREADY_OWNED = 1;
+  MEAL_PLAN_GROCERY_LIST_ITEM_STATUS_NEEDS = 2;
+  MEAL_PLAN_GROCERY_LIST_ITEM_STATUS_UNAVAILABLE = 3;
+  MEAL_PLAN_GROCERY_LIST_ITEM_STATUS_ACQUIRED = 4;
+}
+
+enum MealPlanTaskStatus {
+  MEAL_PLAN_TASK_STATUS_UNFINISHED = 0;
+  MEAL_PLAN_TASK_STATUS_POSTPONED = 1;
+  MEAL_PLAN_TASK_STATUS_IGNORED = 2;
+  MEAL_PLAN_TASK_STATUS_CANCELED = 3;
+  MEAL_PLAN_TASK_STATUS_FINISHED = 4;
+}
+
+enum MealPlanRecipeOptionSelectionType {
+  MEAL_PLAN_RECIPE_OPTION_SELECTION_TYPE_UNSPECIFIED = 0;
+  MEAL_PLAN_RECIPE_OPTION_SELECTION_TYPE_INGREDIENT = 1;
+  MEAL_PLAN_RECIPE_OPTION_SELECTION_TYPE_INSTRUMENT = 2;
+  MEAL_PLAN_RECIPE_OPTION_SELECTION_TYPE_VESSEL = 3;
+}

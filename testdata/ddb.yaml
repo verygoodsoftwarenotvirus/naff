@@ -3,6 +3,9 @@ project:
   module: "github.com/dinnerdonebetter/dinnerdonebetter/backend"
   platform_module: "github.com/primandproper/platform"
 
+# Targets block omitted — backend and async_message_handler default to on;
+# iOS defaults off. DDB wants exactly that.
+
 features:
   webhooks: true
   issuereports: true

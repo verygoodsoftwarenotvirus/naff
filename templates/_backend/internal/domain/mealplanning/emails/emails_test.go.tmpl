@@ -1,0 +1,29 @@
+package email
+
+import (
+	"testing"
+	"time"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/branding"
+	identityfakes "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/fakes"
+	mealplanningfakes "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/fakes"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestBuildMealPlanCreatedEmail(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		user := identityfakes.BuildFakeUser()
+		user.EmailAddressVerifiedAt = new(time.Now())
+		mealPlan := mealplanningfakes.BuildFakeMealPlan()
+
+		actual, err := BuildMealPlanCreatedEmail(user, mealPlan, "https://example.com")
+		assert.NoError(t, err)
+		assert.NotNil(t, actual)
+		assert.Contains(t, actual.HTMLContent, branding.LogoURL)
+	})
+}

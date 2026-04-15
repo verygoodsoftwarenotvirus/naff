@@ -1,0 +1,30 @@
+package grpc
+
+import (
+	"testing"
+
+	issuereportmock "{{ .Project.ProjectMeta.Module }}/internal/domain/issuereports/mock"
+	issuereportssvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/issue_reports"
+
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewService(t *testing.T) {
+	t.Parallel()
+
+	t.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		logger := loggingnoop.NewLogger()
+		tracerProvider := tracingnoop.NewTracerProvider()
+		issueReportsManager := &issuereportmock.Repository{}
+
+		service := NewService(logger, tracerProvider, issueReportsManager)
+
+		assert.NotNil(t, service)
+		assert.Implements(t, (*issuereportssvc.IssueReportsServiceServer)(nil), service)
+	})
+}

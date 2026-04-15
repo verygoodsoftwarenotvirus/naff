@@ -1,0 +1,635 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"github.com/primandproper/platform/numbers"
+)
+
+// CaesarBreadcrumbsRecipe creates the Caesar Breadcrumbs recipe.
+// Source: https://www.seriouseats.com/caesar-roasted-broccoli-recipe-8672043
+func CaesarBreadcrumbsRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	heatPrep := enums.Preparations["heat"]
+	meltPrep := enums.Preparations["melt"]
+	mincePrep := enums.Preparations["mince"]
+	stirPrep := enums.Preparations["stir"]
+	cookPrep := enums.Preparations["cook"]
+	coatPrep := enums.Preparations["coat"]
+	seasonPrep := enums.Preparations["season"]
+	transferPrep := enums.Preparations["transfer"]
+	zestPrep := enums.Preparations["zest"]
+
+	// Get ingredients for breadcrumbs
+	saltedButter := enums.Ingredients["salted butter"]
+	breadcrumbs := enums.Ingredients["breadcrumbs"]
+	anchovyPaste := enums.Ingredients["anchovy paste"]
+	garlic := enums.Ingredients["garlic"]
+	lemon := enums.Ingredients["lemon"]
+	salt := enums.Ingredients["salt"]
+
+	// Get measurement units
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	teaspoonMeasurement := enums.MeasurementUnits["teaspoon"]
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+
+	// Get instruments
+	knife := enums.Instruments["knife"]
+	rubberSpatula := enums.Instruments["rubber spatula"]
+	microplane := enums.Instruments["microplane"]
+
+	// Get vessels
+	cuttingBoard := enums.Vessels["cutting board"]
+	smallNonstickSkillet := enums.Vessels["small nonstick skillet"]
+	smallBowl := enums.Vessels["small bowl"]
+
+	// Get bridge table entries for breadcrumbs
+	heatSkilletVPV := enums.PreparationVessels[heatPrep.ID][smallNonstickSkillet.ID]
+	meltButterVIP := enums.IngredientPreparations[meltPrep.ID][saltedButter.ID]
+	meltSkilletVPV := enums.PreparationVessels[meltPrep.ID][smallNonstickSkillet.ID]
+
+	minceGarlicVIP := enums.IngredientPreparations[mincePrep.ID][garlic.ID]
+	minceKnifeVPI := enums.PreparationInstruments[mincePrep.ID][knife.ID]
+	minceCuttingBoardVPV := enums.PreparationVessels[mincePrep.ID][cuttingBoard.ID]
+
+	stirAnchovyVIP := enums.IngredientPreparations[stirPrep.ID][anchovyPaste.ID]
+	stirGarlicVIP := enums.IngredientPreparations[stirPrep.ID][garlic.ID]
+	stirBreadcrumbsVIP := enums.IngredientPreparations[stirPrep.ID][breadcrumbs.ID]
+	stirSpatulaVPI := enums.PreparationInstruments[stirPrep.ID][rubberSpatula.ID]
+
+	zestLemonVIP := enums.IngredientPreparations[zestPrep.ID][lemon.ID]
+	zestMicroplaneVPI := enums.PreparationInstruments[zestPrep.ID][microplane.ID]
+
+	cookButterVIP := enums.IngredientPreparations[cookPrep.ID][saltedButter.ID]
+
+	coatBreadcrumbsVIP := enums.IngredientPreparations[coatPrep.ID][breadcrumbs.ID]
+	coatSpatulaVPI := enums.PreparationInstruments[coatPrep.ID][rubberSpatula.ID]
+
+	seasonBreadcrumbsVIP := enums.IngredientPreparations[seasonPrep.ID][breadcrumbs.ID]
+	seasonSaltVIP := enums.IngredientPreparations[seasonPrep.ID][salt.ID]
+
+	transferBreadcrumbsVIP := enums.IngredientPreparations[transferPrep.ID][breadcrumbs.ID]
+	transferSmallBowlVPV := enums.PreparationVessels[transferPrep.ID][smallBowl.ID]
+
+	// Measurement unit bridges for breadcrumbs
+	butterTablespoonVIMU := enums.IngredientMeasurementUnits[saltedButter.ID][tablespoonMeasurement.ID]
+	breadcrumbsCupVIMU := enums.IngredientMeasurementUnits[breadcrumbs.ID][cupMeasurement.ID]
+	anchovyTeaspoonVIMU := enums.IngredientMeasurementUnits[anchovyPaste.ID][teaspoonMeasurement.ID]
+	garlicUnitVIMU := enums.IngredientMeasurementUnits[garlic.ID][unitMeasurement.ID]
+	lemonUnitVIMU := enums.IngredientMeasurementUnits[lemon.ID][unitMeasurement.ID]
+	saltTeaspoonVIMU := enums.IngredientMeasurementUnits[salt.ID][teaspoonMeasurement.ID]
+
+	// Breadcrumbs Step 0: Heat the skillet
+	bcStep0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        heatPrep.ID,
+		Index:                0,
+		ExplicitInstructions: "Heat a small nonstick skillet over medium-low heat.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &heatSkilletVPV.ID,
+				Name:                     "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "heated small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 1: Melt butter in the heated skillet
+	bcStep1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        meltPrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Melt the butter in the heated skillet.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &meltButterVIP.ID,
+				ValidIngredientMeasurementUnitID: &butterTablespoonVIMU.ID,
+				Name:                             "salted butter",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &meltSkilletVPV.ID,
+				Name:                            "heated small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "melted butter",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &tablespoonMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 2: Mince the garlic
+	bcStep2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        mincePrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Mince the garlic.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &minceGarlicVIP.ID,
+				ValidIngredientMeasurementUnitID: &garlicUnitVIMU.ID,
+				Name:                             "garlic",
+				QuantityNotes:                    "1 small clove",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &minceKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &minceCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "minced garlic",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Breadcrumbs Step 3: Stir in anchovy paste and minced garlic
+	bcStep3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        stirPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Stir in the anchovy paste and minced garlic.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "melted butter",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &stirAnchovyVIP.ID,
+				ValidIngredientMeasurementUnitID: &anchovyTeaspoonVIMU.ID,
+				Name:                             "anchovy paste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &stirGarlicVIP.ID,
+				Name:                            "minced garlic",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &stirSpatulaVPI.ID,
+				Name:                         "flexible spatula",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "butter with anchovy and garlic",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 4: Cook until fragrant
+	bcStep4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        cookPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Cook until fragrant, about 1 minute.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(60)),
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &cookButterVIP.ID,
+				Name:                            "butter with anchovy and garlic",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "fragrant butter mixture",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 5: Add breadcrumbs and toss to coat
+	bcStep5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        stirPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Add the breadcrumbs and, using a flexible spatula, toss to coat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "fragrant butter mixture",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &stirBreadcrumbsVIP.ID,
+				ValidIngredientMeasurementUnitID: &breadcrumbsCupVIMU.ID,
+				Name:                             "plain breadcrumbs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &stirSpatulaVPI.ID,
+				Name:                         "flexible spatula",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "coated breadcrumbs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:  "small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 6: Coat breadcrumbs until golden brown
+	bcStep6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        coatPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Cook, stirring constantly until the breadcrumbs are golden brown, about 3 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(180)),
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:         new(uint64(5)),
+				ProductOfRecipeStepProductIndex:  new(uint64(0)),
+				ValidIngredientPreparationID:     &coatBreadcrumbsVIP.ID,
+				ValidIngredientMeasurementUnitID: &breadcrumbsCupVIMU.ID,
+				Name:                             "coated breadcrumbs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &coatSpatulaVPI.ID,
+				Name:                         "flexible spatula",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "toasted breadcrumbs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:  "small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 7: Zest the lemon
+	bcStep7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        zestPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Using a microplane, zest the lemon.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &zestLemonVIP.ID,
+				ValidIngredientMeasurementUnitID: &lemonUnitVIMU.ID,
+				Name:                             "lemon",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &zestMicroplaneVPI.ID,
+				Name:                         "microplane",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "lemon zest",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &teaspoonMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.5)),
+				},
+			},
+		},
+	}
+
+	// Breadcrumbs Step 8: Stir in lemon zest (off heat)
+	bcStep8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        stirPrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Off heat, stir in 1/2 teaspoon lemon zest.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "toasted breadcrumbs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "lemon zest",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &stirSpatulaVPI.ID,
+				Name:                         "flexible spatula",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "breadcrumbs with lemon zest",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+			{
+				Name:  "small nonstick skillet",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Breadcrumbs Step 9: Season breadcrumbs with salt
+	bcStep9 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                9,
+		ExplicitInstructions: "Season with salt to taste.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:         new(uint64(8)),
+				ProductOfRecipeStepProductIndex:  new(uint64(0)),
+				ValidIngredientPreparationID:     &seasonBreadcrumbsVIP.ID,
+				ValidIngredientMeasurementUnitID: &breadcrumbsCupVIMU.ID,
+				Name:                             "breadcrumbs with lemon zest",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltTeaspoonVIMU.ID,
+				Name:                             "kosher salt",
+				QuantityNotes:                    "to taste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "small nonstick skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "seasoned caesar breadcrumbs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+		},
+	}
+
+	// Breadcrumbs Step 10: Transfer breadcrumbs to bowl and let cool
+	bcStep10 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                10,
+		ExplicitInstructions: "Transfer to a bowl and let cool completely.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:         new(uint64(9)),
+				ProductOfRecipeStepProductIndex:  new(uint64(0)),
+				ValidIngredientPreparationID:     &transferBreadcrumbsVIP.ID,
+				ValidIngredientMeasurementUnitID: &breadcrumbsCupVIMU.ID,
+				Name:                             "seasoned caesar breadcrumbs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &transferSmallBowlVPV.ID,
+				Name:                     "small bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "caesar breadcrumbs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(0.25)),
+				},
+			},
+		},
+	}
+
+	caesarBreadcrumbsRecipe := &mealplanning.RecipeCreationRequestInput{
+		Name:                "Caesar Breadcrumbs",
+		Slug:                "caesar-breadcrumbs",
+		Source:              "https://www.seriouseats.com/caesar-roasted-broccoli-recipe-8672043",
+		Description:         "Savory, crisp Caesar-flavored breadcrumbs with anchovy, garlic, and lemon zest.",
+		YieldsComponentType: mealplanning.MealComponentTypesAmuseBouche, // Component type for recipe components
+		EstimatedPortions: numbers.MinRange[float32]{
+			Min: 0.25,
+		},
+		PortionName:       "cup",
+		PluralPortionName: "cups",
+		EligibleForMeals:  false, // This is a component, not a standalone meal
+		Steps:             []*mealplanning.RecipeStepCreationRequestInput{bcStep0, bcStep1, bcStep2, bcStep3, bcStep4, bcStep5, bcStep6, bcStep7, bcStep8, bcStep9, bcStep10},
+		PrepTasks:         []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{},
+		AlsoCreateMeal:    false,
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		caesarBreadcrumbsRecipe,
+	}
+}

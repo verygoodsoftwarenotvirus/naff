@@ -1,0 +1,31 @@
+package grpc
+
+import (
+	"testing"
+
+	uploadedmediamock "{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia/mock"
+	uploadedmediasvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/uploaded_media"
+
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+	mockuploads "github.com/primandproper/platform/uploads/mock"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewService(t *testing.T) {
+	t.Parallel()
+
+	t.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		logger := loggingnoop.NewLogger()
+		tracerProvider := tracingnoop.NewTracerProvider()
+		uploadedMediaManager := &uploadedmediamock.Repository{}
+
+		service := NewService(logger, tracerProvider, uploadedMediaManager, &mockuploads.UploadManagerMock{})
+
+		assert.NotNil(t, service)
+		assert.Implements(t, (*uploadedmediasvc.UploadedMediaServiceServer)(nil), service)
+	})
+}

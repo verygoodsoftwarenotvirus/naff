@@ -1,0 +1,58 @@
+package converters
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/dataprivacy"
+	dataprivacysvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/dataprivacy"
+	auditconverters "{{ .Project.ProjectMeta.Module }}/internal/services/audit/grpc/converters"
+	identityconverters "{{ .Project.ProjectMeta.Module }}/internal/services/identity/grpc/converters"
+	issuereportsconverters "{{ .Project.ProjectMeta.Module }}/internal/services/issuereports/grpc/converters"
+	notificationsconverters "{{ .Project.ProjectMeta.Module }}/internal/services/notifications/grpc/converters"
+	settingsconverters "{{ .Project.ProjectMeta.Module }}/internal/services/settings/grpc/converters"
+	uploadedmediaconverters "{{ .Project.ProjectMeta.Module }}/internal/services/uploadedmedia/grpc/converters"
+	waitlistsconverters "{{ .Project.ProjectMeta.Module }}/internal/services/waitlists/grpc/converters"
+	webhooksconverters "{{ .Project.ProjectMeta.Module }}/internal/services/webhooks/grpc/converters"
+)
+
+// ConvertUserDataCollectionToGRPCUserDataCollection converts a domain UserDataCollection to a proto UserDataCollection.
+func ConvertUserDataCollectionToGRPCUserDataCollection(collection *dataprivacy.UserDataCollection, reportID string) *dataprivacysvc.UserDataCollection {
+	result := &dataprivacysvc.UserDataCollection{
+		ReportId: reportID,
+	}
+
+	// Convert identity data
+	result.IdentityDataCollection = identityconverters.ConvertUserDataCollectionToGRPCDataCollection(&collection.Identity)
+
+	// Convert settings data
+	result.SettingsDataCollection = settingsconverters.ConvertUserDataCollectionToGRPCDataCollection(&collection.Settings)
+
+	// Convert webhooks data
+	result.WebhooksDataCollection = webhooksconverters.ConvertUserDataCollectionToGRPCDataCollection(&collection.Webhooks)
+
+	// Convert meal planning data
+	result.MealPlanningDataCollection = nil // TODO: Add when mealplanning converters are available
+
+	// Convert notifications data
+	result.NotificationsDataCollection = notificationsconverters.ConvertUserDataCollectionToGRPCDataCollection(&collection.Notifications)
+
+	// Convert audit log entries
+	for i := range collection.AuditLogEntries {
+		result.AuditLogEntries = append(result.AuditLogEntries, auditconverters.ConvertAuditLogEntryToGRPCAuditLogEntry(&collection.AuditLogEntries[i]))
+	}
+
+	// Convert issue reports
+	for i := range collection.IssueReports {
+		result.IssueReports = append(result.IssueReports, issuereportsconverters.ConvertIssueReportToGRPCIssueReport(&collection.IssueReports[i]))
+	}
+
+	// Convert uploaded media
+	for i := range collection.UploadedMedia {
+		result.UploadedMedia = append(result.UploadedMedia, uploadedmediaconverters.ConvertUploadedMediaToGRPCUploadedMedia(&collection.UploadedMedia[i]))
+	}
+
+	// Convert waitlist signups
+	for i := range collection.WaitlistSignups {
+		result.WaitlistSignups = append(result.WaitlistSignups, waitlistsconverters.ConvertWaitlistSignupToGRPCWaitlistSignup(&collection.WaitlistSignups[i]))
+	}
+
+	return result
+}

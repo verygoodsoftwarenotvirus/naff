@@ -1,0 +1,517 @@
+package mealplanning
+
+import (
+	"context"
+	"database/sql"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+	mealplanningkeys "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/keys"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/mealplanning/generated"
+
+	"github.com/primandproper/platform/database"
+	"github.com/primandproper/platform/database/filtering"
+	platformerrors "github.com/primandproper/platform/errors"
+	"github.com/primandproper/platform/numbers"
+	"github.com/primandproper/platform/observability"
+	platformkeys "github.com/primandproper/platform/observability/keys"
+	"github.com/primandproper/platform/observability/tracing"
+)
+
+var (
+	_ mealplanning.ValidPreparationDataManager = (*repository)(nil)
+)
+
+// ValidPreparationExists fetches whether a valid preparation exists from the database.
+func (q *repository) ValidPreparationExists(ctx context.Context, validPreparationID string) (bool, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if validPreparationID == "" {
+		return false, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+	tracing.AttachToSpan(span, mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+
+	exists, err := q.generatedQuerier.CheckValidPreparationExistence(ctx, q.readDB, validPreparationID)
+	if err != nil {
+		return false, observability.PrepareAndLogError(err, logger, span, "checking valid preparation existence")
+	}
+
+	return exists, nil
+}
+
+// GetValidPreparation fetches a valid preparation from the database.
+func (q *repository) GetValidPreparation(ctx context.Context, validPreparationID string) (*mealplanning.ValidPreparation, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if validPreparationID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+	tracing.AttachToSpan(span, mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+
+	result, err := q.generatedQuerier.GetValidPreparation(ctx, q.readDB, validPreparationID)
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "getting random valid preparation")
+	}
+
+	validPreparation := &mealplanning.ValidPreparation{
+		CreatedAt:     result.CreatedAt,
+		ArchivedAt:    database.TimePointerFromNullTime(result.ArchivedAt),
+		LastUpdatedAt: database.TimePointerFromNullTime(result.LastUpdatedAt),
+		IconPath:      result.IconPath,
+		PastTense:     result.PastTense,
+		ID:            result.ID,
+		Name:          result.Name,
+		Description:   result.Description,
+		Slug:          result.Slug,
+		IngredientCount: numbers.MinRange[uint16]{
+			Max: database.Uint16PointerFromNullInt32(result.MaximumIngredientCount),
+			Min: uint16(result.MinimumIngredientCount),
+		},
+		InstrumentCount: numbers.MinRange[uint16]{
+			Max: database.Uint16PointerFromNullInt32(result.MaximumInstrumentCount),
+			Min: uint16(result.MinimumInstrumentCount),
+		},
+		VesselCount: numbers.MinRange[uint16]{
+			Max: database.Uint16PointerFromNullInt32(result.MaximumVesselCount),
+			Min: uint16(result.MinimumVesselCount),
+		},
+		RestrictToIngredients:       result.RestrictToIngredients,
+		TemperatureRequired:         result.TemperatureRequired,
+		TimeEstimateRequired:        result.TimeEstimateRequired,
+		ConditionExpressionRequired: result.ConditionExpressionRequired,
+		ConsumesVessel:              result.ConsumesVessel,
+		OnlyForVessels:              result.OnlyForVessels,
+		YieldsNothing:               result.YieldsNothing,
+	}
+
+	return validPreparation, nil
+}
+
+// GetRandomValidPreparation fetches a valid preparation from the database.
+func (q *repository) GetRandomValidPreparation(ctx context.Context) (*mealplanning.ValidPreparation, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	result, err := q.generatedQuerier.GetRandomValidPreparation(ctx, q.readDB)
+	if err != nil {
+		return nil, observability.PrepareError(err, span, "getting random valid preparation")
+	}
+
+	validPreparation := &mealplanning.ValidPreparation{
+		CreatedAt:     result.CreatedAt,
+		ArchivedAt:    database.TimePointerFromNullTime(result.ArchivedAt),
+		LastUpdatedAt: database.TimePointerFromNullTime(result.LastUpdatedAt),
+		IconPath:      result.IconPath,
+		PastTense:     result.PastTense,
+		ID:            result.ID,
+		Name:          result.Name,
+		Description:   result.Description,
+		Slug:          result.Slug,
+		IngredientCount: numbers.MinRange[uint16]{
+			Max: database.Uint16PointerFromNullInt32(result.MaximumIngredientCount),
+			Min: uint16(result.MinimumIngredientCount),
+		},
+		InstrumentCount: numbers.MinRange[uint16]{
+			Max: database.Uint16PointerFromNullInt32(result.MaximumInstrumentCount),
+			Min: uint16(result.MinimumInstrumentCount),
+		},
+		VesselCount: numbers.MinRange[uint16]{
+			Max: database.Uint16PointerFromNullInt32(result.MaximumVesselCount),
+			Min: uint16(result.MinimumVesselCount),
+		},
+		RestrictToIngredients:       result.RestrictToIngredients,
+		TemperatureRequired:         result.TemperatureRequired,
+		TimeEstimateRequired:        result.TimeEstimateRequired,
+		ConditionExpressionRequired: result.ConditionExpressionRequired,
+		ConsumesVessel:              result.ConsumesVessel,
+		OnlyForVessels:              result.OnlyForVessels,
+		YieldsNothing:               result.YieldsNothing,
+	}
+
+	return validPreparation, nil
+}
+
+// SearchForValidPreparations fetches a valid preparation from the database.
+func (q *repository) SearchForValidPreparations(ctx context.Context, query string, filter *filtering.QueryFilter) (*filtering.QueryFilteredResult[mealplanning.ValidPreparation], error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if query == "" {
+		return nil, platformerrors.ErrEmptyInputProvided
+	}
+	logger = logger.WithValue(platformkeys.SearchQueryKey, query)
+	tracing.AttachToSpan(span, platformkeys.SearchQueryKey, query)
+
+	if filter == nil {
+		filter = filtering.DefaultQueryFilter()
+	}
+	logger = filter.AttachToLogger(logger)
+	tracing.AttachQueryFilterToSpan(span, filter)
+
+	results, err := q.generatedQuerier.SearchForValidPreparations(ctx, q.readDB, &generated.SearchForValidPreparationsParams{
+		NameQuery:       query,
+		CreatedBefore:   database.NullTimeFromTimePointer(filter.CreatedBefore),
+		CreatedAfter:    database.NullTimeFromTimePointer(filter.CreatedAfter),
+		UpdatedBefore:   database.NullTimeFromTimePointer(filter.UpdatedBefore),
+		UpdatedAfter:    database.NullTimeFromTimePointer(filter.UpdatedAfter),
+		Cursor:          database.NullStringFromStringPointer(filter.Cursor),
+		ResultLimit:     database.NullInt32FromUint8Pointer(filter.MaxResponseSize),
+		IncludeArchived: database.NullBoolFromBoolPointer(filter.IncludeArchived),
+	})
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "performing valid preparations search")
+	}
+
+	var (
+		data                      = []*mealplanning.ValidPreparation{}
+		filteredCount, totalCount uint64
+	)
+
+	for _, result := range results {
+		data = append(data, &mealplanning.ValidPreparation{
+			CreatedAt:     result.CreatedAt,
+			ArchivedAt:    database.TimePointerFromNullTime(result.ArchivedAt),
+			LastUpdatedAt: database.TimePointerFromNullTime(result.LastUpdatedAt),
+			IconPath:      result.IconPath,
+			PastTense:     result.PastTense,
+			ID:            result.ID,
+			Name:          result.Name,
+			Description:   result.Description,
+			Slug:          result.Slug,
+			IngredientCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumIngredientCount),
+				Min: uint16(result.MinimumIngredientCount),
+			},
+			InstrumentCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumInstrumentCount),
+				Min: uint16(result.MinimumInstrumentCount),
+			},
+			VesselCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumVesselCount),
+				Min: uint16(result.MinimumVesselCount),
+			},
+			RestrictToIngredients:       result.RestrictToIngredients,
+			TemperatureRequired:         result.TemperatureRequired,
+			TimeEstimateRequired:        result.TimeEstimateRequired,
+			ConditionExpressionRequired: result.ConditionExpressionRequired,
+			ConsumesVessel:              result.ConsumesVessel,
+			OnlyForVessels:              result.OnlyForVessels,
+			YieldsNothing:               result.YieldsNothing,
+		})
+		filteredCount = uint64(result.FilteredCount)
+		totalCount = uint64(result.TotalCount)
+	}
+
+	x := filtering.NewQueryFilteredResult(data, filteredCount, totalCount, func(vp *mealplanning.ValidPreparation) string { return vp.ID }, filter)
+
+	return x, nil
+}
+
+// GetValidPreparations fetches a list of valid preparations from the database that meet a particular filter.
+func (q *repository) GetValidPreparations(ctx context.Context, filter *filtering.QueryFilter) (x *filtering.QueryFilteredResult[mealplanning.ValidPreparation], err error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if filter == nil {
+		filter = filtering.DefaultQueryFilter()
+	}
+	logger = filter.AttachToLogger(logger)
+	tracing.AttachQueryFilterToSpan(span, filter)
+
+	results, err := q.generatedQuerier.GetValidPreparations(ctx, q.readDB, &generated.GetValidPreparationsParams{
+		CreatedBefore:   database.NullTimeFromTimePointer(filter.CreatedBefore),
+		CreatedAfter:    database.NullTimeFromTimePointer(filter.CreatedAfter),
+		UpdatedBefore:   database.NullTimeFromTimePointer(filter.UpdatedBefore),
+		UpdatedAfter:    database.NullTimeFromTimePointer(filter.UpdatedAfter),
+		Cursor:          database.NullStringFromStringPointer(filter.Cursor),
+		ResultLimit:     database.NullInt32FromUint8Pointer(filter.MaxResponseSize),
+		IncludeArchived: database.NullBoolFromBoolPointer(filter.IncludeArchived),
+	})
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "executing valid preparations list retrieval query")
+	}
+
+	var (
+		data          []*mealplanning.ValidPreparation
+		filteredCount uint64
+		totalCount    uint64
+	)
+
+	for _, result := range results {
+		filteredCount = uint64(result.FilteredCount)
+		totalCount = uint64(result.TotalCount)
+		data = append(data, &mealplanning.ValidPreparation{
+			CreatedAt: result.CreatedAt,
+			IngredientCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumIngredientCount),
+				Min: uint16(result.MinimumIngredientCount),
+			},
+			InstrumentCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumInstrumentCount),
+				Min: uint16(result.MinimumInstrumentCount),
+			},
+			VesselCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumVesselCount),
+				Min: uint16(result.MinimumVesselCount),
+			},
+			ArchivedAt:                  database.TimePointerFromNullTime(result.ArchivedAt),
+			LastUpdatedAt:               database.TimePointerFromNullTime(result.LastUpdatedAt),
+			IconPath:                    result.IconPath,
+			PastTense:                   result.PastTense,
+			ID:                          result.ID,
+			Name:                        result.Name,
+			Description:                 result.Description,
+			Slug:                        result.Slug,
+			RestrictToIngredients:       result.RestrictToIngredients,
+			TemperatureRequired:         result.TemperatureRequired,
+			TimeEstimateRequired:        result.TimeEstimateRequired,
+			ConditionExpressionRequired: result.ConditionExpressionRequired,
+			ConsumesVessel:              result.ConsumesVessel,
+			OnlyForVessels:              result.OnlyForVessels,
+			YieldsNothing:               result.YieldsNothing,
+		})
+	}
+
+	x = filtering.NewQueryFilteredResult(
+		data,
+		filteredCount,
+		totalCount,
+		func(vp *mealplanning.ValidPreparation) string { return vp.ID },
+		filter,
+	)
+
+	return x, nil
+}
+
+// GetValidPreparationsWithIDs fetches a list of valid preparations from the database that meet a particular filter.
+func (q *repository) GetValidPreparationsWithIDs(ctx context.Context, ids []string) ([]*mealplanning.ValidPreparation, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	if len(ids) == 0 {
+		return nil, sql.ErrNoRows
+	}
+	logger := q.logger.WithValue("ids_count", len(ids))
+
+	results, err := q.generatedQuerier.GetValidPreparationsWithIDs(ctx, q.readDB, ids)
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "getting valid preparations by MealPlanTaskID")
+	}
+
+	preparations := []*mealplanning.ValidPreparation{}
+	for _, result := range results {
+		preparations = append(preparations, &mealplanning.ValidPreparation{
+			CreatedAt: result.CreatedAt,
+			IngredientCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumIngredientCount),
+				Min: uint16(result.MinimumIngredientCount),
+			},
+			InstrumentCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumInstrumentCount),
+				Min: uint16(result.MinimumInstrumentCount),
+			},
+			VesselCount: numbers.MinRange[uint16]{
+				Max: database.Uint16PointerFromNullInt32(result.MaximumVesselCount),
+				Min: uint16(result.MinimumVesselCount),
+			},
+			ArchivedAt:                  database.TimePointerFromNullTime(result.ArchivedAt),
+			LastUpdatedAt:               database.TimePointerFromNullTime(result.LastUpdatedAt),
+			IconPath:                    result.IconPath,
+			PastTense:                   result.PastTense,
+			ID:                          result.ID,
+			Name:                        result.Name,
+			Description:                 result.Description,
+			Slug:                        result.Slug,
+			RestrictToIngredients:       result.RestrictToIngredients,
+			TemperatureRequired:         result.TemperatureRequired,
+			TimeEstimateRequired:        result.TimeEstimateRequired,
+			ConditionExpressionRequired: result.ConditionExpressionRequired,
+			ConsumesVessel:              result.ConsumesVessel,
+			OnlyForVessels:              result.OnlyForVessels,
+			YieldsNothing:               result.YieldsNothing,
+		})
+	}
+
+	return preparations, nil
+}
+
+// GetValidPreparationIDsThatNeedSearchIndexing fetches a list of valid preparations from the database that meet a particular filter.
+func (q *repository) GetValidPreparationIDsThatNeedSearchIndexing(ctx context.Context) ([]string, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	results, err := q.generatedQuerier.GetValidPreparationsNeedingIndexing(ctx, q.readDB)
+	if err != nil {
+		return nil, observability.PrepareError(err, span, "executing valid preparations list retrieval query")
+	}
+
+	return results, nil
+}
+
+// CreateValidPreparation creates a valid preparation in the database.
+func (q *repository) CreateValidPreparation(ctx context.Context, input *mealplanning.ValidPreparationDatabaseCreationInput) (*mealplanning.ValidPreparation, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	if input == nil {
+		return nil, platformerrors.ErrNilInputProvided
+	}
+	logger := q.logger.WithValue(mealplanningkeys.ValidPreparationIDKey, input.ID)
+	tracing.AttachToSpan(span, mealplanningkeys.ValidPreparationIDKey, input.ID)
+
+	// create the valid preparation.
+	if err := q.generatedQuerier.CreateValidPreparation(ctx, q.writeDB, &generated.CreateValidPreparationParams{
+		ID:                          input.ID,
+		Name:                        input.Name,
+		Description:                 input.Description,
+		IconPath:                    input.IconPath,
+		YieldsNothing:               input.YieldsNothing,
+		RestrictToIngredients:       input.RestrictToIngredients,
+		MinimumIngredientCount:      int32(input.IngredientCount.Min),
+		MaximumIngredientCount:      database.NullInt32FromUint16Pointer(input.IngredientCount.Max),
+		MinimumInstrumentCount:      int32(input.InstrumentCount.Min),
+		MaximumInstrumentCount:      database.NullInt32FromUint16Pointer(input.InstrumentCount.Max),
+		TemperatureRequired:         input.TemperatureRequired,
+		TimeEstimateRequired:        input.TimeEstimateRequired,
+		ConditionExpressionRequired: input.ConditionExpressionRequired,
+		ConsumesVessel:              input.ConsumesVessel,
+		OnlyForVessels:              input.OnlyForVessels,
+		MinimumVesselCount:          int32(input.VesselCount.Min),
+		MaximumVesselCount:          database.NullInt32FromUint16Pointer(input.VesselCount.Max),
+		PastTense:                   input.PastTense,
+		Slug:                        input.Slug,
+	}); err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "performing valid preparation creation query")
+	}
+
+	x := &mealplanning.ValidPreparation{
+		ID:                    input.ID,
+		Name:                  input.Name,
+		Description:           input.Description,
+		IconPath:              input.IconPath,
+		YieldsNothing:         input.YieldsNothing,
+		RestrictToIngredients: input.RestrictToIngredients,
+		Slug:                  input.Slug,
+		PastTense:             input.PastTense,
+		IngredientCount: numbers.MinRange[uint16]{
+			Max: input.IngredientCount.Max,
+			Min: input.IngredientCount.Min,
+		},
+		InstrumentCount: numbers.MinRange[uint16]{
+			Max: input.InstrumentCount.Max,
+			Min: input.InstrumentCount.Min,
+		},
+		VesselCount: numbers.MinRange[uint16]{
+			Max: input.VesselCount.Max,
+			Min: input.VesselCount.Min,
+		},
+		TemperatureRequired:         input.TemperatureRequired,
+		TimeEstimateRequired:        input.TimeEstimateRequired,
+		ConditionExpressionRequired: input.ConditionExpressionRequired,
+		ConsumesVessel:              input.ConsumesVessel,
+		OnlyForVessels:              input.OnlyForVessels,
+		CreatedAt:                   q.CurrentTime(),
+	}
+
+	logger.Info("valid preparation created")
+
+	return x, nil
+}
+
+// UpdateValidPreparation updates a particular valid preparation.
+func (q *repository) UpdateValidPreparation(ctx context.Context, updated *mealplanning.ValidPreparation) error {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	if updated == nil {
+		return platformerrors.ErrNilInputProvided
+	}
+	logger := q.logger.WithValue(mealplanningkeys.ValidPreparationIDKey, updated.ID)
+	tracing.AttachToSpan(span, mealplanningkeys.ValidPreparationIDKey, updated.ID)
+
+	if _, err := q.generatedQuerier.UpdateValidPreparation(ctx, q.writeDB, &generated.UpdateValidPreparationParams{
+		Description:                 updated.Description,
+		IconPath:                    updated.IconPath,
+		ID:                          updated.ID,
+		Name:                        updated.Name,
+		PastTense:                   updated.PastTense,
+		Slug:                        updated.Slug,
+		MaximumIngredientCount:      database.NullInt32FromUint16Pointer(updated.IngredientCount.Max),
+		MaximumInstrumentCount:      database.NullInt32FromUint16Pointer(updated.InstrumentCount.Max),
+		MaximumVesselCount:          database.NullInt32FromUint16Pointer(updated.VesselCount.Max),
+		MinimumVesselCount:          int32(updated.VesselCount.Min),
+		MinimumIngredientCount:      int32(updated.IngredientCount.Min),
+		MinimumInstrumentCount:      int32(updated.InstrumentCount.Min),
+		RestrictToIngredients:       updated.RestrictToIngredients,
+		OnlyForVessels:              updated.OnlyForVessels,
+		ConsumesVessel:              updated.ConsumesVessel,
+		ConditionExpressionRequired: updated.ConditionExpressionRequired,
+		TimeEstimateRequired:        updated.TimeEstimateRequired,
+		TemperatureRequired:         updated.TemperatureRequired,
+		YieldsNothing:               updated.YieldsNothing,
+	}); err != nil {
+		return observability.PrepareAndLogError(err, logger, span, "updating valid preparation")
+	}
+
+	logger.Info("valid preparation updated")
+
+	return nil
+}
+
+// MarkValidPreparationAsIndexed updates a particular valid preparation's last_indexed_at value.
+func (q *repository) MarkValidPreparationAsIndexed(ctx context.Context, validPreparationID string) error {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if validPreparationID == "" {
+		return platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+	tracing.AttachToSpan(span, mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+
+	if _, err := q.generatedQuerier.UpdateValidPreparationLastIndexedAt(ctx, q.writeDB, validPreparationID); err != nil {
+		return observability.PrepareAndLogError(err, logger, span, "marking valid preparation as indexed")
+	}
+
+	logger.Info("valid preparation marked as indexed")
+
+	return nil
+}
+
+// ArchiveValidPreparation archives a valid preparation from the database by its ID.
+func (q *repository) ArchiveValidPreparation(ctx context.Context, validPreparationID string) error {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if validPreparationID == "" {
+		return platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+	tracing.AttachToSpan(span, mealplanningkeys.ValidPreparationIDKey, validPreparationID)
+
+	rowsAffected, err := q.generatedQuerier.ArchiveValidPreparation(ctx, q.writeDB, validPreparationID)
+	if err != nil {
+		return observability.PrepareAndLogError(err, logger, span, "updating valid preparation")
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}

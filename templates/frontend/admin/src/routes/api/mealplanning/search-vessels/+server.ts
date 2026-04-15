@@ -1,0 +1,45 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { getValidPreparationVesselsByPreparation, getValidVessels, searchForValidVessels } from '$lib/grpc/clients';
+import { logger } from '$lib/logger';
+
+const DEFAULT_LIST_FILTER = { maxResponseSize: 100 };
+
+export const GET: RequestHandler = async ({ url, locals }) => {
+  const token = locals.accessToken;
+  if (!token) {
+    return json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const q = url.searchParams.get('q') ?? '';
+  const preparationId = url.searchParams.get('preparationId') ?? '';
+
+  try {
+    if (preparationId) {
+      const res = (await getValidPreparationVesselsByPreparation(token, {
+        validPreparationId: preparationId,
+        filter: undefined,
+      })) as { results?: Array<{ vessel?: { name?: string } }> };
+      const vpvs = res.results ?? [];
+      const filtered =
+        q.length > 0
+          ? vpvs.filter((vpv: { vessel?: { name?: string } }) =>
+              vpv.vessel?.name?.toLowerCase().includes(q.toLowerCase()),
+            )
+          : vpvs;
+      return json({ results: filtered });
+    }
+    const res =
+      q === ''
+        ? await getValidVessels(token, { filter: DEFAULT_LIST_FILTER })
+        : await searchForValidVessels(token, {
+            filter: DEFAULT_LIST_FILTER,
+            query: q,
+            useSearchService: q.length > 2,
+          });
+    return json({ results: (res as { results?: unknown[] }).results ?? [] });
+  } catch (e) {
+    logger.error('vessel search failed:', e);
+    return json({ error: 'Search failed' }, { status: 500 });
+  }
+};

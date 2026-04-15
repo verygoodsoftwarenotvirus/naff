@@ -79,55 +79,10 @@ func TestDiffAwareWrite(t *testing.T) {
 	})
 }
 
-func TestFindOrphans(t *testing.T) {
-	t.Parallel()
-
-	t.Run("detects orphaned generated files", func(t *testing.T) {
-		t.Parallel()
-
-		dir := t.TempDir()
-
-		// Create some files.
-		planned := filepath.Join(dir, "planned.generated.go")
-		orphan := filepath.Join(dir, "orphan.generated.go")
-		custom := filepath.Join(dir, "custom.go")
-
-		for _, path := range []string{planned, orphan, custom} {
-			if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
-				t.Fatal(err)
-			}
-		}
-
-		p := &Pipeline{outputDir: dir}
-		plannedFiles := []PlannedFile{
-			{OutputPath: "planned.generated.go"},
-		}
-
-		orphans := p.findOrphans(plannedFiles)
-		if len(orphans) != 1 {
-			t.Fatalf("expected 1 orphan, got %d: %v", len(orphans), orphans)
-		}
-		if orphans[0] != orphan {
-			t.Errorf("expected %s, got %s", orphan, orphans[0])
-		}
-	})
-
-	t.Run("ignores non-generated files", func(t *testing.T) {
-		t.Parallel()
-
-		dir := t.TempDir()
-		custom := filepath.Join(dir, "custom.go")
-		if err := os.WriteFile(custom, []byte("x"), 0o644); err != nil {
-			t.Fatal(err)
-		}
-
-		p := &Pipeline{outputDir: dir}
-		orphans := p.findOrphans(nil)
-		if len(orphans) != 0 {
-			t.Errorf("expected 0 orphans, got %d", len(orphans))
-		}
-	})
-}
+// TestFindOrphans was dropped in the verbatim-mirror pivot; findOrphans was
+// removed from pipeline.go (orphans are handled by `make generate-ddb`
+// wiping the output directory). The original test lives in git history if
+// orphan detection needs to be re-implemented.
 
 func TestWriteNaffConfig(t *testing.T) {
 	t.Parallel()
@@ -251,6 +206,51 @@ func TestWriteNaffConfig(t *testing.T) {
 			// This is fine — just confirms the file was rewritten
 		}
 	})
+}
+
+func TestRewriteOutputPath(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in, want string
+	}{
+		{"_backend/cmd/services/api/main.go", "backend/cmd/services/api/main.go"},
+		{"_backend/_go.mod", "backend/go.mod"},
+		{"_backend/_go.sum", "backend/go.sum"},
+		{"frontend/package.json", "frontend/package.json"},
+		{"proto/filtering.proto", "proto/filtering.proto"},
+		{"_backend/deploy/environments/prod/terraform/_terraform_.tf", "backend/deploy/environments/prod/terraform/_terraform_.tf"},
+		{"_root/.github/workflows/ci.yaml", ".github/workflows/ci.yaml"},
+		{"_root/Makefile", "Makefile"},
+		{"_root/.gitignore", ".gitignore"},
+	}
+
+	for _, tc := range tests {
+		if got := rewriteOutputPath(tc.in); got != tc.want {
+			t.Errorf("rewriteOutputPath(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+func TestModeFor(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		path string
+		want os.FileMode
+	}{
+		{"backend/cmd/services/api/main.go", 0},
+		{"backend/scripts/queries.sh", 0o755},
+		{"backend/scripts/helpers", 0o755},
+		{"ios/scripts/build.sh", 0o755},
+		{"frontend/package.json", 0},
+	}
+
+	for _, tc := range tests {
+		if got := modeFor(tc.path); got != tc.want {
+			t.Errorf("modeFor(%q) = %o, want %o", tc.path, got, tc.want)
+		}
+	}
 }
 
 func TestFileStatusString(t *testing.T) {

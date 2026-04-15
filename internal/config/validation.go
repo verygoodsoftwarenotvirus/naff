@@ -29,13 +29,7 @@ func (p *Project) Validate() error {
 		return fmt.Errorf("project.name is required")
 	}
 
-	// Default targets: if both are false (zero value), enable both for backward compatibility.
-	if !p.Targets.Backend && !p.Targets.IOS {
-		p.Targets.Backend = true
-		p.Targets.IOS = true
-	}
-
-	if p.Targets.Backend && p.ProjectMeta.Module == "" {
+	if p.Targets.BackendEnabled() && p.ProjectMeta.Module == "" {
 		return fmt.Errorf("project.module is required when backend target is enabled")
 	}
 

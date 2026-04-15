@@ -1,0 +1,43 @@
+package config
+
+import (
+	"testing"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/services/auth/handlers/authentication"
+	dataprivacycfg "{{ .Project.ProjectMeta.Module }}/internal/services/dataprivacy/config"
+	identitycfg "{{ .Project.ProjectMeta.Module }}/internal/services/identity/config"
+	mealplanningcfg "{{ .Project.ProjectMeta.Module }}/internal/services/mealplanning/config"
+	oauthcfg "{{ .Project.ProjectMeta.Module }}/internal/services/oauth/config"
+)
+
+func TestServicesConfig_ValidateWithContext(T *testing.T) {
+	T.Parallel()
+
+	T.Run("valid config", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		cfg := &ServicesConfig{
+			Users:         identitycfg.Config{},
+			DataPrivacy:   dataprivacycfg.Config{},
+			MealPlanning:  mealplanningcfg.Config{},
+			Auth:          authentication.Config{},
+			OAuth2Clients: oauthcfg.Config{},
+		}
+
+		err := cfg.ValidateWithContext(ctx)
+		// May have validation errors in sub-configs, but should not panic
+		_ = err
+	})
+
+	T.Run("empty config", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		cfg := &ServicesConfig{}
+
+		err := cfg.ValidateWithContext(ctx)
+		// May have validation errors, but should not panic
+		_ = err
+	})
+}

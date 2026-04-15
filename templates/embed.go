@@ -2,7 +2,21 @@ package templates
 
 import "embed"
 
-// FS contains all embedded template files.
+// FS contains all embedded template files. Post-pivot the `templates/`
+// directory holds byte-for-byte copies of the upstream reference project
+// under `backend/`, `proto/`, `frontend/`, and `ios/`. The pipeline walks
+// this filesystem and emits every entry as a raw pass-through.
 //
-//go:embed internal/grpc/converters/*.tmpl domain/*.tmpl domain_keys/*.tmpl domain_fakes/*.tmpl domain_converters/*.tmpl domain_mock/*.tmpl manager/*.tmpl repository/*.tmpl repositories/*.tmpl localdev/*.tmpl codegen/*.tmpl migrations/*.tmpl proto/*.tmpl grpc/*.tmpl authorization/*.tmpl sqlc/*.tmpl build/*.tmpl project/*.tmpl project/scripts/*.tmpl authentication/*.tmpl authentication/config/*.tmpl authentication/mock/*.tmpl authentication/mocks/*.tmpl authentication/sessions/*.tmpl authentication/webauthn/*.tmpl authentication/webauthn/config/*.tmpl config/*.tmpl identity/*.tmpl identity/converters/*.tmpl identity/fakes/*.tmpl identity/keys/*.tmpl auth/*.tmpl auth/keys/*.tmpl oauth/*.tmpl oauth/keys/*.tmpl branding/*.tmpl testutils/*.tmpl repositories/postgres/auth/*.tmpl repositories/postgres/identity/*.tmpl repositories/postgres/oauth/*.tmpl repositories/postgres/testing/*.tmpl testing/integration/apiserver/*.tmpl services/auth/handlers/authentication/*.tmpl pkg/client/*.tmpl cmd/playground/*.tmpl cmd/services/api/*.tmpl cmd/services/api/grpc/*.tmpl cmd/services/api/http/*.tmpl cmd/services/mcp/*.tmpl cmd/tools/codegen/queries/*.tmpl cmd/tools/codegen/configs/*.tmpl cmd/tools/codegen/valid_env_vars/*.tmpl cmd/tools/bootstrap/*.tmpl cmd/tools/migrate/*.tmpl cmd/tools/encryptor/*.tmpl cmd/tools/data_exporter/*.tmpl cmd/tools/data_importer/*.tmpl cmd/tools/search_index_initializer/*.tmpl cmd/tools/push_tester/*.tmpl cmd/tools/aiagent/*.tmpl cmd/workers/db_cleaner/*.tmpl cmd/workers/email_deliverability_test/*.tmpl cmd/workers/meal_plan_finalizer/*.tmpl cmd/workers/meal_plan_grocery_list_initializer/*.tmpl cmd/workers/meal_plan_task_creator/*.tmpl cmd/workers/mobile_notification_scheduler/*.tmpl cmd/workers/queue_test/*.tmpl cmd/workers/search_data_index_scheduler/*.tmpl cmd/functions/async_message_handler/*.tmpl cmd/localdev/server/*.tmpl ios/project/*.tmpl ios/models/*.tmpl ios/api/*.tmpl ios/auth/*.tmpl frontend/shared/*.tmpl frontend/consumer/project/*.tmpl frontend/consumer/layout/*.tmpl frontend/consumer/domain/*.tmpl frontend/consumer/entity/*.tmpl frontend/admin/project/*.tmpl frontend/admin/layout/*.tmpl frontend/admin/domain/*.tmpl frontend/admin/entity/*.tmpl
+// The `_parameterized_wip/` sibling holds the previous registry-driven
+// parameterized templates. Go's embed deliberately ignores paths that begin
+// with `_` or `.`, so it is excluded from this filesystem (and from `go
+// build`/`go test`).
+//
+// The `_backend/` subtree is prefixed with `_` so Go tooling treats it as
+// hidden and does NOT try to compile its `.go` files as part of the naff
+// module. The `all:` prefix makes `go:embed` include underscore-prefixed
+// files and directories anyway. The pipeline strips the leading `_` when
+// computing output paths, so `_backend/go.mod` emits as `backend/go.mod`.
+//
+//go:embed all:_root all:_backend all:proto all:frontend all:ios
 var FS embed.FS

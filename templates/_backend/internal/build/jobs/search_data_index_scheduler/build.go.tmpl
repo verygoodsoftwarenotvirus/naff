@@ -1,0 +1,67 @@
+package searchdataindexscheduler
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/identity"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/auditlogentries"
+	identityrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/identity"
+	mealplanningrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/mealplanning"
+
+	databasecfg "github.com/primandproper/platform/database/config"
+	"github.com/primandproper/platform/database/postgres"
+	msgconfig "github.com/primandproper/platform/messagequeue/config"
+	"github.com/primandproper/platform/observability"
+	loggingcfg "github.com/primandproper/platform/observability/logging/config"
+	metricscfg "github.com/primandproper/platform/observability/metrics/config"
+	tracingcfg "github.com/primandproper/platform/observability/tracing/config"
+	"github.com/primandproper/platform/search/text/indexing"
+
+	"github.com/samber/do/v2"
+)
+
+// BuildInjector creates and configures the dependency injection container.
+func BuildInjector(
+	ctx context.Context,
+	cfg *config.SearchDataIndexSchedulerConfig,
+) *do.RootScope {
+	i := do.New()
+
+	do.ProvideValue(i, ctx)
+	do.ProvideValue(i, cfg)
+
+	RegisterConfigs(i)
+
+	observability.RegisterO11yConfigs(i)
+	tracingcfg.RegisterTracerProvider(i)
+	loggingcfg.RegisterLogger(i)
+	metricscfg.RegisterMetricsProvider(i)
+	msgconfig.RegisterMessageQueue(i)
+	databasecfg.RegisterClientConfig(i)
+	postgres.RegisterDatabaseClient(i)
+	auditlogentries.RegisterAuditLogRepository(i)
+	identityrepo.RegisterIdentityRepository(i)
+	// Domain: mealplanning
+	mealplanningrepo.RegisterMealPlanningRepository(i)
+
+	do.Provide[map[string]indexing.Function](i, func(i do.Injector) (map[string]indexing.Function, error) {
+		identityRepo := do.MustInvoke[identity.Repository](i)
+		mealPlanningRepo := do.MustInvoke[mealplanning.Repository](i)
+		return ProvideIndexFunctions(identityRepo, mealPlanningRepo), nil
+	})
+
+	indexing.RegisterIndexScheduler(i)
+
+	return i
+}
+
+// Build builds a server.
+func Build(
+	ctx context.Context,
+	cfg *config.SearchDataIndexSchedulerConfig,
+) (*indexing.IndexScheduler, error) {
+	i := BuildInjector(ctx, cfg)
+	return do.MustInvoke[*indexing.IndexScheduler](i), nil
+}

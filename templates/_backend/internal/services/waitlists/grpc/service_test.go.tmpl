@@ -1,0 +1,30 @@
+package grpc
+
+import (
+	"testing"
+
+	waitlistmock "{{ .Project.ProjectMeta.Module }}/internal/domain/waitlists/mock"
+	waitlistssvc "{{ .Project.ProjectMeta.Module }}/internal/grpc/generated/services/waitlists"
+
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewService(t *testing.T) {
+	t.Parallel()
+
+	t.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		logger := loggingnoop.NewLogger()
+		tracerProvider := tracingnoop.NewTracerProvider()
+		waitlistsManager := &waitlistmock.Repository{}
+
+		service := NewService(logger, tracerProvider, waitlistsManager)
+
+		assert.NotNil(t, service)
+		assert.Implements(t, (*waitlistssvc.WaitlistsServiceServer)(nil), service)
+	})
+}

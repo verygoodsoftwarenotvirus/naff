@@ -1,0 +1,621 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"github.com/primandproper/platform/numbers"
+)
+
+// CaesarDressingRecipe creates the Caesar Dressing recipe.
+// Source: https://www.seriouseats.com/the-best-caesar-salad-recipe
+func CaesarDressingRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	grindPrep := enums.Preparations["grind"]
+	mincePrep := enums.Preparations["mince"]
+	pressPrep := enums.Preparations["press"]
+	combinePrep := enums.Preparations["combine"]
+	blendPrep := enums.Preparations["blend"]
+	mixPrep := enums.Preparations["mix"]
+	seasonPrep := enums.Preparations["season"]
+	transferPrep := enums.Preparations["transfer"]
+
+	// Get ingredients
+	oliveOil := enums.Ingredients["olive oil"]
+	garlic := enums.Ingredients["garlic"]
+	eggYolk := enums.Ingredients["egg yolk"]
+	lemonJuice := enums.Ingredients["lemon juice"]
+	anchovies := enums.Ingredients["anchovies"]
+	worcestershire := enums.Ingredients["Worcestershire sauce"]
+	parmesanCheese := enums.Ingredients["parmesan cheese"]
+	canolaOil := enums.Ingredients["canola oil"]
+	salt := enums.Ingredients["salt"]
+	wholePeppercorns := enums.Ingredients["whole black peppercorns"]
+
+	// Get measurement units
+	gramMeasurement := enums.MeasurementUnits["gram"]
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	teaspoonMeasurement := enums.MeasurementUnits["teaspoon"]
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+	cloveMeasurement := enums.MeasurementUnits["clove"]
+
+	// Get instruments
+	mortarAndPestle := enums.Instruments["mortar and pestle"]
+	spiceGrinder := enums.Instruments["spice grinder"]
+	whisk := enums.Instruments["whisk"]
+	stickBlender := enums.Instruments["immersion blender"]
+	spoon := enums.Instruments["spoon"]
+	knife := enums.Instruments["knife"]
+
+	// Get vessels
+	smallBowl := enums.Vessels["small bowl"]
+	mediumBowl := enums.Vessels["medium bowl"]
+	largeBowl := enums.Vessels["large bowl"]
+	fineMeshStrainer := enums.Vessels["fine-mesh strainer"]
+	immersionBlenderCup := enums.Vessels["immersion blender cup"]
+	cuttingBoard := enums.Vessels["cutting board"]
+
+	// Get ingredient states for completion conditions
+	emulsifiedState := enums.IngredientStates["at desired consistency"]
+
+	// Grind preparation bridges
+	grindPeppercornsVIP := enums.IngredientPreparations[grindPrep.ID][wholePeppercorns.ID]
+	peppercornsGramVIMU := enums.IngredientMeasurementUnits[wholePeppercorns.ID][gramMeasurement.ID]
+	grindMortarAndPestleVPI := enums.PreparationInstruments[grindPrep.ID][mortarAndPestle.ID]
+	grindSpiceGrinderVPI := enums.PreparationInstruments[grindPrep.ID][spiceGrinder.ID]
+
+	// Mince preparation bridges for dressing
+	minceGarlicDressingVIP := enums.IngredientPreparations[mincePrep.ID][garlic.ID]
+	minceKnifeDressingVPI := enums.PreparationInstruments[mincePrep.ID][knife.ID]
+	minceCuttingBoardDressingVPV := enums.PreparationVessels[mincePrep.ID][cuttingBoard.ID]
+
+	// Press preparation bridges for dressing (for pressing garlic through strainer)
+	pressGarlicDressingVIP := enums.IngredientPreparations[pressPrep.ID][garlic.ID]
+	pressSpoonDressingVPI := enums.PreparationInstruments[pressPrep.ID][spoon.ID]
+	pressFineMeshStrainerDressingVPV := enums.PreparationVessels[pressPrep.ID][fineMeshStrainer.ID]
+	pressLargeBowlDressingVPV := enums.PreparationVessels[pressPrep.ID][largeBowl.ID]
+
+	// Combine preparation bridges for dressing (for garlic oil mixture)
+	combineOliveOilDressingVIP := enums.IngredientPreparations[combinePrep.ID][oliveOil.ID]
+	combineGarlicDressingVIP := enums.IngredientPreparations[combinePrep.ID][garlic.ID]
+	combineSmallBowlDressingVPV := enums.PreparationVessels[combinePrep.ID][smallBowl.ID]
+	combineWhiskDressingVPI := enums.PreparationInstruments[combinePrep.ID][whisk.ID]
+
+	// Blend preparation bridges for dressing
+	blendEggYolkVIP := enums.IngredientPreparations[blendPrep.ID][eggYolk.ID]
+	blendLemonJuiceVIP := enums.IngredientPreparations[blendPrep.ID][lemonJuice.ID]
+	blendAnchoviesVIP := enums.IngredientPreparations[blendPrep.ID][anchovies.ID]
+	blendWorcestershireVIP := enums.IngredientPreparations[blendPrep.ID][worcestershire.ID]
+	blendGarlicVIP := enums.IngredientPreparations[blendPrep.ID][garlic.ID]
+	blendParmesanVIP := enums.IngredientPreparations[blendPrep.ID][parmesanCheese.ID]
+	blendCanolaOilVIP := enums.IngredientPreparations[blendPrep.ID][canolaOil.ID]
+	blendStickBlenderVPI := enums.PreparationInstruments[blendPrep.ID][stickBlender.ID]
+	blendImmersionBlenderCupVPV := enums.PreparationVessels[blendPrep.ID][immersionBlenderCup.ID]
+
+	// Whisk bridges for dressing
+	whiskOliveOilVIP := enums.IngredientPreparations[mixPrep.ID][oliveOil.ID]
+	whiskCanolaOilVIP := enums.IngredientPreparations[mixPrep.ID][canolaOil.ID]
+	whiskWhiskVPI := enums.PreparationInstruments[mixPrep.ID][whisk.ID]
+
+	// Season preparation bridges
+	seasonSaltVIP := enums.IngredientPreparations[seasonPrep.ID][salt.ID]
+
+	// Transfer preparation bridges
+	transferMediumBowlVPV := enums.PreparationVessels[transferPrep.ID][mediumBowl.ID]
+
+	// Measurement unit bridges for dressing
+	oliveOilTablespoonVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][tablespoonMeasurement.ID]
+	oliveOilCupVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][cupMeasurement.ID]
+	garlicCloveVIMU := enums.IngredientMeasurementUnits[garlic.ID][cloveMeasurement.ID]
+	eggYolkUnitVIMU := enums.IngredientMeasurementUnits[eggYolk.ID][unitMeasurement.ID]
+	lemonJuiceTablespoonVIMU := enums.IngredientMeasurementUnits[lemonJuice.ID][tablespoonMeasurement.ID]
+	anchoviesUnitVIMU := enums.IngredientMeasurementUnits[anchovies.ID][unitMeasurement.ID]
+	worcestershireTeaspoonVIMU := enums.IngredientMeasurementUnits[worcestershire.ID][teaspoonMeasurement.ID]
+	parmesanCupVIMU := enums.IngredientMeasurementUnits[parmesanCheese.ID][cupMeasurement.ID]
+	canolaOilCupVIMU := enums.IngredientMeasurementUnits[canolaOil.ID][cupMeasurement.ID]
+	saltTeaspoonVIMU := enums.IngredientMeasurementUnits[salt.ID][teaspoonMeasurement.ID]
+
+	// Step 0: Grind whole black peppercorns
+	drStep0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        grindPrep.ID,
+		Index:                0,
+		Optional:             false,
+		ExplicitInstructions: "Using a mortar and pestle or spice grinder, coarsely grind the whole black peppercorns.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &grindPeppercornsVIP.ID,
+				ValidIngredientMeasurementUnitID: &peppercornsGramVIMU.ID,
+				Name:                             "whole black peppercorns",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1, // approximately 0.5 teaspoon
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &grindMortarAndPestleVPI.ID,
+				Name:                         "mortar and pestle",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 0,
+			},
+			{
+				ValidPreparationInstrumentID: &grindSpiceGrinderVPI.ID,
+				Name:                         "spice grinder",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 1,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "freshly ground black pepper",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &gramMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 1: Mince garlic
+	drStep1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        mincePrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Mince the garlic cloves.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &minceGarlicDressingVIP.ID,
+				ValidIngredientMeasurementUnitID: &garlicCloveVIMU.ID,
+				Name:                             "garlic cloves",
+				QuantityNotes:                    "about 2 teaspoons when minced",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &minceKnifeDressingVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &minceCuttingBoardDressingVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "minced garlic",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &teaspoonMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+		},
+	}
+
+	// Step 2: Combine olive oil with minced garlic and whisk
+	drStep2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        combinePrep.ID,
+		Index:                2,
+		ExplicitInstructions: "In a small bowl, combine 3 tablespoons olive oil with the minced garlic and whisk for 30 seconds.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &combineOliveOilDressingVIP.ID,
+				ValidIngredientMeasurementUnitID: &oliveOilTablespoonVIMU.ID,
+				Name:                             "extra-virgin olive oil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &combineGarlicDressingVIP.ID,
+				Name:                            "minced garlic",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &combineWhiskDressingVPI.ID,
+				Name:                         "whisk",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &combineSmallBowlDressingVPV.ID,
+				Name:                     "small bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "garlic oil mixture",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 3: Press garlic through fine-mesh strainer to get pressed garlic
+	drStep3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        pressPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Transfer the garlic oil mixture to a fine-mesh strainer set over a large bowl and press with the back of a spoon to extract as much oil as possible, leaving the garlic behind. Reserve the pressed garlic for the dressing.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &pressGarlicDressingVIP.ID,
+				Name:                            "garlic oil mixture",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &pressSpoonDressingVPI.ID,
+				Name:                         "spoon",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &pressFineMeshStrainerDressingVPV.ID,
+				Name:                     "fine-mesh strainer",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+			{
+				ValidPreparationVesselID: &pressLargeBowlDressingVPV.ID,
+				Name:                     "large bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "garlic-infused olive oil",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &tablespoonMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(3)),
+				},
+			},
+			{
+				Name:              "pressed garlic",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &teaspoonMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+		},
+	}
+
+	// Step 4: Combine dressing ingredients in immersion blender cup
+	drStep4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        blendPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Combine the egg yolk, lemon juice, anchovies, Worcestershire sauce, reserved pressed garlic, and 1/4 cup parmesan cheese in the bottom of a cup that just fits the head of an immersion blender. With the blender running, slowly drizzle in canola oil until a smooth emulsion forms.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &blendEggYolkVIP.ID,
+				ValidIngredientMeasurementUnitID: &eggYolkUnitVIMU.ID,
+				Name:                             "large egg yolk",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &blendLemonJuiceVIP.ID,
+				ValidIngredientMeasurementUnitID: &lemonJuiceTablespoonVIMU.ID,
+				Name:                             "fresh lemon juice",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &blendAnchoviesVIP.ID,
+				ValidIngredientMeasurementUnitID: &anchoviesUnitVIMU.ID,
+				Name:                             "anchovies",
+				QuantityNotes:                    "amount can vary according to taste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+					Max: new(float32(6)),
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &blendWorcestershireVIP.ID,
+				ValidIngredientMeasurementUnitID: &worcestershireTeaspoonVIMU.ID,
+				Name:                             "Worcestershire sauce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidIngredientPreparationID:    &blendGarlicVIP.ID,
+				Name:                            "pressed garlic",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &blendParmesanVIP.ID,
+				ValidIngredientMeasurementUnitID: &parmesanCupVIMU.ID,
+				Name:                             "finely grated parmesan cheese",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &blendCanolaOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &canolaOilCupVIMU.ID,
+				Name:                             "canola oil",
+				QuantityNotes:                    "drizzle in slowly while blending",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.33,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &blendStickBlenderVPI.ID,
+				Name:                         "immersion blender",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &blendImmersionBlenderCupVPV.ID,
+				Name:                     "immersion blender cup",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: emulsifiedState.ID,
+				Notes:             "a smooth emulsion should form",
+				Ingredients:       []uint64{6}, // canola oil (ingredient index 6)
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "base emulsion",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 5: Transfer mixture to medium bowl
+	drStep5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Transfer the mixture to a medium bowl.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "base emulsion",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &transferMediumBowlVPV.ID,
+				Name:                     "medium bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "emulsion in bowl",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "medium bowl",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 6: Whisk in remaining olive oil
+	drStep6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        mixPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Whisking constantly, slowly drizzle in the remaining 1/4 cup extra-virgin olive oil.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &whiskCanolaOilVIP.ID,
+				Name:                            "emulsion in bowl",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &whiskOliveOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &oliveOilCupVIMU.ID,
+				Name:                             "extra-virgin olive oil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &whiskWhiskVPI.ID,
+				Name:                         "whisk",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "medium bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "whisked dressing",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "medium bowl",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+	}
+
+	// Step 7: Season to taste
+	drStep7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Season to taste generously with salt and pepper.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "whisked dressing",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltTeaspoonVIMU.ID,
+				Name:                             "kosher salt",
+				QuantityNotes:                    "to taste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+				Optional: true,
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "freshly ground black pepper",
+				QuantityNotes:                   "to taste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+				Optional: true,
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "medium bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "Caesar dressing",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cupMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	dressingRecipe := &mealplanning.RecipeCreationRequestInput{
+		Name:                "Caesar Dressing",
+		Slug:                "caesar-dressing",
+		Source:              "https://www.seriouseats.com/the-best-caesar-salad-recipe",
+		Description:         "A modern emulsified Caesar salad dressing made with egg yolk, anchovies, parmesan, and two oils.",
+		YieldsComponentType: mealplanning.MealComponentTypesSide,
+		EstimatedPortions: numbers.MinRange[float32]{
+			Min: 4,
+			Max: new(float32(8)),
+		},
+		PortionName:       "serving",
+		PluralPortionName: "servings",
+		EligibleForMeals:  false,
+		Steps: []*mealplanning.RecipeStepCreationRequestInput{
+			drStep0, drStep1, drStep2, drStep3, drStep4, drStep5, drStep6, drStep7,
+		},
+		PrepTasks: []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		dressingRecipe,
+	}
+}

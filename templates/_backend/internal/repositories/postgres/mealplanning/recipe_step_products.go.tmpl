@@ -1,0 +1,496 @@
+package mealplanning
+
+import (
+	"context"
+	"database/sql"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+	mealplanningkeys "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/keys"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/mealplanning/generated"
+
+	"github.com/primandproper/platform/database"
+	"github.com/primandproper/platform/database/filtering"
+	platformerrors "github.com/primandproper/platform/errors"
+	"github.com/primandproper/platform/numbers"
+	"github.com/primandproper/platform/observability"
+	"github.com/primandproper/platform/observability/tracing"
+)
+
+var (
+	_ mealplanning.RecipeStepProductDataManager = (*repository)(nil)
+)
+
+// RecipeStepProductExists fetches whether a recipe step product exists from the database.
+func (q *repository) RecipeStepProductExists(ctx context.Context, recipeID, recipeStepID, recipeStepProductID string) (exists bool, err error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if recipeID == "" {
+		return false, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeIDKey, recipeID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeIDKey, recipeID)
+
+	if recipeStepID == "" {
+		return false, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepIDKey, recipeStepID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepIDKey, recipeStepID)
+
+	if recipeStepProductID == "" {
+		return false, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepProductIDKey, recipeStepProductID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepProductIDKey, recipeStepProductID)
+
+	result, err := q.generatedQuerier.CheckRecipeStepProductExistence(ctx, q.readDB, &generated.CheckRecipeStepProductExistenceParams{
+		RecipeStepID:        recipeStepID,
+		RecipeStepProductID: recipeStepProductID,
+		RecipeID:            recipeID,
+	})
+	if err != nil {
+		return false, observability.PrepareAndLogError(err, logger, span, "performing recipe step product existence check")
+	}
+
+	return result, nil
+}
+
+// GetRecipeStepProduct fetches a recipe step product from the database.
+func (q *repository) GetRecipeStepProduct(ctx context.Context, recipeID, recipeStepID, recipeStepProductID string) (*mealplanning.RecipeStepProduct, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if recipeID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeIDKey, recipeID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeIDKey, recipeID)
+
+	if recipeStepID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepIDKey, recipeStepID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepIDKey, recipeStepID)
+
+	if recipeStepProductID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepProductIDKey, recipeStepProductID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepProductIDKey, recipeStepProductID)
+
+	result, err := q.generatedQuerier.GetRecipeStepProduct(ctx, q.readDB, &generated.GetRecipeStepProductParams{
+		RecipeStepID:        recipeStepID,
+		RecipeStepProductID: recipeStepProductID,
+		RecipeID:            recipeID,
+	})
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "getting recipe step product")
+	}
+
+	recipeStepProduct := &mealplanning.RecipeStepProduct{
+		CreatedAt: result.CreatedAt,
+		MeasurementQuantity: numbers.OpenRange[float32]{
+			Max: database.Float32PointerFromNullString(result.MaximumMeasurementQuantityValue),
+			Min: database.Float32PointerFromNullString(result.MinimumMeasurementQuantityValue),
+		},
+		ItemQuantity: numbers.OpenRange[float32]{
+			Max: database.Float32PointerFromNullString(result.MaximumItemQuantityValue),
+			Min: database.Float32PointerFromNullString(result.MinimumItemQuantityValue),
+		},
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: database.Float32PointerFromNullString(result.MaximumStorageTemperatureInCelsius),
+			Min: database.Float32PointerFromNullString(result.MinimumStorageTemperatureInCelsius),
+		},
+		StorageDurationInSeconds: numbers.OpenRange[uint32]{
+			Max: database.Uint32PointerFromNullInt32(result.MaximumStorageDurationInSeconds),
+		},
+		ArchivedAt:             database.TimePointerFromNullTime(result.ArchivedAt),
+		LastUpdatedAt:          database.TimePointerFromNullTime(result.LastUpdatedAt),
+		MeasurementUnit:        nil,
+		ContainedInVesselIndex: database.Uint16PointerFromNullInt32(result.ContainedInVesselIndex),
+		Name:                   result.Name,
+		BelongsToRecipeStep:    result.BelongsToRecipeStep,
+		Type:                   string(result.Type),
+		ID:                     result.ID,
+		StorageInstructions:    result.StorageInstructions,
+		QuantityNotes:          result.QuantityNotes,
+		Index:                  uint16(result.Index),
+		IsWaste:                result.IsWaste,
+		IsLiquid:               result.IsLiquid,
+		Compostable:            result.Compostable,
+	}
+
+	if result.ValidMeasurementUnitID.Valid && result.ValidMeasurementUnitID.String != "" {
+		recipeStepProduct.MeasurementUnit = &mealplanning.ValidMeasurementUnit{
+			CreatedAt:     result.ValidMeasurementUnitCreatedAt.Time,
+			LastUpdatedAt: database.TimePointerFromNullTime(result.ValidMeasurementUnitLastUpdatedAt),
+			ArchivedAt:    database.TimePointerFromNullTime(result.ValidMeasurementUnitArchivedAt),
+			Name:          result.ValidMeasurementUnitName.String,
+			IconPath:      result.ValidMeasurementUnitIconPath.String,
+			ID:            result.ValidMeasurementUnitID.String,
+			Description:   result.ValidMeasurementUnitDescription.String,
+			PluralName:    result.ValidMeasurementUnitPluralName.String,
+			Slug:          result.ValidMeasurementUnitSlug.String,
+			Volumetric:    database.BoolFromNullBool(result.ValidMeasurementUnitVolumetric),
+			Universal:     result.ValidMeasurementUnitUniversal.Bool,
+			Metric:        result.ValidMeasurementUnitMetric.Bool,
+			Imperial:      result.ValidMeasurementUnitImperial.Bool,
+		}
+	}
+
+	return recipeStepProduct, nil
+}
+
+// getRecipeStepProductsForRecipe fetches a list of recipe step products from the database that meet a particular filter.
+func (q *repository) getRecipeStepProductsForRecipe(ctx context.Context, recipeID string) ([]*mealplanning.RecipeStepProduct, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if recipeID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeIDKey, recipeID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeIDKey, recipeID)
+
+	results, err := q.generatedQuerier.GetRecipeStepProductsForRecipe(ctx, q.readDB, recipeID)
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "fetching recipe step products for recipe")
+	}
+
+	recipeStepProducts := []*mealplanning.RecipeStepProduct{}
+	for _, result := range results {
+		recipeStepProduct := &mealplanning.RecipeStepProduct{
+			CreatedAt: result.CreatedAt,
+			MeasurementQuantity: numbers.OpenRange[float32]{
+				Max: database.Float32PointerFromNullString(result.MaximumMeasurementQuantityValue),
+				Min: database.Float32PointerFromNullString(result.MinimumMeasurementQuantityValue),
+			},
+			ItemQuantity: numbers.OpenRange[float32]{
+				Max: database.Float32PointerFromNullString(result.MaximumItemQuantityValue),
+				Min: database.Float32PointerFromNullString(result.MinimumItemQuantityValue),
+			},
+			StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+				Max: database.Float32PointerFromNullString(result.MaximumStorageTemperatureInCelsius),
+				Min: database.Float32PointerFromNullString(result.MinimumStorageTemperatureInCelsius),
+			},
+			StorageDurationInSeconds: numbers.OpenRange[uint32]{
+				Max: database.Uint32PointerFromNullInt32(result.MaximumStorageDurationInSeconds),
+			},
+			ArchivedAt:             database.TimePointerFromNullTime(result.ArchivedAt),
+			LastUpdatedAt:          database.TimePointerFromNullTime(result.LastUpdatedAt),
+			MeasurementUnit:        nil,
+			ContainedInVesselIndex: database.Uint16PointerFromNullInt32(result.ContainedInVesselIndex),
+			Name:                   result.Name,
+			BelongsToRecipeStep:    result.BelongsToRecipeStep,
+			Type:                   string(result.Type),
+			ID:                     result.ID,
+			StorageInstructions:    result.StorageInstructions,
+			QuantityNotes:          result.QuantityNotes,
+			Index:                  uint16(result.Index),
+			IsWaste:                result.IsWaste,
+			IsLiquid:               result.IsLiquid,
+			Compostable:            result.Compostable,
+		}
+
+		if result.ValidMeasurementUnitID.Valid && result.ValidMeasurementUnitID.String != "" {
+			recipeStepProduct.MeasurementUnit = &mealplanning.ValidMeasurementUnit{
+				CreatedAt:     result.ValidMeasurementUnitCreatedAt.Time,
+				LastUpdatedAt: database.TimePointerFromNullTime(result.ValidMeasurementUnitLastUpdatedAt),
+				ArchivedAt:    database.TimePointerFromNullTime(result.ValidMeasurementUnitArchivedAt),
+				Name:          result.ValidMeasurementUnitName.String,
+				IconPath:      result.ValidMeasurementUnitIconPath.String,
+				ID:            result.ValidMeasurementUnitID.String,
+				Description:   result.ValidMeasurementUnitDescription.String,
+				PluralName:    result.ValidMeasurementUnitPluralName.String,
+				Slug:          result.ValidMeasurementUnitSlug.String,
+				Volumetric:    database.BoolFromNullBool(result.ValidMeasurementUnitVolumetric),
+				Universal:     result.ValidMeasurementUnitUniversal.Bool,
+				Metric:        result.ValidMeasurementUnitMetric.Bool,
+				Imperial:      result.ValidMeasurementUnitImperial.Bool,
+			}
+		}
+
+		recipeStepProducts = append(recipeStepProducts, recipeStepProduct)
+	}
+
+	return recipeStepProducts, nil
+}
+
+// GetRecipeStepProducts fetches a list of recipe step products from the database that meet a particular filter.
+func (q *repository) GetRecipeStepProducts(ctx context.Context, recipeID, recipeStepID string, filter *filtering.QueryFilter) (x *filtering.QueryFilteredResult[mealplanning.RecipeStepProduct], err error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if recipeID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeIDKey, recipeID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeIDKey, recipeID)
+
+	if recipeStepID == "" {
+		return nil, platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepIDKey, recipeStepID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepIDKey, recipeStepID)
+
+	if filter == nil {
+		filter = filtering.DefaultQueryFilter()
+	}
+	logger = filter.AttachToLogger(logger)
+	tracing.AttachQueryFilterToSpan(span, filter)
+
+	var (
+		data          []*mealplanning.RecipeStepProduct
+		filteredCount uint64
+		totalCount    uint64
+	)
+
+	results, err := q.generatedQuerier.GetRecipeStepProducts(ctx, q.readDB, &generated.GetRecipeStepProductsParams{
+		RecipeID:        recipeID,
+		RecipeStepID:    recipeStepID,
+		CreatedBefore:   database.NullTimeFromTimePointer(filter.CreatedBefore),
+		CreatedAfter:    database.NullTimeFromTimePointer(filter.CreatedAfter),
+		UpdatedBefore:   database.NullTimeFromTimePointer(filter.UpdatedBefore),
+		UpdatedAfter:    database.NullTimeFromTimePointer(filter.UpdatedAfter),
+		Cursor:          database.NullStringFromStringPointer(filter.Cursor),
+		ResultLimit:     database.NullInt32FromUint8Pointer(filter.MaxResponseSize),
+		IncludeArchived: database.NullBoolFromBoolPointer(filter.IncludeArchived),
+	})
+	if err != nil {
+		return nil, observability.PrepareAndLogError(err, logger, span, "executing recipe step products list retrieval query")
+	}
+
+	for _, result := range results {
+		if totalCount == 0 {
+			filteredCount = uint64(result.FilteredCount)
+			totalCount = uint64(result.TotalCount)
+		}
+		recipeStepProduct := &mealplanning.RecipeStepProduct{
+			CreatedAt: result.CreatedAt,
+			MeasurementQuantity: numbers.OpenRange[float32]{
+				Max: database.Float32PointerFromNullString(result.MaximumMeasurementQuantityValue),
+				Min: database.Float32PointerFromNullString(result.MinimumMeasurementQuantityValue),
+			},
+			ItemQuantity: numbers.OpenRange[float32]{
+				Max: database.Float32PointerFromNullString(result.MaximumItemQuantityValue),
+				Min: database.Float32PointerFromNullString(result.MinimumItemQuantityValue),
+			},
+			StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+				Max: database.Float32PointerFromNullString(result.MaximumStorageTemperatureInCelsius),
+				Min: database.Float32PointerFromNullString(result.MinimumStorageTemperatureInCelsius),
+			},
+			StorageDurationInSeconds: numbers.OpenRange[uint32]{
+				Max: database.Uint32PointerFromNullInt32(result.MaximumStorageDurationInSeconds),
+			},
+			ArchivedAt:             database.TimePointerFromNullTime(result.ArchivedAt),
+			LastUpdatedAt:          database.TimePointerFromNullTime(result.LastUpdatedAt),
+			MeasurementUnit:        nil,
+			ContainedInVesselIndex: database.Uint16PointerFromNullInt32(result.ContainedInVesselIndex),
+			Name:                   result.Name,
+			BelongsToRecipeStep:    result.BelongsToRecipeStep,
+			Type:                   string(result.Type),
+			ID:                     result.ID,
+			StorageInstructions:    result.StorageInstructions,
+			QuantityNotes:          result.QuantityNotes,
+			Index:                  uint16(result.Index),
+			IsWaste:                result.IsWaste,
+			IsLiquid:               result.IsLiquid,
+			Compostable:            result.Compostable,
+		}
+
+		if result.ValidMeasurementUnitID.Valid && result.ValidMeasurementUnitID.String != "" {
+			recipeStepProduct.MeasurementUnit = &mealplanning.ValidMeasurementUnit{
+				CreatedAt:     result.ValidMeasurementUnitCreatedAt.Time,
+				LastUpdatedAt: database.TimePointerFromNullTime(result.ValidMeasurementUnitLastUpdatedAt),
+				ArchivedAt:    database.TimePointerFromNullTime(result.ValidMeasurementUnitArchivedAt),
+				Name:          result.ValidMeasurementUnitName.String,
+				IconPath:      result.ValidMeasurementUnitIconPath.String,
+				ID:            result.ValidMeasurementUnitID.String,
+				Description:   result.ValidMeasurementUnitDescription.String,
+				PluralName:    result.ValidMeasurementUnitPluralName.String,
+				Slug:          result.ValidMeasurementUnitSlug.String,
+				Volumetric:    database.BoolFromNullBool(result.ValidMeasurementUnitVolumetric),
+				Universal:     result.ValidMeasurementUnitUniversal.Bool,
+				Metric:        result.ValidMeasurementUnitMetric.Bool,
+				Imperial:      result.ValidMeasurementUnitImperial.Bool,
+			}
+		}
+
+		data = append(data, recipeStepProduct)
+	}
+
+	x = filtering.NewQueryFilteredResult(
+		data,
+		filteredCount,
+		totalCount,
+		func(rsp *mealplanning.RecipeStepProduct) string { return rsp.ID },
+		filter,
+	)
+
+	return x, nil
+}
+
+// CreateRecipeStepProduct creates a recipe step product in the database.
+func (q *repository) createRecipeStepProduct(ctx context.Context, db database.SQLQueryExecutor, input *mealplanning.RecipeStepProductDatabaseCreationInput) (*mealplanning.RecipeStepProduct, error) {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	if input == nil {
+		return nil, platformerrors.ErrNilInputProvided
+	}
+
+	// create the recipe step product.
+	if err := q.generatedQuerier.CreateRecipeStepProduct(ctx, db, &generated.CreateRecipeStepProductParams{
+		QuantityNotes:                      input.QuantityNotes,
+		Name:                               input.Name,
+		Type:                               generated.RecipeStepProductType(input.Type),
+		BelongsToRecipeStep:                input.BelongsToRecipeStep,
+		ID:                                 input.ID,
+		StorageInstructions:                input.StorageInstructions,
+		MinimumMeasurementQuantityValue:    database.NullStringFromFloat32Pointer(input.MeasurementQuantity.Min),
+		MaximumMeasurementQuantityValue:    database.NullStringFromFloat32Pointer(input.MeasurementQuantity.Max),
+		MinimumItemQuantityValue:           database.NullStringFromFloat32Pointer(input.ItemQuantity.Min),
+		MaximumItemQuantityValue:           database.NullStringFromFloat32Pointer(input.ItemQuantity.Max),
+		MinimumStorageTemperatureInCelsius: database.NullStringFromFloat32Pointer(input.StorageTemperatureInCelsius.Min),
+		MaximumStorageTemperatureInCelsius: database.NullStringFromFloat32Pointer(input.StorageTemperatureInCelsius.Max),
+		MeasurementUnit:                    database.NullStringFromStringPointer(input.MeasurementUnitID),
+		MaximumStorageDurationInSeconds:    database.NullInt32FromUint32Pointer(input.StorageDurationInSeconds.Max),
+		ContainedInVesselIndex:             database.NullInt32FromUint16Pointer(input.ContainedInVesselIndex),
+		Index:                              int32(input.Index),
+		Compostable:                        input.Compostable,
+		IsLiquid:                           input.IsLiquid,
+		IsWaste:                            input.IsWaste,
+	}); err != nil {
+		return nil, observability.PrepareError(err, span, "performing recipe step product creation query")
+	}
+
+	x := &mealplanning.RecipeStepProduct{
+		ID:                  input.ID,
+		Name:                input.Name,
+		Type:                input.Type,
+		QuantityNotes:       input.QuantityNotes,
+		BelongsToRecipeStep: input.BelongsToRecipeStep,
+		Compostable:         input.Compostable,
+		MeasurementQuantity: numbers.OpenRange[float32]{
+			Max: input.MeasurementQuantity.Max,
+			Min: input.MeasurementQuantity.Min,
+		},
+		ItemQuantity: numbers.OpenRange[float32]{
+			Max: input.ItemQuantity.Max,
+			Min: input.ItemQuantity.Min,
+		},
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: input.StorageTemperatureInCelsius.Max,
+			Min: input.StorageTemperatureInCelsius.Min,
+		},
+		StorageDurationInSeconds: numbers.OpenRange[uint32]{
+			Max: input.StorageDurationInSeconds.Max,
+		},
+		StorageInstructions:    input.StorageInstructions,
+		IsLiquid:               input.IsLiquid,
+		IsWaste:                input.IsWaste,
+		Index:                  input.Index,
+		ContainedInVesselIndex: input.ContainedInVesselIndex,
+		CreatedAt:              q.CurrentTime(),
+	}
+
+	if input.MeasurementUnitID != nil {
+		x.MeasurementUnit = &mealplanning.ValidMeasurementUnit{ID: *input.MeasurementUnitID}
+	}
+
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepProductIDKey, x.ID)
+
+	return x, nil
+}
+
+// CreateRecipeStepProduct creates a recipe step product in the database.
+func (q *repository) CreateRecipeStepProduct(ctx context.Context, input *mealplanning.RecipeStepProductDatabaseCreationInput) (*mealplanning.RecipeStepProduct, error) {
+	return q.createRecipeStepProduct(ctx, q.writeDB, input)
+}
+
+// UpdateRecipeStepProduct updates a particular recipe step product.
+func (q *repository) UpdateRecipeStepProduct(ctx context.Context, updated *mealplanning.RecipeStepProduct) error {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	if updated == nil {
+		return platformerrors.ErrNilInputProvided
+	}
+	logger := q.logger.WithValue(mealplanningkeys.RecipeStepProductIDKey, updated.ID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepProductIDKey, updated.ID)
+
+	var measurementUnitID *string
+	if updated.MeasurementUnit != nil {
+		measurementUnitID = &updated.MeasurementUnit.ID
+	}
+
+	if _, err := q.generatedQuerier.UpdateRecipeStepProduct(ctx, q.writeDB, &generated.UpdateRecipeStepProductParams{
+		Name:                               updated.Name,
+		Type:                               generated.RecipeStepProductType(updated.Type),
+		MeasurementUnit:                    database.NullStringFromStringPointer(measurementUnitID),
+		MinimumMeasurementQuantityValue:    database.NullStringFromFloat32Pointer(updated.MeasurementQuantity.Min),
+		MaximumMeasurementQuantityValue:    database.NullStringFromFloat32Pointer(updated.MeasurementQuantity.Max),
+		MinimumItemQuantityValue:           database.NullStringFromFloat32Pointer(updated.ItemQuantity.Min),
+		MaximumItemQuantityValue:           database.NullStringFromFloat32Pointer(updated.ItemQuantity.Max),
+		QuantityNotes:                      updated.QuantityNotes,
+		Compostable:                        updated.Compostable,
+		MaximumStorageDurationInSeconds:    database.NullInt32FromUint32Pointer(updated.StorageDurationInSeconds.Max),
+		MinimumStorageTemperatureInCelsius: database.NullStringFromFloat32Pointer(updated.StorageTemperatureInCelsius.Min),
+		MaximumStorageTemperatureInCelsius: database.NullStringFromFloat32Pointer(updated.StorageTemperatureInCelsius.Max),
+		StorageInstructions:                updated.StorageInstructions,
+		IsLiquid:                           updated.IsLiquid,
+		IsWaste:                            updated.IsWaste,
+		Index:                              int32(updated.Index),
+		ContainedInVesselIndex:             database.NullInt32FromUint16Pointer(updated.ContainedInVesselIndex),
+		BelongsToRecipeStep:                updated.BelongsToRecipeStep,
+		ID:                                 updated.ID,
+	}); err != nil {
+		return observability.PrepareAndLogError(err, logger, span, "updating recipe step product")
+	}
+
+	logger.Info("recipe step product updated")
+
+	return nil
+}
+
+// ArchiveRecipeStepProduct archives a recipe step product from the database by its ID.
+func (q *repository) ArchiveRecipeStepProduct(ctx context.Context, recipeStepID, recipeStepProductID string) error {
+	ctx, span := q.tracer.StartSpan(ctx)
+	defer span.End()
+
+	logger := q.logger.Clone()
+
+	if recipeStepID == "" {
+		return platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepIDKey, recipeStepID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepIDKey, recipeStepID)
+
+	if recipeStepProductID == "" {
+		return platformerrors.ErrInvalidIDProvided
+	}
+	logger = logger.WithValue(mealplanningkeys.RecipeStepProductIDKey, recipeStepProductID)
+	tracing.AttachToSpan(span, mealplanningkeys.RecipeStepProductIDKey, recipeStepProductID)
+
+	rowsAffected, err := q.generatedQuerier.ArchiveRecipeStepProduct(ctx, q.writeDB, &generated.ArchiveRecipeStepProductParams{
+		BelongsToRecipeStep: recipeStepID,
+		ID:                  recipeStepProductID,
+	})
+	if err != nil {
+		return observability.PrepareAndLogError(err, logger, span, "updating recipe step product")
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}

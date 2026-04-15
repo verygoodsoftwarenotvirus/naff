@@ -1,0 +1,30 @@
+package api
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/auth"
+	paymentswebhook "{{ .Project.ProjectMeta.Module }}/internal/services/payments/http"
+
+	"github.com/primandproper/platform/healthcheck"
+	"github.com/primandproper/platform/observability/logging"
+	"github.com/primandproper/platform/observability/metrics"
+	"github.com/primandproper/platform/observability/tracing"
+	"github.com/primandproper/platform/routing"
+	routingcfg "github.com/primandproper/platform/routing/config"
+
+	"github.com/samber/do/v2"
+)
+
+// RegisterAPIRouter registers the API router provider with the injector.
+func RegisterAPIRouter(i do.Injector) {
+	do.Provide[routing.Router](i, func(i do.Injector) (routing.Router, error) {
+		return ProvideAPIRouter(
+			*do.MustInvoke[*routingcfg.Config](i),
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[metrics.Provider](i),
+			do.MustInvoke[auth.AuthDataService](i),
+			do.MustInvoke[*paymentswebhook.WebhookHandler](i),
+			do.MustInvoke[healthcheck.Registry](i),
+		)
+	})
+}

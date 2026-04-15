@@ -20,9 +20,33 @@ type ProjectMeta struct {
 }
 
 // Targets controls which generation targets are enabled.
+//
+// Backend and AsyncMessageHandler are *bool so "unset" (default on) is
+// distinguishable from "explicitly false" (opt-out). IOS is a plain bool
+// (default off) — iOS scaffolding is opt-in.
 type Targets struct {
-	Backend bool `yaml:"backend"`
-	IOS     bool `yaml:"ios"`
+	Backend             *bool `yaml:"backend"`
+	IOS                 bool  `yaml:"ios"`
+	AsyncMessageHandler *bool `yaml:"async_message_handler"`
+}
+
+// BackendEnabled reports whether backend generation is enabled (default true).
+func (t Targets) BackendEnabled() bool {
+	if t.Backend == nil {
+		return true
+	}
+	return *t.Backend
+}
+
+// AsyncMessageHandlerEnabled reports whether cmd/functions/async_message_handler
+// should be emitted (default true). Projects that don't ship a hand-rolled
+// internal/build/functions/data_change_message_handler package should set
+// this to false explicitly — otherwise the generated binary won't compile.
+func (t Targets) AsyncMessageHandlerEnabled() bool {
+	if t.AsyncMessageHandler == nil {
+		return true
+	}
+	return *t.AsyncMessageHandler
 }
 
 // Features controls which built-in infrastructure domains are enabled.

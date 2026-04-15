@@ -1,0 +1,1401 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"github.com/primandproper/platform/numbers"
+)
+
+// SoySauceBraisedChickenThighsRecipe creates the Soy Sauce–Braised Chicken Thighs recipe.
+// Source: https://www.seriouseats.com/soy-sauce-braised-chicken-thighs-recipe-8737800
+func SoySauceBraisedChickenThighsRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	combinePrep := enums.Preparations["combine"]
+	dryPrep := enums.Preparations["dry"]
+	seasonPrep := enums.Preparations["season"]
+	transferPrep := enums.Preparations["transfer"]
+	adjustPrep := enums.Preparations["adjust"]
+	preheatPrep := enums.Preparations["preheat"]
+	reducePrep := enums.Preparations["reduce"]
+	addPrep := enums.Preparations["add"]
+	cookPrep := enums.Preparations["cook"]
+	heatPrep := enums.Preparations["heat"]
+	panSearPrep := enums.Preparations["pan-sear"]
+	flipPrep := enums.Preparations["flip"]
+	simmerPrep := enums.Preparations["simmer"]
+	braisePrep := enums.Preparations["braise"]
+	cutPrep := enums.Preparations["chop"]
+	peelPrep := enums.Preparations["peel"]
+	slicePrep := enums.Preparations["slice"]
+
+	// Get ingredients
+	salt := enums.Ingredients["salt"]
+	msg := enums.Ingredients["MSG"]
+	fiveSpice := enums.Ingredients["five spice powder"]
+	darkBrownSugar := enums.Ingredients["dark brown sugar"]
+	whitePepper := enums.Ingredients["white pepper"]
+	chickenThighs := enums.Ingredients["chicken thigh"]
+	vegetableOil := enums.Ingredients["vegetable oil"]
+	scallions := enums.Ingredients["scallions"]
+	ginger := enums.Ingredients["ginger"]
+	garlic := enums.Ingredients["garlic"]
+	starAnise := enums.Ingredients["star anise"]
+	cinnamonStick := enums.Ingredients["cinnamon stick"]
+	lightSoySauce := enums.Ingredients["light soy sauce"]
+	shaoxingWine := enums.Ingredients["Shaoxing wine"]
+	water := enums.Ingredients["water"]
+
+	// Get measurement units
+	gramMeasurement := enums.MeasurementUnits["gram"]
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	teaspoonMeasurement := enums.MeasurementUnits["teaspoon"]
+	poundMeasurement := enums.MeasurementUnits["pound"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	cloveMeasurement := enums.MeasurementUnits["clove"]
+
+	// Get instruments
+	paperTowels := enums.Instruments["paper towels"]
+	whisk := enums.Instruments["whisk"]
+	bareHands := enums.Instruments["bare hands"]
+	tongs := enums.Instruments["tongs"]
+	woodenSpoon := enums.Instruments["wooden spoon"]
+	thermometer := enums.Instruments["instant-read thermometer"]
+	knife := enums.Instruments["knife"]
+
+	// Get vessels
+	smallBowl := enums.Vessels["small bowl"]
+	wireRack := enums.Vessels["wire rack"]
+	bakingSheet := enums.Vessels["baking sheet"]
+	castIronSkillet := enums.Vessels["cast iron skillet"]
+	largePlate := enums.Vessels["large plate"]
+	oven := enums.Vessels["oven"]
+	cuttingBoard := enums.Vessels["cutting board"]
+
+	// Get bridge table entries
+	// Combine
+	combineSaltVIP := enums.IngredientPreparations[combinePrep.ID][salt.ID]
+	combineMSGVIP := enums.IngredientPreparations[combinePrep.ID][msg.ID]
+	combineFiveSpiceVIP := enums.IngredientPreparations[combinePrep.ID][fiveSpice.ID]
+	combineDarkBrownSugarVIP := enums.IngredientPreparations[combinePrep.ID][darkBrownSugar.ID]
+	combineWhitePepperVIP := enums.IngredientPreparations[combinePrep.ID][whitePepper.ID]
+	combineSmallBowlVPV := enums.PreparationVessels[combinePrep.ID][smallBowl.ID]
+	combineWhiskVPI := enums.PreparationInstruments[combinePrep.ID][whisk.ID]
+
+	// Dry
+	dryPaperTowelsVPI := enums.PreparationInstruments[dryPrep.ID][paperTowels.ID]
+
+	// Season
+	seasonBareHandsVPI := enums.PreparationInstruments[seasonPrep.ID][bareHands.ID]
+
+	// Transfer
+	transferChickenVIP := enums.IngredientPreparations[transferPrep.ID][chickenThighs.ID]
+	transferTongsVPI := enums.PreparationInstruments[transferPrep.ID][tongs.ID]
+	transferWireRackVPV := enums.PreparationVessels[transferPrep.ID][wireRack.ID]
+	transferBakingSheetVPV := enums.PreparationVessels[transferPrep.ID][bakingSheet.ID]
+	transferLargePlateVPV := enums.PreparationVessels[transferPrep.ID][largePlate.ID]
+
+	// Adjust
+	adjustOvenVPV := enums.PreparationVessels[adjustPrep.ID][oven.ID]
+
+	// Add
+	addFiveSpiceVIP := enums.IngredientPreparations[addPrep.ID][fiveSpice.ID]
+	addDarkBrownSugarVIP := enums.IngredientPreparations[addPrep.ID][darkBrownSugar.ID]
+
+	// Cook
+	cookWoodenSpoonVPI := enums.PreparationInstruments[cookPrep.ID][woodenSpoon.ID]
+
+	// Heat
+	heatOilVIP := enums.IngredientPreparations[heatPrep.ID][vegetableOil.ID]
+	heatSkilletVPV := enums.PreparationVessels[heatPrep.ID][castIronSkillet.ID]
+
+	// Pan-sear
+	panSearTongsVPI := enums.PreparationInstruments[panSearPrep.ID][tongs.ID]
+
+	// Flip
+	flipTongsVPI := enums.PreparationInstruments[flipPrep.ID][tongs.ID]
+
+	// Simmer
+	simmerStarAniseVIP := enums.IngredientPreparations[simmerPrep.ID][starAnise.ID]
+	simmerCinnamonStickVIP := enums.IngredientPreparations[simmerPrep.ID][cinnamonStick.ID]
+	simmerLightSoySauceVIP := enums.IngredientPreparations[simmerPrep.ID][lightSoySauce.ID]
+	simmerShaoxingWineVIP := enums.IngredientPreparations[simmerPrep.ID][shaoxingWine.ID]
+	simmerWaterVIP := enums.IngredientPreparations[simmerPrep.ID][water.ID]
+
+	// Braise
+	braiseThermometerVPI := enums.PreparationInstruments[braisePrep.ID][thermometer.ID]
+
+	// Cut
+	cutScallionsVIP := enums.IngredientPreparations[cutPrep.ID][scallions.ID]
+	cutKnifeVPI := enums.PreparationInstruments[cutPrep.ID][knife.ID]
+	cutCuttingBoardVPV := enums.PreparationVessels[cutPrep.ID][cuttingBoard.ID]
+
+	// Peel
+	peelGingerVIP := enums.IngredientPreparations[peelPrep.ID][ginger.ID]
+	peelGarlicVIP := enums.IngredientPreparations[peelPrep.ID][garlic.ID]
+	peelBareHandsVPI := enums.PreparationInstruments[peelPrep.ID][bareHands.ID]
+	peelCuttingBoardVPV := enums.PreparationVessels[peelPrep.ID][cuttingBoard.ID]
+
+	// Slice
+	sliceKnifeVPI := enums.PreparationInstruments[slicePrep.ID][knife.ID]
+	sliceCuttingBoardVPV := enums.PreparationVessels[slicePrep.ID][cuttingBoard.ID]
+
+	// Measurement unit bridges
+	saltGramVIMU := enums.IngredientMeasurementUnits[salt.ID][gramMeasurement.ID]
+	msgTeaspoonVIMU := enums.IngredientMeasurementUnits[msg.ID][teaspoonMeasurement.ID]
+	fiveSpiceTeaspoonVIMU := enums.IngredientMeasurementUnits[fiveSpice.ID][teaspoonMeasurement.ID]
+	darkBrownSugarTablespoonVIMU := enums.IngredientMeasurementUnits[darkBrownSugar.ID][tablespoonMeasurement.ID]
+	whitePepperTeaspoonVIMU := enums.IngredientMeasurementUnits[whitePepper.ID][teaspoonMeasurement.ID]
+	vegetableOilTablespoonVIMU := enums.IngredientMeasurementUnits[vegetableOil.ID][tablespoonMeasurement.ID]
+	scallionsUnitVIMU := enums.IngredientMeasurementUnits[scallions.ID][unitMeasurement.ID]
+	gingerUnitVIMU := enums.IngredientMeasurementUnits[ginger.ID][unitMeasurement.ID]
+	garlicCloveVIMU := enums.IngredientMeasurementUnits[garlic.ID][cloveMeasurement.ID]
+	starAniseUnitVIMU := enums.IngredientMeasurementUnits[starAnise.ID][unitMeasurement.ID]
+	cinnamonStickUnitVIMU := enums.IngredientMeasurementUnits[cinnamonStick.ID][unitMeasurement.ID]
+	lightSoySauceCupVIMU := enums.IngredientMeasurementUnits[lightSoySauce.ID][cupMeasurement.ID]
+	shaoxingWineCupVIMU := enums.IngredientMeasurementUnits[shaoxingWine.ID][cupMeasurement.ID]
+	waterCupVIMU := enums.IngredientMeasurementUnits[water.ID][cupMeasurement.ID]
+	chickenThighsPoundVIMU := enums.IngredientMeasurementUnits[chickenThighs.ID][poundMeasurement.ID]
+
+	// Step 0: In a small bowl, whisk together salt, MSG, 1/2 teaspoon five spice powder, 3 tablespoons dark brown sugar, and ground white pepper to combine. Set aside.
+	step0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        combinePrep.ID,
+		Index:                0,
+		ExplicitInstructions: "In a small bowl, whisk together salt, MSG, 1/2 teaspoon five spice powder, 3 tablespoons dark brown sugar, and ground white pepper to combine. Set aside.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &combineSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltGramVIMU.ID,
+				Name:                             "kosher salt",
+				Quantity: numbers.MinRange[float32]{
+					Min: 18, // about 1 tbsp
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineMSGVIP.ID,
+				ValidIngredientMeasurementUnitID: &msgTeaspoonVIMU.ID,
+				Name:                             "MSG",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineFiveSpiceVIP.ID,
+				ValidIngredientMeasurementUnitID: &fiveSpiceTeaspoonVIMU.ID,
+				Name:                             "five spice powder",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineDarkBrownSugarVIP.ID,
+				ValidIngredientMeasurementUnitID: &darkBrownSugarTablespoonVIMU.ID,
+				Name:                             "dark brown sugar",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &combineWhitePepperVIP.ID,
+				ValidIngredientMeasurementUnitID: &whitePepperTeaspoonVIMU.ID,
+				Name:                             "ground white pepper",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &combineWhiskVPI.ID,
+				Name:                         "whisk",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &combineSmallBowlVPV.ID,
+				Name:                     "small bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "dry brine mixture",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 1: Transfer chicken thighs to a wire rack set in a rimmed 13- by 18-inch baking sheet
+	step1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Transfer the chicken thighs to a wire rack set in a rimmed 13- by 18-inch baking sheet.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &transferChickenVIP.ID,
+				ValidIngredientMeasurementUnitID: &chickenThighsPoundVIMU.ID,
+				Name:                             "bone-in, skin-on chicken thighs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &transferTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &transferWireRackVPV.ID,
+				Name:                     "wire rack",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+			{
+				ValidPreparationVesselID: &transferBakingSheetVPV.ID,
+				Name:                     "rimmed 13- by 18-inch baking sheet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "chicken on wire rack",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "chicken",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+		},
+	}
+
+	// Step 2: Using paper towels, pat chicken dry
+	step2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        dryPrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Using paper towels, pat the chicken dry.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "chicken",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &dryPaperTowelsVPI.ID,
+				Name:                         "paper towels",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "dried chicken on wire rack",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:              "dried chicken",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             1,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+		},
+	}
+
+	// Step 3: Season chicken generously on all sides with salt mixture
+	step3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Season the chicken generously on all sides with the salt mixture.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "dried chicken on wire rack",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "dry brine mixture",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &seasonBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "chicken on wire rack",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 4: Adjust oven rack to middle position
+	step4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        adjustPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Adjust the oven rack to the middle position.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &adjustOvenVPV.ID,
+				Name:                     "oven",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "oven with rack in middle position",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 5: Preheat oven to 300°F (150°C)
+	step5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        preheatPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Preheat the oven to 300°F (150°C).",
+		TemperatureInCelsius: numbers.OpenRange[float32]{
+			Min: new(float32(150)), // 300°F
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "oven with rack in middle position",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "preheated oven at 300°F",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 6: Cut scallions into 2-inch segments
+	step6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        cutPrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Cut the scallions, green and white parts, into 2-inch segments.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &cutScallionsVIP.ID,
+				ValidIngredientMeasurementUnitID: &scallionsUnitVIMU.ID,
+				Name:                             "scallions",
+				QuantityNotes:                    "8 scallions",
+				Quantity: numbers.MinRange[float32]{
+					Min: 8,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &cutKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &cutCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "cut scallions",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(8)),
+				},
+			},
+		},
+	}
+
+	// Step 7: Peel ginger
+	step7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        peelPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Peel the ginger.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &peelGingerVIP.ID,
+				ValidIngredientMeasurementUnitID: &gingerUnitVIMU.ID,
+				Name:                             "ginger",
+				QuantityNotes:                    "One 2-inch piece",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &peelBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &peelCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "peeled ginger",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 8: Slice ginger thinly
+	step8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        slicePrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Thinly slice the peeled ginger.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "peeled ginger",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &sliceKnifeVPI.ID,
+				Name:                         "knife",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &sliceCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "sliced ginger",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 9: Peel garlic cloves
+	step9 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        peelPrep.ID,
+		Index:                9,
+		ExplicitInstructions: "Peel 5 medium cloves of garlic.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &peelGarlicVIP.ID,
+				ValidIngredientMeasurementUnitID: &garlicCloveVIMU.ID,
+				Name:                             "garlic",
+				QuantityNotes:                    "5 medium cloves",
+				Quantity: numbers.MinRange[float32]{
+					Min: 5,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &peelBareHandsVPI.ID,
+				Name:                         "bare hands",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &peelCuttingBoardVPV.ID,
+				Name:                     "cutting board",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "peeled garlic cloves",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &cloveMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(5)),
+				},
+			},
+		},
+	}
+
+	// Step 10: In a large cast iron or carbon steel skillet set over medium heat, heat vegetable oil until shimmering
+	shimmeringState := enums.IngredientStates["shimmering"]
+	step10 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        heatPrep.ID,
+		Index:                10,
+		ExplicitInstructions: "In a large cast iron or carbon steel skillet set over medium heat, heat the vegetable oil until shimmering.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &heatOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &vegetableOilTablespoonVIMU.ID,
+				Name:                             "neutral oil, such as vegetable",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &heatSkilletVPV.ID,
+				Name:                     "large cast iron or carbon steel skillet",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "heated skillet with oil",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: shimmeringState.ID,
+				Notes:             "Oil should shimmer when viewed",
+				Ingredients:       []uint64{0}, // Index of oil ingredient in the step
+				Optional:          false,
+			},
+		},
+	}
+
+	// Step 11: Working in batches if necessary, add chicken, skin-side-down, and cook without moving until well-browned and crispy, 4 to 6 minutes
+	step11 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        panSearPrep.ID,
+		Index:                11,
+		ExplicitInstructions: "Working in batches if necessary, add the chicken, skin-side-down, and cook without moving until well-browned and crispy, 4 to 6 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(240)), // 4 minutes
+			Max: new(uint32(360)), // 6 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "chicken on wire rack",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &panSearTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(10)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "heated skillet with oil",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "seared chicken thighs (skin-side)",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:  "skillet with seared chicken",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 12: Flip chicken
+	step12 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        flipPrep.ID,
+		Index:                12,
+		ExplicitInstructions: "Flip the chicken.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(11)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "seared chicken thighs (skin-side)",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &flipTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(11)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with seared chicken",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "flipped chicken thighs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:  "skillet with flipped chicken",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 13: Cook lightly on second side, about 2 minutes
+	step13 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        panSearPrep.ID,
+		Index:                13,
+		ExplicitInstructions: "Cook lightly on the second side, about 2 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(120)), // 2 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(12)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "flipped chicken thighs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &panSearTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(12)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with flipped chicken",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "seared chicken thighs (both sides)",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:  "skillet with seared chicken",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 14: Transfer chicken to a large plate and set aside
+	step14 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                14,
+		ExplicitInstructions: "Transfer the chicken to a large plate and set aside.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(13)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "seared chicken thighs (both sides)",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &transferTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &transferLargePlateVPV.ID,
+				Name:                     "large plate",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "seared chicken on plate",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 15: Reduce heat to medium-low
+	step15 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        reducePrep.ID,
+		Index:                15,
+		ExplicitInstructions: "Reduce the heat to medium-low.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(13)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with seared chicken",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "skillet at medium-low heat",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 16: Add scallions, ginger, garlic, five spice powder, and dark brown sugar
+	step16 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                16,
+		ExplicitInstructions: "Add the scallions, ginger, garlic, 1 teaspoon five spice powder, and 3 tablespoons dark brown sugar.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "cut scallions",
+				Quantity: numbers.MinRange[float32]{
+					Min: 8,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "sliced ginger",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(9)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "peeled garlic cloves",
+				Quantity: numbers.MinRange[float32]{
+					Min: 5,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &addFiveSpiceVIP.ID,
+				ValidIngredientMeasurementUnitID: &fiveSpiceTeaspoonVIMU.ID,
+				Name:                             "five spice powder",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &addDarkBrownSugarVIP.ID,
+				ValidIngredientMeasurementUnitID: &darkBrownSugarTablespoonVIMU.ID,
+				Name:                             "dark brown sugar",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(15)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "skillet at medium-low heat",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "aromatics in skillet",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "skillet with aromatics",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 17: Cook, stirring, until vegetables are softened and starting to brown, 3 to 5 minutes
+	step17 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        cookPrep.ID,
+		Index:                17,
+		ExplicitInstructions: "Cook, stirring, until the vegetables are softened and starting to brown, 3 to 5 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(180)), // 3 minutes
+			Max: new(uint32(300)), // 5 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(16)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "aromatics in skillet",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &cookWoodenSpoonVPI.ID,
+				Name:                         "wooden spoon",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(16)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with aromatics",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "cooked aromatics",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "skillet with aromatics",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 18: Add star anise, cinnamon stick, soy sauce, Shaoxing wine, and water, and bring to a simmer over medium heat
+	step18 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        simmerPrep.ID,
+		Index:                18,
+		ExplicitInstructions: "Add star anise, cinnamon stick, soy sauce, Shaoxing wine, and water, and bring to a simmer over medium heat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(17)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "cooked aromatics",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &simmerStarAniseVIP.ID,
+				ValidIngredientMeasurementUnitID: &starAniseUnitVIMU.ID,
+				Name:                             "star anise",
+				Quantity: numbers.MinRange[float32]{
+					Min: 3,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &simmerCinnamonStickVIP.ID,
+				ValidIngredientMeasurementUnitID: &cinnamonStickUnitVIMU.ID,
+				Name:                             "cinnamon stick",
+				QuantityNotes:                    "One 2-inch piece",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &simmerLightSoySauceVIP.ID,
+				ValidIngredientMeasurementUnitID: &lightSoySauceCupVIMU.ID,
+				Name:                             "light soy sauce",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &simmerShaoxingWineVIP.ID,
+				ValidIngredientMeasurementUnitID: &shaoxingWineCupVIMU.ID,
+				Name:                             "Shaoxing wine",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &simmerWaterVIP.ID,
+				ValidIngredientMeasurementUnitID: &waterCupVIMU.ID,
+				Name:                             "water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1.5,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(17)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with aromatics",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "simmering braising liquid",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "skillet with braising liquid",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 19: Return chicken to pan skin-side-up, leaving the skin above the liquid but submerging most of the meat
+	step19 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                19,
+		ExplicitInstructions: "Return the chicken to the pan skin-side-up, leaving the skin above the liquid but submerging most of the meat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(14)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "seared chicken on plate",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &transferTongsVPI.ID,
+				Name:                         "tongs",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(18)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with braising liquid",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "chicken in braising liquid",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:  "skillet with chicken in braising liquid",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 20: Transfer skillet to oven
+	step20 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                20,
+		ExplicitInstructions: "Transfer the skillet to the oven.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(19)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with chicken in braising liquid",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "preheated oven at 300°F",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "skillet with chicken in oven",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 21: Cook uncovered until chicken is cooked through and tender and registers at least 175°F (79°C), about 30 minutes
+	atTemperatureState := enums.IngredientStates["at temperature"]
+	step21 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        braisePrep.ID,
+		Index:                21,
+		ExplicitInstructions: "Cook uncovered until the chicken is cooked through and tender and registers at least 175°F (79°C), about 30 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(1800)), // 30 minutes
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(19)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "chicken in braising liquid",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &braiseThermometerVPI.ID,
+				Name:                         "instant-read thermometer",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(20)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "skillet with chicken in oven",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "braised chicken thighs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &poundMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(2)),
+				},
+			},
+			{
+				Name:  "skillet with braised chicken",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: atTemperatureState.ID,
+				Notes:             "Chicken should register at least 175°F (79°C) on an instant-read thermometer",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+	}
+
+	// Step 22: Remove pan from oven
+	step22 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                22,
+		ExplicitInstructions: "Remove the pan from the oven.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(21)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				Name:                            "braised chicken thighs",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(21)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				Name:                            "skillet with braised chicken",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "soy sauce braised chicken thighs",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Create prep task for dry-brining chicken ahead of time
+	prepTask1 := &mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{
+		Name:                        "Dry-brine chicken thighs",
+		Description:                 "The chicken can be dry-brined at least 8 hours and up to 72 hours in advance. Store in the refrigerator uncovered on a wire rack set in a rimmed baking sheet.",
+		Notes:                       "Dry-brining yields tender, juicy meat with crackly skin.",
+		Optional:                    true,
+		ExplicitStorageInstructions: "Store the seasoned chicken on a wire rack set in a rimmed baking sheet in the refrigerator, uncovered, for at least 8 hours and up to 72 hours.",
+		StorageType:                 mealplanning.RecipePrepTaskStorageTypeWireRack,
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: new(float32(4)),
+		},
+		TimeBufferBeforeRecipeInSeconds: numbers.MinRange[uint32]{
+			Min: 28800,               // 8 hours
+			Max: new(uint32(259200)), // 72 hours
+		},
+		RecipeSteps: []*mealplanning.RecipePrepTaskStepWithinRecipeCreationRequestInput{
+			{BelongsToRecipeStepIndex: 0, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 1, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 2, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 3, SatisfiesRecipeStep: true},
+		},
+	}
+
+	prepTask2 := &mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{
+		Name:                        "Prepare aromatics",
+		Description:                 "Cut scallions into 2-inch segments, peel and thinly slice ginger, and peel garlic cloves ahead of time.",
+		Notes:                       "Scallions keep 3-4 days, ginger up to 1 week, and whole peeled garlic cloves up to 1 week in the fridge.",
+		Optional:                    true,
+		ExplicitStorageInstructions: "Store the prepared aromatics in separate airtight containers in the refrigerator for up to 3 days.",
+		StorageType:                 mealplanning.RecipePrepTaskStorageTypeAirtightContainer,
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: new(float32(4)),
+		},
+		TimeBufferBeforeRecipeInSeconds: numbers.MinRange[uint32]{
+			Min: 0,
+			Max: new(uint32(259200)), // 3 days
+		},
+		RecipeSteps: []*mealplanning.RecipePrepTaskStepWithinRecipeCreationRequestInput{
+			{BelongsToRecipeStepIndex: 6, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 7, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 8, SatisfiesRecipeStep: true},
+		},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		{
+			Name:                "Soy Sauce–Braised Chicken Thighs",
+			Slug:                "soy-sauce-braised-chicken-thighs",
+			Source:              "https://www.seriouseats.com/soy-sauce-braised-chicken-thighs-recipe-8737800",
+			Description:         "Bathed in a fragrant blend of soy sauce, brown sugar, and warm spices, these tender chicken thighs evoke the flavors of classic Cantonese soy sauce chicken. The chicken is seared until crispy, then gently braised in the oven.",
+			YieldsComponentType: mealplanning.MealComponentTypesMain,
+			EstimatedPortions: numbers.MinRange[float32]{
+				Min: 4,
+			},
+			PortionName:       "serving",
+			PluralPortionName: "servings",
+			EligibleForMeals:  true,
+			Steps:             []*mealplanning.RecipeStepCreationRequestInput{step0, step1, step2, step3, step4, step5, step6, step7, step8, step9, step10, step11, step12, step13, step14, step15, step16, step17, step18, step19, step20, step21, step22},
+			PrepTasks:         []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{prepTask1, prepTask2},
+			AlsoCreateMeal:    false,
+		},
+	}
+}

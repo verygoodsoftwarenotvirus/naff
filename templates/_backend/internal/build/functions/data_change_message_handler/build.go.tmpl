@@ -1,0 +1,104 @@
+package datachangemessagehandler
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	mealplanningregistration "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/registration"
+	notificationsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/notifications/manager"
+	settingsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/settings/manager"
+	waitlistsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/waitlists/manager"
+	"{{ .Project.ProjectMeta.Module }}/internal/functions/datachangemessagehandler"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/auditlogentries"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/auth"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/dataprivacy"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/identity"
+	internalopsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/internalops"
+	issue_reports "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/issuereports"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/uploadedmedia"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/webhooks"
+	identityindexing "{{ .Project.ProjectMeta.Module }}/internal/services/identity/indexing"
+
+	analyticscfg "github.com/primandproper/platform/analytics/config"
+	databasecfg "github.com/primandproper/platform/database/config"
+	"github.com/primandproper/platform/database/postgres"
+	emailcfg "github.com/primandproper/platform/email/config"
+	"github.com/primandproper/platform/encoding"
+	"github.com/primandproper/platform/httpclient"
+	msgconfig "github.com/primandproper/platform/messagequeue/config"
+	notificationscfg "github.com/primandproper/platform/notifications/mobile/config"
+	"github.com/primandproper/platform/observability"
+	loggingcfg "github.com/primandproper/platform/observability/logging/config"
+	metricscfg "github.com/primandproper/platform/observability/metrics/config"
+	tracingcfg "github.com/primandproper/platform/observability/tracing/config"
+	"github.com/primandproper/platform/uploads/objectstorage"
+
+	"github.com/samber/do/v2"
+)
+
+// BuildInjector creates and configures the dependency injection container.
+func BuildInjector(
+	ctx context.Context,
+	cfg *config.AsyncMessageHandlerConfig,
+) *do.RootScope {
+	i := do.New()
+
+	do.ProvideValue(i, ctx)
+	do.ProvideValue(i, cfg)
+
+	// config field extraction
+	RegisterConfigs(i)
+
+	// platform providers
+	observability.RegisterO11yConfigs(i)
+	tracingcfg.RegisterTracerProvider(i)
+	loggingcfg.RegisterLogger(i)
+	metricscfg.RegisterMetricsProvider(i)
+	msgconfig.RegisterMessageQueue(i)
+	httpclient.RegisterHTTPClient(i)
+	encoding.RegisterServerEncoderDecoder(i)
+	analyticscfg.RegisterEventReporter(i)
+	emailcfg.RegisterEmailer(i)
+	databasecfg.RegisterClientConfig(i)
+	postgres.RegisterDatabaseClient(i)
+	objectstorage.RegisterUploadManager(i)
+	notificationscfg.RegisterPushSender(i)
+
+	// Domain: mealplanning
+	mealplanningregistration.RegisterForDataChangeHandler(i)
+
+	// repos
+	auditlogentries.RegisterAuditLogRepository(i)
+	auth.RegisterAuthRepository(i)
+	dataprivacy.RegisterDataPrivacyRepository(i)
+	identity.RegisterIdentityRepository(i)
+	issue_reports.RegisterIssueReportsRepository(i)
+	uploadedmedia.RegisterUploadedMediaRepository(i)
+	webhooks.RegisterWebhooksRepository(i)
+	internalopsrepo.RegisterInternalOpsRepository(i)
+
+	// managers
+	notificationsmanager.RegisterNotificationsDataManager(i)
+	settingsmanager.RegisterSettingsDataManager(i)
+	waitlistsmanager.RegisterWaitlistDataManager(i)
+
+	// indexing
+	identityindexing.RegisterCoreDataIndexer(i)
+
+	// searchers
+	RegisterSearchers(i)
+
+	// main handler
+	datachangemessagehandler.RegisterAsyncDataChangeMessageHandler(i)
+
+	return i
+}
+
+// Build builds a server.
+func Build(
+	ctx context.Context,
+	cfg *config.AsyncMessageHandlerConfig,
+) (*datachangemessagehandler.AsyncDataChangeMessageHandler, error) {
+	i := BuildInjector(ctx, cfg)
+	return do.MustInvoke[*datachangemessagehandler.AsyncDataChangeMessageHandler](i), nil
+}

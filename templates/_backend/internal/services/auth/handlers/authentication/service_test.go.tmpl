@@ -1,0 +1,111 @@
+package authentication
+
+import (
+	"context"
+	"encoding/base64"
+	"testing"
+
+	mockauthn "{{ .Project.ProjectMeta.Module }}/internal/authentication/mock"
+	identitymanagermock "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/manager/mock"
+	oauthmock "{{ .Project.ProjectMeta.Module }}/internal/domain/oauth/mock"
+	"{{ .Project.ProjectMeta.Module }}/internal/testutils"
+
+	tokenscfg "github.com/primandproper/platform/authentication/tokens/config"
+	mocktotp "github.com/primandproper/platform/authentication/totp/mock"
+	"github.com/primandproper/platform/messagequeue"
+	msgconfig "github.com/primandproper/platform/messagequeue/config"
+	mockpublishers "github.com/primandproper/platform/messagequeue/mock"
+	loggingnoop "github.com/primandproper/platform/observability/logging/noop"
+	tracingnoop "github.com/primandproper/platform/observability/tracing/noop"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func buildTestService(t *testing.T) *service {
+	t.Helper()
+
+	ctx := t.Context()
+	logger := loggingnoop.NewLogger()
+
+	cfg := &Config{
+		Tokens: tokenscfg.Config{
+			Provider:                tokenscfg.ProviderJWT,
+			Audience:                "",
+			Base64EncodedSigningKey: base64.URLEncoding.EncodeToString([]byte(testutils.Example32ByteKey)),
+		},
+	}
+	queueCfg := &msgconfig.QueuesConfig{DataChangesTopicName: "data_changes"}
+
+	pp := &mockpublishers.PublisherProviderMock{
+		ProvidePublisherFunc: func(_ context.Context, _ string) (messagequeue.Publisher, error) {
+			return &mockpublishers.PublisherMock{
+				PublishFunc:      func(_ context.Context, _ any) error { return nil },
+				PublishAsyncFunc: func(_ context.Context, _ any) {},
+				StopFunc:         func() {},
+			}, nil
+		},
+	}
+
+	s, err := ProvideService(
+		ctx,
+		logger,
+		cfg,
+		&mockauthn.Authenticator{},
+		&mocktotp.VerifierMock{},
+		&oauthmock.RepositoryMock{},
+		&identitymanagermock.IdentityDataManager{},
+		tracingnoop.NewTracerProvider(),
+		pp,
+		queueCfg,
+	)
+	require.NoError(t, err)
+
+	return s.(*service)
+}
+
+func TestProvideService(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		logger := loggingnoop.NewLogger()
+
+		cfg := &Config{
+			Tokens: tokenscfg.Config{
+				Provider:                tokenscfg.ProviderJWT,
+				Audience:                "",
+				Base64EncodedSigningKey: base64.URLEncoding.EncodeToString([]byte(testutils.Example32ByteKey)),
+			},
+		}
+		queueCfg := &msgconfig.QueuesConfig{DataChangesTopicName: "data_changes"}
+
+		pp := &mockpublishers.PublisherProviderMock{
+			ProvidePublisherFunc: func(_ context.Context, _ string) (messagequeue.Publisher, error) {
+				return &mockpublishers.PublisherMock{
+					PublishFunc:      func(_ context.Context, _ any) error { return nil },
+					PublishAsyncFunc: func(_ context.Context, _ any) {},
+					StopFunc:         func() {},
+				}, nil
+			},
+		}
+
+		s, err := ProvideService(
+			ctx,
+			logger,
+			cfg,
+			&mockauthn.Authenticator{},
+			&mocktotp.VerifierMock{},
+			&oauthmock.RepositoryMock{},
+			&identitymanagermock.IdentityDataManager{},
+			tracingnoop.NewTracerProvider(),
+			pp,
+			queueCfg,
+		)
+
+		assert.NotNil(t, s)
+		assert.NoError(t, err)
+	})
+}

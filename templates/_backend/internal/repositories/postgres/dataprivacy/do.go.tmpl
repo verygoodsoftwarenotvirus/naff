@@ -1,0 +1,39 @@
+package dataprivacy
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/audit"
+	domaindataprivacy "{{ .Project.ProjectMeta.Module }}/internal/domain/dataprivacy"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/identity"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/issuereports"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/notifications"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/settings"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/waitlists"
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/webhooks"
+
+	"github.com/primandproper/platform/database"
+	"github.com/primandproper/platform/observability/logging"
+	"github.com/primandproper/platform/observability/tracing"
+
+	"github.com/samber/do/v2"
+)
+
+// RegisterDataPrivacyRepository registers the data privacy repository with the injector.
+func RegisterDataPrivacyRepository(i do.Injector) {
+	do.Provide[domaindataprivacy.Repository](i, func(i do.Injector) (domaindataprivacy.Repository, error) {
+		return ProvideDataPrivacyRepository(
+			do.MustInvoke[logging.Logger](i),
+			do.MustInvoke[tracing.TracerProvider](i),
+			do.MustInvoke[audit.Repository](i),
+			do.MustInvoke[identity.Repository](i),
+			do.MustInvoke[issuereports.Repository](i),
+			do.MustInvoke[notifications.Repository](i),
+			do.MustInvoke[settings.Repository](i),
+			do.MustInvoke[uploadedmedia.Repository](i),
+			do.MustInvoke[waitlists.Repository](i),
+			do.MustInvoke[webhooks.Repository](i),
+			do.MustInvoke[database.Client](i),
+			do.MustInvoke[[]domaindataprivacy.UserDataCollector](i),
+		), nil
+	})
+}

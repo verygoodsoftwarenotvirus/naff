@@ -8,6 +8,11 @@ project:
 targets:
   backend: true
   ios: true
+  # Opt out — integration_project.yaml is the generic fresh-project fixture, and
+  # cmd/functions/async_message_handler imports a hand-rolled
+  # internal/build/functions/data_change_message_handler package that naff
+  # doesn't emit. Without this opt-out, `go build ./...` inside output/ would fail.
+  async_message_handler: false
 
 features:
   webhooks: true

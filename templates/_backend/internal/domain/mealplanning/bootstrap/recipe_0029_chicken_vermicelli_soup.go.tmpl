@@ -1,0 +1,995 @@
+package bootstrap
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
+
+	"github.com/primandproper/platform/numbers"
+)
+
+// ChickenVermicelliSoupRecipe creates the Chicken and Vermicelli Soup with Lime recipe.
+// Source: https://cooking.nytimes.com/recipes/1026337-chicken-and-vermicelli-soup-with-lime
+func ChickenVermicelliSoupRecipe(enums *Enumerations) []*mealplanning.RecipeCreationRequestInput {
+	// Get preparations
+	meltPrep := enums.Preparations["melt"]
+	sautePrep := enums.Preparations["sauté"]
+	sprinklePrep := enums.Preparations["sprinkle"]
+	adjustPrep := enums.Preparations["adjust"]
+	addPrep := enums.Preparations["add"]
+	cookPrep := enums.Preparations["cook"]
+	placePrep := enums.Preparations["place"]
+	seasonPrep := enums.Preparations["season"]
+	coverPrep := enums.Preparations["cover"]
+	boilPrep := enums.Preparations["boil"]
+	simmerPrep := enums.Preparations["simmer"]
+	transferPrep := enums.Preparations["transfer"]
+	shredPrep := enums.Preparations["shred"]
+	removeFromHeatPrep := enums.Preparations["remove from heat"]
+	stirPrep := enums.Preparations["stir"]
+
+	// Get ingredients
+	butter := enums.Ingredients["butter"]
+	oliveOil := enums.Ingredients["olive oil"]
+	onion := enums.Ingredients["onion"]
+	turmeric := enums.Ingredients["turmeric"]
+	potato := enums.Ingredients["potato"]
+	carrot := enums.Ingredients["carrot"]
+	tomatoPaste := enums.Ingredients["tomato paste"]
+	chickenBreast := enums.Ingredients["chicken breast"]
+	salt := enums.Ingredients["salt"]
+	blackPepper := enums.Ingredients["black pepper"]
+	water := enums.Ingredients["water"]
+	vermicelli := enums.Ingredients["vermicelli"]
+	parsley := enums.Ingredients["parsley"]
+	limeJuice := enums.Ingredients["lime juice"]
+	lemonJuice := enums.Ingredients["lemon juice"]
+
+	// Get measurement units
+	tablespoonMeasurement := enums.MeasurementUnits["tablespoon"]
+	teaspoonMeasurement := enums.MeasurementUnits["teaspoon"]
+	cupMeasurement := enums.MeasurementUnits["cup"]
+	unitMeasurement := enums.MeasurementUnits["unit"]
+
+	// Get instruments
+	woodenSpoon := enums.Instruments["wooden spoon"]
+	fork := enums.Instruments["fork"]
+
+	// Get vessels
+	largePot := enums.Vessels["pot"]
+	mediumBowl := enums.Vessels["medium bowl"]
+
+	// Get bridge table entries
+	meltButterVIP := enums.IngredientPreparations[meltPrep.ID][butter.ID]
+	meltOliveOilVIP := enums.IngredientPreparations[meltPrep.ID][oliveOil.ID]
+	meltPotVPV := enums.PreparationVessels[meltPrep.ID][largePot.ID]
+
+	sauteOnionVIP := enums.IngredientPreparations[sautePrep.ID][onion.ID]
+	sautePotVPV := enums.PreparationVessels[sautePrep.ID][largePot.ID]
+
+	sprinkleTurmericVIP := enums.IngredientPreparations[sprinklePrep.ID][turmeric.ID]
+	sprinklePotVPV := enums.PreparationVessels[sprinklePrep.ID][largePot.ID]
+
+	addPotatoVIP := enums.IngredientPreparations[addPrep.ID][potato.ID]
+	addCarrotVIP := enums.IngredientPreparations[addPrep.ID][carrot.ID]
+	addPotVPV := enums.PreparationVessels[addPrep.ID][largePot.ID]
+
+	adjustPotVPV := enums.PreparationVessels[adjustPrep.ID][largePot.ID]
+
+	cookTomatoPasteVIP := enums.IngredientPreparations[cookPrep.ID][tomatoPaste.ID]
+	cookPotVPV := enums.PreparationVessels[cookPrep.ID][largePot.ID]
+	cookWoodenSpoonVPI := enums.PreparationInstruments[cookPrep.ID][woodenSpoon.ID]
+
+	placeChickenVIP := enums.IngredientPreparations[placePrep.ID][chickenBreast.ID]
+	placePotVPV := enums.PreparationVessels[placePrep.ID][largePot.ID]
+
+	seasonChickenVIP := enums.IngredientPreparations[seasonPrep.ID][chickenBreast.ID]
+	seasonSaltVIP := enums.IngredientPreparations[seasonPrep.ID][salt.ID]
+	seasonBlackPepperVIP := enums.IngredientPreparations[seasonPrep.ID][blackPepper.ID]
+	seasonPotVPV := enums.PreparationVessels[seasonPrep.ID][largePot.ID]
+
+	addWaterVIP := enums.IngredientPreparations[addPrep.ID][water.ID]
+	addChickenVIP := enums.IngredientPreparations[addPrep.ID][chickenBreast.ID]
+	addVermicelliVIP := enums.IngredientPreparations[addPrep.ID][vermicelli.ID]
+	coverPotVPV := enums.PreparationVessels[coverPrep.ID][largePot.ID]
+	boilChickenVIP := enums.IngredientPreparations[boilPrep.ID][chickenBreast.ID]
+	boilPotVPV := enums.PreparationVessels[boilPrep.ID][largePot.ID]
+	simmerChickenVIP := enums.IngredientPreparations[simmerPrep.ID][chickenBreast.ID]
+	simmerPotVPV := enums.PreparationVessels[simmerPrep.ID][largePot.ID]
+
+	transferChickenVIP := enums.IngredientPreparations[transferPrep.ID][chickenBreast.ID]
+	transferMediumBowlVPV := enums.PreparationVessels[transferPrep.ID][mediumBowl.ID]
+
+	shredChickenVIP := enums.IngredientPreparations[shredPrep.ID][chickenBreast.ID]
+	shredForkVPI := enums.PreparationInstruments[shredPrep.ID][fork.ID]
+	shredMediumBowlVPV := enums.PreparationVessels[shredPrep.ID][mediumBowl.ID]
+
+	removeFromHeatPotVPV := enums.PreparationVessels[removeFromHeatPrep.ID][largePot.ID]
+
+	stirParsleyVIP := enums.IngredientPreparations[stirPrep.ID][parsley.ID]
+	stirLimeJuiceVIP := enums.IngredientPreparations[stirPrep.ID][limeJuice.ID]
+	stirLemonJuiceVIP := enums.IngredientPreparations[stirPrep.ID][lemonJuice.ID]
+	stirPotVPV := enums.PreparationVessels[stirPrep.ID][largePot.ID]
+	stirWoodenSpoonVPI := enums.PreparationInstruments[stirPrep.ID][woodenSpoon.ID]
+
+	// Measurement unit bridges
+	butterTbspVIMU := enums.IngredientMeasurementUnits[butter.ID][tablespoonMeasurement.ID]
+	oliveOilTbspVIMU := enums.IngredientMeasurementUnits[oliveOil.ID][tablespoonMeasurement.ID]
+	onionUnitVIMU := enums.IngredientMeasurementUnits[onion.ID][unitMeasurement.ID]
+	turmericTspVIMU := enums.IngredientMeasurementUnits[turmeric.ID][teaspoonMeasurement.ID]
+	potatoUnitVIMU := enums.IngredientMeasurementUnits[potato.ID][unitMeasurement.ID]
+	carrotUnitVIMU := enums.IngredientMeasurementUnits[carrot.ID][unitMeasurement.ID]
+	tomatoPasteTbspVIMU := enums.IngredientMeasurementUnits[tomatoPaste.ID][tablespoonMeasurement.ID]
+	chickenBreastUnitVIMU := enums.IngredientMeasurementUnits[chickenBreast.ID][unitMeasurement.ID]
+	saltTspVIMU := enums.IngredientMeasurementUnits[salt.ID][teaspoonMeasurement.ID]
+	blackPepperTspVIMU := enums.IngredientMeasurementUnits[blackPepper.ID][teaspoonMeasurement.ID]
+	waterCupVIMU := enums.IngredientMeasurementUnits[water.ID][cupMeasurement.ID]
+	vermicelliCupVIMU := enums.IngredientMeasurementUnits[vermicelli.ID][cupMeasurement.ID]
+	parsleyTbspVIMU := enums.IngredientMeasurementUnits[parsley.ID][tablespoonMeasurement.ID]
+	limeJuiceTbspVIMU := enums.IngredientMeasurementUnits[limeJuice.ID][tablespoonMeasurement.ID]
+	lemonJuiceTbspVIMU := enums.IngredientMeasurementUnits[lemonJuice.ID][tablespoonMeasurement.ID]
+
+	// Ingredient states
+	translucentState := enums.IngredientStates["translucent"]
+	combinedState := enums.IngredientStates["combined"]
+	tenderState := enums.IngredientStates["tender"]
+	atTemperatureState := enums.IngredientStates["at temperature"]
+
+	// Step 0: Melt butter (or olive oil) in large pot over medium heat
+	step0 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        meltPrep.ID,
+		Index:                0,
+		ExplicitInstructions: "In a large pot, melt the butter (or olive oil) over medium heat.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &meltButterVIP.ID,
+				ValidIngredientMeasurementUnitID: &butterTbspVIMU.ID,
+				Name:                             "butter",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 0,
+			},
+			{
+				ValidIngredientPreparationID:     &meltOliveOilVIP.ID,
+				ValidIngredientMeasurementUnitID: &oliveOilTbspVIMU.ID,
+				Name:                             "olive oil",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+				Index:       new(uint16(0)),
+				OptionIndex: 1,
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &meltPotVPV.ID,
+				Name:                     "large pot",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with melted fat",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 1: Add onion and cook until softened and translucent, about 5 minutes
+	step1 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        sautePrep.ID,
+		Index:                1,
+		ExplicitInstructions: "Add the onion and cook, stirring frequently, until softened and translucent, about 5 minutes; you don't want the onion to take on any color.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(300)),
+		},
+		StartTimerAutomatically: true,
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &sauteOnionVIP.ID,
+				ValidIngredientMeasurementUnitID: &onionUnitVIMU.ID,
+				Name:                             "yellow onion",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+				QuantityNotes: "small or ½ large, finely chopped",
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(0)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &sautePotVPV.ID,
+				Name:                            "pot with melted fat",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "cooked translucent onion",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+			{
+				Name:  "pot with cooked onion",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 1,
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: translucentState.ID,
+				Notes:             "Onion should be softened and translucent, no color",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+	}
+
+	// Step 2: Sprinkle in turmeric and stir until fragrant, about 30 seconds
+	step2 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        sprinklePrep.ID,
+		Index:                2,
+		ExplicitInstructions: "Sprinkle in the turmeric and stir until fragrant, about 30 seconds.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(30)),
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &sprinkleTurmericVIP.ID,
+				ValidIngredientMeasurementUnitID: &turmericTspVIMU.ID,
+				Name:                             "ground turmeric",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.5,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(1)),
+				ProductOfRecipeStepProductIndex: new(uint64(1)),
+				ValidPreparationVesselID:        &sprinklePotVPV.ID,
+				Name:                            "pot with cooked onion",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with onion and turmeric",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: combinedState.ID,
+				Notes:             "Turmeric should be fragrant and combined with the onion",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+	}
+
+	// Step 3: Add potato and carrot, stir and cook for 2 minutes
+	step3 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                3,
+		ExplicitInstructions: "Add the potato and carrot, then stir and cook for 2 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(120)),
+		},
+		StartTimerAutomatically: true,
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &addPotatoVIP.ID,
+				ValidIngredientMeasurementUnitID: &potatoUnitVIMU.ID,
+				Name:                             "medium Yukon Gold potato, diced into small cubes",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &addCarrotVIP.ID,
+				ValidIngredientMeasurementUnitID: &carrotUnitVIMU.ID,
+				Name:                             "large carrot, finely chopped",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(2)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &addPotVPV.ID,
+				Name:                            "pot with onion and turmeric",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with vegetables",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 4: Adjust heat to medium-low
+	step4 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        adjustPrep.ID,
+		Index:                4,
+		ExplicitInstructions: "Adjust heat to medium-low.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(3)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &adjustPotVPV.ID,
+				Name:                            "pot with vegetables",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with vegetables",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 5: Add tomato paste and cook, stirring frequently, until color releases
+	step5 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        cookPrep.ID,
+		Index:                5,
+		ExplicitInstructions: "Add the tomato paste. Cook, stirring frequently, until the tomato paste releases its color into the oil, 2 to 3 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(120)),
+			Max: new(uint32(180)),
+		},
+		StartTimerAutomatically: true,
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &cookTomatoPasteVIP.ID,
+				ValidIngredientMeasurementUnitID: &tomatoPasteTbspVIMU.ID,
+				Name:                             "tomato paste",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &cookWoodenSpoonVPI.ID,
+				Name:                         "wooden spoon",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(4)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &cookPotVPV.ID,
+				Name:                            "pot with vegetables",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with cooked tomato paste and vegetables",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 6: Place chicken on top of vegetables
+	step6 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        placePrep.ID,
+		Index:                6,
+		ExplicitInstructions: "Place the chicken breast on top of the vegetables.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &placeChickenVIP.ID,
+				ValidIngredientMeasurementUnitID: &chickenBreastUnitVIMU.ID,
+				Name:                             "boneless, skinless chicken breast",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(5)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &placePotVPV.ID,
+				Name:                            "pot with cooked tomato paste and vegetables",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with chicken on vegetables",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 7: Season with salt and pepper
+	step7 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        seasonPrep.ID,
+		Index:                7,
+		ExplicitInstructions: "Season with 2 teaspoons salt and ¼ teaspoon pepper.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &seasonChickenVIP.ID,
+				Name:                            "chicken in pot",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonSaltVIP.ID,
+				ValidIngredientMeasurementUnitID: &saltTspVIMU.ID,
+				Name:                             "Kosher salt (such as Diamond Crystal)",
+				Quantity: numbers.MinRange[float32]{
+					Min: 2,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &seasonBlackPepperVIP.ID,
+				ValidIngredientMeasurementUnitID: &blackPepperTspVIMU.ID,
+				Name:                             "black pepper",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.25,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(6)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &seasonPotVPV.ID,
+				Name:                            "pot with chicken on vegetables",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with seasoned chicken and vegetables",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 8: Add water and stir
+	step8 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                8,
+		ExplicitInstructions: "Add 6 cups of water and stir.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &addWaterVIP.ID,
+				ValidIngredientMeasurementUnitID: &waterCupVIMU.ID,
+				Name:                             "water",
+				Quantity: numbers.MinRange[float32]{
+					Min: 6,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(7)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &addPotVPV.ID,
+				Name:                            "pot with seasoned chicken and vegetables",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with chicken and seasoned soup base",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 9: Partially cover
+	step9 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        coverPrep.ID,
+		Index:                9,
+		ExplicitInstructions: "Partially cover the pot.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &coverPotVPV.ID,
+				Name:                            "pot with chicken and seasoned soup base",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "partially covered pot with chicken and soup base",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 10: Increase heat
+	step10 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        adjustPrep.ID,
+		Index:                10,
+		ExplicitInstructions: "Increase heat to high.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(9)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &adjustPotVPV.ID,
+				Name:                            "partially covered pot with chicken and soup base",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "partially covered pot with chicken and soup base (high heat)",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 11: Bring to a boil
+	step11 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        boilPrep.ID,
+		Index:                11,
+		ExplicitInstructions: "Bring the soup to a boil.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &boilChickenVIP.ID,
+				Name:                            "chicken in soup",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(10)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &boilPotVPV.ID,
+				Name:                            "partially covered pot with chicken and soup base (high heat)",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: atTemperatureState.ID,
+				Notes:             "soup should be at a rolling boil",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "partially covered pot with soup at boil",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 12: Cover completely
+	step12 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        coverPrep.ID,
+		Index:                12,
+		ExplicitInstructions: "Cover the pot completely.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(11)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &coverPotVPV.ID,
+				Name:                            "partially covered pot with soup at boil",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "fully covered pot with soup at boil",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 13: Adjust heat to low
+	step13 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        adjustPrep.ID,
+		Index:                13,
+		ExplicitInstructions: "Adjust heat to low.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(12)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &adjustPotVPV.ID,
+				Name:                            "fully covered pot with soup at boil",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "fully covered pot with soup (low heat)",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 14: Simmer 40 minutes
+	step14 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        simmerPrep.ID,
+		Index:                14,
+		ExplicitInstructions: "Simmer gently for 40 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(2400)),
+		},
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(8)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &simmerChickenVIP.ID,
+				Name:                            "chicken in soup",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(13)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &simmerPotVPV.ID,
+				Name:                            "fully covered pot with soup (low heat)",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		StartTimerAutomatically: true,
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "simmered soup with cooked chicken",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: tenderState.ID,
+				Notes:             "Chicken should be cooked through and tender",
+				Ingredients:       []uint64{0},
+				Optional:          false,
+			},
+		},
+	}
+
+	// Step 15: Transfer chicken to medium bowl and shred with two forks
+	step15 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        transferPrep.ID,
+		Index:                15,
+		ExplicitInstructions: "Transfer the chicken to a medium bowl.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(14)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &transferChickenVIP.ID,
+				Name:                            "cooked chicken breast",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &transferMediumBowlVPV.ID,
+				Name:                     "medium bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "chicken in bowl",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 16: Shred chicken with two forks
+	step16 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        shredPrep.ID,
+		Index:                16,
+		ExplicitInstructions: "Shred the chicken with two forks while the soup continues to simmer.",
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(15)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &shredChickenVIP.ID,
+				Name:                            "chicken in bowl",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &shredForkVPI.ID,
+				Name:                         "fork",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 2,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ValidPreparationVesselID: &shredMediumBowlVPV.ID,
+				Name:                     "medium bowl",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:              "shredded chicken",
+				Type:              mealplanning.RecipeStepProductIngredientType,
+				Index:             0,
+				MeasurementUnitID: &unitMeasurement.ID,
+				MeasurementQuantity: numbers.OpenRange[float32]{
+					Min: new(float32(1)),
+				},
+			},
+		},
+	}
+
+	// Step 17: Add shredded chicken and vermicelli, bring to lively simmer, cover, simmer 10 min
+	step17 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        addPrep.ID,
+		Index:                17,
+		ExplicitInstructions: "Taste the soup and adjust salt as needed. Add the shredded chicken and vermicelli, stir and increase heat to bring the soup to a lively simmer. Cover, adjust heat to low and simmer until the noodles soften and the flavors come together, 10 minutes.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(600)),
+		},
+		StartTimerAutomatically: true,
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(16)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidIngredientPreparationID:    &addChickenVIP.ID,
+				Name:                            "shredded chicken",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+			},
+			{
+				ValidIngredientPreparationID:     &addVermicelliVIP.ID,
+				ValidIngredientMeasurementUnitID: &vermicelliCupVIMU.ID,
+				Name:                             "broken wheat vermicelli noodles, broken angel hair pasta or fideo",
+				Quantity: numbers.MinRange[float32]{
+					Min: 0.75,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(14)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &addPotVPV.ID,
+				Name:                            "simmered soup (without chicken)",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with finished soup",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+		CompletionConditions: []*mealplanning.RecipeStepCompletionConditionCreationRequestInput{
+			{
+				IngredientStateID: tenderState.ID,
+				Notes:             "Noodles should be softened and flavors combined",
+				Ingredients:       []uint64{1},
+				Optional:          false,
+			},
+		},
+	}
+
+	// Step 18: Remove from heat
+	step18 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        removeFromHeatPrep.ID,
+		Index:                18,
+		ExplicitInstructions: "Remove the pot from the heat.",
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(17)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &removeFromHeatPotVPV.ID,
+				Name:                            "pot with finished soup",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "pot with finished soup (off heat)",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	// Step 19: Stir in parsley and lime juice, let rest 5-10 min
+	step19 := &mealplanning.RecipeStepCreationRequestInput{
+		PreparationID:        stirPrep.ID,
+		Index:                19,
+		ExplicitInstructions: "Stir in the parsley and lime juice and let sit, covered, for 5 to 10 minutes. Taste and adjust seasoning with more lime juice, salt or pepper as needed.",
+		EstimatedTimeInSeconds: numbers.OpenRange[uint32]{
+			Min: new(uint32(300)),
+			Max: new(uint32(600)),
+		},
+		StartTimerAutomatically: true,
+		Ingredients: []*mealplanning.RecipeStepIngredientCreationRequestInput{
+			{
+				ValidIngredientPreparationID:     &stirParsleyVIP.ID,
+				ValidIngredientMeasurementUnitID: &parsleyTbspVIMU.ID,
+				Name:                             "chopped parsley",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+				Index: new(uint16(0)),
+			},
+			{
+				ValidIngredientPreparationID:     &stirLimeJuiceVIP.ID,
+				ValidIngredientMeasurementUnitID: &limeJuiceTbspVIMU.ID,
+				Name:                             "lime juice",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+				Index:       new(uint16(1)),
+				OptionIndex: 0,
+			},
+			{
+				ValidIngredientPreparationID:     &stirLemonJuiceVIP.ID,
+				ValidIngredientMeasurementUnitID: &lemonJuiceTbspVIMU.ID,
+				Name:                             "lemon juice",
+				Quantity: numbers.MinRange[float32]{
+					Min: 1,
+				},
+				Index:       new(uint16(1)),
+				OptionIndex: 1,
+			},
+		},
+		Instruments: []*mealplanning.RecipeStepInstrumentCreationRequestInput{
+			{
+				ValidPreparationInstrumentID: &stirWoodenSpoonVPI.ID,
+				Name:                         "wooden spoon",
+				Quantity: numbers.MinRange[uint32]{
+					Min: 1,
+				},
+			},
+		},
+		Vessels: []*mealplanning.RecipeStepVesselCreationRequestInput{
+			{
+				ProductOfRecipeStepIndex:        new(uint64(18)),
+				ProductOfRecipeStepProductIndex: new(uint64(0)),
+				ValidPreparationVesselID:        &stirPotVPV.ID,
+				Name:                            "pot with finished soup (off heat)",
+				Quantity: numbers.MinRange[uint16]{
+					Min: 1,
+				},
+			},
+		},
+		Products: []*mealplanning.RecipeStepProductCreationRequestInput{
+			{
+				Name:  "chicken and vermicelli soup",
+				Type:  mealplanning.RecipeStepProductVesselType,
+				Index: 0,
+			},
+		},
+	}
+
+	prepTask1 := &mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{
+		Name:                        "Chop aromatics, vegetables, and herbs",
+		Description:                 "Finely chop the onion; dice the potato into small cubes and finely chop the carrot; chop the parsley; juice the lime or lemon. Onion and carrot keep 3 to 4 days; potato is best used within 1 day (store diced potato in water to prevent browning); parsley keeps 1 to 2 days wrapped in a damp paper towel; lime juice keeps 1 to 2 days.",
+		Notes:                       "Having these prepared ahead streamlines the soup-making process, especially during the initial sauté and final garnish steps.",
+		Optional:                    true,
+		ExplicitStorageInstructions: "Store onion and carrot in an airtight container in the refrigerator. Store diced potato in a bowl of water in the refrigerator if prepping more than a few hours ahead. Wrap parsley in a damp paper towel and refrigerate. Store lime juice in an airtight container in the refrigerator.",
+		StorageType:                 mealplanning.RecipePrepTaskStorageTypeAirtightContainer,
+		StorageTemperatureInCelsius: numbers.OpenRange[float32]{
+			Max: new(float32(4)),
+		},
+		TimeBufferBeforeRecipeInSeconds: numbers.MinRange[uint32]{
+			Min: 0,
+			Max: new(uint32(259200)), // 3 days
+		},
+		RecipeSteps: []*mealplanning.RecipePrepTaskStepWithinRecipeCreationRequestInput{
+			{BelongsToRecipeStepIndex: 1, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 3, SatisfiesRecipeStep: false},
+			{BelongsToRecipeStepIndex: 19, SatisfiesRecipeStep: true},
+		},
+	}
+
+	return []*mealplanning.RecipeCreationRequestInput{
+		{
+			Name:                "Chicken and Vermicelli Soup with Lime",
+			Slug:                "chicken-vermicelli-soup",
+			Source:              "https://cooking.nytimes.com/recipes/1026337-chicken-and-vermicelli-soup-with-lime",
+			Description:         "A comforting Middle Eastern–inspired soup with tender chicken, vermicelli noodles, turmeric, and a bright finish of lime. Serve with lime slices and extra parsley.",
+			YieldsComponentType: mealplanning.MealComponentTypesMain,
+			EstimatedPortions: numbers.MinRange[float32]{
+				Min: 6,
+			},
+			PortionName:       "serving",
+			PluralPortionName: "servings",
+			EligibleForMeals:  true,
+			Steps: []*mealplanning.RecipeStepCreationRequestInput{
+				step0, step1, step2, step3, step4, step5, step6, step7, step8, step9, step10, step11, step12, step13, step14, step15, step16, step17, step18, step19,
+			},
+			PrepTasks: []*mealplanning.RecipePrepTaskWithinRecipeCreationRequestInput{prepTask1},
+		},
+	}
+}

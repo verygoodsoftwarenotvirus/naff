@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caddy
+  namespace: prod
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "api.dinnerdonebetter.com,http-api.dinnerdonebetter.com,admin.dinnerdonebetter.com,dinnerdonebetter.com,www.dinnerdonebetter.com,mcp.dinnerdonebetter.com"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+spec:
+  type: LoadBalancer
+  selector:
+    app: caddy
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP

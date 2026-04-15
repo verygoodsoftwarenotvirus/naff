@@ -1,0 +1,48 @@
+package uploadedmedia
+
+import (
+	"database/sql"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/audit"
+	types "{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia"
+	generated "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/uploadedmedia/generated"
+
+	"github.com/primandproper/platform/database"
+	"github.com/primandproper/platform/observability/logging"
+	"github.com/primandproper/platform/observability/tracing"
+)
+
+const (
+	o11yName = "uploaded_media_db_client"
+)
+
+// repository is the uploaded media repository client.
+type repository struct {
+	database.Client
+	tracer            tracing.Tracer
+	logger            logging.Logger
+	generatedQuerier  generated.Querier
+	auditLogEntryRepo audit.Repository
+	readDB            *sql.DB
+	writeDB           *sql.DB
+}
+
+// ProvideUploadedMediaRepository provides a new repository.
+func ProvideUploadedMediaRepository(
+	logger logging.Logger,
+	tracerProvider tracing.TracerProvider,
+	auditLogEntryRepo audit.Repository,
+	client database.Client,
+) types.Repository {
+	c := &repository{
+		Client:            client,
+		readDB:            client.ReadDB(),
+		writeDB:           client.WriteDB(),
+		tracer:            tracing.NewNamedTracer(tracerProvider, o11yName),
+		generatedQuerier:  generated.New(),
+		auditLogEntryRepo: auditLogEntryRepo,
+		logger:            logging.NewNamedLogger(logger, o11yName),
+	}
+
+	return c
+}

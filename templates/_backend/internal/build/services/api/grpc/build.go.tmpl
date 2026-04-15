@@ -1,0 +1,175 @@
+package grpcapi
+
+import (
+	"context"
+
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication"
+	"{{ .Project.ProjectMeta.Module }}/internal/authentication/sessions"
+	"{{ .Project.ProjectMeta.Module }}/internal/config"
+	auditmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/audit/manager"
+	authmgr "{{ .Project.ProjectMeta.Module }}/internal/domain/auth/managers"
+	commentsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/comments/manager"
+	dataprivacymanager "{{ .Project.ProjectMeta.Module }}/internal/domain/dataprivacy/manager"
+	identitymgr "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/manager"
+	issuereportsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/issuereports/manager"
+	mealplanningregistration "{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning/registration"
+	notificationsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/notifications/manager"
+	oauthmgr "{{ .Project.ProjectMeta.Module }}/internal/domain/oauth/manager"
+	paymentsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/payments/manager"
+	settingsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/settings/manager"
+	uploadedmediamanager "{{ .Project.ProjectMeta.Module }}/internal/domain/uploadedmedia/manager"
+	waitlistsmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/waitlists/manager"
+	webhooksmanager "{{ .Project.ProjectMeta.Module }}/internal/domain/webhooks/manager"
+	"{{ .Project.ProjectMeta.Module }}/internal/repositories"
+	auditrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/auditlogentries"
+	authrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/auth"
+	commentsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/comments"
+	dataprivacyrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/dataprivacy"
+	identityrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/identity"
+	internalopsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/internalops"
+	issuereportsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/issuereports"
+	oauthrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/oauth"
+	paymentsrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/payments"
+	uploadedmediarepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/uploadedmedia"
+	webhooksrepo "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/webhooks"
+	analyticssvc "{{ .Project.ProjectMeta.Module }}/internal/services/analytics/grpc"
+	auditsvc "{{ .Project.ProjectMeta.Module }}/internal/services/audit/grpc"
+	authsvc "{{ .Project.ProjectMeta.Module }}/internal/services/auth/grpc"
+	"{{ .Project.ProjectMeta.Module }}/internal/services/auth/grpc/interceptors"
+	authhttpsvc "{{ .Project.ProjectMeta.Module }}/internal/services/auth/handlers/authentication"
+	commentssvc "{{ .Project.ProjectMeta.Module }}/internal/services/comments/grpc"
+	dataprivacysvc "{{ .Project.ProjectMeta.Module }}/internal/services/dataprivacy/grpc"
+	identitysvc "{{ .Project.ProjectMeta.Module }}/internal/services/identity/grpc"
+	internalopssvc "{{ .Project.ProjectMeta.Module }}/internal/services/internalops/grpc"
+	issuereportssvc "{{ .Project.ProjectMeta.Module }}/internal/services/issuereports/grpc"
+	notificationssvc "{{ .Project.ProjectMeta.Module }}/internal/services/notifications/grpc"
+	oauthsvc "{{ .Project.ProjectMeta.Module }}/internal/services/oauth/grpc"
+	paymentsadapters "{{ .Project.ProjectMeta.Module }}/internal/services/payments/adapters"
+	paymentssvc "{{ .Project.ProjectMeta.Module }}/internal/services/payments/grpc"
+	settingssvc "{{ .Project.ProjectMeta.Module }}/internal/services/settings/grpc"
+	uploadedmediacfg "{{ .Project.ProjectMeta.Module }}/internal/services/uploadedmedia/config"
+	uploadedmediasvc "{{ .Project.ProjectMeta.Module }}/internal/services/uploadedmedia/grpc"
+	waitlistssvc "{{ .Project.ProjectMeta.Module }}/internal/services/waitlists/grpc"
+	webhookssvc "{{ .Project.ProjectMeta.Module }}/internal/services/webhooks/grpc"
+
+	"github.com/primandproper/platform/analytics/multisource"
+	tokenscfg "github.com/primandproper/platform/authentication/tokens/config"
+	databasecfg "github.com/primandproper/platform/database/config"
+	featureflagscfg "github.com/primandproper/platform/featureflags/config"
+	"github.com/primandproper/platform/httpclient"
+	msgconfig "github.com/primandproper/platform/messagequeue/config"
+	"github.com/primandproper/platform/observability"
+	loggingcfg "github.com/primandproper/platform/observability/logging/config"
+	metricscfg "github.com/primandproper/platform/observability/metrics/config"
+	tracingcfg "github.com/primandproper/platform/observability/tracing/config"
+	"github.com/primandproper/platform/qrcodes"
+	"github.com/primandproper/platform/random"
+	"github.com/primandproper/platform/server/grpc"
+	uploadscfg "github.com/primandproper/platform/uploads/config"
+	"github.com/primandproper/platform/uploads/objectstorage"
+
+	"github.com/samber/do/v2"
+)
+
+// BuildInjector creates and configures the dependency injection container.
+func BuildInjector(
+	ctx context.Context,
+	cfg *config.APIServiceConfig,
+) *do.RootScope {
+	i := do.New()
+
+	do.ProvideValue(i, ctx)
+	do.ProvideValue(i, cfg)
+
+	// config field extraction
+	RegisterConfigs(i)
+
+	// platform providers
+	observability.RegisterO11yConfigs(i)
+	metricscfg.RegisterMetricsProvider(i)
+	loggingcfg.RegisterLogger(i)
+	tracingcfg.RegisterTracerProvider(i)
+	httpclient.RegisterHTTPClient(i)
+	msgconfig.RegisterMessageQueue(i)
+	random.RegisterGenerator(i)
+	repositories.RegisterMigrator(i)
+	databasecfg.RegisterDatabase(i)
+	grpc.RegisterGRPCServer(i)
+	do.ProvideValue(i, qrcodes.Issuer("Dinner Done Better"))
+	qrcodes.RegisterBuilder(i)
+	uploadscfg.RegisterStorageConfig(i)
+	objectstorage.RegisterUploadManager(i)
+	featureflagscfg.RegisterFeatureFlagManager(i)
+	multisource.RegisterMultiSourceEventReporter(i)
+
+	// authentication
+	authentication.RegisterAuth(i)
+	sessions.RegisterSessionProviders(i)
+	tokenscfg.RegisterTokenIssuer(i)
+	interceptors.RegisterAuthInterceptor(i)
+
+	// repositories (core)
+	auditrepo.RegisterAuditLogRepository(i)
+	authrepo.RegisterAuthRepository(i)
+	commentsrepo.RegisterCommentsRepository(i)
+	identityrepo.RegisterIdentityRepository(i)
+	issuereportsrepo.RegisterIssueReportsRepository(i)
+	uploadedmediarepo.RegisterUploadedMediaRepository(i)
+	webhooksrepo.RegisterWebhooksRepository(i)
+	oauthrepo.RegisterOAuthRepository(i)
+	paymentsrepo.RegisterPaymentsRepository(i)
+	dataprivacyrepo.RegisterDataPrivacyRepository(i)
+	internalopsrepo.RegisterInternalOpsRepository(i)
+
+	// managers
+	auditmanager.RegisterAuditDataManager(i)
+	authmgr.RegisterAuthManager(i)
+	commentsmanager.RegisterCommentsDataManager(i)
+	identitymgr.RegisterIdentityDataManager(i)
+	notificationsmanager.RegisterNotificationsDataManager(i)
+	settingsmanager.RegisterSettingsDataManager(i)
+	paymentsmanager.RegisterPaymentsDataManager(i)
+	oauthmgr.RegisterOAuth2Manager(i)
+	webhooksmanager.RegisterWebhookDataManager(i)
+	waitlistsmanager.RegisterWaitlistDataManager(i)
+	issuereportsmanager.RegisterIssueReportsDataManager(i)
+	uploadedmediamanager.RegisterUploadedMediaManager(i)
+	dataprivacymanager.RegisterDataPrivacyManager(i)
+	paymentsadapters.RegisterPaymentProcessorRegistry(i)
+
+	// services
+	authsvc.RegisterAuthService(i)
+	authhttpsvc.RegisterAuthHTTPService(i)
+	analyticssvc.RegisterAnalyticsService(i)
+	auditsvc.RegisterAuditService(i)
+	commentssvc.RegisterCommentsService(i)
+	dataprivacysvc.RegisterDataPrivacyService(i)
+	identitysvc.RegisterIdentityService(i)
+	internalopssvc.RegisterInternalOpsService(i)
+	issuereportssvc.RegisterIssueReportsService(i)
+	notificationssvc.RegisterNotificationsService(i)
+	settingssvc.RegisterSettingsService(i)
+	uploadedmediasvc.RegisterUploadedMediaService(i)
+	webhookssvc.RegisterWebhooksService(i)
+	oauthsvc.RegisterOAuthService(i)
+	paymentssvc.RegisterPaymentsService(i)
+	waitlistssvc.RegisterWaitlistsService(i)
+	uploadedmediacfg.RegisterUploadedMediaConfig(i)
+
+	// Domain: mealplanning
+	mealplanningregistration.RegisterForGRPCAPI(i)
+
+	// extras (functions from extras.go)
+	RegisterExtras(i)
+
+	return i
+}
+
+// Build builds a server.
+func Build(
+	ctx context.Context,
+	cfg *config.APIServiceConfig,
+) (*GRPCService, error) {
+	i := BuildInjector(ctx, cfg)
+	return do.MustInvoke[*GRPCService](i), nil
+}

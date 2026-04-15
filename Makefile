@@ -1,4 +1,4 @@
-DDB_REPO := $(shell realpath ../../dinnerdonebetter/dinnerdonebetter/backend)
+DDB_REPO := $(shell realpath ../../dinnerdonebetter/dinnerdonebetter)
 DDB_OUTPUT := .ddb_generated
 
 .PHONY: build test generate generate-ddb diff-ddb clean
@@ -9,10 +9,12 @@ build:
 test:
 	go test ./... -count=1
 
+# Post-pivot, `generate` emits the verbatim DDB mirror regardless of YAML
+# spec contents. Pointed at testdata/ddb.yaml for clarity.
 generate: build
 	@rm -rf output/
 	@mkdir -p output/
-	go run ./cmd/naff/ generate -c testdata/integration_project.yaml -o output/
+	go run ./cmd/naff/ generate -c testdata/ddb.yaml -o output/
 
 generate-ddb: build
 	@rm -rf $(DDB_OUTPUT)
@@ -28,7 +30,7 @@ diff-ddb: generate-ddb
 		echo "DDB backend is at:      $(DDB_REPO)"; \
 		exit 1; \
 	fi
-	meld $(DDB_OUTPUT) $(DDB_REPO)
+	meld $(DDB_OUTPUT) $(DDB_REPO) &
 
-clean:	
+clean:
 	rm -rf output/ $(DDB_OUTPUT)

@@ -1,0 +1,22 @@
+package repositories
+
+import (
+	postgresmigrations "{{ .Project.ProjectMeta.Module }}/internal/repositories/postgres/migrations"
+
+	"github.com/primandproper/platform/database"
+	databasecfg "github.com/primandproper/platform/database/config"
+	"github.com/primandproper/platform/observability/logging"
+)
+
+// ProvideMigrator returns a Migrator appropriate for the configured database provider.
+func ProvideMigrator(
+	cfg *databasecfg.Config,
+	logger logging.Logger,
+) database.Migrator {
+	switch cfg.Provider {
+	case databasecfg.ProviderPostgres:
+		return postgresmigrations.NewMigrator(logger)
+	default:
+		return nil
+	}
+}
