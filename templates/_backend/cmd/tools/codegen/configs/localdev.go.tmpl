@@ -49,7 +49,7 @@ var (
 	localdevPostgresDBConnectionDetails = databasecfg.ConnectionDetails{
 		Username:   "dbuser",
 		Password:   "hunter2",
-		Database:   "dinner-done-better",
+		Database:   "{{ .Project.ProjectMeta.Kebab }}",
 		Host:       "pgdatabase",
 		Port:       5432,
 		DisableSSL: true,
@@ -211,7 +211,7 @@ func buildLocalDevConfig() *config.APIServiceConfig {
 				TokenLifetime:         5 * time.Minute,
 				Tokens: tokenscfg.Config{
 					Provider:                tokenscfg.ProviderPASETO,
-					Issuer:                  "dinner-done-better",
+					Issuer:                  "{{ .Project.ProjectMeta.Kebab }}",
 					Audience:                "https://api.dinnerdonebetter.dev",
 					Base64EncodedSigningKey: base64.URLEncoding.EncodeToString([]byte(testutils.Example32ByteKey)),
 				},

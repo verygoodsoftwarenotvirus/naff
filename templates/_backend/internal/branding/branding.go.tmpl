@@ -9,9 +9,9 @@ import (
 
 const (
 	// Core branding constants - change these to rebrand the project.
-	CompanyName     = "Dinner Done Better"
+	CompanyName     = "{{ .Project.ProjectMeta.Title }}"
 	CompanyNameSlug = "dinnerdonebetter"
-	CompanySlug     = "dinner-done-better"
+	CompanySlug     = "{{ .Project.ProjectMeta.Kebab }}"
 	PublicDomain    = CompanyNameSlug + ".com"
 	EnvVarPrefix    = "DINNER_DONE_BETTER_"
 	AppStoreURL     = "https://apps.apple.com/app/" + CompanySlug + "/id0000000000"

@@ -1,6 +1,11 @@
 package config
 
-import "strings"
+import (
+	"strings"
+	"unicode"
+
+	"github.com/iancoleman/strcase"
+)
 
 // PlatformModule is the Go module path for the platform package that every
 // naff-generated project depends on. It is fixed — naff does not support
@@ -22,6 +27,47 @@ type ProjectMeta struct {
 	IOSBundleID   string `yaml:"ios_bundle_id,omitempty"`
 	IOSModuleName string `yaml:"ios_module_name,omitempty"`
 }
+
+// Name-form methods. These exist so templates can reference the project Name
+// in whichever casing a given string literal needs, without the template
+// author having to know anything about casing conventions. Input is always
+// the natural display form from `project.name` in .naff.yaml, e.g.
+// "Dinner Done Better" or "Kitchen Sink".
+
+// Title returns the project name in its natural display form
+// (e.g. "Dinner Done Better").
+func (p ProjectMeta) Title() string { return p.Name }
+
+// Pascal returns the project name in PascalCase (e.g. "DinnerDoneBetter").
+func (p ProjectMeta) Pascal() string { return strcase.ToCamel(p.Name) }
+
+// Kebab returns the project name in kebab-case (e.g. "dinner-done-better").
+func (p ProjectMeta) Kebab() string { return strcase.ToKebab(p.Name) }
+
+// Snake returns the project name in snake_case (e.g. "dinner_done_better").
+func (p ProjectMeta) Snake() string { return strcase.ToSnake(p.Name) }
+
+// TitleKebab returns the project name with its original word casing,
+// whitespace-joined with hyphens (e.g. "Dinner-Done-Better"). Used for
+// HTTP header names like `X-Dinner-Done-Better-Signature`.
+func (p ProjectMeta) TitleKebab() string {
+	return strings.Join(strings.Fields(p.Name), "-")
+}
+
+// Abbrev returns the uppercase initials of the whitespace-separated words
+// in the project name (e.g. "DDB" for "Dinner Done Better", "KS" for
+// "Kitchen Sink", "K" for "Kitchen").
+func (p ProjectMeta) Abbrev() string {
+	var b strings.Builder
+	for _, word := range strings.Fields(p.Name) {
+		r := []rune(word)[0]
+		b.WriteRune(unicode.ToUpper(r))
+	}
+	return b.String()
+}
+
+// LowerAbbrev returns the lowercase form of Abbrev (e.g. "ddb").
+func (p ProjectMeta) LowerAbbrev() string { return strings.ToLower(p.Abbrev()) }
 
 // Targets controls which generation targets are enabled.
 //

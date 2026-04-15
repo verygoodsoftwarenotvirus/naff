@@ -74,7 +74,7 @@ namespace. It uses your current kubeconfig context by default. NOTE: You MUST
 be proxied into production via 'make proxy_db' for this to work in production.
 
 The remaining DB defaults (host=127.0.0.1, port=5434, user=api_db_user,
-dbname=dinner-done-better, sslmode=disable) assume a local Cloud SQL Auth
+dbname={{ .Project.ProjectMeta.Kebab }}, sslmode=disable) assume a local Cloud SQL Auth
 Proxy is running. Override any of them with the corresponding --db-* flag.
 
 Quick start (prod, via Cloud SQL Auth Proxy):

@@ -50,7 +50,7 @@ import (
 )
 
 const (
-	prodGCPProject            = "dinner-done-better-prod"
+	prodGCPProject            = "{{ .Project.ProjectMeta.Kebab }}-prod"
 	prodMediaBucket           = "media.dinnerdonebetter.com"
 	prodUserDataBucket        = "userdata.dinnerdonebetter.com"
 	prodOtelCollectorEndpoint = "otel-collector-svc.prod.svc.cluster.local:4317"
@@ -178,13 +178,13 @@ func buildProdConfig() *config.APIServiceConfig {
 			ConnMaxLifetime:              30 * time.Minute,
 			ReadConnection: databasecfg.ConnectionDetails{
 				Username:   "api_db_user",
-				Database:   "dinner-done-better",
+				Database:   "{{ .Project.ProjectMeta.Kebab }}",
 				Port:       5432,
 				DisableSSL: false,
 			},
 			WriteConnection: databasecfg.ConnectionDetails{
 				Username:   "api_db_user",
-				Database:   "dinner-done-better",
+				Database:   "{{ .Project.ProjectMeta.Kebab }}",
 				Port:       5432,
 				DisableSSL: false,
 			},
@@ -258,7 +258,7 @@ func buildProdConfig() *config.APIServiceConfig {
 			},
 			Tokens: tokenscfg.Config{
 				Provider:                tokenscfg.ProviderPASETO,
-				Issuer:                  "dinner-done-better",
+				Issuer:                  "{{ .Project.ProjectMeta.Kebab }}",
 				Audience:                prodTokensAudience,
 				Base64EncodedSigningKey: base64.URLEncoding.EncodeToString([]byte(testutils.Example32ByteKey)),
 			},
@@ -282,7 +282,7 @@ func buildProdConfig() *config.APIServiceConfig {
 				TokenLifetime:         5 * time.Minute,
 				Tokens: tokenscfg.Config{
 					Provider:                tokenscfg.ProviderPASETO,
-					Issuer:                  "dinner-done-better",
+					Issuer:                  "{{ .Project.ProjectMeta.Kebab }}",
 					Audience:                prodTokensAudience,
 					Base64EncodedSigningKey: base64.URLEncoding.EncodeToString([]byte(testutils.Example32ByteKey)),
 				},

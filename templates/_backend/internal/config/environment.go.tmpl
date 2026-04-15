@@ -94,7 +94,7 @@ const (
 	amhConfigObservabilityServiceName  = "async_message_handler"
 	edtConfigObservabilityServiceName  = "email_deliverability_test"
 	qtConfigObservabilityServiceName   = "queue_test"
-	mcpConfigObservabilityServiceName  = "dinner_done_better_mcp_server"
+	mcpConfigObservabilityServiceName  = "{{ .Project.ProjectMeta.Snake }}_mcp_server"
 )
 
 func (s *EnvironmentConfigSet) Render(outputDir string, pretty, validate bool) error {

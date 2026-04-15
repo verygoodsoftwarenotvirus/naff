@@ -13,7 +13,7 @@
 # testdata/integration_project.yaml when you need a buildable fixture.
 
 project:
-  name: "KitchenSink"
+  name: "Kitchen Sink"
   module: "github.com/example/kitchensink"
   ios_bundle_id: "com.example.kitchensink"
   ios_module_name: "KitchenSink"

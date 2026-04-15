@@ -1,0 +1,7 @@
+locals {
+  company_name     = "{{ .Project.ProjectMeta.Title }}"
+  company_slug     = "{{ .Project.ProjectMeta.Kebab }}"
+  company_slug_ns  = "dinnerdonebetter"
+  public_domain    = "${local.company_slug_ns}.com"
+  gcp_project_id   = "${local.company_slug}-prod"
+}

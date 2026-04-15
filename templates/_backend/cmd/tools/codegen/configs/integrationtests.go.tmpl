@@ -159,7 +159,7 @@ func buildIntegrationTestsConfig() *config.APIServiceConfig {
 				TokenLifetime:         5 * time.Minute,
 				Tokens: tokenscfg.Config{
 					Provider:                tokenscfg.ProviderPASETO,
-					Issuer:                  "dinner-done-better",
+					Issuer:                  "{{ .Project.ProjectMeta.Kebab }}",
 					Audience:                "https://api.dinnerdonebetter.dev",
 					Base64EncodedSigningKey: base64.URLEncoding.EncodeToString([]byte(testutils.Example32ByteKey)),
 				},

@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Project.ProjectMeta.Kebab }}-service-api-deployment
+  labels:
+    app: {{ .Project.ProjectMeta.Kebab }}-backend
+    app.kubernetes.io/name: {{ .Project.ProjectMeta.Kebab }}-backend
+spec:
+  progressDeadlineSeconds: 1200
+  selector:
+    matchLabels:
+      app: {{ .Project.ProjectMeta.Kebab }}-backend
+      app.kubernetes.io/name: {{ .Project.ProjectMeta.Kebab }}-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Project.ProjectMeta.Kebab }}-backend
+        app.kubernetes.io/name: {{ .Project.ProjectMeta.Kebab }}-backend
+    spec:
+      containers:
+        # this is the API server container
+        - name: {{ .Project.ProjectMeta.Kebab }}-service-api
+          image: {{ .Project.ProjectMeta.Kebab }}-service-api
+          args: ["serve"]
+          imagePullPolicy: Always
+          env:
+            - name: "CONFIGURATION_FILEPATH"
+              value: "/etc/service-config.json"
+            - name: "RUNNING_IN_KUBERNETES"
+              value: "true"
+          volumeMounts:
+            - name: "config"
+              mountPath: "/etc/service-config.json"
+              subPath: "config.json"
+          ports:
+            - containerPort: 8000
+              name: http
+            - containerPort: 8001
+              name: grpc
+          livenessProbe:
+            httpGet:
+              path: "/_ops_/live"
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: "/_ops_/ready"
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "50m"
+            limits:
+              memory: "3Gi"
+              cpu: "500m"
+      volumes:
+        - name: "config"
+          configMap:
+            name: "{{ .Project.ProjectMeta.Kebab }}-service-api-config"
+---

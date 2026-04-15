@@ -40,7 +40,7 @@ const (
 	todoRes  = "TODO"
 	o11yName = "identity_data_manager"
 
-	totpIssuer             = "DinnerDoneBetter"
+	totpIssuer             = "{{ .Project.ProjectMeta.Pascal }}"
 	base64ImagePrefix      = "data:image/jpeg;base64,"
 	minimumPasswordEntropy = 60
 	totpSecretSize         = 64

@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Project.ProjectMeta.Kebab }}-mcp-server-deployment
+  labels:
+    app: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+    app.kubernetes.io/name: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+spec:
+  progressDeadlineSeconds: 1200
+  selector:
+    matchLabels:
+      app: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+      app.kubernetes.io/name: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+        app.kubernetes.io/name: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+    spec:
+      containers:
+        - name: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+          image: {{ .Project.ProjectMeta.Kebab }}-mcp-server
+          imagePullPolicy: Always
+          args:
+            - "--transport=http"
+          env:
+            - name: "CONFIGURATION_FILEPATH"
+              value: "/etc/service-config.json"
+            - name: "RUNNING_IN_KUBERNETES"
+              value: "true"
+            - name: "DINNER_DONE_BETTER_OBSERVABILITY_METRICS_OTEL_SERVICE_NAME"
+              value: "{{ .Project.ProjectMeta.Snake }}_mcp_server"
+            - name: "DINNER_DONE_BETTER_OBSERVABILITY_TRACING_TRACING_SERVICE_NAME"
+              value: "{{ .Project.ProjectMeta.Snake }}_mcp_server"
+            - name: "MCP_BASE_URL"
+              value: "https://mcp.dinnerdonebetter.com"
+          volumeMounts:
+            - name: "config"
+              mountPath: "/etc/service-config.json"
+              subPath: "config.json"
+          ports:
+            - containerPort: 8888
+              name: http
+          livenessProbe:
+            httpGet:
+              path: "/_ops_/live"
+              port: 8888
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: "/_ops_/ready"
+              port: 8888
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: "config"
+          configMap:
+            name: "{{ .Project.ProjectMeta.Kebab }}-mcp-server-config"
+---

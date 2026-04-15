@@ -58,7 +58,7 @@ func TestProvideOAuth2ServerImplementation(T *testing.T) {
 
 		ctx := t.Context()
 		signingKey := random.MustGenerateRawBytes(ctx, 32)
-		tokenIssuer, err := paseto.NewPASETOSigner(logger, tracerProvider, "dinner-done-better", t.Name(), signingKey)
+		tokenIssuer, err := paseto.NewPASETOSigner(logger, tracerProvider, "{{ .Project.ProjectMeta.Kebab }}", t.Name(), signingKey)
 		require.NoError(t, err)
 
 		cfg := &OAuth2Config{
@@ -319,7 +319,7 @@ func TestBuildUserAuthorizationHandler(T *testing.T) {
 		tracer := tracing.NewTracerForTest("test")
 
 		signingKey := random.MustGenerateRawBytes(ctx, 32)
-		tokenIssuer, err := paseto.NewPASETOSigner(logger, tracingnoop.NewTracerProvider(), "dinner-done-better", t.Name(), signingKey)
+		tokenIssuer, err := paseto.NewPASETOSigner(logger, tracingnoop.NewTracerProvider(), "{{ .Project.ProjectMeta.Kebab }}", t.Name(), signingKey)
 		require.NoError(t, err)
 
 		user := fakes.BuildFakeUser()
@@ -350,7 +350,7 @@ func TestBuildUserAuthorizationHandler(T *testing.T) {
 		tracer := tracing.NewTracerForTest("test")
 
 		signingKey := random.MustGenerateRawBytes(ctx, 32)
-		tokenIssuer, err := paseto.NewPASETOSigner(logger, tracingnoop.NewTracerProvider(), "dinner-done-better", t.Name(), signingKey)
+		tokenIssuer, err := paseto.NewPASETOSigner(logger, tracingnoop.NewTracerProvider(), "{{ .Project.ProjectMeta.Kebab }}", t.Name(), signingKey)
 		require.NoError(t, err)
 
 		req := &http.Request{

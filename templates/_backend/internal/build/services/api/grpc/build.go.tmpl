@@ -95,7 +95,7 @@ func BuildInjector(
 	repositories.RegisterMigrator(i)
 	databasecfg.RegisterDatabase(i)
 	grpc.RegisterGRPCServer(i)
-	do.ProvideValue(i, qrcodes.Issuer("Dinner Done Better"))
+	do.ProvideValue(i, qrcodes.Issuer("{{ .Project.ProjectMeta.Title }}"))
 	qrcodes.RegisterBuilder(i)
 	uploadscfg.RegisterStorageConfig(i)
 	objectstorage.RegisterUploadManager(i)
