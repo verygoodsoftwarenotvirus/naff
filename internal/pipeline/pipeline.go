@@ -437,16 +437,34 @@ func (p *Pipeline) planFiles() []PlannedFile {
 	// suffices — no per-file data.
 	data := map[string]any{"Project": p.config}
 
+	// Verbatim-emission skip set: templates owned by the parameterized layer
+	// for user-defined domains. The FS walk below must not emit these as
+	// raw pass-throughs — the parameterized planner (below) will emit them
+	// instead, rendered from the config's entity schema.
+	skipVerbatim := make(map[string]bool, len(p.config.Domains))
+	for _, d := range p.config.Domains {
+		skipVerbatim[fmt.Sprintf("_backend/internal/domain/%s/keys/keys.go.tmpl", d.Name)] = true
+	}
+
 	_ = fs.WalkDir(TemplateFS, ".", func(p string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
 		if d.IsDir() {
+			// `_backend/_parameterized/` holds templates consumed by the
+			// parameterized planner, not the verbatim walk. Skip the whole
+			// subtree so nothing here leaks into the output as a raw copy.
+			if p == "_backend/_parameterized" {
+				return fs.SkipDir
+			}
 			return nil
 		}
 		// Ignore the embed.go source file itself, which is embedded as a
 		// degenerate side-effect of `//go:embed all:...` in some contexts.
 		if p == "embed.go" {
+			return nil
+		}
+		if skipVerbatim[p] {
 			return nil
 		}
 
@@ -486,7 +504,31 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		return nil
 	})
 
+	// Parameterized layer: one generated keys package per user-defined
+	// domain. The template at _backend/_parameterized/domain_keys/keys.go.tmpl
+	// iterates .Domain.Entities and emits <Name>Key / <Name>IDKey constants.
+	// Replaces (not co-resident with) any hand-rolled keys.go.tmpl at the
+	// matching path — see skipVerbatim above.
+	for i := range p.config.Domains {
+		d := &p.config.Domains[i]
+		files = append(files, PlannedFile{
+			TemplatePath: "_backend/_parameterized/domain_keys/keys.go.tmpl",
+			OutputPath:   fmt.Sprintf("backend/internal/domain/%s/keys/keys.go", d.Name),
+			Data:         parameterizedCtx{Project: p.config, Domain: d},
+			IsGo:         true,
+		})
+	}
+
 	return files
+}
+
+// parameterizedCtx is the template data shape for files emitted by the
+// parameterized planner layer. Keep it minimal: just the current Project
+// plus the Domain being rendered. Entity-level context can be added when
+// a future step generates per-entity files.
+type parameterizedCtx struct {
+	Project *config.Project
+	Domain  *config.Domain
 }
 
 // rewriteOutputPath maps a template-FS path to the output-tree path.
