@@ -4,17 +4,17 @@ import "strings"
 
 // Project is the top-level configuration for a NAFF-generated project.
 type Project struct {
-	ProjectMeta ProjectMeta        `yaml:"project"`
-	Features    Features           `yaml:"features"`
-	Targets     Targets            `yaml:"targets"`
-	Domains     []Domain           `yaml:"domains"`
+	ProjectMeta ProjectMeta `yaml:"project"`
+	Features    Features    `yaml:"features,omitempty"`
+	Targets     Targets     `yaml:"targets,omitempty"`
+	Domains     []Domain    `yaml:"domains,omitempty"`
 }
 
 // ProjectMeta contains project-level metadata.
 type ProjectMeta struct {
 	Name           string `yaml:"name"`
 	Module         string `yaml:"module"`
-	PlatformModule string `yaml:"platform_module"`
+	PlatformModule string `yaml:"platform_module,omitempty"`
 	IOSBundleID    string `yaml:"ios_bundle_id,omitempty"`
 	IOSModuleName  string `yaml:"ios_module_name,omitempty"`
 }
@@ -25,9 +25,9 @@ type ProjectMeta struct {
 // distinguishable from "explicitly false" (opt-out). IOS is a plain bool
 // (default off) — iOS scaffolding is opt-in.
 type Targets struct {
-	Backend             *bool `yaml:"backend"`
-	IOS                 bool  `yaml:"ios"`
-	AsyncMessageHandler *bool `yaml:"async_message_handler"`
+	Backend             *bool `yaml:"backend,omitempty"`
+	IOS                 bool  `yaml:"ios,omitempty"`
+	AsyncMessageHandler *bool `yaml:"async_message_handler,omitempty"`
 }
 
 // BackendEnabled reports whether backend generation is enabled (default true).
@@ -51,17 +51,17 @@ func (t Targets) AsyncMessageHandlerEnabled() bool {
 
 // Features controls which built-in infrastructure domains are enabled.
 type Features struct {
-	Webhooks      *bool `yaml:"webhooks"`
-	IssueReports  *bool `yaml:"issuereports"`
-	Comments      *bool `yaml:"comments"`
-	Notifications *bool `yaml:"notifications"`
-	Payments      *bool `yaml:"payments"`
-	Waitlists     *bool `yaml:"waitlists"`
-	UploadedMedia *bool `yaml:"uploadedmedia"`
-	DataPrivacy   *bool `yaml:"dataprivacy"`
-	Settings      *bool `yaml:"settings"`
-	ConsumerApp   *bool `yaml:"consumer_app"`
-	AdminApp      *bool `yaml:"admin_app"`
+	Webhooks      *bool `yaml:"webhooks,omitempty"`
+	IssueReports  *bool `yaml:"issuereports,omitempty"`
+	Comments      *bool `yaml:"comments,omitempty"`
+	Notifications *bool `yaml:"notifications,omitempty"`
+	Payments      *bool `yaml:"payments,omitempty"`
+	Waitlists     *bool `yaml:"waitlists,omitempty"`
+	UploadedMedia *bool `yaml:"uploadedmedia,omitempty"`
+	DataPrivacy   *bool `yaml:"dataprivacy,omitempty"`
+	Settings      *bool `yaml:"settings,omitempty"`
+	ConsumerApp   *bool `yaml:"consumer_app,omitempty"`
+	AdminApp      *bool `yaml:"admin_app,omitempty"`
 }
 
 // FeatureEnabled returns whether a feature is enabled, defaulting to the given value.
@@ -76,7 +76,7 @@ func (f Features) FeatureEnabled(val *bool, defaultVal bool) bool {
 type Domain struct {
 	Name     string   `yaml:"name"`
 	TypeName string   `yaml:"type_name,omitempty"`
-	Entities []Entity `yaml:"entities"`
+	Entities []Entity `yaml:"entities,omitempty"`
 }
 
 // RepoTypeName returns the PascalCase identifier used to build type/function
@@ -101,22 +101,22 @@ func (d Domain) RepoTypeName() string {
 // Entity represents a single CRUD-able type.
 type Entity struct {
 	Name             string  `yaml:"name"`
-	BelongsTo        string  `yaml:"belongs_to"`
-	BelongsToAccount bool    `yaml:"belongs_to_account"`
-	CreatedByUser    bool    `yaml:"created_by_user"`
-	Searchable       bool    `yaml:"searchable"`
-	ConsumerEditable bool    `yaml:"consumer_editable"`
-	Fields           []Field `yaml:"fields"`
+	BelongsTo        string  `yaml:"belongs_to,omitempty"`
+	BelongsToAccount bool    `yaml:"belongs_to_account,omitempty"`
+	CreatedByUser    bool    `yaml:"created_by_user,omitempty"`
+	Searchable       bool    `yaml:"searchable,omitempty"`
+	ConsumerEditable bool    `yaml:"consumer_editable,omitempty"`
+	Fields           []Field `yaml:"fields,omitempty"`
 }
 
 // Field represents a single field on an entity.
 type Field struct {
-	Name      string  `yaml:"name"`
-	Type      string  `yaml:"type"`
-	Required  *bool   `yaml:"required"`
-	Creatable *bool   `yaml:"creatable"`
-	Editable  *bool   `yaml:"editable"`
-	Omitempty bool    `yaml:"omitempty"`
+	Name      string `yaml:"name"`
+	Type      string `yaml:"type"`
+	Required  *bool  `yaml:"required,omitempty"`
+	Creatable *bool  `yaml:"creatable,omitempty"`
+	Editable  *bool  `yaml:"editable,omitempty"`
+	Omitempty bool   `yaml:"omitempty,omitempty"`
 }
 
 // IsRequired returns whether the field is required (defaults to true).
