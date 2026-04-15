@@ -1,7 +1,9 @@
 DDB_REPO := $(shell realpath ../../dinnerdonebetter/dinnerdonebetter)
-DDB_OUTPUT := .ddb_generated
+ARTIFACTS := artifacts
+DDB_OUTPUT := $(ARTIFACTS)/ddb
+KITCHEN_SINK_OUTPUT := $(ARTIFACTS)/kitchen_sink
 
-.PHONY: build test generate generate-ddb diff-ddb clean
+.PHONY: build test generate generate-ddb generate-kitchen-sink diff-ddb clean
 
 build:
 	go build ./...
@@ -12,14 +14,19 @@ test:
 # Post-pivot, `generate` emits the verbatim DDB mirror regardless of YAML
 # spec contents. Pointed at testdata/ddb.yaml for clarity.
 generate: build
-	@rm -rf output/
-	@mkdir -p output/
-	go run ./cmd/naff/ generate -c testdata/ddb.yaml -o output/
+	@rm -rf $(ARTIFACTS)/output
+	@mkdir -p $(ARTIFACTS)/output
+	go run ./cmd/naff/ generate -c testdata/ddb.yaml -o $(ARTIFACTS)/output
 
 generate-ddb: build
 	@rm -rf $(DDB_OUTPUT)
 	@mkdir -p $(DDB_OUTPUT)
 	go run ./cmd/naff/ generate -c testdata/ddb.yaml -o $(DDB_OUTPUT)
+
+generate-kitchen-sink: build
+	@rm -rf $(KITCHEN_SINK_OUTPUT)
+	@mkdir -p $(KITCHEN_SINK_OUTPUT)
+	go run ./cmd/naff/ generate -c testdata/kitchen_sink.yaml -o $(KITCHEN_SINK_OUTPUT)
 
 diff-ddb: generate-ddb
 	@if ! command -v meld >/dev/null 2>&1; then \
@@ -30,7 +37,7 @@ diff-ddb: generate-ddb
 		echo "DDB backend is at:      $(DDB_REPO)"; \
 		exit 1; \
 	fi
-	meld $(DDB_OUTPUT) $(DDB_REPO) &
+	meld $(DDB_OUTPUT) $(DDB_REPO)
 
 clean:
-	rm -rf output/ $(DDB_OUTPUT)
+	rm -rf $(ARTIFACTS)/
