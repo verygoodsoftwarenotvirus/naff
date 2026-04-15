@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -29,7 +30,7 @@ type FileResult struct {
 type FileStatus int
 
 const (
-	FileCreated   FileStatus = iota
+	FileCreated FileStatus = iota
 	FileUpdated
 	FileUnchanged
 	FileOrphaned
@@ -143,6 +144,44 @@ func (p *Pipeline) Run(ctx context.Context) error {
 		return fmt.Errorf("%d files had errors during generation", summary.Errors)
 	}
 
+	// 5. Run post-generation make targets in the freshly-written tree. Order
+	// is load-bearing: `proto` consumes sqlc-generated types from the
+	// backend, so the backend `queries` step (rolled into `generated_files`)
+	// must run first. `vendor` resolves the module graph; `generated_files`
+	// fans out to configs/queries/env_vars/format_golang. Proto runs last.
+	backendDir := filepath.Join(p.outputDir, "backend")
+	steps := []postGenStep{
+		{dir: backendDir, args: []string{"querier", "format", "vendor", "configs", "env_vars"}},
+		{dir: p.outputDir, args: []string{"proto"}},
+	}
+	for _, s := range steps {
+		if err := s.run(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// postGenStep is a single `make <args...>` invocation in a specific directory.
+type postGenStep struct {
+	dir  string
+	args []string
+}
+
+// run shells out to `make` with stdout/stderr streamed to the parent process,
+// so protoc/go output is visible live. A non-zero exit is fatal.
+func (s postGenStep) run(ctx context.Context) error {
+	fmt.Printf("\n→ make %s  (in %s)\n", strings.Join(s.args, " "), s.dir)
+
+	cmd := exec.CommandContext(ctx, "make", s.args...)
+	cmd.Dir = s.dir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("post-gen `make %s` in %s: %w", strings.Join(s.args, " "), s.dir, err)
+	}
 	return nil
 }
 
@@ -160,13 +199,13 @@ func (p *Pipeline) writeNaffConfig() error {
 
 func (p *Pipeline) renderAndWrite(ctx context.Context, planned []PlannedFile) *Summary {
 	var (
-		summary  Summary
-		mu       sync.Mutex
-		created  atomic.Int32
-		updated  atomic.Int32
+		summary   Summary
+		mu        sync.Mutex
+		created   atomic.Int32
+		updated   atomic.Int32
 		unchanged atomic.Int32
-		errors   atomic.Int32
-		wg       sync.WaitGroup
+		errors    atomic.Int32
+		wg        sync.WaitGroup
 	)
 
 	// Use a semaphore to limit concurrency.
@@ -333,7 +372,6 @@ func diffAwareWrite(path string, content []byte, mode os.FileMode) (FileStatus, 
 
 	return FileCreated, nil
 }
-
 
 // planFiles builds the list of files to generate by walking the embedded
 // templates FS. Every regular file becomes a PlannedFile. Entries whose name

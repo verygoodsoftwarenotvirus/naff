@@ -1,10 +1,10 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
@@ -106,17 +106,11 @@ func main() {
 
 	for filePath, queries := range queryOutput {
 		filePath += ".generated.sql"
-		existingFile, err := os.ReadFile(filePath)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				if _, err = os.Create(filePath); err != nil {
-					log.Fatal(fmt.Errorf("creating file: %w", err))
-				}
-			}
-			if err != nil {
-				log.Fatal(fmt.Errorf("opening existing file: %w", err))
-			}
+		if err := os.MkdirAll(filepath.Dir(filePath), 0o755); err != nil {
+			log.Fatal(fmt.Errorf("creating directory: %w", err))
 		}
+
+		existingFile, _ := os.ReadFile(filePath)
 
 		var fileContent strings.Builder
 		for i, query := range queries {
@@ -136,7 +130,7 @@ func main() {
 		}
 
 		if !checkOnly {
-			if err = os.WriteFile(filePath, []byte(fileOutput.String()), 0o600); err != nil {
+			if err := os.WriteFile(filePath, []byte(fileOutput.String()), 0o600); err != nil {
 				runErrors = multierror.Append(runErrors, err)
 			}
 		}
