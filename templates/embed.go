@@ -7,11 +7,6 @@ import "embed"
 // under `backend/`, `proto/`, `frontend/`, and `ios/`. The pipeline walks
 // this filesystem and emits every entry as a raw pass-through.
 //
-// The `_parameterized_wip/` sibling holds the previous registry-driven
-// parameterized templates. Go's embed deliberately ignores paths that begin
-// with `_` or `.`, so it is excluded from this filesystem (and from `go
-// build`/`go test`).
-//
 // The `_backend/` subtree is prefixed with `_` so Go tooling treats it as
 // hidden and does NOT try to compile its `.go` files as part of the naff
 // module. The `all:` prefix makes `go:embed` include underscore-prefixed
