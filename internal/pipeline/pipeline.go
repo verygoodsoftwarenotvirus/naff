@@ -65,6 +65,12 @@ type PlannedFile struct {
 	// verbatim-mirror pipeline where templates/ holds byte-for-byte copies of
 	// upstream source.
 	Raw bool
+	// Symlink, when true, signals that the entry at TemplatePath is a
+	// `.symlink` sentinel: its file contents are the symlink target, and
+	// renderOne creates a real symlink at OutputPath pointing there. This
+	// works around `go:embed` silently skipping real symlinks in the
+	// template tree.
+	Symlink bool
 }
 
 // Pipeline orchestrates the code generation process.
@@ -209,6 +215,18 @@ func (p *Pipeline) renderAndWrite(ctx context.Context, planned []PlannedFile) *S
 func (p *Pipeline) renderOne(pf PlannedFile) FileResult {
 	outPath := filepath.Join(p.outputDir, pf.OutputPath)
 
+	if pf.Symlink {
+		target, err := TemplateFS.ReadFile(pf.TemplatePath)
+		if err != nil {
+			return FileResult{Path: outPath, Status: FileError, Err: fmt.Errorf("reading %s: %w", pf.TemplatePath, err)}
+		}
+		status, err := writeSymlink(outPath, strings.TrimSpace(string(target)))
+		if err != nil {
+			return FileResult{Path: outPath, Status: FileError, Err: err}
+		}
+		return FileResult{Path: outPath, Status: status}
+	}
+
 	var output []byte
 
 	if pf.Raw {
@@ -246,6 +264,42 @@ func (p *Pipeline) renderOne(pf PlannedFile) FileResult {
 	}
 
 	return FileResult{Path: outPath, Status: status}
+}
+
+// writeSymlink ensures a symlink exists at path pointing to target. Existing
+// entries (regular file, dir, or symlink with a different target) are
+// replaced. Returns FileUnchanged if the link already points where we want.
+func writeSymlink(path, target string) (FileStatus, error) {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return FileError, fmt.Errorf("creating directory %s: %w", dir, err)
+	}
+
+	if existing, err := os.Readlink(path); err == nil {
+		if existing == target {
+			return FileUnchanged, nil
+		}
+		if err = os.Remove(path); err != nil {
+			return FileError, fmt.Errorf("removing stale symlink %s: %w", path, err)
+		}
+		if err = os.Symlink(target, path); err != nil {
+			return FileError, fmt.Errorf("symlinking %s -> %s: %w", path, target, err)
+		}
+		return FileUpdated, nil
+	}
+
+	// Path may exist as a regular file or directory from a prior non-symlink
+	// emission; remove it before creating the link.
+	if _, err := os.Lstat(path); err == nil {
+		if err = os.RemoveAll(path); err != nil {
+			return FileError, fmt.Errorf("removing %s: %w", path, err)
+		}
+	}
+
+	if err := os.Symlink(target, path); err != nil {
+		return FileError, fmt.Errorf("symlinking %s -> %s: %w", path, target, err)
+	}
+	return FileCreated, nil
 }
 
 // diffAwareWrite writes content to path only if it differs from existing content.
@@ -311,6 +365,18 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		out := rewriteOutputPath(p)
 		if out == "" {
 			// Nothing to emit for this file (filtered).
+			return nil
+		}
+
+		// `.symlink` sentinel: a regular file whose contents are the link
+		// target. Emitted as a real symlink at the de-suffixed output path.
+		// Used because `go:embed` silently drops actual symlinks.
+		if strings.HasSuffix(p, ".symlink") {
+			files = append(files, PlannedFile{
+				TemplatePath: p,
+				OutputPath:   strings.TrimSuffix(out, ".symlink"),
+				Symlink:      true,
+			})
 			return nil
 		}
 
