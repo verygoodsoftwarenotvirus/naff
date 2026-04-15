@@ -17,6 +17,7 @@ func buildGenerateCmd() *cobra.Command {
 		configPath string
 		outputDir  string
 		clean      bool
+		debug      bool
 	)
 
 	cmd := &cobra.Command{
@@ -42,7 +43,7 @@ func buildGenerateCmd() *cobra.Command {
 			}
 
 			pipeline.TemplateFS = templates.FS
-			p := pipeline.New(cfg, outputDir, clean)
+			p := pipeline.New(cfg, outputDir, clean, debug)
 			return p.Run(cmd.Context())
 		},
 	}
@@ -50,6 +51,7 @@ func buildGenerateCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&configPath, "config", "c", "project.yaml", "path to project YAML config")
 	cmd.Flags().StringVarP(&outputDir, "output", "o", "./output", "output directory")
 	cmd.Flags().BoolVar(&clean, "clean", false, "remove orphaned generated files")
+	cmd.Flags().BoolVar(&debug, "debug", false, "stream post-generation make output live")
 
 	return cmd
 }

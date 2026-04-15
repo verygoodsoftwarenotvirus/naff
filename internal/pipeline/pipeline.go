@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"context"
 	"embed"
 	"fmt"
@@ -79,15 +80,19 @@ type Pipeline struct {
 	config    *config.Project
 	outputDir string
 	clean     bool
+	debug     bool
 	renderer  *renderer.Renderer
 }
 
-// New creates a new Pipeline.
-func New(cfg *config.Project, outputDir string, clean bool) *Pipeline {
+// New creates a new Pipeline. When debug is true, post-generation `make`
+// invocations stream their stdout/stderr live to the parent process; otherwise
+// their output is captured and only surfaced if the step fails.
+func New(cfg *config.Project, outputDir string, clean, debug bool) *Pipeline {
 	return &Pipeline{
 		config:    cfg,
 		outputDir: outputDir,
 		clean:     clean,
+		debug:     debug,
 		renderer:  renderer.New(TemplateFS),
 	}
 }
@@ -151,8 +156,8 @@ func (p *Pipeline) Run(ctx context.Context) error {
 	// fans out to configs/queries/env_vars/format_golang. Proto runs last.
 	backendDir := filepath.Join(p.outputDir, "backend")
 	steps := []postGenStep{
-		{dir: backendDir, args: []string{"querier", "format", "vendor", "configs", "env_vars"}},
-		{dir: p.outputDir, args: []string{"proto"}},
+		{dir: backendDir, args: []string{"querier", "format", "vendor", "configs", "env_vars"}, debug: p.debug},
+		{dir: p.outputDir, args: []string{"proto"}, debug: p.debug},
 	}
 	for _, s := range steps {
 		if err := s.run(ctx); err != nil {
@@ -165,21 +170,37 @@ func (p *Pipeline) Run(ctx context.Context) error {
 
 // postGenStep is a single `make <args...>` invocation in a specific directory.
 type postGenStep struct {
-	dir  string
-	args []string
+	dir   string
+	args  []string
+	debug bool
 }
 
-// run shells out to `make` with stdout/stderr streamed to the parent process,
-// so protoc/go output is visible live. A non-zero exit is fatal.
+// run shells out to `make` in s.dir. When s.debug is true, stdout/stderr
+// stream live to the parent process so protoc/go output is visible. Otherwise
+// the combined output is captured and only flushed to stderr if the step
+// fails — keeping the default `naff generate` output uncluttered while
+// preserving diagnosability on error. A non-zero exit is fatal.
 func (s postGenStep) run(ctx context.Context) error {
 	fmt.Printf("\n→ make %s  (in %s)\n", strings.Join(s.args, " "), s.dir)
 
 	cmd := exec.CommandContext(ctx, "make", s.args...)
 	cmd.Dir = s.dir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+
+	var buf bytes.Buffer
+	if s.debug {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	} else {
+		// Combine stdout and stderr into one buffer so interleaving is
+		// preserved when we replay the output on failure.
+		cmd.Stdout = &buf
+		cmd.Stderr = &buf
+	}
 
 	if err := cmd.Run(); err != nil {
+		if !s.debug && buf.Len() > 0 {
+			_, _ = os.Stderr.Write(buf.Bytes())
+		}
 		return fmt.Errorf("post-gen `make %s` in %s: %w", strings.Join(s.args, " "), s.dir, err)
 	}
 	return nil
