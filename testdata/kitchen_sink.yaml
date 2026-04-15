@@ -1,0 +1,147 @@
+# kitchen_sink.yaml — full generation-capability test fixture.
+#
+# Unlike testdata/ddb.yaml (which is a themed spec) or testdata/minimal_project.yaml
+# (smallest valid config), this file's sole purpose is to hit every lever the
+# naff configuration schema exposes: every ProjectMeta field, every target, every
+# feature, every entity-level boolean, every scalar + pointer field type, every
+# (required × creatable × editable × omitempty) combination, and multi-depth +
+# cross-domain ownership.
+#
+# It is intentionally NOT expected to produce a `go build`-clean output/ —
+# every feature is flipped on and async_message_handler is enabled even though
+# naff doesn't emit its hand-rolled data_change_message_handler dependency. Use
+# testdata/integration_project.yaml when you need a buildable fixture.
+
+project:
+  name: "KitchenSink"
+  module: "github.com/example/kitchensink"
+  platform_module: "github.com/primandproper/platform"
+  ios_bundle_id: "com.example.kitchensink"
+  ios_module_name: "KitchenSink"
+
+targets:
+  backend: true
+  ios: true
+  async_message_handler: true
+
+features:
+  webhooks: true
+  issuereports: true
+  comments: true
+  notifications: true
+  payments: true
+  waitlists: true
+  uploadedmedia: true
+  dataprivacy: true
+  settings: true
+  consumer_app: true
+  admin_app: true
+
+domains:
+  # Domain 1: multi-word name with explicit type_name override.
+  # Without type_name, RepoTypeName() fallback would yield "Fieldtypes".
+  - name: "fieldtypes"
+    type_name: "FieldTypes"
+    entities:
+      # Every non-pointer scalar type from validFieldTypes.
+      # All entity-level booleans left at their zero value (false) — this entity
+      # is the "everything default" baseline.
+      - name: "ScalarShowcase"
+        belongs_to_account: false
+        created_by_user: false
+        searchable: false
+        consumer_editable: false
+        fields:
+          - { name: "AString",  type: "string"  }
+          - { name: "ABool",    type: "bool"    }
+          - { name: "AnInt",    type: "int"     }
+          - { name: "AnInt8",   type: "int8"    }
+          - { name: "AnInt16",  type: "int16"   }
+          - { name: "AnInt32",  type: "int32"   }
+          - { name: "AnInt64",  type: "int64"   }
+          - { name: "AUint",    type: "uint"    }
+          - { name: "AUint8",   type: "uint8"   }
+          - { name: "AUint16",  type: "uint16"  }
+          - { name: "AUint32",  type: "uint32"  }
+          - { name: "AUint64",  type: "uint64"  }
+          - { name: "AFloat32", type: "float32" }
+          - { name: "AFloat64", type: "float64" }
+
+      # Every pointer variant of every scalar type + omitempty.
+      # Also demonstrates same-domain belongs_to.
+      - name: "PointerShowcase"
+        belongs_to: "ScalarShowcase"
+        belongs_to_account: false
+        created_by_user: false
+        fields:
+          - { name: "PString",  type: "*string",  required: false, omitempty: true }
+          - { name: "PBool",    type: "*bool",    required: false, omitempty: true }
+          - { name: "PInt",     type: "*int",     required: false, omitempty: true }
+          - { name: "PInt8",    type: "*int8",    required: false, omitempty: true }
+          - { name: "PInt16",   type: "*int16",   required: false, omitempty: true }
+          - { name: "PInt32",   type: "*int32",   required: false, omitempty: true }
+          - { name: "PInt64",   type: "*int64",   required: false, omitempty: true }
+          - { name: "PUint",    type: "*uint",    required: false, omitempty: true }
+          - { name: "PUint8",   type: "*uint8",   required: false, omitempty: true }
+          - { name: "PUint16",  type: "*uint16",  required: false, omitempty: true }
+          - { name: "PUint32",  type: "*uint32",  required: false, omitempty: true }
+          - { name: "PUint64",  type: "*uint64",  required: false, omitempty: true }
+          - { name: "PFloat32", type: "*float32", required: false, omitempty: true }
+          - { name: "PFloat64", type: "*float64", required: false, omitempty: true }
+
+      # Every (creatable × editable) combination, plus explicit required true/false.
+      - name: "FlagMatrix"
+        fields:
+          # creatable=true, editable=true (both defaults)
+          - { name: "CreatableAndEditable", type: "string" }
+          # creatable=true, editable=false
+          - { name: "CreatableNotEditable", type: "string", editable: false }
+          # creatable=false, editable=true
+          - { name: "EditableNotCreatable", type: "string", creatable: false }
+          # creatable=false, editable=false
+          - { name: "NeitherCreatableNorEditable", type: "string", creatable: false, editable: false }
+          # required explicitly set (both values)
+          - { name: "RequiredExplicitTrue",  type: "string", required: true  }
+          - { name: "RequiredExplicitFalse", type: "string", required: false }
+
+  # Domain 2: single-word name, no type_name — exercises RepoTypeName()
+  # title-case fallback (ownership -> "Ownership"). Also covers the full
+  # matrix of entity-level booleans and multi-depth / cross-domain ownership.
+  - name: "ownership"
+    entities:
+      # Depth 0 (no belongs_to). Every entity-level boolean set to true.
+      - name: "Organization"
+        belongs_to_account: true
+        created_by_user: true
+        searchable: true
+        consumer_editable: true
+        fields:
+          - { name: "Name", type: "string" }
+
+      # Depth 1 (same-domain belongs_to). Mixed boolean flags.
+      - name: "Team"
+        belongs_to: "Organization"
+        belongs_to_account: true
+        created_by_user: true
+        searchable: true
+        consumer_editable: false
+        fields:
+          - { name: "Label", type: "string" }
+
+      # Depth 2 (3-deep ownership chain: Seat -> Team -> Organization).
+      - name: "Seat"
+        belongs_to: "Team"
+        belongs_to_account: true
+        created_by_user: false
+        searchable: false
+        consumer_editable: false
+        fields:
+          - { name: "Slot", type: "uint16" }
+
+      # Cross-domain belongs_to — parent lives in the "fieldtypes" domain.
+      - name: "ScalarAnnotation"
+        belongs_to: "ScalarShowcase"
+        belongs_to_account: false
+        created_by_user: true
+        fields:
+          - { name: "Note", type: "string", required: false }
