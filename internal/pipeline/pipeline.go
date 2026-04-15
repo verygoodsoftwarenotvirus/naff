@@ -349,6 +349,11 @@ func diffAwareWrite(path string, content []byte, mode os.FileMode) (FileStatus, 
 func (p *Pipeline) planFiles() []PlannedFile {
 	var files []PlannedFile
 
+	// Every .tmpl receives the same context. Templates currently only
+	// reference `.Project.ProjectMeta.Module` (verified with a grep across
+	// templates/), so a single shared map suffices — no per-file data.
+	data := map[string]any{"Project": p.config}
+
 	_ = fs.WalkDir(TemplateFS, ".", func(p string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -385,12 +390,16 @@ func (p *Pipeline) planFiles() []PlannedFile {
 			out = strings.TrimSuffix(out, ".tmpl")
 		}
 
-		files = append(files, PlannedFile{
+		pf := PlannedFile{
 			TemplatePath: p,
 			OutputPath:   out,
 			Raw:          raw,
 			Mode:         modeFor(out),
-		})
+		}
+		if !raw {
+			pf.Data = data
+		}
+		files = append(files, pf)
 		return nil
 	})
 
