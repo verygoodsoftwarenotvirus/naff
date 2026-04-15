@@ -1,7 +1,6 @@
 project:
   name: "Minimal"
   module: "github.com/example/minimal"
-  platform_module: "github.com/primandproper/platform"
 
 targets:
   backend: true

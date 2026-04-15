@@ -1,7 +1,6 @@
 project:
   name: "TestProject"
   module: "github.com/example/testproject"
-  platform_module: "github.com/primandproper/platform"
   ios_bundle_id: "com.example.testproject"
   ios_module_name: "TestProject"
 

@@ -2,6 +2,11 @@ package config
 
 import "strings"
 
+// PlatformModule is the Go module path for the platform package that every
+// naff-generated project depends on. It is fixed — naff does not support
+// pointing at an alternative platform implementation.
+const PlatformModule = "github.com/primandproper/platform"
+
 // Project is the top-level configuration for a NAFF-generated project.
 type Project struct {
 	ProjectMeta ProjectMeta `yaml:"project"`
@@ -12,11 +17,10 @@ type Project struct {
 
 // ProjectMeta contains project-level metadata.
 type ProjectMeta struct {
-	Name           string `yaml:"name"`
-	Module         string `yaml:"module"`
-	PlatformModule string `yaml:"platform_module,omitempty"`
-	IOSBundleID    string `yaml:"ios_bundle_id,omitempty"`
-	IOSModuleName  string `yaml:"ios_module_name,omitempty"`
+	Name          string `yaml:"name"`
+	Module        string `yaml:"module"`
+	IOSBundleID   string `yaml:"ios_bundle_id,omitempty"`
+	IOSModuleName string `yaml:"ios_module_name,omitempty"`
 }
 
 // Targets controls which generation targets are enabled.

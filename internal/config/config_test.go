@@ -16,7 +16,6 @@ func TestParse(t *testing.T) {
 project:
   name: "TestProject"
   module: "github.com/example/test"
-  platform_module: "github.com/example/platform"
 
 features:
   webhooks: true
@@ -49,9 +48,6 @@ domains:
 		}
 		if cfg.ProjectMeta.Module != "github.com/example/test" {
 			t.Errorf("expected module github.com/example/test, got %q", cfg.ProjectMeta.Module)
-		}
-		if cfg.ProjectMeta.PlatformModule != "github.com/example/platform" {
-			t.Errorf("expected platform_module github.com/example/platform, got %q", cfg.ProjectMeta.PlatformModule)
 		}
 
 		if len(cfg.Domains) != 1 {
@@ -169,11 +165,10 @@ func TestMarshal(t *testing.T) {
 
 		original := &Project{
 			ProjectMeta: ProjectMeta{
-				Name:           "RoundTrip",
-				Module:         "github.com/example/roundtrip",
-				PlatformModule: "github.com/example/platform",
-				IOSBundleID:    "com.example.roundtrip",
-				IOSModuleName:  "RoundTrip",
+				Name:          "RoundTrip",
+				Module:        "github.com/example/roundtrip",
+				IOSBundleID:   "com.example.roundtrip",
+				IOSModuleName: "RoundTrip",
 			},
 			Features: Features{
 				Webhooks: &trueVal,

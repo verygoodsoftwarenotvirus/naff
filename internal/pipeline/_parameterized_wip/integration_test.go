@@ -12,9 +12,8 @@ func TestPlanFilesIncludesBuiltins(t *testing.T) {
 
 	cfg := &config.Project{
 		ProjectMeta: config.ProjectMeta{
-			Name:           "TestProject",
-			Module:         "github.com/example/test",
-			PlatformModule: "github.com/primandproper/platform",
+			Name:   "TestProject",
+			Module: "github.com/example/test",
 		},
 		Features: config.Features{},
 		Domains: []config.Domain{
@@ -82,9 +81,8 @@ func TestPlanFilesRespectsFeatureFlags(t *testing.T) {
 	falseVal := false
 	cfg := &config.Project{
 		ProjectMeta: config.ProjectMeta{
-			Name:           "TestProject",
-			Module:         "github.com/example/test",
-			PlatformModule: "github.com/primandproper/platform",
+			Name:   "TestProject",
+			Module: "github.com/example/test",
 		},
 		Features: config.Features{
 			Webhooks:     &falseVal,
@@ -250,9 +248,8 @@ func TestPlanFilesIncludesConsumerApp(t *testing.T) {
 	trueVal := true
 	cfg := &config.Project{
 		ProjectMeta: config.ProjectMeta{
-			Name:           "TestProject",
-			Module:         "github.com/example/test",
-			PlatformModule: "github.com/primandproper/platform",
+			Name:   "TestProject",
+			Module: "github.com/example/test",
 		},
 		Features: config.Features{
 			ConsumerApp: &trueVal,
@@ -368,9 +365,8 @@ func TestPlanFilesIncludesAdminApp(t *testing.T) {
 	trueVal := true
 	cfg := &config.Project{
 		ProjectMeta: config.ProjectMeta{
-			Name:           "TestProject",
-			Module:         "github.com/example/test",
-			PlatformModule: "github.com/primandproper/platform",
+			Name:   "TestProject",
+			Module: "github.com/example/test",
 		},
 		Features: config.Features{
 			AdminApp: &trueVal,
@@ -442,9 +438,8 @@ func TestPlanFilesExcludesFrontendWhenDisabled(t *testing.T) {
 
 	cfg := &config.Project{
 		ProjectMeta: config.ProjectMeta{
-			Name:           "TestProject",
-			Module:         "github.com/example/test",
-			PlatformModule: "github.com/primandproper/platform",
+			Name:   "TestProject",
+			Module: "github.com/example/test",
 		},
 		Features: config.Features{},
 		Domains: []config.Domain{
@@ -481,9 +476,8 @@ func TestPlanFilesBackendOnlyExcludesIOS(t *testing.T) {
 
 	cfg := &config.Project{
 		ProjectMeta: config.ProjectMeta{
-			Name:           "TestProject",
-			Module:         "github.com/example/test",
-			PlatformModule: "github.com/primandproper/platform",
+			Name:   "TestProject",
+			Module: "github.com/example/test",
 		},
 		Features: config.Features{},
 		Domains: []config.Domain{

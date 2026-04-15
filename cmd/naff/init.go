@@ -10,7 +10,6 @@ import (
 const starterConfig = `project:
   name: "MyProject"
   module: "github.com/example/myproject"
-  platform_module: "github.com/example/platform"
   ios_bundle_id: "com.example.myproject"
   ios_module_name: "MyProject"
 

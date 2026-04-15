@@ -15,7 +15,6 @@
 project:
   name: "KitchenSink"
   module: "github.com/example/kitchensink"
-  platform_module: "github.com/primandproper/platform"
   ios_bundle_id: "com.example.kitchensink"
   ios_module_name: "KitchenSink"
 
