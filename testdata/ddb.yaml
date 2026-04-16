@@ -182,6 +182,14 @@ domains:
           - name: "Optional"
             type: "bool"
 
+      - name: "RecipePrepTaskStep"
+        belongs_to: "RecipePrepTask"
+        fields:
+          - name: "BelongsToRecipeStep"
+            type: "string"
+          - name: "SatisfiesRecipeStep"
+            type: "bool"
+
       - name: "RecipeMedia"
         fields:
           - name: "MimeType"
@@ -200,6 +208,7 @@ domains:
             required: false
 
       - name: "RecipeRating"
+        created_by_user: true
         fields:
           - name: "RecipeID"
             type: "string"
@@ -261,6 +270,17 @@ domains:
           - name: "EligibleForMealPlans"
             type: "bool"
 
+      - name: "MealComponent"
+        belongs_to: "Meal"
+        fields:
+          - name: "ComponentType"
+            type: "string"
+          - name: "RecipeID"
+            type: "string"
+            editable: false
+          - name: "RecipeScale"
+            type: "float32"
+
       - name: "MealPlan"
         belongs_to_account: true
         created_by_user: true
@@ -316,6 +336,7 @@ domains:
 
       - name: "MealPlanOptionVote"
         belongs_to: "MealPlanOption"
+        created_by_user: true
         fields:
           - name: "Notes"
             type: "string"
@@ -340,6 +361,21 @@ domains:
             type: "*float32"
             required: false
           - name: "PurchasedUPC"
+            type: "*string"
+            required: false
+          - name: "BelongsToMealPlanOption"
+            type: "*string"
+            required: false
+          - name: "RecipeID"
+            type: "*string"
+            required: false
+          - name: "OptionIndex"
+            type: "*uint16"
+            required: false
+          - name: "IngredientIndex"
+            type: "*uint16"
+            required: false
+          - name: "RecipeStepID"
             type: "*string"
             required: false
 
@@ -409,3 +445,278 @@ domains:
             type: "int8"
           - name: "Allergy"
             type: "bool"
+
+      # ── Reference-data entities ────────────────────────────────────
+
+      - name: "ValidIngredient"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "Warning"
+            type: "string"
+          - name: "IconPath"
+            type: "string"
+          - name: "PluralName"
+            type: "string"
+          - name: "StorageInstructions"
+            type: "string"
+          - name: "ShoppingSuggestions"
+            type: "string"
+          - name: "ContainsEgg"
+            type: "bool"
+          - name: "ContainsDairy"
+            type: "bool"
+          - name: "ContainsPeanut"
+            type: "bool"
+          - name: "ContainsTreeNut"
+            type: "bool"
+          - name: "ContainsSoy"
+            type: "bool"
+          - name: "ContainsWheat"
+            type: "bool"
+          - name: "ContainsShellfish"
+            type: "bool"
+          - name: "ContainsSesame"
+            type: "bool"
+          - name: "ContainsFish"
+            type: "bool"
+          - name: "ContainsGluten"
+            type: "bool"
+          - name: "ContainsAlcohol"
+            type: "bool"
+          - name: "AnimalFlesh"
+            type: "bool"
+          - name: "AnimalDerived"
+            type: "bool"
+          - name: "IsLiquid"
+            type: "bool"
+          - name: "IsStarch"
+            type: "bool"
+          - name: "IsProtein"
+            type: "bool"
+          - name: "IsGrain"
+            type: "bool"
+          - name: "IsFruit"
+            type: "bool"
+          - name: "IsSalt"
+            type: "bool"
+          - name: "IsFat"
+            type: "bool"
+          - name: "IsAcid"
+            type: "bool"
+          - name: "IsHeat"
+            type: "bool"
+          - name: "RestrictToPreparations"
+            type: "bool"
+          - name: "ContaminatesEquipment"
+            type: "bool"
+
+      - name: "ValidIngredientGroup"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "Description"
+            type: "string"
+
+      - name: "ValidInstrument"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "PluralName"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "IconPath"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "DisplayInSummaryLists"
+            type: "bool"
+          - name: "IncludeInGeneratedInstructions"
+            type: "bool"
+          - name: "UsableForStorage"
+            type: "bool"
+
+      - name: "ValidMeasurementUnit"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "IconPath"
+            type: "string"
+          - name: "PluralName"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "Volumetric"
+            type: "bool"
+          - name: "Universal"
+            type: "bool"
+          - name: "Metric"
+            type: "bool"
+          - name: "Imperial"
+            type: "bool"
+
+      - name: "ValidPreparation"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "PastTense"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "IconPath"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "TemperatureRequired"
+            type: "bool"
+          - name: "TimeEstimateRequired"
+            type: "bool"
+          - name: "ConditionExpressionRequired"
+            type: "bool"
+          - name: "ConsumesVessel"
+            type: "bool"
+          - name: "OnlyForVessels"
+            type: "bool"
+          - name: "YieldsNothing"
+            type: "bool"
+          - name: "RestrictToIngredients"
+            type: "bool"
+
+      - name: "ValidVessel"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "PluralName"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "IconPath"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "Shape"
+            type: "string"
+          - name: "WidthInMillimeters"
+            type: "float32"
+          - name: "LengthInMillimeters"
+            type: "float32"
+          - name: "HeightInMillimeters"
+            type: "float32"
+          - name: "Capacity"
+            type: "float32"
+          - name: "IncludeInGeneratedInstructions"
+            type: "bool"
+          - name: "DisplayInSummaryLists"
+            type: "bool"
+          - name: "UsableForStorage"
+            type: "bool"
+          - name: "CapacityUnitID"
+            type: "*string"
+            required: false
+
+      - name: "ValidIngredientState"
+        searchable: true
+        fields:
+          - name: "Name"
+            type: "string"
+          - name: "PastTense"
+            type: "string"
+          - name: "Description"
+            type: "string"
+          - name: "IconPath"
+            type: "string"
+          - name: "Slug"
+            type: "string"
+          - name: "AttributeType"
+            type: "string"
+
+      # ── Bridge-table entities ──────────────────────────────────────
+
+      - name: "ValidIngredientMeasurementUnit"
+        fields:
+          - name: "Notes"
+            type: "string"
+          - name: "ValidMeasurementUnitID"
+            type: "string"
+          - name: "ValidIngredientID"
+            type: "string"
+
+      - name: "ValidIngredientPreparation"
+        fields:
+          - name: "Notes"
+            type: "string"
+          - name: "ValidPreparationID"
+            type: "string"
+          - name: "ValidIngredientID"
+            type: "string"
+
+      - name: "ValidIngredientStateIngredient"
+        fields:
+          - name: "Notes"
+            type: "string"
+          - name: "ValidIngredientStateID"
+            type: "string"
+          - name: "ValidIngredientID"
+            type: "string"
+
+      - name: "ValidMeasurementUnitConversion"
+        fields:
+          - name: "Notes"
+            type: "string"
+          - name: "From"
+            type: "string"
+          - name: "To"
+            type: "string"
+          - name: "Modifier"
+            type: "float32"
+          - name: "OnlyForIngredient"
+            type: "*string"
+            required: false
+
+      - name: "ValidPreparationInstrument"
+        fields:
+          - name: "Notes"
+            type: "string"
+          - name: "ValidPreparationID"
+            type: "string"
+          - name: "ValidInstrumentID"
+            type: "string"
+
+      - name: "ValidPreparationVessel"
+        fields:
+          - name: "Notes"
+            type: "string"
+          - name: "ValidPreparationID"
+            type: "string"
+          - name: "ValidVesselID"
+            type: "string"
+
+      - name: "ValidPrepTaskConfig"
+        fields:
+          - name: "StorageType"
+            type: "string"
+          - name: "StorageInstructions"
+            type: "string"
+          - name: "Notes"
+            type: "string"
+          - name: "Source"
+            type: "string"
+          - name: "ValidPreparationID"
+            type: "string"
+          - name: "ValidIngredientID"
+            type: "string"
