@@ -120,35 +120,35 @@ func (p *Pipeline) planPerDomainFiles(ctx TemplateContext) []PlannedFile {
 		isGo     bool
 	}{
 		// Domain-level (shared across entities in domain)
-		{"domain/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/repository.generated.go", domain), true},
-		{"domain_keys/keys.go.tmpl", fmt.Sprintf("internal/domain/%s/keys/keys.generated.go", domain), true},
-		{"domain_fakes/fake.go.tmpl", fmt.Sprintf("internal/domain/%s/fakes/fake.generated.go", domain), true},
-		{"domain_mock/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/mock/repository.generated.go", domain), true},
+		{"domain/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/repository.go", domain), true},
+		{"domain_keys/keys.go.tmpl", fmt.Sprintf("internal/domain/%s/keys/keys.go", domain), true},
+		{"domain_fakes/fake.go.tmpl", fmt.Sprintf("internal/domain/%s/fakes/fake.go", domain), true},
+		{"domain_mock/repository.go.tmpl", fmt.Sprintf("internal/domain/%s/mock/repository.go", domain), true},
 
 		// Manager (one per domain)
-		{"manager/interface.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/interface.generated.go", domain), true},
-		{"manager/manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/manager.generated.go", domain), true},
-		{"manager/do.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/do.generated.go", domain), true},
-		{"manager/mock_manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/mock/manager.generated.go", domain), true},
+		{"manager/interface.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/interface.go", domain), true},
+		{"manager/manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/manager.go", domain), true},
+		{"manager/do.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/do.go", domain), true},
+		{"manager/mock_manager.go.tmpl", fmt.Sprintf("internal/domain/%s/manager/mock/manager.go", domain), true},
 
 		// Repository infrastructure (one per domain)
-		{"repository/client.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/client.generated.go", domain), true},
-		{"repository/do.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/do.generated.go", domain), true},
+		{"repository/client.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/client.go", domain), true},
+		{"repository/do.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/do.go", domain), true},
 
 		// gRPC infrastructure (one per domain)
-		{"grpc/service.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/service.generated.go", domain), true},
-		{"grpc/converters.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/converters/converters.generated.go", domain), true},
-		{"grpc/permissions.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/permissions.generated.go", domain), true},
-		{"grpc/do.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/do.generated.go", domain), true},
+		{"grpc/service.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/service.go", domain), true},
+		{"grpc/converters.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/converters/converters.go", domain), true},
+		{"grpc/permissions.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/permissions.go", domain), true},
+		{"grpc/do.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/do.go", domain), true},
 
 		// Authorization (one per domain)
-		{"authorization/permissions.go.tmpl", fmt.Sprintf("internal/authorization/%s_permissions.generated.go", domain), true},
+		{"authorization/permissions.go.tmpl", fmt.Sprintf("internal/authorization/%s_permissions.go", domain), true},
 
 		// sqlc config (one per domain)
-		{"sqlc/block.yaml.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/sqlc.generated.yaml", domain), false},
+		{"sqlc/block.yaml.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/sqlc.yaml", domain), false},
 
 		// Build extras
-		{"build/extras.go.tmpl", fmt.Sprintf("internal/build/services/api/grpc/%s.generated.go", domain), false},
+		{"build/extras.go.tmpl", fmt.Sprintf("internal/build/services/api/grpc/%s.go", domain), false},
 	}
 
 	var files []PlannedFile
@@ -222,18 +222,18 @@ func (p *Pipeline) planAuthHandlerFiles() []PlannedFile {
 
 	base := "services/auth/handlers/authentication"
 	mappings := []mapping{
-		{base + "/authentication_http_routes.go.tmpl", "internal/" + base + "/authentication_http_routes.generated.go"},
-		{base + "/config.go.tmpl", "internal/" + base + "/config.generated.go"},
-		{base + "/do.go.tmpl", "internal/" + base + "/do.generated.go"},
-		{base + "/doc.go.tmpl", "internal/" + base + "/doc.generated.go"},
-		{base + "/helpers.go.tmpl", "internal/" + base + "/helpers.generated.go"},
-		{base + "/oauth2.go.tmpl", "internal/" + base + "/oauth2.generated.go"},
-		{base + "/oauth2_client_info.go.tmpl", "internal/" + base + "/oauth2_client_info.generated.go"},
-		{base + "/oauth2_client_store.go.tmpl", "internal/" + base + "/oauth2_client_store.generated.go"},
-		{base + "/oauth2_client_token.go.tmpl", "internal/" + base + "/oauth2_client_token.generated.go"},
-		{base + "/oauth2_token_store.go.tmpl", "internal/" + base + "/oauth2_token_store.generated.go"},
-		{base + "/revoke.go.tmpl", "internal/" + base + "/revoke.generated.go"},
-		{base + "/service.go.tmpl", "internal/" + base + "/service.generated.go"},
+		{base + "/authentication_http_routes.go.tmpl", "internal/" + base + "/authentication_http_routes.go"},
+		{base + "/config.go.tmpl", "internal/" + base + "/config.go"},
+		{base + "/do.go.tmpl", "internal/" + base + "/do.go"},
+		{base + "/doc.go.tmpl", "internal/" + base + "/doc.go"},
+		{base + "/helpers.go.tmpl", "internal/" + base + "/helpers.go"},
+		{base + "/oauth2.go.tmpl", "internal/" + base + "/oauth2.go"},
+		{base + "/oauth2_client_info.go.tmpl", "internal/" + base + "/oauth2_client_info.go"},
+		{base + "/oauth2_client_store.go.tmpl", "internal/" + base + "/oauth2_client_store.go"},
+		{base + "/oauth2_client_token.go.tmpl", "internal/" + base + "/oauth2_client_token.go"},
+		{base + "/oauth2_token_store.go.tmpl", "internal/" + base + "/oauth2_token_store.go"},
+		{base + "/revoke.go.tmpl", "internal/" + base + "/revoke.go"},
+		{base + "/service.go.tmpl", "internal/" + base + "/service.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -265,41 +265,41 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 
 	mappings := []mapping{
 		// internal/domain/auth/
-		{"auth/auth.go.tmpl", "internal/domain/auth/auth.generated.go"},
-		{"auth/do.go.tmpl", "internal/domain/auth/do.generated.go"},
-		{"auth/password_reset_token.go.tmpl", "internal/domain/auth/password_reset_token.generated.go"},
-		{"auth/repository.go.tmpl", "internal/domain/auth/repository.generated.go"},
-		{"auth/user.go.tmpl", "internal/domain/auth/user.generated.go"},
-		{"auth/user_session.go.tmpl", "internal/domain/auth/user_session.generated.go"},
+		{"auth/auth.go.tmpl", "internal/domain/auth/auth.go"},
+		{"auth/do.go.tmpl", "internal/domain/auth/do.go"},
+		{"auth/password_reset_token.go.tmpl", "internal/domain/auth/password_reset_token.go"},
+		{"auth/repository.go.tmpl", "internal/domain/auth/repository.go"},
+		{"auth/user.go.tmpl", "internal/domain/auth/user.go"},
+		{"auth/user_session.go.tmpl", "internal/domain/auth/user_session.go"},
 
 		// internal/domain/identity/
-		{"identity/auth.go.tmpl", "internal/domain/identity/auth.generated.go"},
-		{"identity/account.go.tmpl", "internal/domain/identity/account.generated.go"},
-		{"identity/account_invitation.go.tmpl", "internal/domain/identity/account_invitation.generated.go"},
-		{"identity/account_user_membership.go.tmpl", "internal/domain/identity/account_user_membership.generated.go"},
-		{"identity/data_privacy.go.tmpl", "internal/domain/identity/data_privacy.generated.go"},
-		{"identity/do.go.tmpl", "internal/domain/identity/do.generated.go"},
-		{"identity/password_reset_token.go.tmpl", "internal/domain/identity/password_reset_token.generated.go"},
-		{"identity/repository.go.tmpl", "internal/domain/identity/repository.generated.go"},
-		{"identity/user.go.tmpl", "internal/domain/identity/user.generated.go"},
+		{"identity/auth.go.tmpl", "internal/domain/identity/auth.go"},
+		{"identity/account.go.tmpl", "internal/domain/identity/account.go"},
+		{"identity/account_invitation.go.tmpl", "internal/domain/identity/account_invitation.go"},
+		{"identity/account_user_membership.go.tmpl", "internal/domain/identity/account_user_membership.go"},
+		{"identity/data_privacy.go.tmpl", "internal/domain/identity/data_privacy.go"},
+		{"identity/do.go.tmpl", "internal/domain/identity/do.go"},
+		{"identity/password_reset_token.go.tmpl", "internal/domain/identity/password_reset_token.go"},
+		{"identity/repository.go.tmpl", "internal/domain/identity/repository.go"},
+		{"identity/user.go.tmpl", "internal/domain/identity/user.go"},
 
 		// internal/domain/oauth/
-		{"oauth/do.go.tmpl", "internal/domain/oauth/do.generated.go"},
-		{"oauth/oauth2_client.go.tmpl", "internal/domain/oauth/oauth2_client.generated.go"},
-		{"oauth/oauth2_client_token.go.tmpl", "internal/domain/oauth/oauth2_client_token.generated.go"},
-		{"oauth/repository.go.tmpl", "internal/domain/oauth/repository.generated.go"},
+		{"oauth/do.go.tmpl", "internal/domain/oauth/do.go"},
+		{"oauth/oauth2_client.go.tmpl", "internal/domain/oauth/oauth2_client.go"},
+		{"oauth/oauth2_client_token.go.tmpl", "internal/domain/oauth/oauth2_client_token.go"},
+		{"oauth/repository.go.tmpl", "internal/domain/oauth/repository.go"},
 
 		// internal/authorization/ (per-domain permissions sidecar files for
 		// auth/identity/oauth, since those domains are no longer in BuiltinDomains()
 		// and thus don't trigger planPerDomainFiles' convention-based permissions template).
-		{"authorization/identity_permissions.go.tmpl", "internal/authorization/identity_permissions.generated.go"},
-		{"authorization/oauth_permissions.go.tmpl", "internal/authorization/oauth_permissions.generated.go"},
+		{"authorization/identity_permissions.go.tmpl", "internal/authorization/identity_permissions.go"},
+		{"authorization/oauth_permissions.go.tmpl", "internal/authorization/oauth_permissions.go"},
 
 		// internal/branding/ stub — only the four constants in-scope generated
 		// code actually imports (CompanyName, CompanyNameSlug, CompanySlug,
 		// EnvVarPrefix). Users flesh out logos/email-templates/legal-text. Target's
 		// real branding.go is 109KB with base64 logo blobs → deliberately NOT shipped.
-		{"branding/branding.go.tmpl", "internal/branding/branding.generated.go"},
+		{"branding/branding.go.tmpl", "internal/branding/branding.go"},
 
 		// Phase 4a + 4b.5 — integration harness. 4a shipped the stubs (matchers.go,
 		// doc.go, constants.go). 4b.5 adds init.go/helpers.go/audit_helpers.go now
@@ -308,9 +308,9 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// (4b.2), proto/filtering.proto (4b.3), and internal/localdev/server.go
 		// (4b.4). init.go and helpers.go inherit the audit import alias from 4b.4
 		// (naff emits postgres/audit; target wrote postgres/auditlogentries).
-		{"testutils/matchers.go.tmpl", "internal/testutils/matchers.generated.go"},
-		{"testing/integration/apiserver/doc.go.tmpl", "testing/integration/apiserver/doc.generated.go"},
-		{"testing/integration/apiserver/constants.go.tmpl", "testing/integration/apiserver/constants.generated.go"},
+		{"testutils/matchers.go.tmpl", "internal/testutils/matchers.go"},
+		{"testing/integration/apiserver/doc.go.tmpl", "testing/integration/apiserver/doc.go"},
+		{"testing/integration/apiserver/constants.go.tmpl", "testing/integration/apiserver/constants.go"},
 		// init.go/helpers.go/audit_helpers.go omitted in the generic path — they
 		// reference internal/localdev (DDB-specific, dropped), internal/services/
 		// identity/grpc/converters (the per-entity converters, not emitted
@@ -320,7 +320,7 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// pkg/client/client.go omitted in the generic path — target's version
 		// hardcodes imports for every DDB service's protoc output. A future
 		// templated version should iterate .AllDomains.
-		// {"pkg/client/client.go.tmpl", "pkg/client/client.generated.go"},
+		// {"pkg/client/client.go.tmpl", "pkg/client/client.go"},
 
 		// Phase 5 — hand-rolled postgres repos + identity adjuncts. Target ships
 		// auth/identity/oauth as hand-rolled domain packages (3b) AND hand-rolled
@@ -340,36 +340,36 @@ func (p *Pipeline) planDomainExtrasFiles() []PlannedFile {
 		// DDB auditlogentries + transitive dependencies, not generic.
 
 		// Ship grpc/converters — generic helpers for gRPC<->domain type
-		// conversions, used by naff's per-domain grpc/*.generated.go output.
-		{"internal/grpc/converters/helpers.go.tmpl", "internal/grpc/converters/helpers.generated.go"},
-		{"internal/grpc/converters/query_filter.go.tmpl", "internal/grpc/converters/query_filter.generated.go"},
+		// conversions, used by naff's per-domain grpc/*.go output.
+		{"internal/grpc/converters/helpers.go.tmpl", "internal/grpc/converters/helpers.go"},
+		{"internal/grpc/converters/query_filter.go.tmpl", "internal/grpc/converters/query_filter.go"},
 
 		// audit domain extras — DataChangeMessage type + constructor used by
 		// per-domain manager templates and internal/authentication/manager.go
 		// for async worker dispatch. Target hand-rolls these in audit/; naff's
 		// CRUD only emits AuditLogEntry.
-		{"domain/audit_extras.go.tmpl", "internal/domain/audit/data_change_message.generated.go"},
+		{"domain/audit_extras.go.tmpl", "internal/domain/audit/data_change_message.go"},
 
 		// identity adjuncts — converters imported by localdev; fakes imported by
 		// postgres/testing; keys (auth/identity/oauth) imported across repos.
-		{"identity/converters/account_invitations.go.tmpl", "internal/domain/identity/converters/account_invitations.generated.go"},
-		{"identity/converters/account_user_memberships.go.tmpl", "internal/domain/identity/converters/account_user_memberships.generated.go"},
-		{"identity/converters/accounts.go.tmpl", "internal/domain/identity/converters/accounts.generated.go"},
+		{"identity/converters/account_invitations.go.tmpl", "internal/domain/identity/converters/account_invitations.go"},
+		{"identity/converters/account_user_memberships.go.tmpl", "internal/domain/identity/converters/account_user_memberships.go"},
+		{"identity/converters/accounts.go.tmpl", "internal/domain/identity/converters/accounts.go"},
 		// identity/converters/admin.go omitted — its only contents is a single
 		// GRPC → domain converter that imports grpc/generated/services/identity
 		// (protoc output, absent in a fresh project before `make generate`).
-		{"identity/converters/users.go.tmpl", "internal/domain/identity/converters/users.generated.go"},
+		{"identity/converters/users.go.tmpl", "internal/domain/identity/converters/users.go"},
 
-		{"identity/fakes/account_invitation.go.tmpl", "internal/domain/identity/fakes/account_invitation.generated.go"},
-		{"identity/fakes/account_user_membership.go.tmpl", "internal/domain/identity/fakes/account_user_membership.generated.go"},
-		{"identity/fakes/account.go.tmpl", "internal/domain/identity/fakes/account.generated.go"},
-		{"identity/fakes/doc.go.tmpl", "internal/domain/identity/fakes/doc.generated.go"},
-		{"identity/fakes/fake.go.tmpl", "internal/domain/identity/fakes/fake.generated.go"},
-		{"identity/fakes/user.go.tmpl", "internal/domain/identity/fakes/user.generated.go"},
+		{"identity/fakes/account_invitation.go.tmpl", "internal/domain/identity/fakes/account_invitation.go"},
+		{"identity/fakes/account_user_membership.go.tmpl", "internal/domain/identity/fakes/account_user_membership.go"},
+		{"identity/fakes/account.go.tmpl", "internal/domain/identity/fakes/account.go"},
+		{"identity/fakes/doc.go.tmpl", "internal/domain/identity/fakes/doc.go"},
+		{"identity/fakes/fake.go.tmpl", "internal/domain/identity/fakes/fake.go"},
+		{"identity/fakes/user.go.tmpl", "internal/domain/identity/fakes/user.go"},
 
-		{"auth/keys/keys.go.tmpl", "internal/domain/auth/keys/keys.generated.go"},
-		{"identity/keys/keys.go.tmpl", "internal/domain/identity/keys/keys.generated.go"},
-		{"oauth/keys/keys.go.tmpl", "internal/domain/oauth/keys/keys.generated.go"},
+		{"auth/keys/keys.go.tmpl", "internal/domain/auth/keys/keys.go"},
+		{"identity/keys/keys.go.tmpl", "internal/domain/identity/keys/keys.go"},
+		{"oauth/keys/keys.go.tmpl", "internal/domain/oauth/keys/keys.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -402,10 +402,10 @@ func (p *Pipeline) planAuthorizationFiles() []PlannedFile {
 	}
 
 	mappings := []mapping{
-		{"authorization/permissions_core.go.tmpl", "internal/authorization/permissions.generated.go"},
-		{"authorization/account_role.go.tmpl", "internal/authorization/account_role.generated.go"},
-		{"authorization/service_role.go.tmpl", "internal/authorization/service_role.generated.go"},
-		{"authorization/auth_permissions.go.tmpl", "internal/authorization/auth_permissions.generated.go"},
+		{"authorization/permissions_core.go.tmpl", "internal/authorization/permissions.go"},
+		{"authorization/account_role.go.tmpl", "internal/authorization/account_role.go"},
+		{"authorization/service_role.go.tmpl", "internal/authorization/service_role.go"},
+		{"authorization/auth_permissions.go.tmpl", "internal/authorization/auth_permissions.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -434,23 +434,23 @@ func (p *Pipeline) planAuthenticationFiles() []PlannedFile {
 	}
 
 	mappings := []mapping{
-		{"authentication/aliases.go.tmpl", "internal/authentication/aliases.generated.go"},
-		{"authentication/manager.go.tmpl", "internal/authentication/manager.generated.go"},
-		{"authentication/do.go.tmpl", "internal/authentication/do.generated.go"},
-		{"authentication/config/config.go.tmpl", "internal/authentication/config/config.generated.go"},
-		{"authentication/config/do.go.tmpl", "internal/authentication/config/do.generated.go"},
-		{"authentication/mock/mock_authenticator.go.tmpl", "internal/authentication/mock/mock_authenticator.generated.go"},
-		{"authentication/mock/authentication_manager.go.tmpl", "internal/authentication/mock/authentication_manager.generated.go"},
-		{"authentication/mocks/mock_user.go.tmpl", "internal/authentication/mocks/mock_user.generated.go"},
-		{"authentication/sessions/errors.go.tmpl", "internal/authentication/sessions/errors.generated.go"},
-		{"authentication/sessions/session_context.go.tmpl", "internal/authentication/sessions/session_context.generated.go"},
-		{"authentication/sessions/do.go.tmpl", "internal/authentication/sessions/do.generated.go"},
-		{"authentication/webauthn/session_store.go.tmpl", "internal/authentication/webauthn/session_store.generated.go"},
-		{"authentication/webauthn/postgres_session_store.go.tmpl", "internal/authentication/webauthn/postgres_session_store.generated.go"},
-		{"authentication/webauthn/service.go.tmpl", "internal/authentication/webauthn/service.generated.go"},
-		{"authentication/webauthn/user_adapter.go.tmpl", "internal/authentication/webauthn/user_adapter.generated.go"},
-		{"authentication/webauthn/config/config.go.tmpl", "internal/authentication/webauthn/config/config.generated.go"},
-		{"identity/webauthn_credential.go.tmpl", "internal/domain/identity/webauthn_credential.generated.go"},
+		{"authentication/aliases.go.tmpl", "internal/authentication/aliases.go"},
+		{"authentication/manager.go.tmpl", "internal/authentication/manager.go"},
+		{"authentication/do.go.tmpl", "internal/authentication/do.go"},
+		{"authentication/config/config.go.tmpl", "internal/authentication/config/config.go"},
+		{"authentication/config/do.go.tmpl", "internal/authentication/config/do.go"},
+		{"authentication/mock/mock_authenticator.go.tmpl", "internal/authentication/mock/mock_authenticator.go"},
+		{"authentication/mock/authentication_manager.go.tmpl", "internal/authentication/mock/authentication_manager.go"},
+		{"authentication/mocks/mock_user.go.tmpl", "internal/authentication/mocks/mock_user.go"},
+		{"authentication/sessions/errors.go.tmpl", "internal/authentication/sessions/errors.go"},
+		{"authentication/sessions/session_context.go.tmpl", "internal/authentication/sessions/session_context.go"},
+		{"authentication/sessions/do.go.tmpl", "internal/authentication/sessions/do.go"},
+		{"authentication/webauthn/session_store.go.tmpl", "internal/authentication/webauthn/session_store.go"},
+		{"authentication/webauthn/postgres_session_store.go.tmpl", "internal/authentication/webauthn/postgres_session_store.go"},
+		{"authentication/webauthn/service.go.tmpl", "internal/authentication/webauthn/service.go"},
+		{"authentication/webauthn/user_adapter.go.tmpl", "internal/authentication/webauthn/user_adapter.go"},
+		{"authentication/webauthn/config/config.go.tmpl", "internal/authentication/webauthn/config/config.go"},
+		{"identity/webauthn_credential.go.tmpl", "internal/domain/identity/webauthn_credential.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -479,12 +479,12 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 	}
 
 	mappings := []mapping{
-		{"config/meta.go.tmpl", "internal/config/meta.generated.go"},
-		{"config/queues.go.tmpl", "internal/config/queues.generated.go"},
-		{"config/doc.go.tmpl", "internal/config/doc.generated.go"},
-		{"config/configs.go.tmpl", "internal/config/configs.generated.go"},
-		{"config/do.go.tmpl", "internal/config/do.generated.go"},
-		{"config/env_vars.go.tmpl", "internal/config/env_vars.generated.go"},
+		{"config/meta.go.tmpl", "internal/config/meta.go"},
+		{"config/queues.go.tmpl", "internal/config/queues.go"},
+		{"config/doc.go.tmpl", "internal/config/doc.go"},
+		{"config/configs.go.tmpl", "internal/config/configs.go"},
+		{"config/do.go.tmpl", "internal/config/do.go"},
+		{"config/env_vars.go.tmpl", "internal/config/env_vars.go"},
 		// environment.go + mealplanning_* omitted: they hardcode references
 		// to target's ServicesConfig fields (DataPrivacy, MealPlanning, etc.)
 		// and per-entity config paths. Users write their own env→config
@@ -494,7 +494,7 @@ func (p *Pipeline) planConfigFiles() []PlannedFile {
 		// imports services/<X>/config packages that naff doesn't emit in the
 		// generic path. The generic template emits an empty ServicesConfig
 		// stub so config/{configs,do}.go can still reference the type.
-		{"config/services_config.go.tmpl", "internal/config/services_config.generated.go"},
+		{"config/services_config.go.tmpl", "internal/config/services_config.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -521,8 +521,8 @@ func (p *Pipeline) planRepositoriesFiles() []PlannedFile {
 	}
 
 	mappings := []mapping{
-		{"repositories/do.go.tmpl", "internal/repositories/do.generated.go"},
-		{"repositories/migrations.go.tmpl", "internal/repositories/migrations.generated.go"},
+		{"repositories/do.go.tmpl", "internal/repositories/do.go"},
+		{"repositories/migrations.go.tmpl", "internal/repositories/migrations.go"},
 	}
 
 	files := make([]PlannedFile, 0, len(mappings))
@@ -549,7 +549,7 @@ func (p *Pipeline) planLocalDevFiles() []PlannedFile {
 	return []PlannedFile{
 		{
 			TemplatePath: "localdev/server.go.tmpl",
-			OutputPath:   "internal/localdev/server.generated.go",
+			OutputPath:   "internal/localdev/server.go",
 			Data:         ctx,
 			IsGo:         true,
 		},
@@ -654,24 +654,24 @@ func (p *Pipeline) planPerEntityFiles(ctx TemplateContext) []PlannedFile {
 		isGo     bool
 	}{
 		// Domain entity types
-		{"domain/entity.go.tmpl", fmt.Sprintf("internal/domain/%s/%s.generated.go", domain, entitySnake), true},
-		{"domain_converters/converters.go.tmpl", fmt.Sprintf("internal/domain/%s/converters/%s.generated.go", domain, entitySnake), true},
+		{"domain/entity.go.tmpl", fmt.Sprintf("internal/domain/%s/%s.go", domain, entitySnake), true},
+		{"domain_converters/converters.go.tmpl", fmt.Sprintf("internal/domain/%s/converters/%s.go", domain, entitySnake), true},
 
 		// Repository entity CRUD
-		{"repository/entity.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/%s.generated.go", domain, entitySnake), true},
+		{"repository/entity.go.tmpl", fmt.Sprintf("internal/repositories/postgres/%s/%s.go", domain, entitySnake), true},
 
 		// Query codegen — filename matches dinnerdonebetter pattern: <domain>_<plural_snake>.go
-		{"codegen/queries.go.tmpl", fmt.Sprintf("cmd/tools/codegen/queries/%s_%s.generated.go", domain, entityPluralSnake), true},
+		{"codegen/queries.go.tmpl", fmt.Sprintf("cmd/tools/codegen/queries/%s_%s.go", domain, entityPluralSnake), true},
 
 		// Migration (one per entity)
-		{"migrations/migration.sql.tmpl", fmt.Sprintf("internal/repositories/postgres/migrations/migration_files/%s_%s.generated.sql", domain, entitySnake), false},
+		{"migrations/migration.sql.tmpl", fmt.Sprintf("internal/repositories/postgres/migrations/migration_files/%s_%s.sql", domain, entitySnake), false},
 
 		// Proto
-		{"proto/messages.proto.tmpl", fmt.Sprintf("proto/%s/%s_messages.generated.proto", domain, entitySnake), false},
-		{"proto/service.proto.tmpl", fmt.Sprintf("proto/%s/%s_service.generated.proto", domain, entitySnake), false},
+		{"proto/messages.proto.tmpl", fmt.Sprintf("proto/%s/%s_messages.proto", domain, entitySnake), false},
+		{"proto/service.proto.tmpl", fmt.Sprintf("proto/%s/%s_service.proto", domain, entitySnake), false},
 
 		// gRPC entity handlers
-		{"grpc/entity.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/%s.generated.go", domain, entitySnake), true},
+		{"grpc/entity.go.tmpl", fmt.Sprintf("internal/services/%s/grpc/%s.go", domain, entitySnake), true},
 	}
 
 	var files []PlannedFile
@@ -709,13 +709,13 @@ func (p *Pipeline) planIOSProjectFiles() []PlannedFile {
 
 	templateMappings := []mapping{
 		{"ios/project/Package.swift.tmpl", fmt.Sprintf("%s/Package.swift", base)},
-		{"ios/project/App.swift.tmpl", fmt.Sprintf("%s/App.generated.swift", src)},
-		{"ios/project/ContentView.swift.tmpl", fmt.Sprintf("%s/ContentView.generated.swift", src)},
-		{"ios/project/Configuration.swift.tmpl", fmt.Sprintf("%s/Configuration.generated.swift", src)},
-		{"ios/api/GRPCClient.swift.tmpl", fmt.Sprintf("%s/API/GRPCClient.generated.swift", src)},
-		{"ios/auth/AuthManager.swift.tmpl", fmt.Sprintf("%s/Auth/AuthManager.generated.swift", src)},
-		{"ios/auth/LoginView.swift.tmpl", fmt.Sprintf("%s/Auth/LoginView.generated.swift", src)},
-		{"ios/auth/RegistrationView.swift.tmpl", fmt.Sprintf("%s/Auth/RegistrationView.generated.swift", src)},
+		{"ios/project/App.swift.tmpl", fmt.Sprintf("%s/App.swift", src)},
+		{"ios/project/ContentView.swift.tmpl", fmt.Sprintf("%s/ContentView.swift", src)},
+		{"ios/project/Configuration.swift.tmpl", fmt.Sprintf("%s/Configuration.swift", src)},
+		{"ios/api/GRPCClient.swift.tmpl", fmt.Sprintf("%s/API/GRPCClient.swift", src)},
+		{"ios/auth/AuthManager.swift.tmpl", fmt.Sprintf("%s/Auth/AuthManager.swift", src)},
+		{"ios/auth/LoginView.swift.tmpl", fmt.Sprintf("%s/Auth/LoginView.swift", src)},
+		{"ios/auth/RegistrationView.swift.tmpl", fmt.Sprintf("%s/Auth/RegistrationView.swift", src)},
 	}
 
 	var files []PlannedFile
@@ -737,7 +737,7 @@ func (p *Pipeline) planIOSPerDomainFiles(ctx TemplateContext) []PlannedFile {
 	return []PlannedFile{
 		{
 			TemplatePath: "ios/api/entity_service.swift.tmpl",
-			OutputPath:   fmt.Sprintf("%s/API/%sService.generated.swift", src, strings.Title(domain)), //nolint:staticcheck
+			OutputPath:   fmt.Sprintf("%s/API/%sService.swift", src, strings.Title(domain)), //nolint:staticcheck
 			Data:         ctx,
 		},
 	}
@@ -751,22 +751,22 @@ func (p *Pipeline) planIOSPerEntityFiles(ctx TemplateContext) []PlannedFile {
 	return []PlannedFile{
 		{
 			TemplatePath: "ios/models/entity.swift.tmpl",
-			OutputPath:   fmt.Sprintf("%s/Models/%s.generated.swift", src, entityName),
+			OutputPath:   fmt.Sprintf("%s/Models/%s.swift", src, entityName),
 			Data:         ctx,
 		},
 		{
 			TemplatePath: "ios/models/entity_input.swift.tmpl",
-			OutputPath:   fmt.Sprintf("%s/Models/%sInput.generated.swift", src, entityName),
+			OutputPath:   fmt.Sprintf("%s/Models/%sInput.swift", src, entityName),
 			Data:         ctx,
 		},
 		{
 			TemplatePath: "proto/messages.proto.tmpl",
-			OutputPath:   fmt.Sprintf("%s/Proto/%s/%s_messages.generated.proto", p.iosBasePath(), ctx.Domain.Name, strings.ToLower(entityName)),
+			OutputPath:   fmt.Sprintf("%s/Proto/%s/%s_messages.proto", p.iosBasePath(), ctx.Domain.Name, strings.ToLower(entityName)),
 			Data:         ctx,
 		},
 		{
 			TemplatePath: "proto/service.proto.tmpl",
-			OutputPath:   fmt.Sprintf("%s/Proto/%s/%s_service.generated.proto", p.iosBasePath(), ctx.Domain.Name, strings.ToLower(entityName)),
+			OutputPath:   fmt.Sprintf("%s/Proto/%s/%s_service.proto", p.iosBasePath(), ctx.Domain.Name, strings.ToLower(entityName)),
 			Data:         ctx,
 		},
 	}
@@ -792,8 +792,8 @@ func (p *Pipeline) planConsumerAppFiles(allDomains []config.Domain) []PlannedFil
 
 	// Shared library files.
 	for _, m := range []struct{ template, output string }{
-		{"frontend/shared/api_client.ts.tmpl", "frontend/consumer/src/lib/api/client.generated.ts"},
-		{"frontend/shared/types.ts.tmpl", "frontend/consumer/src/lib/api/types.generated.ts"},
+		{"frontend/shared/api_client.ts.tmpl", "frontend/consumer/src/lib/api/client.ts"},
+		{"frontend/shared/types.ts.tmpl", "frontend/consumer/src/lib/api/types.ts"},
 	} {
 		files = append(files, PlannedFile{TemplatePath: m.template, OutputPath: m.output, Data: projectCtx})
 	}
@@ -819,7 +819,7 @@ func (p *Pipeline) planConsumerAppFiles(allDomains []config.Domain) []PlannedFil
 	})
 	files = append(files, PlannedFile{
 		TemplatePath: "frontend/consumer/layout/nav.svelte.tmpl",
-		OutputPath:   "frontend/consumer/src/lib/components/Nav.generated.svelte",
+		OutputPath:   "frontend/consumer/src/lib/components/Nav.svelte",
 		Data:         navCtx,
 	})
 
@@ -832,12 +832,12 @@ func (p *Pipeline) planConsumerAppFiles(allDomains []config.Domain) []PlannedFil
 		}
 		files = append(files, PlannedFile{
 			TemplatePath: "frontend/consumer/domain/types.ts.tmpl",
-			OutputPath:   fmt.Sprintf("frontend/consumer/src/lib/api/%s/types.generated.ts", d.Name),
+			OutputPath:   fmt.Sprintf("frontend/consumer/src/lib/api/%s/types.ts", d.Name),
 			Data:         domainCtx,
 		})
 		files = append(files, PlannedFile{
 			TemplatePath: "frontend/consumer/domain/api.ts.tmpl",
-			OutputPath:   fmt.Sprintf("frontend/consumer/src/lib/api/%s/api.generated.ts", d.Name),
+			OutputPath:   fmt.Sprintf("frontend/consumer/src/lib/api/%s/api.ts", d.Name),
 			Data:         domainCtx,
 		})
 
@@ -922,8 +922,8 @@ func (p *Pipeline) planAdminAppFiles(allDomains []config.Domain) []PlannedFile {
 
 	// Shared library files.
 	for _, m := range []struct{ template, output string }{
-		{"frontend/shared/api_client.ts.tmpl", "frontend/admin/src/lib/api/client.generated.ts"},
-		{"frontend/shared/types.ts.tmpl", "frontend/admin/src/lib/api/types.generated.ts"},
+		{"frontend/shared/api_client.ts.tmpl", "frontend/admin/src/lib/api/client.ts"},
+		{"frontend/shared/types.ts.tmpl", "frontend/admin/src/lib/api/types.ts"},
 	} {
 		files = append(files, PlannedFile{TemplatePath: m.template, OutputPath: m.output, Data: projectCtx})
 	}
@@ -948,7 +948,7 @@ func (p *Pipeline) planAdminAppFiles(allDomains []config.Domain) []PlannedFile {
 	})
 	files = append(files, PlannedFile{
 		TemplatePath: "frontend/admin/layout/nav.svelte.tmpl",
-		OutputPath:   "frontend/admin/src/lib/components/Nav.generated.svelte",
+		OutputPath:   "frontend/admin/src/lib/components/Nav.svelte",
 		Data:         navCtx,
 	})
 
@@ -961,12 +961,12 @@ func (p *Pipeline) planAdminAppFiles(allDomains []config.Domain) []PlannedFile {
 		}
 		files = append(files, PlannedFile{
 			TemplatePath: "frontend/admin/domain/types.ts.tmpl",
-			OutputPath:   fmt.Sprintf("frontend/admin/src/lib/api/%s/types.generated.ts", d.Name),
+			OutputPath:   fmt.Sprintf("frontend/admin/src/lib/api/%s/types.ts", d.Name),
 			Data:         domainCtx,
 		})
 		files = append(files, PlannedFile{
 			TemplatePath: "frontend/admin/domain/api.ts.tmpl",
-			OutputPath:   fmt.Sprintf("frontend/admin/src/lib/api/%s/api.generated.ts", d.Name),
+			OutputPath:   fmt.Sprintf("frontend/admin/src/lib/api/%s/api.ts", d.Name),
 			Data:         domainCtx,
 		})
 

@@ -15,7 +15,7 @@ func TestDiffAwareWrite(t *testing.T) {
 		t.Parallel()
 
 		dir := t.TempDir()
-		path := filepath.Join(dir, "subdir", "test.generated.go")
+		path := filepath.Join(dir, "subdir", "test.go")
 
 		status, err := diffAwareWrite(path, []byte("hello"), 0)
 		if err != nil {
@@ -38,7 +38,7 @@ func TestDiffAwareWrite(t *testing.T) {
 		t.Parallel()
 
 		dir := t.TempDir()
-		path := filepath.Join(dir, "test.generated.go")
+		path := filepath.Join(dir, "test.go")
 		if err := os.WriteFile(path, []byte("hello"), 0o644); err != nil {
 			t.Fatal(err)
 		}
@@ -56,7 +56,7 @@ func TestDiffAwareWrite(t *testing.T) {
 		t.Parallel()
 
 		dir := t.TempDir()
-		path := filepath.Join(dir, "test.generated.go")
+		path := filepath.Join(dir, "test.go")
 		if err := os.WriteFile(path, []byte("old"), 0o644); err != nil {
 			t.Fatal(err)
 		}

@@ -187,25 +187,25 @@ func TestPlanFilesIncludesIOSFiles(t *testing.T) {
 		if strings.HasSuffix(pf.OutputPath, "Package.swift") {
 			hasPackageSwift = true
 		}
-		if strings.HasSuffix(pf.OutputPath, "App.generated.swift") {
+		if strings.HasSuffix(pf.OutputPath, "App.swift") {
 			hasAppSwift = true
 		}
-		if strings.HasSuffix(pf.OutputPath, "AuthManager.generated.swift") {
+		if strings.HasSuffix(pf.OutputPath, "AuthManager.swift") {
 			hasAuthManager = true
 		}
-		if strings.HasSuffix(pf.OutputPath, "GRPCClient.generated.swift") {
+		if strings.HasSuffix(pf.OutputPath, "GRPCClient.swift") {
 			hasGRPCClient = true
 		}
-		if strings.HasSuffix(pf.OutputPath, "Widget.generated.swift") {
+		if strings.HasSuffix(pf.OutputPath, "Widget.swift") {
 			hasWidgetModel = true
 		}
-		if strings.HasSuffix(pf.OutputPath, "WidgetInput.generated.swift") {
+		if strings.HasSuffix(pf.OutputPath, "WidgetInput.swift") {
 			hasWidgetInput = true
 		}
 		if strings.Contains(pf.OutputPath, "Proto/") && strings.Contains(pf.OutputPath, "widget") {
 			hasWidgetProto = true
 		}
-		if strings.HasSuffix(pf.OutputPath, "WidgetsService.generated.swift") {
+		if strings.HasSuffix(pf.OutputPath, "WidgetsService.swift") {
 			hasWidgetService = true
 		}
 		if strings.HasSuffix(pf.OutputPath, ".go") {
@@ -217,25 +217,25 @@ func TestPlanFilesIncludesIOSFiles(t *testing.T) {
 		t.Error("expected Package.swift in iOS plan")
 	}
 	if !hasAppSwift {
-		t.Error("expected App.generated.swift in iOS plan")
+		t.Error("expected App.swift in iOS plan")
 	}
 	if !hasAuthManager {
-		t.Error("expected AuthManager.generated.swift in iOS plan")
+		t.Error("expected AuthManager.swift in iOS plan")
 	}
 	if !hasGRPCClient {
-		t.Error("expected GRPCClient.generated.swift in iOS plan")
+		t.Error("expected GRPCClient.swift in iOS plan")
 	}
 	if !hasWidgetModel {
-		t.Error("expected Widget.generated.swift in iOS plan")
+		t.Error("expected Widget.swift in iOS plan")
 	}
 	if !hasWidgetInput {
-		t.Error("expected WidgetInput.generated.swift in iOS plan")
+		t.Error("expected WidgetInput.swift in iOS plan")
 	}
 	if !hasWidgetProto {
 		t.Error("expected widget proto files in iOS plan")
 	}
 	if !hasWidgetService {
-		t.Error("expected WidgetsService.generated.swift in iOS plan")
+		t.Error("expected WidgetsService.swift in iOS plan")
 	}
 	if hasBackendFile {
 		t.Error("should NOT have backend .go files when only iOS target is enabled")
@@ -303,11 +303,11 @@ func TestPlanFilesIncludesConsumerApp(t *testing.T) {
 			hasPackageJSON = true
 		case pf.OutputPath == "frontend/consumer/src/routes/+layout.svelte":
 			hasConsumerLayout = true
-		case strings.HasSuffix(pf.OutputPath, "Nav.generated.svelte"):
+		case strings.HasSuffix(pf.OutputPath, "Nav.svelte"):
 			hasNav = true
-		case pf.OutputPath == "frontend/consumer/src/lib/api/widgets/types.generated.ts":
+		case pf.OutputPath == "frontend/consumer/src/lib/api/widgets/types.ts":
 			hasTypesTS = true
-		case pf.OutputPath == "frontend/consumer/src/lib/api/widgets/api.generated.ts":
+		case pf.OutputPath == "frontend/consumer/src/lib/api/widgets/api.ts":
 			hasAPITS = true
 		case pf.OutputPath == "frontend/consumer/src/routes/widgets/+page.svelte":
 			hasWidgetList = true
@@ -331,13 +331,13 @@ func TestPlanFilesIncludesConsumerApp(t *testing.T) {
 		t.Error("expected consumer +layout.svelte")
 	}
 	if !hasNav {
-		t.Error("expected consumer Nav.generated.svelte")
+		t.Error("expected consumer Nav.svelte")
 	}
 	if !hasTypesTS {
-		t.Error("expected consumer types.generated.ts for widgets domain")
+		t.Error("expected consumer types.ts for widgets domain")
 	}
 	if !hasAPITS {
-		t.Error("expected consumer api.generated.ts for widgets domain")
+		t.Error("expected consumer api.ts for widgets domain")
 	}
 	if !hasWidgetList {
 		t.Error("expected consumer widget list page")
