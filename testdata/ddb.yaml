@@ -49,6 +49,11 @@ domains:
           - name: "InspiredByRecipeID"
             type: "*string"
             required: false
+          - name: "MinEstimatedPortions"
+            type: "float32"
+          - name: "MaxEstimatedPortions"
+            type: "*float32"
+            required: false
 
       - name: "RecipeStep"
         belongs_to: "Recipe"
@@ -68,6 +73,20 @@ domains:
             type: "bool"
           - name: "StartTimerAutomatically"
             type: "bool"
+          - name: "PreparationID"
+            type: "string"
+          - name: "MinEstimatedTimeInSeconds"
+            type: "*uint32"
+            required: false
+          - name: "MaxEstimatedTimeInSeconds"
+            type: "*uint32"
+            required: false
+          - name: "MinTemperatureInCelsius"
+            type: "*float32"
+            required: false
+          - name: "MaxTemperatureInCelsius"
+            type: "*float32"
+            required: false
 
       - name: "RecipeStepIngredient"
         belongs_to: "RecipeStep"
@@ -100,6 +119,26 @@ domains:
             type: "*string"
             required: false
             editable: false
+          - name: "IngredientID"
+            type: "*string"
+            required: false
+          - name: "MeasurementUnitID"
+            type: "string"
+          - name: "ValidIngredientPreparationID"
+            type: "*string"
+            required: false
+          - name: "ValidIngredientMeasurementUnitID"
+            type: "*string"
+            required: false
+          - name: "MinQuantity"
+            type: "float32"
+          - name: "MaxQuantity"
+            type: "*float32"
+            required: false
+          - name: "RecipeStepProductRecipeID"
+            type: "*string"
+            required: false
+            editable: false
 
       - name: "RecipeStepInstrument"
         belongs_to: "RecipeStep"
@@ -123,6 +162,17 @@ domains:
             type: "*string"
             required: false
             editable: false
+          - name: "InstrumentID"
+            type: "*string"
+            required: false
+          - name: "ValidPreparationInstrumentID"
+            type: "*string"
+            required: false
+          - name: "MinQuantity"
+            type: "uint32"
+          - name: "MaxQuantity"
+            type: "*uint32"
+            required: false
 
       - name: "RecipeStepVessel"
         belongs_to: "RecipeStep"
@@ -147,6 +197,17 @@ domains:
             type: "*string"
             required: false
             editable: false
+          - name: "VesselID"
+            type: "*string"
+            required: false
+          - name: "ValidPreparationVesselID"
+            type: "*string"
+            required: false
+          - name: "MinQuantity"
+            type: "uint16"
+          - name: "MaxQuantity"
+            type: "*uint16"
+            required: false
 
       - name: "RecipeStepProduct"
         belongs_to: "RecipeStep"
@@ -172,6 +233,33 @@ domains:
           - name: "ContainedInVesselIndex"
             type: "*uint16"
             required: false
+          - name: "MeasurementUnitID"
+            type: "*string"
+            required: false
+          - name: "MinStorageTemperatureInCelsius"
+            type: "*float32"
+            required: false
+          - name: "MaxStorageTemperatureInCelsius"
+            type: "*float32"
+            required: false
+          - name: "MinStorageDurationInSeconds"
+            type: "*uint32"
+            required: false
+          - name: "MaxStorageDurationInSeconds"
+            type: "*uint32"
+            required: false
+          - name: "MinMeasurementQuantity"
+            type: "*float32"
+            required: false
+          - name: "MaxMeasurementQuantity"
+            type: "*float32"
+            required: false
+          - name: "MinItemQuantity"
+            type: "*float32"
+            required: false
+          - name: "MaxItemQuantity"
+            type: "*float32"
+            required: false
 
       - name: "RecipeStepCompletionCondition"
         belongs_to: "RecipeStep"
@@ -181,6 +269,14 @@ domains:
             required: false
           - name: "Optional"
             type: "bool"
+          - name: "IngredientStateID"
+            type: "string"
+
+      - name: "RecipeStepCompletionConditionIngredient"
+        belongs_to: "RecipeStepCompletionCondition"
+        fields:
+          - name: "RecipeStepIngredient"
+            type: "string"
 
       - name: "RecipePrepTaskStep"
         belongs_to: "RecipePrepTask"
@@ -244,6 +340,17 @@ domains:
             required: false
           - name: "Optional"
             type: "bool"
+          - name: "MinStorageTemperatureInCelsius"
+            type: "*float32"
+            required: false
+          - name: "MaxStorageTemperatureInCelsius"
+            type: "*float32"
+            required: false
+          - name: "MinTimeBufferBeforeRecipeInSeconds"
+            type: "uint32"
+          - name: "MaxTimeBufferBeforeRecipeInSeconds"
+            type: "*uint32"
+            required: false
 
       - name: "RecipeList"
         created_by_user: true
@@ -269,6 +376,11 @@ domains:
             type: "string"
           - name: "EligibleForMealPlans"
             type: "bool"
+          - name: "MinEstimatedPortions"
+            type: "float32"
+          - name: "MaxEstimatedPortions"
+            type: "*float32"
+            required: false
 
       - name: "MealComponent"
         belongs_to: "Meal"
@@ -301,6 +413,8 @@ domains:
             type: "bool"
             creatable: false
             editable: false
+          - name: "VotingDeadline"
+            type: "time.Time"
 
       - name: "MealPlanEvent"
         belongs_to: "MealPlan"
@@ -310,6 +424,10 @@ domains:
           - name: "Notes"
             type: "string"
             required: false
+          - name: "StartsAt"
+            type: "time.Time"
+          - name: "EndsAt"
+            type: "time.Time"
 
       - name: "MealPlanOption"
         belongs_to: "MealPlanEvent"
@@ -378,6 +496,18 @@ domains:
           - name: "RecipeStepID"
             type: "*string"
             required: false
+          - name: "ValidIngredientID"
+            type: "string"
+          - name: "ValidMeasurementUnitID"
+            type: "string"
+          - name: "PurchasedMeasurementUnitID"
+            type: "*string"
+            required: false
+          - name: "MinQuantityNeeded"
+            type: "float32"
+          - name: "MaxQuantityNeeded"
+            type: "*float32"
+            required: false
 
       - name: "MealPlanTask"
         fields:
@@ -392,6 +522,20 @@ domains:
           - name: "AssignedToUser"
             type: "*string"
             required: false
+          - name: "MealPlanOptionID"
+            type: "string"
+          - name: "RecipePrepTaskID"
+            type: "string"
+          - name: "CompletedAt"
+            type: "*time.Time"
+            required: false
+            creatable: false
+            editable: false
+          - name: "NotificationSentAt"
+            type: "*time.Time"
+            required: false
+            creatable: false
+            editable: false
 
       - name: "MealList"
         created_by_user: true
@@ -434,6 +578,8 @@ domains:
             required: false
           - name: "Quantity"
             type: "uint16"
+          - name: "ValidInstrumentID"
+            type: "string"
 
       - name: "UserIngredientPreference"
         created_by_user: true
@@ -445,6 +591,10 @@ domains:
             type: "int8"
           - name: "Allergy"
             type: "bool"
+          - name: "ValidIngredientID"
+            type: "string"
+          - name: "ValidIngredientGroupID"
+            type: "string"
 
       # ── Reference-data entities ────────────────────────────────────
 
@@ -515,6 +665,12 @@ domains:
             type: "bool"
           - name: "ContaminatesEquipment"
             type: "bool"
+          - name: "MinStorageTemperatureInCelsius"
+            type: "*float32"
+            required: false
+          - name: "MaxStorageTemperatureInCelsius"
+            type: "*float32"
+            required: false
 
       - name: "ValidIngredientGroup"
         searchable: true
@@ -595,6 +751,21 @@ domains:
             type: "bool"
           - name: "RestrictToIngredients"
             type: "bool"
+          - name: "MinInstrumentCount"
+            type: "uint16"
+          - name: "MaxInstrumentCount"
+            type: "*uint16"
+            required: false
+          - name: "MinIngredientCount"
+            type: "uint16"
+          - name: "MaxIngredientCount"
+            type: "*uint16"
+            required: false
+          - name: "MinVesselCount"
+            type: "uint16"
+          - name: "MaxVesselCount"
+            type: "*uint16"
+            required: false
 
       - name: "ValidVessel"
         searchable: true

@@ -21,6 +21,9 @@ var validFieldTypes = map[string]bool{
 	"uint64":  true,
 	"float32": true,
 	"float64": true,
+	// time.Time and *time.Time map to TIMESTAMPTZ columns; the platform's
+	// Null*/*Pointer* helpers cover the nullable conversions.
+	"time.Time": true,
 }
 
 // Validate checks the project config for errors.

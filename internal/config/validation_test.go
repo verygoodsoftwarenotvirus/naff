@@ -216,7 +216,7 @@ func TestValidate(t *testing.T) {
 	t.Run("accepts all valid types", func(t *testing.T) {
 		t.Parallel()
 
-		for _, typ := range []string{"bool", "string", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64"} {
+		for _, typ := range []string{"bool", "string", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "time.Time"} {
 			p := validProject()
 			p.Domains[0].Entities[0].Fields[0].Type = typ
 			if err := p.Validate(); err != nil {

@@ -136,6 +136,8 @@ func goZeroValue(typ string) string {
 		"uint", "uint8", "uint16", "uint32", "uint64",
 		"float32", "float64":
 		return "0"
+	case "time.Time":
+		return "time.Time{}"
 	default:
 		return `""`
 	}
@@ -169,6 +171,8 @@ func sqlType(typ string) string {
 		return "REAL"
 	case "float64":
 		return "DOUBLE PRECISION"
+	case "time.Time":
+		return "TIMESTAMP WITH TIME ZONE"
 	default:
 		return "TEXT"
 	}
@@ -202,6 +206,8 @@ func protoType(typ string) string {
 		return "float"
 	case "float64":
 		return "double"
+	case "time.Time":
+		return "google.protobuf.Timestamp"
 	default:
 		return "string"
 	}
@@ -261,6 +267,8 @@ func pointerConversionFunc(f config.Field) string {
 		return "Float32PointerFromNullString"
 	case "float64":
 		return "Float64PointerFromNullString"
+	case "time.Time":
+		return "TimePointerFromNullTime"
 	default:
 		return "StringPointerFromNullString"
 	}
@@ -288,6 +296,8 @@ func readConversionFunc(f config.Field) string {
 			return "Float32PointerFromNullString"
 		case "float64":
 			return "Float64PointerFromNullString"
+		case "time.Time":
+			return "TimePointerFromNullTime"
 		default:
 			return "StringPointerFromNullString"
 		}
@@ -306,6 +316,8 @@ func readConversionFunc(f config.Field) string {
 			return "Float32FromNullString"
 		case "float64":
 			return "Float64FromNullString"
+		case "time.Time":
+			return "TimeFromNullTime"
 		default:
 			return "StringFromNullString"
 		}
@@ -333,6 +345,8 @@ func writeConversionFunc(f config.Field) string {
 			return "NullStringFromFloat32Pointer"
 		case "float64":
 			return "NullStringFromFloat64Pointer"
+		case "time.Time":
+			return "NullTimeFromTimePointer"
 		default:
 			return "NullStringFromStringPointer"
 		}
@@ -351,6 +365,8 @@ func writeConversionFunc(f config.Field) string {
 			return "NullStringFromFloat32"
 		case "float64":
 			return "NullStringFromFloat64"
+		case "time.Time":
+			return "NullTimeFromTime"
 		default:
 			return "NullStringFromString"
 		}
@@ -395,6 +411,8 @@ func fakeValueForType(typ string) string {
 		return `fake.Float32()`
 	case "float64":
 		return `fake.Float64()`
+	case "time.Time":
+		return `fake.Date()`
 	default:
 		return `fake.Word()`
 	}
@@ -419,6 +437,9 @@ func tsType(typ string) string {
 		"uint", "uint8", "uint16", "uint32", "uint64",
 		"float32", "float64":
 		ts = "number"
+	case "time.Time":
+		// Transported as an ISO 8601 string over JSON; callers parse with new Date().
+		ts = "string"
 	default:
 		ts = "string"
 	}
@@ -443,6 +464,8 @@ func tsDefaultValue(typ string) string {
 		"uint", "uint8", "uint16", "uint32", "uint64",
 		"float32", "float64":
 		return "0"
+	case "time.Time":
+		return "''"
 	default:
 		return "''"
 	}
@@ -461,6 +484,8 @@ func htmlInputType(typ string) string {
 		"uint", "uint8", "uint16", "uint32", "uint64",
 		"float32", "float64":
 		return "number"
+	case "time.Time":
+		return "datetime-local"
 	default:
 		return "text"
 	}
@@ -501,6 +526,8 @@ func swiftType(typ string) string {
 		swift = "Float"
 	case "float64":
 		swift = "Double"
+	case "time.Time":
+		swift = "Date"
 	default:
 		swift = "String"
 	}
@@ -525,6 +552,8 @@ func swiftZeroValue(typ string) string {
 		"uint", "uint8", "uint16", "uint32", "uint64",
 		"float32", "float64":
 		return "0"
+	case "time.Time":
+		return "Date()"
 	default:
 		return `""`
 	}

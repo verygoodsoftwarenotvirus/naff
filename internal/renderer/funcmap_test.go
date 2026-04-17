@@ -21,6 +21,8 @@ func TestGoZeroValue(t *testing.T) {
 		{"float64", "0"},
 		{"*string", "nil"},
 		{"*int", "nil"},
+		{"time.Time", "time.Time{}"},
+		{"*time.Time", "nil"},
 	}
 
 	for _, tc := range tests {
@@ -50,6 +52,8 @@ func TestSqlType(t *testing.T) {
 		{"float64", "DOUBLE PRECISION"},
 		{"*string", "TEXT"},
 		{"*int64", "BIGINT"},
+		{"time.Time", "TIMESTAMP WITH TIME ZONE"},
+		{"*time.Time", "TIMESTAMP WITH TIME ZONE"},
 	}
 
 	for _, tc := range tests {
@@ -78,6 +82,8 @@ func TestProtoType(t *testing.T) {
 		{"float32", "float"},
 		{"float64", "double"},
 		{"*string", "string"},
+		{"time.Time", "google.protobuf.Timestamp"},
+		{"*time.Time", "google.protobuf.Timestamp"},
 	}
 
 	for _, tc := range tests {
@@ -173,6 +179,8 @@ func TestSwiftType(t *testing.T) {
 		{"*int64", "Int?"},
 		{"*bool", "Bool?"},
 		{"*float32", "Float?"},
+		{"time.Time", "Date"},
+		{"*time.Time", "Date?"},
 	}
 
 	for _, tc := range tests {
@@ -210,6 +218,8 @@ func TestTsType(t *testing.T) {
 		{"*int64", "number | null"},
 		{"*bool", "boolean | null"},
 		{"*float32", "number | null"},
+		{"time.Time", "string"},
+		{"*time.Time", "string | null"},
 	}
 
 	for _, tc := range tests {
@@ -237,6 +247,8 @@ func TestTsDefaultValue(t *testing.T) {
 		{"float64", "0"},
 		{"*string", "null"},
 		{"*int", "null"},
+		{"time.Time", "''"},
+		{"*time.Time", "null"},
 	}
 
 	for _, tc := range tests {
@@ -264,6 +276,8 @@ func TestHtmlInputType(t *testing.T) {
 		{"*string", "text"},
 		{"*int64", "number"},
 		{"*bool", "checkbox"},
+		{"time.Time", "datetime-local"},
+		{"*time.Time", "datetime-local"},
 	}
 
 	for _, tc := range tests {
@@ -291,6 +305,8 @@ func TestSwiftZeroValue(t *testing.T) {
 		{"float64", "0"},
 		{"*string", "nil"},
 		{"*int", "nil"},
+		{"time.Time", "Date()"},
+		{"*time.Time", "nil"},
 	}
 
 	for _, tc := range tests {

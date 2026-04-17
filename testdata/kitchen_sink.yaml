@@ -65,6 +65,7 @@ domains:
           - { name: "AUint64",  type: "uint64"  }
           - { name: "AFloat32", type: "float32" }
           - { name: "AFloat64", type: "float64" }
+          - { name: "ATime",    type: "time.Time" }
 
       # Every pointer variant of every scalar type + omitempty.
       # Also demonstrates same-domain belongs_to.
@@ -87,6 +88,7 @@ domains:
           - { name: "PUint64",  type: "*uint64",  required: false, omitempty: true }
           - { name: "PFloat32", type: "*float32", required: false, omitempty: true }
           - { name: "PFloat64", type: "*float64", required: false, omitempty: true }
+          - { name: "PTime",    type: "*time.Time", required: false, omitempty: true }
 
       # Every (creatable × editable) combination, plus explicit required true/false.
       - name: "FlagMatrix"
