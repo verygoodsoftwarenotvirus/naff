@@ -110,7 +110,10 @@ func main() {
 			log.Fatal(fmt.Errorf("creating directory: %w", err))
 		}
 
-		existingFile, _ := os.ReadFile(filePath)
+		existingFile, err := os.ReadFile(filePath)
+		if err != nil {
+            // already exists, no big whoop
+		}
 
 		var fileContent strings.Builder
 		for i, query := range queries {
@@ -130,7 +133,7 @@ func main() {
 		}
 
 		if !checkOnly {
-			if err := os.WriteFile(filePath, []byte(fileOutput.String()), 0o600); err != nil {
+			if err = os.WriteFile(filePath, []byte(fileOutput.String()), 0o600); err != nil {
 				runErrors = multierror.Append(runErrors, err)
 			}
 		}
