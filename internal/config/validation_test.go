@@ -253,6 +253,119 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
+	t.Run("accepts links_to referencing a known entity", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities = append(p.Domains[0].Entities, Entity{
+			Name:    "Link",
+			LinksTo: []Link{{Target: "Widget"}},
+			Fields:  []Field{{Name: "Label", Type: "string"}},
+		})
+		if err := p.Validate(); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("accepts self-reference on links_to", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities[0].LinksTo = []Link{
+			{Target: "Widget", Self: true, As: "ParentWidget", Optional: true},
+		}
+		if err := p.Validate(); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("rejects links_to with unknown target", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities[0].LinksTo = []Link{{Target: "Nonexistent"}}
+		err := p.Validate()
+		if err == nil || !strings.Contains(err.Error(), "unknown target") {
+			t.Errorf("expected unknown target error, got: %v", err)
+		}
+	})
+
+	t.Run("rejects links_to with self=true but mismatched target", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities = append(p.Domains[0].Entities, Entity{
+			Name:    "Other",
+			Fields:  []Field{{Name: "X", Type: "string"}},
+			LinksTo: []Link{{Target: "Widget", Self: true}},
+		})
+		err := p.Validate()
+		if err == nil || !strings.Contains(err.Error(), "self=true") {
+			t.Errorf("expected self mismatch error, got: %v", err)
+		}
+	})
+
+	t.Run("rejects links_to with invalid on_delete", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities[0].LinksTo = []Link{
+			{Target: "Widget", Self: true, OnDelete: LinkOnDelete("nuke")},
+		}
+		err := p.Validate()
+		if err == nil || !strings.Contains(err.Error(), "invalid on_delete") {
+			t.Errorf("expected invalid on_delete error, got: %v", err)
+		}
+	})
+
+	t.Run("rejects on_delete=set_null on a required link", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities[0].LinksTo = []Link{
+			{Target: "Widget", Self: true, OnDelete: LinkOnDeleteSetNull},
+		}
+		err := p.Validate()
+		if err == nil || !strings.Contains(err.Error(), "optional=true") {
+			t.Errorf("expected optional-required error, got: %v", err)
+		}
+	})
+
+	t.Run("rejects duplicate links_to prefixes", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities = append(p.Domains[0].Entities, Entity{
+			Name:   "Other",
+			Fields: []Field{{Name: "X", Type: "string"}},
+			LinksTo: []Link{
+				{Target: "Widget"},
+				{Target: "Widget"}, // same prefix — user should disambiguate with `as:`
+			},
+		})
+		err := p.Validate()
+		if err == nil || !strings.Contains(err.Error(), "duplicate reference") {
+			t.Errorf("expected duplicate reference error, got: %v", err)
+		}
+	})
+
+	t.Run("accepts duplicate targets disambiguated by `as`", func(t *testing.T) {
+		t.Parallel()
+
+		p := validProject()
+		p.Domains[0].Entities = append(p.Domains[0].Entities, Entity{
+			Name:   "Other",
+			Fields: []Field{{Name: "X", Type: "string"}},
+			LinksTo: []Link{
+				{Target: "Widget"},
+				{Target: "Widget", As: "AlternateWidget", Optional: true},
+			},
+		})
+		if err := p.Validate(); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
 	t.Run("defaults backend to true when unset; iOS stays false", func(t *testing.T) {
 		t.Parallel()
 
@@ -500,6 +613,27 @@ func TestFieldMethods(t *testing.T) {
 		}
 		if !f.IsEditable() {
 			t.Error("expected editable default true")
+		}
+	})
+
+	t.Run("Link defaults", func(t *testing.T) {
+		t.Parallel()
+
+		l := Link{Target: "Widget"}
+		if l.IsEditable() {
+			t.Error("expected link.IsEditable default false")
+		}
+		if l.OnDeleteAction() != LinkOnDeleteRestrict {
+			t.Errorf("expected on_delete default %q, got %q", LinkOnDeleteRestrict, l.OnDeleteAction())
+		}
+
+		trueVal := true
+		editable := Link{Target: "Widget", Editable: &trueVal, OnDelete: LinkOnDeleteCascade}
+		if !editable.IsEditable() {
+			t.Error("explicit Editable=true should override default")
+		}
+		if editable.OnDeleteAction() != LinkOnDeleteCascade {
+			t.Errorf("explicit on_delete should override default")
 		}
 	})
 

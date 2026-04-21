@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
+	"github.com/verygoodsoftwarenotvirus/naff/internal/naming"
 	"github.com/verygoodsoftwarenotvirus/naff/internal/renderer"
 )
 
@@ -110,12 +111,11 @@ type Summary struct {
 
 // Run executes the full generation pipeline.
 //
-// Post-pivot semantics: plan is built by walking the embedded templates FS,
-// and every entry is emitted as a raw pass-through. Orphan detection is
-// intentionally skipped — `make generate-ddb` wipes the output directory
-// before each run. The `--clean` flag is accepted for CLI compatibility but
-// has no effect until orphan detection is reintroduced alongside
-// parameterization.
+// naff is designed as a one-shot scaffolder: generate into a fresh output
+// directory, commit the result, and evolve the tree by hand from there.
+// Re-running against a populated output is not a supported workflow, so
+// orphan detection is intentionally absent. The `--clean` flag is accepted
+// for CLI compatibility but currently has no effect.
 func (p *Pipeline) Run(ctx context.Context) error {
 	// Total elapsed time for the whole run, surfaced at the end (non-debug
 	// only — --debug deliberately leaves output untouched).
@@ -442,8 +442,18 @@ func (p *Pipeline) planFiles() []PlannedFile {
 	// raw pass-throughs — the parameterized planner (below) will emit them
 	// instead, rendered from the config's entity schema.
 	skipVerbatim := make(map[string]bool, len(p.config.Domains))
-	for _, d := range p.config.Domains {
+	for i := range p.config.Domains {
+		d := &p.config.Domains[i]
 		skipVerbatim[fmt.Sprintf("_backend/internal/domain/%s/keys/keys.go.tmpl", d.Name)] = true
+		// Per-entity hand-written templates are replaced by the parameterized
+		// per-entity layer. Path convention mirrors perEntityOutputName: the
+		// verbatim template lives at
+		// _backend/internal/domain/<domain>/<snake_entity>.go.tmpl.
+		for j := range d.Entities {
+			e := &d.Entities[j]
+			snake := naming.New(e.Name).Snake()
+			skipVerbatim[fmt.Sprintf("_backend/internal/domain/%s/%s.go.tmpl", d.Name, snake)] = true
+		}
 	}
 
 	_ = fs.WalkDir(TemplateFS, ".", func(p string, d fs.DirEntry, walkErr error) error {
@@ -519,16 +529,208 @@ func (p *Pipeline) planFiles() []PlannedFile {
 		})
 	}
 
+	// Per-entity parameterized layer: one <snake_entity>.go per entity in
+	// each user-defined domain. Emits the canonical CRUD shape (domain
+	// struct, input variants, DataManager interface, Update, validation).
+	// The verbatim hand-written per-entity templates under
+	// _backend/internal/domain/<domain>/<entity>.go.tmpl are registered in
+	// skipVerbatim above so only the parameterized output reaches the
+	// generated tree. Bespoke methods the schema cannot express (custom
+	// search indexing, state transitions, etc.) must be added by hand in
+	// a sidecar file after generation.
+	files = append(files, p.planPerEntityFiles()...)
+
+	// Per-entity converter files. Gated to scalar-only entities —
+	// see scalarOnlyConverter for the eligibility rule.
+	files = append(files, p.planConverterFiles()...)
+
 	return files
 }
 
+// converterEligible reports whether a converter file for the given entity
+// can be emitted by the parameterized layer alone, without any hand-
+// authored assistance for shapes the schema cannot currently express.
+//
+// The schema now expresses: scalar fields (via Fields), required and
+// optional links (via LinksTo + DomainAccessor), and parent/scope routing
+// flags (BelongsTo, BelongsToAccount, BelongsToUser, CreatedByUser). The
+// template handles all of these. Every entity is therefore in principle
+// eligible — existing hand-written converters, if still present, win via
+// the fs-presence check in planConverterFiles.
+//
+// Shapes not yet expressible in schema (and therefore left to hand-
+// written templates): nested-collection fields (e.g. Meal.Components),
+// non-denormalized secondary links (e.g. UserIngredientPreference.
+// ValidIngredientGroup), range/min/max-pair types that don't reduce to
+// scalar pair fields.
+func converterEligible(_ *config.Entity) bool {
+	return true
+}
+
+// planConverterFiles enumerates every entity across every domain and emits
+// a parameterized converter file per eligible entity — but only when no
+// hand-written converter for that entity exists anywhere in the sibling
+// `converters/` directory. The detection considers both filename match
+// (`<plural_snake>.go.tmpl`) and function-name collisions (a parent's
+// converter template may emit its child's converters alongside its own).
+// This makes the layer additive: hand-written templates always win, and
+// parameterized output fills only the genuine gaps. To "promote" an
+// entity to the parameterized layer, delete every hand-written
+// declaration of its Convert<Entity>* functions.
+//
+// Output lands at backend/internal/domain/<domain>/converters/<plural_snake>.go.
+func (p *Pipeline) planConverterFiles() []PlannedFile {
+	const tmpl = "_backend/_parameterized/domain_converters/entity_converters.go.tmpl"
+
+	var files []PlannedFile
+	for i := range p.config.Domains {
+		d := &p.config.Domains[i]
+		existing := existingConverterDeclarations(d.Name)
+		for j := range d.Entities {
+			e := &d.Entities[j]
+			if !converterEligible(e) {
+				continue
+			}
+			if existing[e.Name] {
+				continue
+			}
+			pluralSnake := naming.New(e.Name).PluralSnake()
+			files = append(files, PlannedFile{
+				TemplatePath: tmpl,
+				OutputPath:   fmt.Sprintf("backend/internal/domain/%s/converters/%s.go", d.Name, pluralSnake),
+				Data:         parameterizedCtx{Project: p.config, Domain: d, Entity: e},
+				IsGo:         true,
+			})
+		}
+	}
+	return files
+}
+
+// existingConverterDeclarations reports which entity names already have
+// Convert<Entity>* functions declared by some hand-written converter
+// template under _backend/internal/domain/<domain>/converters/. Keys in
+// the returned map are entity PascalCase names. Matching is over the
+// literal prefix `func Convert<EntityName>` so it catches child converters
+// emitted inside a parent's file (e.g. meals.go.tmpl declaring
+// ConvertMealComponent*), which the filename alone would miss.
+func existingConverterDeclarations(domainName string) map[string]bool {
+	out := map[string]bool{}
+	root := fmt.Sprintf("_backend/internal/domain/%s/converters", domainName)
+	_ = fs.WalkDir(TemplateFS, root, func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return fs.SkipDir
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go.tmpl") {
+			return nil
+		}
+		body, err := TemplateFS.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		for _, line := range strings.Split(string(body), "\n") {
+			const marker = "func Convert"
+			idx := strings.Index(line, marker)
+			if idx < 0 {
+				continue
+			}
+			rest := line[idx+len(marker):]
+			// Entity name runs to the next uppercase-delimited word boundary.
+			// The next fixed suffix is one of "To", "CreationRequestInput".
+			// Extract up to the first of those.
+			end := len(rest)
+			for _, boundary := range []string{"To", "CreationRequestInput"} {
+				if i := strings.Index(rest, boundary); i > 0 && i < end {
+					end = i
+				}
+			}
+			if end == 0 || end == len(rest) {
+				continue
+			}
+			name := rest[:end]
+			// Sanity: name must start with uppercase and contain only ident chars.
+			if name == "" || name[0] < 'A' || name[0] > 'Z' {
+				continue
+			}
+			out[name] = true
+		}
+		return nil
+	})
+	return out
+}
+
+// planPerEntityFiles enumerates every .tmpl under
+// _backend/_parameterized/domain_entity/ and emits one PlannedFile per
+// (template, domain, entity) tuple. Output paths derive from the template
+// filename by replacing the leading `entity` stem with the snake-cased
+// entity name. The emitted file lands directly in the domain directory
+// (backend/internal/domain/<domain>/<snake>.go) — the planner's
+// skipVerbatim set ensures no hand-written template collides at that
+// path.
+func (p *Pipeline) planPerEntityFiles() []PlannedFile {
+	const root = "_backend/_parameterized/domain_entity"
+
+	var templates []string
+	_ = fs.WalkDir(TemplateFS, root, func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			// Subtree absent — no per-entity templates yet; nothing to plan.
+			return fs.SkipDir
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if !strings.HasSuffix(path, ".tmpl") {
+			return nil
+		}
+		templates = append(templates, path)
+		return nil
+	})
+
+	if len(templates) == 0 {
+		return nil
+	}
+
+	var files []PlannedFile
+	for i := range p.config.Domains {
+		d := &p.config.Domains[i]
+		for j := range d.Entities {
+			e := &d.Entities[j]
+			for _, tmpl := range templates {
+				outName := perEntityOutputName(filepath.Base(tmpl), e.Name)
+				files = append(files, PlannedFile{
+					TemplatePath: tmpl,
+					OutputPath:   fmt.Sprintf("backend/internal/domain/%s/%s", d.Name, outName),
+					Data:         parameterizedCtx{Project: p.config, Domain: d, Entity: e},
+					IsGo:         strings.HasSuffix(outName, ".go"),
+				})
+			}
+		}
+	}
+	return files
+}
+
+// perEntityOutputName maps a per-entity template filename + entity name to
+// the emitted basename. Convention: templates use `entity` as the leading
+// stem; we substitute the snake-cased entity name and strip `.tmpl`.
+//
+//	entity.go.tmpl,      "RecipeRating" -> "recipe_rating.go"
+//	entity_test.go.tmpl, "RecipeRating" -> "recipe_rating_test.go"
+func perEntityOutputName(templateBase, entityName string) string {
+	stem := strings.TrimSuffix(templateBase, ".tmpl") // entity.go | entity_test.go
+	snake := naming.New(entityName).Snake()
+	return strings.Replace(stem, "entity", snake, 1)
+}
+
 // parameterizedCtx is the template data shape for files emitted by the
-// parameterized planner layer. Keep it minimal: just the current Project
-// plus the Domain being rendered. Entity-level context can be added when
-// a future step generates per-entity files.
+// parameterized planner layer. Project + Domain are always populated;
+// Entity is only populated for per-entity templates under
+// _backend/_parameterized/domain_entity/.
 type parameterizedCtx struct {
 	Project *config.Project
 	Domain  *config.Domain
+	Entity  *config.Entity
 }
 
 // rewriteOutputPath maps a template-FS path to the output-tree path.

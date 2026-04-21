@@ -1,0 +1,223 @@
+{{- /*
+  Per-entity canonical CRUD shape, parameterized over (Project, Domain, Entity).
+
+  Emits:
+    - gob registrations for the domain struct + input variants
+    - the domain struct
+    - CreationRequestInput, DatabaseCreationInput, UpdateRequestInput
+    - <Entity>DataManager interface (CRUD core — Exists, Get, List,
+      Create, Update, Archive). Bespoke methods (search indexing,
+      custom state transitions, etc.) are intentionally out of scope
+      for the schema-driven path and must be added by hand if needed.
+    - Update method, merging UpdateRequestInput into the receiver
+    - ValidateWithContext for each input variant
+    - Convert<Entity>ToDatabaseCreationInput — scalar-to-scalar mapping
+
+  Routing decisions:
+    - belongs_to / belongs_to_account / belongs_to_user / created_by_user
+      are *server-supplied* (URL nest, session). They appear on the
+      domain struct and DatabaseCreationInput, never on
+      CreationRequestInput.
+    - links_to FKs are *client-supplied* and flow through both inputs.
+
+  DataManager signature conventions (see funcmap helpers existsArgNames /
+  listArgNames / archiveArgNames):
+    - Exists / Get: (parent-chain-ids..., selfID) — outermost-parent-first,
+      self last.
+    - List Get<Plural>: takes parent-chain-ids (for nested entities) or
+      a single scope arg (accountID / userID) for top-level entities.
+    - Archive: parent-chain-ids..., selfID for nested entities;
+      (selfID, accountID|userID) for top-level entities that carry
+      scope; (selfID) for globally-scoped top-level entities.
+
+  These conventions are consistent but differ from a handful of upstream
+  entities that chose bespoke orderings (e.g., MealListItem). Accepted
+  drift — see parity_checklist.md.
+
+  Output is gofmt'd by the renderer (PlannedFile.IsGo=true), so loose
+  whitespace here is fine.
+*/ -}}
+package {{ .Domain.Name }}
+
+import (
+	"context"
+	"encoding/gob"
+	"time"
+
+	"github.com/primandproper/platform/database/filtering"
+
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+func init() {
+	gob.Register(new({{ .Entity.Name }}))
+	gob.Register(new({{ .Entity.Name }}CreationRequestInput))
+	gob.Register(new({{ .Entity.Name }}UpdateRequestInput))
+}
+
+type (
+	// {{ .Entity.Name }} represents {{ .Entity.Name | withArticle }}.
+	{{ .Entity.Name }} struct {
+		_ struct{} `json:"-"`
+
+		CreatedAt     time.Time  `json:"createdAt"`
+		LastUpdatedAt *time.Time `json:"lastUpdatedAt"`
+		ArchivedAt    *time.Time `json:"archivedAt"`
+		ID            string     `json:"id"`
+{{- range .Entity.AllFields }}
+		{{ .Name }} {{ .Type }} `json:"{{ jsonTagForStruct . }}"`
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }} string `json:"belongsTo{{ .Entity.BelongsTo }}"`
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount string `json:"belongsToAccount"`
+{{- end }}
+{{- if .Entity.BelongsToUser }}
+		BelongsToUser string `json:"belongsToUser"`
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser string `json:"createdByUser"`
+{{- end }}
+	}
+
+	// {{ .Entity.Name }}CreationRequestInput represents input for creating {{ plural .Entity.Name | humanReadable }}.
+	{{ .Entity.Name }}CreationRequestInput struct {
+		_ struct{} `json:"-"`
+
+{{ range creatableFields .Entity.AllFields }}		{{ .Name }} {{ .Type }} `json:"{{ jsonTagForStruct . }}"`
+{{ end }}	}
+
+	// {{ .Entity.Name }}DatabaseCreationInput represents database input for creating {{ plural .Entity.Name | humanReadable }}.
+	{{ .Entity.Name }}DatabaseCreationInput struct {
+		_ struct{} `json:"-"`
+
+		ID string `json:"-"`
+{{- range creatableFields .Entity.AllFields }}
+		{{ .Name }} {{ .Type }} `json:"-"`
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }} string `json:"-"`
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount string `json:"-"`
+{{- end }}
+{{- if .Entity.BelongsToUser }}
+		BelongsToUser string `json:"-"`
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser string `json:"-"`
+{{- end }}
+	}
+
+	// {{ .Entity.Name }}UpdateRequestInput represents input for updating {{ plural .Entity.Name | humanReadable }}.
+	{{ .Entity.Name }}UpdateRequestInput struct {
+		_ struct{} `json:"-"`
+
+{{ range editableFields .Entity.AllFields }}		{{ .Name }} *{{ baseType . }} `json:"{{ camel .Name }},omitempty"`
+{{ end }}	}
+
+	// {{ .Entity.Name }}DataManager describes a structure capable of storing {{ plural .Entity.Name | humanReadable }} permanently.
+	{{ .Entity.Name }}DataManager interface {
+		{{ .Entity.Name }}Exists(ctx context.Context, {{ join (existsArgNames .Domain .Entity) ", " }} string) (bool, error)
+		Get{{ .Entity.Name }}(ctx context.Context, {{ join (existsArgNames .Domain .Entity) ", " }} string) (*{{ .Entity.Name }}, error)
+{{- $listArgs := listArgNames .Domain .Entity }}
+{{- if $listArgs }}
+		Get{{ plural .Entity.Name }}(ctx context.Context, {{ join $listArgs ", " }} string, filter *filtering.QueryFilter) (*filtering.QueryFilteredResult[{{ .Entity.Name }}], error)
+{{- else }}
+		Get{{ plural .Entity.Name }}(ctx context.Context, filter *filtering.QueryFilter) (*filtering.QueryFilteredResult[{{ .Entity.Name }}], error)
+{{- end }}
+		Create{{ .Entity.Name }}(ctx context.Context, input *{{ .Entity.Name }}DatabaseCreationInput) (*{{ .Entity.Name }}, error)
+		Update{{ .Entity.Name }}(ctx context.Context, updated *{{ .Entity.Name }}) error
+		Archive{{ .Entity.Name }}(ctx context.Context, {{ join (archiveArgNames .Domain .Entity) ", " }} string) error
+	}
+)
+
+// Update merges a {{ .Entity.Name }}UpdateRequestInput with {{ .Entity.Name | withArticle }}.
+func (x *{{ .Entity.Name }}) Update(input *{{ .Entity.Name }}UpdateRequestInput) {
+	if input == nil {
+		return
+	}
+{{ range editableFields .Entity.AllFields }}
+{{- if isPointer . }}
+	if input.{{ .Name }} != nil {
+		x.{{ .Name }} = input.{{ .Name }}
+	}
+{{ else }}
+	if input.{{ .Name }} != nil && *input.{{ .Name }} != x.{{ .Name }} {
+		x.{{ .Name }} = *input.{{ .Name }}
+	}
+{{ end -}}
+{{ end }}
+}
+
+var _ validation.ValidatableWithContext = (*{{ .Entity.Name }}CreationRequestInput)(nil)
+
+// ValidateWithContext validates a {{ .Entity.Name }}CreationRequestInput.
+func (x *{{ .Entity.Name }}CreationRequestInput) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(
+		ctx,
+		x,
+{{- range requiredFields (creatableFields .Entity.AllFields) }}
+		validation.Field(&x.{{ .Name }}, validation.Required),
+{{- end }}
+	)
+}
+
+var _ validation.ValidatableWithContext = (*{{ .Entity.Name }}DatabaseCreationInput)(nil)
+
+// ValidateWithContext validates a {{ .Entity.Name }}DatabaseCreationInput.
+func (x *{{ .Entity.Name }}DatabaseCreationInput) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(
+		ctx,
+		x,
+		validation.Field(&x.ID, validation.Required),
+{{- range requiredFields (creatableFields .Entity.AllFields) }}
+		validation.Field(&x.{{ .Name }}, validation.Required),
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		validation.Field(&x.BelongsTo{{ .Entity.BelongsTo }}, validation.Required),
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		validation.Field(&x.BelongsToAccount, validation.Required),
+{{- end }}
+{{- if .Entity.BelongsToUser }}
+		validation.Field(&x.BelongsToUser, validation.Required),
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		validation.Field(&x.CreatedByUser, validation.Required),
+{{- end }}
+	)
+}
+
+var _ validation.ValidatableWithContext = (*{{ .Entity.Name }}UpdateRequestInput)(nil)
+
+// ValidateWithContext validates a {{ .Entity.Name }}UpdateRequestInput.
+func (x *{{ .Entity.Name }}UpdateRequestInput) ValidateWithContext(ctx context.Context) error {
+	return validation.ValidateStructWithContext(
+		ctx,
+		x,
+	)
+}
+
+// Convert{{ .Entity.Name }}ToDatabaseCreationInput converts {{ .Entity.Name | withArticle }} to {{ .Entity.Name }}DatabaseCreationInput.
+func Convert{{ .Entity.Name }}ToDatabaseCreationInput(v *{{ .Entity.Name }}) *{{ .Entity.Name }}DatabaseCreationInput {
+	return &{{ .Entity.Name }}DatabaseCreationInput{
+		ID: v.ID,
+{{- range creatableFields .Entity.AllFields }}
+		{{ .Name }}: v.{{ .Name }},
+{{- end }}
+{{- if .Entity.BelongsTo }}
+		BelongsTo{{ .Entity.BelongsTo }}: v.BelongsTo{{ .Entity.BelongsTo }},
+{{- end }}
+{{- if .Entity.BelongsToAccount }}
+		BelongsToAccount: v.BelongsToAccount,
+{{- end }}
+{{- if .Entity.BelongsToUser }}
+		BelongsToUser: v.BelongsToUser,
+{{- end }}
+{{- if .Entity.CreatedByUser }}
+		CreatedByUser: v.CreatedByUser,
+{{- end }}
+	}
+}

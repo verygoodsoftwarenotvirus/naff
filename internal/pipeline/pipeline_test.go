@@ -1,12 +1,22 @@
 package pipeline
 
 import (
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/verygoodsoftwarenotvirus/naff/internal/config"
+	"github.com/verygoodsoftwarenotvirus/naff/internal/renderer"
+	"github.com/verygoodsoftwarenotvirus/naff/templates"
 )
+
+func init() {
+	// Tests that exercise the planner need TemplateFS populated; cmd/naff
+	// wires this up at runtime.
+	TemplateFS = templates.FS
+}
 
 func TestDiffAwareWrite(t *testing.T) {
 	t.Parallel()
@@ -250,6 +260,197 @@ func TestModeFor(t *testing.T) {
 		if got := modeFor(tc.path); got != tc.want {
 			t.Errorf("modeFor(%q) = %o, want %o", tc.path, got, tc.want)
 		}
+	}
+}
+
+func TestPerEntityOutputName(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		template, entity, want string
+	}{
+		{"entity.go.tmpl", "RecipeRating", "recipe_rating.go"},
+		{"entity_test.go.tmpl", "RecipeRating", "recipe_rating_test.go"},
+		{"entity.go.tmpl", "MealComponent", "meal_component.go"},
+		{"entity.go.tmpl", "ValidIngredientMeasurementUnit", "valid_ingredient_measurement_unit.go"},
+	}
+
+	for _, tc := range tests {
+		if got := perEntityOutputName(tc.template, tc.entity); got != tc.want {
+			t.Errorf("perEntityOutputName(%q, %q) = %q, want %q",
+				tc.template, tc.entity, got, tc.want)
+		}
+	}
+}
+
+func TestPlanPerEntityFiles(t *testing.T) {
+	t.Parallel()
+
+	cfg := &config.Project{
+		ProjectMeta: config.ProjectMeta{
+			Name:   "TestProject",
+			Module: "github.com/example/test",
+		},
+		Domains: []config.Domain{
+			{
+				Name: "widgets",
+				Entities: []config.Entity{
+					{Name: "Widget", Fields: []config.Field{{Name: "Color", Type: "string"}}},
+					{Name: "Gadget", Fields: []config.Field{{Name: "Power", Type: "int32"}}},
+				},
+			},
+		},
+	}
+
+	p := &Pipeline{config: cfg}
+	got := p.planPerEntityFiles()
+
+	// Two templates (entity.go.tmpl + entity_test.go.tmpl) × 2 entities = 4 files.
+	if len(got) != 4 {
+		t.Fatalf("got %d planned files, want 4: %+v", len(got), got)
+	}
+
+	wantPaths := map[string]bool{
+		"backend/internal/domain/widgets/widget.go":      false,
+		"backend/internal/domain/widgets/widget_test.go": false,
+		"backend/internal/domain/widgets/gadget.go":      false,
+		"backend/internal/domain/widgets/gadget_test.go": false,
+	}
+	for _, pf := range got {
+		if _, ok := wantPaths[pf.OutputPath]; !ok {
+			t.Errorf("unexpected output path: %s", pf.OutputPath)
+			continue
+		}
+		wantPaths[pf.OutputPath] = true
+
+		ctx, ok := pf.Data.(parameterizedCtx)
+		if !ok {
+			t.Errorf("Data for %s is not parameterizedCtx: %T", pf.OutputPath, pf.Data)
+			continue
+		}
+		if ctx.Project != cfg {
+			t.Errorf("Project for %s does not match input config", pf.OutputPath)
+		}
+		if ctx.Domain == nil || ctx.Domain.Name != "widgets" {
+			t.Errorf("Domain for %s = %+v, want widgets", pf.OutputPath, ctx.Domain)
+		}
+		if ctx.Entity == nil {
+			t.Errorf("Entity for %s is nil", pf.OutputPath)
+		}
+		if !pf.IsGo {
+			t.Errorf("IsGo for %s = false, want true", pf.OutputPath)
+		}
+	}
+	for path, seen := range wantPaths {
+		if !seen {
+			t.Errorf("missing planned output path: %s", path)
+		}
+	}
+}
+
+// TestEntityTemplateRendersValidGo exercises the per-entity templates against
+// a handful of representative Entity shapes and verifies the output is
+// well-formed Go after gofmt. Catches template-level bugs (mismatched
+// pointer/value comparisons, missing imports, broken control-flow) without
+// running a full naff-generate against the embedded testdata.
+func TestEntityTemplateRendersValidGo(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name   string
+		domain config.Domain
+		entity config.Entity
+	}{
+		{
+			name:   "vanilla scalar fields",
+			domain: config.Domain{Name: "widgets"},
+			entity: config.Entity{
+				Name: "Widget",
+				Fields: []config.Field{
+					{Name: "Color", Type: "string"},
+					{Name: "Power", Type: "int32"},
+				},
+			},
+		},
+		{
+			name:   "pointer field exercises pointer-aware Update body",
+			domain: config.Domain{Name: "widgets"},
+			entity: config.Entity{
+				Name: "Gadget",
+				Fields: []config.Field{
+					{Name: "MaxPortions", Type: "*float32"},
+				},
+			},
+		},
+		{
+			name:   "belongs_to + created_by_user routes server-side fields correctly",
+			domain: config.Domain{Name: "mealplanning"},
+			entity: config.Entity{
+				Name:          "RecipeRating",
+				BelongsTo:     "Recipe",
+				CreatedByUser: true,
+				Fields: []config.Field{
+					{Name: "Notes", Type: "string"},
+					{Name: "Taste", Type: "float32"},
+				},
+			},
+		},
+		{
+			name:   "links_to synthesizes FK fields",
+			domain: config.Domain{Name: "mealplanning"},
+			entity: config.Entity{
+				Name:      "MealComponent",
+				BelongsTo: "Meal",
+				LinksTo:   []config.Link{{Target: "Recipe"}},
+				Fields: []config.Field{
+					{Name: "ComponentType", Type: "string"},
+					{Name: "RecipeScale", Type: "float32"},
+				},
+			},
+		},
+		{
+			name:   "no editable fields produces a no-op Update body",
+			domain: config.Domain{Name: "widgets"},
+			entity: config.Entity{
+				Name: "FrozenWidget",
+				Fields: []config.Field{
+					{Name: "ID", Type: "string"},
+				},
+			},
+		},
+	}
+
+	r := renderer.New(templates.FS)
+	const tmpl = "_backend/_parameterized/domain_entity/entity.go.tmpl"
+	const testTmpl = "_backend/_parameterized/domain_entity/entity_test.go.tmpl"
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := parameterizedCtx{
+				Project: &config.Project{ProjectMeta: config.ProjectMeta{Name: "Test"}},
+				Domain:  &tc.domain,
+				Entity:  &tc.entity,
+			}
+
+			for _, path := range []string{tmpl, testTmpl} {
+				out, err := r.Render(path, ctx)
+				if err != nil {
+					t.Fatalf("Render(%s): %v", path, err)
+				}
+
+				formatted, err := renderer.FormatGo([]byte(out))
+				if err != nil {
+					t.Fatalf("FormatGo(%s):\n%v\n--- raw output ---\n%s", path, err, out)
+				}
+
+				fset := token.NewFileSet()
+				if _, err := parser.ParseFile(fset, "out.go", formatted, parser.AllErrors); err != nil {
+					t.Fatalf("parser.ParseFile(%s): %v\n--- output ---\n%s", path, err, formatted)
+				}
+			}
+		})
 	}
 }
 

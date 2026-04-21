@@ -2,6 +2,7 @@ package renderer
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -70,6 +71,33 @@ func FuncMap() template.FuncMap {
 		"editableFields":  editableFields,
 		"requiredFields":  requiredFields,
 		"columnFields":    columnFields,
+
+		// Entity ordering: returns a new slice sorted by Name (A→Z) so
+		// templates that iterate entities emit deterministic, config-order
+		// -independent output.
+		"sortedEntities": sortedEntities,
+
+		// Parent-chain helpers: given (domain, entity), return the chain of
+		// ancestor entities reached by walking `belongs_to`, outermost-first.
+		// Used by per-entity templates to synthesize DataManager method
+		// signatures (Exists/Get/List/Archive) that take parent IDs in path
+		// order.
+		"parentChain":    parentChain,
+		"existsArgNames": existsArgNames,
+		"listArgNames":   listArgNames,
+		"archiveArgNames": archiveArgNames,
+
+		// Nested-collection helpers: enumerate the children of an entity
+		// that are marked `nested: true`, and derive the collection field
+		// name (plural, parent-prefix-stripped) on the parent struct.
+		"nestedChildren":          nestedChildren,
+		"nestedCollectionField":   nestedCollectionField,
+
+		// jsonTagForStruct is like jsonTag but also appends ",omitempty"
+		// for pointer-typed fields (mirroring the upstream convention on
+		// domain structs, where *T fields carry omitempty even when the
+		// schema does not explicitly set Omitempty).
+		"jsonTagForStruct": jsonTagForStruct,
 
 		// JSON tag helpers
 		"jsonTag": jsonTag,
@@ -249,6 +277,15 @@ func requiredFields(fields []config.Field) []config.Field {
 // columnFields returns all fields (all fields are columns by default).
 func columnFields(fields []config.Field) []config.Field {
 	return fields
+}
+
+// sortedEntities returns a copy of the given slice sorted by Name (A→Z).
+// Callers mutate neither the input slice nor the underlying Entity values.
+func sortedEntities(entities []config.Entity) []config.Entity {
+	out := make([]config.Entity, len(entities))
+	copy(out, entities)
+	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+	return out
 }
 
 // pointerConversionFunc returns the database helper function name for converting nullable DB types.
@@ -594,4 +631,150 @@ func jsonTag(f config.Field) string {
 		tag += ",omitempty"
 	}
 	return tag
+}
+
+// jsonTagForStruct returns the JSON struct tag value for a field when used
+// on the domain struct or an input variant. It mirrors jsonTag but also
+// appends ",omitempty" for pointer-typed fields, matching the upstream
+// convention (pointer fields render as T | null in TS and are elided from
+// wire payloads when nil).
+func jsonTagForStruct(f config.Field) string {
+	tag := naming.New(f.Name).Camel()
+	if f.Omitempty || f.IsPointer() {
+		tag += ",omitempty"
+	}
+	return tag
+}
+
+// parentChain returns the ancestor entities of e reachable via repeated
+// `belongs_to` traversal, ordered outermost-first (e.g., for MealPlanOption
+// belongs_to MealPlanEvent belongs_to MealPlan it returns [MealPlan,
+// MealPlanEvent]). Self is excluded. An entity with no belongs_to returns
+// a zero-length slice. Unknown parent names (dangling belongs_to references)
+// terminate the chain silently; validation is the config layer's job.
+func parentChain(d *config.Domain, e *config.Entity) []*config.Entity {
+	var chain []*config.Entity
+	cur := e
+	// Bound the walk to len(d.Entities) to avoid looping on cycles (the
+	// config validator should reject these, but defend anyway).
+	for i := 0; cur != nil && cur.BelongsTo != "" && i < len(d.Entities); i++ {
+		parent := findEntity(d, cur.BelongsTo)
+		if parent == nil {
+			break
+		}
+		chain = append([]*config.Entity{parent}, chain...)
+		cur = parent
+	}
+	return chain
+}
+
+// findEntity returns the first entity in d whose Name matches name, or nil.
+func findEntity(d *config.Domain, name string) *config.Entity {
+	for i := range d.Entities {
+		if d.Entities[i].Name == name {
+			return &d.Entities[i]
+		}
+	}
+	return nil
+}
+
+// existsArgNames returns the ordered list of identifier-argument names used
+// for Exists/Get method signatures: every parent's ID (outermost-first)
+// followed by the entity's own ID. All entries are camelCase + "ID".
+func existsArgNames(d *config.Domain, e *config.Entity) []string {
+	names := make([]string, 0, 4)
+	for _, p := range parentChain(d, e) {
+		names = append(names, naming.New(p.Name).Camel()+"ID")
+	}
+	names = append(names, naming.New(e.Name).Camel()+"ID")
+	return names
+}
+
+// listArgNames returns the ordered parent-scope identifier names used for
+// the List method signature (Get<Plural>). Nested entities yield the parent
+// chain; top-level entities yield a single scope arg (accountID when
+// belongs_to_account, otherwise userID when created_by_user, otherwise
+// empty for globally-scoped collections).
+func listArgNames(d *config.Domain, e *config.Entity) []string {
+	parents := parentChain(d, e)
+	if len(parents) > 0 {
+		names := make([]string, 0, len(parents))
+		for _, p := range parents {
+			names = append(names, naming.New(p.Name).Camel()+"ID")
+		}
+		return names
+	}
+	switch {
+	case e.BelongsToAccount:
+		return []string{"accountID"}
+	case e.CreatedByUser:
+		return []string{"userID"}
+	default:
+		return nil
+	}
+}
+
+// nestedChildren returns the entities in d that declare belongs_to ==
+// parent.Name and are marked nested. Order follows the parent's own
+// Entities slice position (i.e. config order), which is what the emitted
+// converter's field-iteration order will match. Self is excluded.
+func nestedChildren(d *config.Domain, parent *config.Entity) []*config.Entity {
+	var out []*config.Entity
+	for i := range d.Entities {
+		c := &d.Entities[i]
+		if c.Name == parent.Name {
+			continue
+		}
+		if c.BelongsTo != parent.Name {
+			continue
+		}
+		if !c.Nested {
+			continue
+		}
+		out = append(out, c)
+	}
+	return out
+}
+
+// nestedCollectionField returns the name of the slice field on the parent
+// that holds child instances. Derivation: strip the parent's Name from
+// the start of the child's Name (if present), then pluralize. Falls back
+// to plural of the child name when the child name doesn't carry the
+// parent prefix. Examples:
+//
+//	parent=Meal,     child=MealComponent    → "Components"
+//	parent=RecipeStep, child=RecipeStepIngredient → "Ingredients"
+//	parent=Foo,      child=Bar              → "Bars"
+func nestedCollectionField(parent, child *config.Entity) string {
+	stem := strings.TrimPrefix(child.Name, parent.Name)
+	if stem == "" {
+		stem = child.Name
+	}
+	return naming.New(stem).Plural()
+}
+
+// archiveArgNames returns the ordered identifier names used for the
+// Archive method signature. Nested entities: parent chain + selfID
+// (matching Exists/Get). Top-level entities: selfID followed by the
+// scope arg (accountID or userID), or just selfID when globally scoped.
+// The self-first ordering on top-level mirrors the upstream convention
+// (e.g., ArchiveMeal(mealID, userID)).
+func archiveArgNames(d *config.Domain, e *config.Entity) []string {
+	parents := parentChain(d, e)
+	self := naming.New(e.Name).Camel() + "ID"
+	if len(parents) > 0 {
+		names := make([]string, 0, len(parents)+1)
+		for _, p := range parents {
+			names = append(names, naming.New(p.Name).Camel()+"ID")
+		}
+		return append(names, self)
+	}
+	switch {
+	case e.BelongsToAccount:
+		return []string{self, "accountID"}
+	case e.CreatedByUser:
+		return []string{self, "userID"}
+	default:
+		return []string{self}
+	}
 }

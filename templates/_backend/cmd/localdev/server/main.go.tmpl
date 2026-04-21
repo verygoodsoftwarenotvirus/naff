@@ -13,7 +13,6 @@ import (
 	"{{ .Project.ProjectMeta.Module }}/internal/config"
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/identity"
 	identityconverters "{{ .Project.ProjectMeta.Module }}/internal/domain/identity/converters"
-	"{{ .Project.ProjectMeta.Module }}/internal/domain/mealplanning"
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/oauth"
 	"{{ .Project.ProjectMeta.Module }}/internal/domain/settings"
 	"{{ .Project.ProjectMeta.Module }}/internal/localdev"
@@ -51,8 +50,6 @@ func main() {
 		adminAccountID string
 		memberUserIDs  []string
 	)
-
-	var currentMealPlanID string
 
 	server, err := localdev.AllInOne(
 		ctx,
@@ -223,24 +220,6 @@ func main() {
 				ClientSecret: strings.Repeat("A", oauth.ClientSecretSize),
 			})
 			return err
-		}),
-		// Domain: mealplanning - bootstrap enumerations, recipes, and meals
-		localdev.WithMealPlanningRepository(func(ctx context.Context, repo mealplanning.Repository, logger logging.Logger, tracerProvider tracing.TracerProvider) error {
-			return bootstrapEnumerationsAndRecipes(ctx, repo, logger, tracerProvider, adminUserID)
-		}),
-		// Domain: mealplanning - create meal plan
-		localdev.WithMealPlanningRepository(func(ctx context.Context, repo mealplanning.Repository, logger logging.Logger, tracerProvider tracing.TracerProvider) error {
-			var mealPlanErr error
-			currentMealPlanID, mealPlanErr = bootstrapMealPlan(ctx, repo, logger, adminUserID, adminAccountID)
-			return mealPlanErr
-		}),
-		// Domain: mealplanning - create finalized meal plan with votes
-		localdev.WithMealPlanningRepository(func(ctx context.Context, repo mealplanning.Repository, logger logging.Logger, tracerProvider tracing.TracerProvider) error {
-			return bootstrapFinalizedMealPlanAndVotes(ctx, repo, logger, adminUserID, adminAccountID, currentMealPlanID, memberUserIDs)
-		}),
-		// Domain: mealplanning - run grocery list and task creator workers
-		localdev.WithMealPlanningRepository(func(ctx context.Context, repo mealplanning.Repository, logger logging.Logger, tracerProvider tracing.TracerProvider) error {
-			return bootstrapMealPlanWorkers(ctx, logger, apiConfig)
 		}),
 		// Create example service settings
 		localdev.WithSettingsRepository(func(ctx context.Context, repo settings.Repository, logger logging.Logger, tracerProvider tracing.TracerProvider) error {

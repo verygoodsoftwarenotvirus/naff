@@ -22,6 +22,8 @@ domains:
       - name: "Recipe"
         created_by_user: true
         searchable: true
+        links_to:
+          - {target: "Recipe", self: true, as: "InspiredByRecipe", optional: true}
         fields:
           - name: "Name"
             type: "string"
@@ -46,9 +48,6 @@ domains:
             creatable: false
           - name: "EligibleForMeals"
             type: "bool"
-          - name: "InspiredByRecipeID"
-            type: "*string"
-            required: false
           - name: "MinEstimatedPortions"
             type: "float32"
           - name: "MaxEstimatedPortions"
@@ -57,6 +56,8 @@ domains:
 
       - name: "RecipeStep"
         belongs_to: "Recipe"
+        links_to:
+          - {target: "ValidPreparation", as: "Preparation"}
         fields:
           - name: "Notes"
             type: "string"
@@ -73,8 +74,6 @@ domains:
             type: "bool"
           - name: "StartTimerAutomatically"
             type: "bool"
-          - name: "PreparationID"
-            type: "string"
           - name: "MinEstimatedTimeInSeconds"
             type: "*uint32"
             required: false
@@ -90,6 +89,13 @@ domains:
 
       - name: "RecipeStepIngredient"
         belongs_to: "RecipeStep"
+        links_to:
+          - {target: "ValidIngredient", as: "Ingredient", optional: true}
+          - {target: "ValidMeasurementUnit", as: "MeasurementUnit"}
+          - {target: "ValidIngredientPreparation", optional: true}
+          - {target: "ValidIngredientMeasurementUnit", optional: true}
+          - {target: "RecipeStepProduct", optional: true}
+          - {target: "Recipe", as: "RecipeStepProductRecipe", optional: true}
         fields:
           - name: "Name"
             type: "string"
@@ -115,33 +121,18 @@ domains:
           - name: "ProductPercentageToUse"
             type: "*float32"
             required: false
-          - name: "RecipeStepProductID"
-            type: "*string"
-            required: false
-            editable: false
-          - name: "IngredientID"
-            type: "*string"
-            required: false
-          - name: "MeasurementUnitID"
-            type: "string"
-          - name: "ValidIngredientPreparationID"
-            type: "*string"
-            required: false
-          - name: "ValidIngredientMeasurementUnitID"
-            type: "*string"
-            required: false
           - name: "MinQuantity"
             type: "float32"
           - name: "MaxQuantity"
             type: "*float32"
             required: false
-          - name: "RecipeStepProductRecipeID"
-            type: "*string"
-            required: false
-            editable: false
 
       - name: "RecipeStepInstrument"
         belongs_to: "RecipeStep"
+        links_to:
+          - {target: "ValidInstrument", as: "Instrument", optional: true}
+          - {target: "ValidPreparationInstrument", optional: true}
+          - {target: "RecipeStepProduct", optional: true}
         fields:
           - name: "Name"
             type: "string"
@@ -158,16 +149,6 @@ domains:
             type: "bool"
           - name: "ScaleFactor"
             type: "float32"
-          - name: "RecipeStepProductID"
-            type: "*string"
-            required: false
-            editable: false
-          - name: "InstrumentID"
-            type: "*string"
-            required: false
-          - name: "ValidPreparationInstrumentID"
-            type: "*string"
-            required: false
           - name: "MinQuantity"
             type: "uint32"
           - name: "MaxQuantity"
@@ -176,6 +157,10 @@ domains:
 
       - name: "RecipeStepVessel"
         belongs_to: "RecipeStep"
+        links_to:
+          - {target: "ValidVessel", as: "Vessel", optional: true}
+          - {target: "ValidPreparationVessel", optional: true}
+          - {target: "RecipeStepProduct", optional: true}
         fields:
           - name: "Name"
             type: "string"
@@ -193,16 +178,6 @@ domains:
             type: "bool"
           - name: "ScaleFactor"
             type: "float32"
-          - name: "RecipeStepProductID"
-            type: "*string"
-            required: false
-            editable: false
-          - name: "VesselID"
-            type: "*string"
-            required: false
-          - name: "ValidPreparationVesselID"
-            type: "*string"
-            required: false
           - name: "MinQuantity"
             type: "uint16"
           - name: "MaxQuantity"
@@ -211,6 +186,8 @@ domains:
 
       - name: "RecipeStepProduct"
         belongs_to: "RecipeStep"
+        links_to:
+          - {target: "ValidMeasurementUnit", as: "MeasurementUnit", optional: true}
         fields:
           - name: "Name"
             type: "string"
@@ -232,9 +209,6 @@ domains:
             type: "bool"
           - name: "ContainedInVesselIndex"
             type: "*uint16"
-            required: false
-          - name: "MeasurementUnitID"
-            type: "*string"
             required: false
           - name: "MinStorageTemperatureInCelsius"
             type: "*float32"
@@ -263,14 +237,14 @@ domains:
 
       - name: "RecipeStepCompletionCondition"
         belongs_to: "RecipeStep"
+        links_to:
+          - {target: "ValidIngredientState", as: "IngredientState"}
         fields:
           - name: "Notes"
             type: "string"
             required: false
           - name: "Optional"
             type: "bool"
-          - name: "IngredientStateID"
-            type: "string"
 
       - name: "RecipeStepCompletionConditionIngredient"
         belongs_to: "RecipeStepCompletionCondition"
@@ -304,11 +278,9 @@ domains:
             required: false
 
       - name: "RecipeRating"
+        belongs_to: "Recipe"
         created_by_user: true
         fields:
-          - name: "RecipeID"
-            type: "string"
-            editable: false
           - name: "Notes"
             type: "string"
             required: false
@@ -384,12 +356,11 @@ domains:
 
       - name: "MealComponent"
         belongs_to: "Meal"
+        links_to:
+          - "Recipe"
         fields:
           - name: "ComponentType"
             type: "string"
-          - name: "RecipeID"
-            type: "string"
-            editable: false
           - name: "RecipeScale"
             type: "float32"
 
@@ -466,6 +437,12 @@ domains:
 
       - name: "MealPlanGroceryListItem"
         belongs_to: "MealPlan"
+        links_to:
+          - {target: "Recipe", optional: true}
+          - {target: "RecipeStep", optional: true}
+          - {target: "ValidIngredient"}
+          - {target: "ValidMeasurementUnit"}
+          - {target: "ValidMeasurementUnit", as: "PurchasedMeasurementUnit", optional: true}
         fields:
           - name: "Status"
             type: "string"
@@ -484,24 +461,11 @@ domains:
           - name: "BelongsToMealPlanOption"
             type: "*string"
             required: false
-          - name: "RecipeID"
-            type: "*string"
-            required: false
           - name: "OptionIndex"
             type: "*uint16"
             required: false
           - name: "IngredientIndex"
             type: "*uint16"
-            required: false
-          - name: "RecipeStepID"
-            type: "*string"
-            required: false
-          - name: "ValidIngredientID"
-            type: "string"
-          - name: "ValidMeasurementUnitID"
-            type: "string"
-          - name: "PurchasedMeasurementUnitID"
-            type: "*string"
             required: false
           - name: "MinQuantityNeeded"
             type: "float32"
@@ -510,6 +474,9 @@ domains:
             required: false
 
       - name: "MealPlanTask"
+        links_to:
+          - "MealPlanOption"
+          - "RecipePrepTask"
         fields:
           - name: "Status"
             type: "string"
@@ -522,10 +489,6 @@ domains:
           - name: "AssignedToUser"
             type: "*string"
             required: false
-          - name: "MealPlanOptionID"
-            type: "string"
-          - name: "RecipePrepTaskID"
-            type: "string"
           - name: "CompletedAt"
             type: "*time.Time"
             required: false
@@ -554,13 +517,10 @@ domains:
 
       - name: "MealPlanRecipeOptionSelection"
         belongs_to: "MealPlanOption"
+        links_to:
+          - "Recipe"
+          - "RecipeStep"
         fields:
-          - name: "RecipeID"
-            type: "string"
-            editable: false
-          - name: "RecipeStepID"
-            type: "string"
-            editable: false
           - name: "SelectionType"
             type: "string"
             editable: false
@@ -572,17 +532,20 @@ domains:
 
       - name: "AccountInstrumentOwnership"
         belongs_to_account: true
+        links_to:
+          - {target: "ValidInstrument", domain_as: "Instrument", editable: true}
         fields:
           - name: "Notes"
             type: "string"
             required: false
           - name: "Quantity"
             type: "uint16"
-          - name: "ValidInstrumentID"
-            type: "string"
 
       - name: "UserIngredientPreference"
-        created_by_user: true
+        belongs_to_user: true
+        links_to:
+          - "ValidIngredient"
+          - "ValidIngredientGroup"
         fields:
           - name: "Notes"
             type: "string"
@@ -591,10 +554,6 @@ domains:
             type: "int8"
           - name: "Allergy"
             type: "bool"
-          - name: "ValidIngredientID"
-            type: "string"
-          - name: "ValidIngredientGroupID"
-            type: "string"
 
       # ── Reference-data entities ────────────────────────────────────
 
@@ -769,6 +728,8 @@ domains:
 
       - name: "ValidVessel"
         searchable: true
+        links_to:
+          - {target: "ValidMeasurementUnit", as: "CapacityUnit", optional: true}
         fields:
           - name: "Name"
             type: "string"
@@ -796,9 +757,6 @@ domains:
             type: "bool"
           - name: "UsableForStorage"
             type: "bool"
-          - name: "CapacityUnitID"
-            type: "*string"
-            required: false
 
       - name: "ValidIngredientState"
         searchable: true
@@ -819,30 +777,27 @@ domains:
       # ── Bridge-table entities ──────────────────────────────────────
 
       - name: "ValidIngredientMeasurementUnit"
+        links_to:
+          - {target: "ValidMeasurementUnit", domain_as: "MeasurementUnit", editable: true}
+          - {target: "ValidIngredient", domain_as: "Ingredient", editable: true}
         fields:
           - name: "Notes"
-            type: "string"
-          - name: "ValidMeasurementUnitID"
-            type: "string"
-          - name: "ValidIngredientID"
             type: "string"
 
       - name: "ValidIngredientPreparation"
+        links_to:
+          - {target: "ValidPreparation", domain_as: "Preparation", editable: true}
+          - {target: "ValidIngredient", domain_as: "Ingredient", editable: true}
         fields:
           - name: "Notes"
-            type: "string"
-          - name: "ValidPreparationID"
-            type: "string"
-          - name: "ValidIngredientID"
             type: "string"
 
       - name: "ValidIngredientStateIngredient"
+        links_to:
+          - {target: "ValidIngredientState", domain_as: "IngredientState", editable: true}
+          - {target: "ValidIngredient", domain_as: "Ingredient", editable: true}
         fields:
           - name: "Notes"
-            type: "string"
-          - name: "ValidIngredientStateID"
-            type: "string"
-          - name: "ValidIngredientID"
             type: "string"
 
       - name: "ValidMeasurementUnitConversion"
@@ -860,24 +815,25 @@ domains:
             required: false
 
       - name: "ValidPreparationInstrument"
+        links_to:
+          - {target: "ValidPreparation", domain_as: "Preparation", editable: true}
+          - {target: "ValidInstrument", domain_as: "Instrument", editable: true}
         fields:
           - name: "Notes"
-            type: "string"
-          - name: "ValidPreparationID"
-            type: "string"
-          - name: "ValidInstrumentID"
             type: "string"
 
       - name: "ValidPreparationVessel"
+        links_to:
+          - {target: "ValidPreparation", domain_as: "Preparation", editable: true}
+          - {target: "ValidVessel", domain_as: "Vessel", editable: true}
         fields:
           - name: "Notes"
             type: "string"
-          - name: "ValidPreparationID"
-            type: "string"
-          - name: "ValidVesselID"
-            type: "string"
 
       - name: "ValidPrepTaskConfig"
+        links_to:
+          - {target: "ValidPreparation", domain_as: "Preparation"}
+          - {target: "ValidIngredient", domain_as: "Ingredient"}
         fields:
           - name: "StorageType"
             type: "string"
@@ -886,8 +842,4 @@ domains:
           - name: "Notes"
             type: "string"
           - name: "Source"
-            type: "string"
-          - name: "ValidPreparationID"
-            type: "string"
-          - name: "ValidIngredientID"
             type: "string"

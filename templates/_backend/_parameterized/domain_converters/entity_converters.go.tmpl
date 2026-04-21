@@ -1,0 +1,198 @@
+{{- /*
+  Per-entity converter file, parameterized over (Project, Domain, Entity).
+
+  Emits the four standard conversions between the domain struct and its
+  three input variants:
+
+    - Convert<E>To<E>UpdateRequestInput
+    - Convert<E>CreationRequestInputTo<E>DatabaseCreationInput
+    - Convert<E>To<E>CreationRequestInput
+    - Convert<E>To<E>DatabaseCreationInput
+
+  Source-expression rules:
+
+    - Scalars: `x.<FieldName>` on every source. Update wraps in `&` unless
+      the field is already a pointer.
+    - Required links (reading from the domain struct): `x.<DomainAccessor>.ID`
+      (`&` prefixed on Update). The DomainAccessor names the denormalized
+      nested struct (e.g. `Preparation` for `Preparation ValidPreparation`).
+    - Optional links (reading from the domain struct): declare a local
+      `var <fk>ID *string; if x.<DomainAccessor> != nil { ... }` before the
+      struct literal and reference the local from the literal.
+    - Links on input variants: flat `x.<FieldName>` — inputs carry the FK
+      field directly.
+    - Nested child collections (children with belongs_to == Entity.Name and
+      nested: true): declare a local `converted<Plural>` slice, loop the
+      source's same-named field, call the child's matching converter, and
+      assign the local into the return struct literal.
+    - Routing flags (BelongsTo, BelongsToAccount, BelongsToUser,
+      CreatedByUser) appear on the domain struct and DatabaseCreationInput,
+      never on CreationRequestInput. BelongsTo appears on Update too.
+*/ -}}
+{{- $parent := .Entity -}}
+{{- $domain := .Domain -}}
+{{- $children := nestedChildren $domain $parent -}}
+package converters
+
+import (
+	"{{ .Project.ProjectMeta.Module }}/internal/domain/{{ .Domain.Name }}"
+
+	"github.com/primandproper/platform/identifiers"
+)
+
+// Convert{{ $parent.Name }}To{{ $parent.Name }}UpdateRequestInput creates a {{ $parent.Name }}UpdateRequestInput from {{ $parent.Name | withArticle }}.
+func Convert{{ $parent.Name }}To{{ $parent.Name }}UpdateRequestInput(x *{{ $domain.Name }}.{{ $parent.Name }}) *{{ $domain.Name }}.{{ $parent.Name }}UpdateRequestInput {
+{{- range $parent.LinksTo }}
+{{- if and .IsEditable .Optional }}
+	var {{ camel .FieldName }} *string
+	if x.{{ .DomainAccessor }} != nil {
+		{{ camel .FieldName }} = &x.{{ .DomainAccessor }}.ID
+	}
+{{- end }}
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+	converted{{ $field }} := []*{{ $domain.Name }}.{{ .Name }}UpdateRequestInput{}
+	for _, c := range x.{{ $field }} {
+		converted{{ $field }} = append(converted{{ $field }}, Convert{{ .Name }}To{{ .Name }}UpdateRequestInput(c))
+	}
+{{- end }}
+	return &{{ $domain.Name }}.{{ $parent.Name }}UpdateRequestInput{
+{{- range editableFields $parent.Fields }}
+	{{- if isPointer . }}
+		{{ .Name }}: x.{{ .Name }},
+	{{- else }}
+		{{ .Name }}: &x.{{ .Name }},
+	{{- end }}
+{{- end }}
+{{- range $parent.LinksTo }}
+	{{- if .IsEditable }}
+		{{- if .Optional }}
+		{{ .FieldName }}: {{ camel .FieldName }},
+		{{- else }}
+		{{ .FieldName }}: &x.{{ .DomainAccessor }}.ID,
+		{{- end }}
+	{{- end }}
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+		{{ $field }}: converted{{ $field }},
+{{- end }}
+{{- if $parent.BelongsTo }}
+		BelongsTo{{ $parent.BelongsTo }}: &x.BelongsTo{{ $parent.BelongsTo }},
+{{- end }}
+{{- if $parent.BelongsToAccount }}
+		BelongsToAccount: &x.BelongsToAccount,
+{{- end }}
+{{- if $parent.BelongsToUser }}
+		BelongsToUser: &x.BelongsToUser,
+{{- end }}
+	}
+}
+
+// Convert{{ $parent.Name }}CreationRequestInputTo{{ $parent.Name }}DatabaseCreationInput creates a {{ $parent.Name }}DatabaseCreationInput from a {{ $parent.Name }}CreationRequestInput.
+func Convert{{ $parent.Name }}CreationRequestInputTo{{ $parent.Name }}DatabaseCreationInput(x *{{ $domain.Name }}.{{ $parent.Name }}CreationRequestInput) *{{ $domain.Name }}.{{ $parent.Name }}DatabaseCreationInput {
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+	converted{{ $field }} := []*{{ $domain.Name }}.{{ .Name }}DatabaseCreationInput{}
+	for _, c := range x.{{ $field }} {
+		converted{{ $field }} = append(converted{{ $field }}, Convert{{ .Name }}CreationRequestInputTo{{ .Name }}DatabaseCreationInput(c))
+	}
+{{- end }}
+	return &{{ $domain.Name }}.{{ $parent.Name }}DatabaseCreationInput{
+		ID: identifiers.New(),
+{{- range creatableFields $parent.Fields }}
+		{{ .Name }}: x.{{ .Name }},
+{{- end }}
+{{- range $parent.LinksTo }}
+		{{ .FieldName }}: x.{{ .FieldName }},
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+		{{ $field }}: converted{{ $field }},
+{{- end }}
+	}
+}
+
+// Convert{{ $parent.Name }}To{{ $parent.Name }}CreationRequestInput builds a {{ $parent.Name }}CreationRequestInput from {{ $parent.Name | withArticle }}.
+func Convert{{ $parent.Name }}To{{ $parent.Name }}CreationRequestInput(x *{{ $domain.Name }}.{{ $parent.Name }}) *{{ $domain.Name }}.{{ $parent.Name }}CreationRequestInput {
+{{- range $parent.LinksTo }}
+{{- if .Optional }}
+	var {{ camel .FieldName }} *string
+	if x.{{ .DomainAccessor }} != nil {
+		{{ camel .FieldName }} = &x.{{ .DomainAccessor }}.ID
+	}
+{{- end }}
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+	converted{{ $field }} := []*{{ $domain.Name }}.{{ .Name }}CreationRequestInput{}
+	for _, c := range x.{{ $field }} {
+		converted{{ $field }} = append(converted{{ $field }}, Convert{{ .Name }}To{{ .Name }}CreationRequestInput(c))
+	}
+{{- end }}
+	return &{{ $domain.Name }}.{{ $parent.Name }}CreationRequestInput{
+{{- range creatableFields $parent.Fields }}
+		{{ .Name }}: x.{{ .Name }},
+{{- end }}
+{{- range $parent.LinksTo }}
+	{{- if .Optional }}
+		{{ .FieldName }}: {{ camel .FieldName }},
+	{{- else }}
+		{{ .FieldName }}: x.{{ .DomainAccessor }}.ID,
+	{{- end }}
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+		{{ $field }}: converted{{ $field }},
+{{- end }}
+	}
+}
+
+// Convert{{ $parent.Name }}To{{ $parent.Name }}DatabaseCreationInput builds a {{ $parent.Name }}DatabaseCreationInput from {{ $parent.Name | withArticle }}.
+func Convert{{ $parent.Name }}To{{ $parent.Name }}DatabaseCreationInput(x *{{ $domain.Name }}.{{ $parent.Name }}) *{{ $domain.Name }}.{{ $parent.Name }}DatabaseCreationInput {
+{{- range $parent.LinksTo }}
+{{- if .Optional }}
+	var {{ camel .FieldName }} *string
+	if x.{{ .DomainAccessor }} != nil {
+		{{ camel .FieldName }} = &x.{{ .DomainAccessor }}.ID
+	}
+{{- end }}
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+	converted{{ $field }} := []*{{ $domain.Name }}.{{ .Name }}DatabaseCreationInput{}
+	for _, c := range x.{{ $field }} {
+		converted{{ $field }} = append(converted{{ $field }}, Convert{{ .Name }}To{{ .Name }}DatabaseCreationInput(c))
+	}
+{{- end }}
+	return &{{ $domain.Name }}.{{ $parent.Name }}DatabaseCreationInput{
+		ID: x.ID,
+{{- range creatableFields $parent.Fields }}
+		{{ .Name }}: x.{{ .Name }},
+{{- end }}
+{{- range $parent.LinksTo }}
+	{{- if .Optional }}
+		{{ .FieldName }}: {{ camel .FieldName }},
+	{{- else }}
+		{{ .FieldName }}: x.{{ .DomainAccessor }}.ID,
+	{{- end }}
+{{- end }}
+{{- range $children }}
+{{- $field := nestedCollectionField $parent . }}
+		{{ $field }}: converted{{ $field }},
+{{- end }}
+{{- if $parent.BelongsTo }}
+		BelongsTo{{ $parent.BelongsTo }}: x.BelongsTo{{ $parent.BelongsTo }},
+{{- end }}
+{{- if $parent.BelongsToAccount }}
+		BelongsToAccount: x.BelongsToAccount,
+{{- end }}
+{{- if $parent.BelongsToUser }}
+		BelongsToUser: x.BelongsToUser,
+{{- end }}
+{{- if $parent.CreatedByUser }}
+		CreatedByUser: x.CreatedByUser,
+{{- end }}
+	}
+}

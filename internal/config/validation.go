@@ -113,6 +113,43 @@ func validateEntity(e Entity, allEntities map[string]string) error {
 		}
 	}
 
+	seenLinkPrefix := make(map[string]struct{})
+	for _, l := range e.LinksTo {
+		if err := validateLink(e, l, allEntities); err != nil {
+			return err
+		}
+		prefix := l.As
+		if prefix == "" {
+			prefix = l.Target
+		}
+		if _, dup := seenLinkPrefix[prefix]; dup {
+			return fmt.Errorf("links_to: duplicate reference %q (use `as:` to disambiguate)", prefix)
+		}
+		seenLinkPrefix[prefix] = struct{}{}
+	}
+
+	return nil
+}
+
+func validateLink(e Entity, l Link, allEntities map[string]string) error {
+	if l.Target == "" {
+		return fmt.Errorf("links_to: target is required")
+	}
+	if l.Self {
+		if l.Target != e.Name {
+			return fmt.Errorf("links_to: self=true but target %q does not match entity %q", l.Target, e.Name)
+		}
+	} else if _, ok := allEntities[l.Target]; !ok && l.Target != e.Name {
+		return fmt.Errorf("links_to: unknown target %q", l.Target)
+	}
+	switch l.OnDelete {
+	case "", LinkOnDeleteRestrict, LinkOnDeleteCascade, LinkOnDeleteSetNull:
+	default:
+		return fmt.Errorf("links_to %q: invalid on_delete %q (want restrict|cascade|set_null)", l.Target, l.OnDelete)
+	}
+	if l.OnDelete == LinkOnDeleteSetNull && !l.Optional {
+		return fmt.Errorf("links_to %q: on_delete=set_null requires optional=true", l.Target)
+	}
 	return nil
 }
 

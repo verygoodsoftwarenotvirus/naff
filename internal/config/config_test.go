@@ -26,6 +26,7 @@ domains:
     entities:
       - name: "Widget"
         belongs_to_account: true
+        belongs_to_user: true
         created_by_user: true
         fields:
           - name: "Name"
@@ -67,6 +68,9 @@ domains:
 		}
 		if !e.BelongsToAccount {
 			t.Error("expected belongs_to_account to be true")
+		}
+		if !e.BelongsToUser {
+			t.Error("expected belongs_to_user to be true")
 		}
 		if !e.CreatedByUser {
 			t.Error("expected created_by_user to be true")
@@ -152,6 +156,71 @@ domains:
 			t.Error("expected error on invalid YAML")
 		}
 	})
+
+	t.Run("parses links_to in shorthand and longhand forms", func(t *testing.T) {
+		t.Parallel()
+
+		input := []byte(`
+project:
+  name: "LinksProject"
+  module: "github.com/example/links"
+
+domains:
+  - name: "widgets"
+    entities:
+      - name: "Target"
+        fields:
+          - name: "Name"
+            type: "string"
+      - name: "Linker"
+        links_to:
+          - Target
+          - target: Target
+            as: "SecondaryTarget"
+            optional: true
+            on_delete: set_null
+        fields:
+          - name: "Name"
+            type: "string"
+`)
+
+		cfg, err := Parse(input)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		linker := cfg.Domains[0].Entities[1]
+		if len(linker.LinksTo) != 2 {
+			t.Fatalf("expected 2 links, got %d", len(linker.LinksTo))
+		}
+
+		// Shorthand: bare string becomes {Target: "Target"}
+		short := linker.LinksTo[0]
+		if short.Target != "Target" {
+			t.Errorf("shorthand target: got %q, want %q", short.Target, "Target")
+		}
+		if short.As != "" || short.Optional || short.Self {
+			t.Errorf("shorthand should leave other fields zero-valued, got %+v", short)
+		}
+		if short.IsEditable() {
+			t.Error("link should default to not editable")
+		}
+		if short.OnDeleteAction() != LinkOnDeleteRestrict {
+			t.Errorf("on_delete default: got %q, want %q", short.OnDeleteAction(), LinkOnDeleteRestrict)
+		}
+
+		// Longhand
+		long := linker.LinksTo[1]
+		if long.Target != "Target" || long.As != "SecondaryTarget" {
+			t.Errorf("longhand: got %+v", long)
+		}
+		if !long.Optional {
+			t.Error("expected optional=true")
+		}
+		if long.OnDelete != LinkOnDeleteSetNull {
+			t.Errorf("on_delete: got %q, want %q", long.OnDelete, LinkOnDeleteSetNull)
+		}
+	})
 }
 
 func TestMarshal(t *testing.T) {
@@ -185,6 +254,7 @@ func TestMarshal(t *testing.T) {
 						{
 							Name:             "Widget",
 							BelongsToAccount: true,
+							BelongsToUser:    true,
 							CreatedByUser:    true,
 							Searchable:       true,
 							ConsumerEditable: true,
@@ -248,6 +318,9 @@ func TestMarshal(t *testing.T) {
 		}
 		if !e.BelongsToAccount {
 			t.Error("expected belongs_to_account to be true")
+		}
+		if !e.BelongsToUser {
+			t.Error("expected belongs_to_user to be true")
 		}
 		if !e.CreatedByUser {
 			t.Error("expected created_by_user to be true")

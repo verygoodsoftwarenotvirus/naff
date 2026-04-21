@@ -28,16 +28,10 @@ generate-kitchen-sink: build
 	@mkdir -p $(KITCHEN_SINK_OUTPUT)
 	go run ./cmd/naff/ generate -c testdata/kitchen_sink.yaml -o $(KITCHEN_SINK_OUTPUT)
 
-diff-ddb: generate-ddb
-	@if ! command -v meld >/dev/null 2>&1; then \
-		echo "meld not found, install it or use another diff tool"; \
-		echo "  brew install --cask meld"; \
-		echo ""; \
-		echo "Generated output is at: $(DDB_OUTPUT)"; \
-		echo "DDB backend is at:      $(DDB_REPO)"; \
-		exit 1; \
-	fi
-	meld $(DDB_OUTPUT) $(DDB_REPO)
+ADDENDUM := backend/internal/domain/mealplanning
+
+compare-ddb: # generate-ddb
+	meld $(DDB_OUTPUT)/$(ADDENDUM) $(DDB_REPO)/$(ADDENDUM) &
 
 clean:
 	rm -rf $(ARTIFACTS)/

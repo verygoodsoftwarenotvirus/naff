@@ -1,0 +1,103 @@
+{{- /*
+  Per-entity test template companion to entity.go.tmpl.
+
+  Emits Update + ValidateWithContext tests against the canonical CRUD
+  shape. The "with invalid structure" subtest is conditionally emitted
+  only when the validator has at least one rule that an empty struct
+  would violate — UpdateRequestInput currently has no rules, so the
+  invalid subtest is skipped for it; CreationRequestInput skips it when
+  no required scalar/link fields exist; DatabaseCreationInput always
+  emits it (the ID-required rule is universal).
+*/ -}}
+package {{ .Domain.Name }}
+
+import (
+	"testing"
+
+	fake "github.com/brianvoe/gofakeit/v7"
+	"github.com/stretchr/testify/assert"
+)
+
+func Test{{ .Entity.Name }}_Update(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		x := &{{ .Entity.Name }}{}
+		input := &{{ .Entity.Name }}UpdateRequestInput{}
+
+		assert.NoError(t, fake.Struct(&input))
+
+		x.Update(input)
+	})
+
+	T.Run("nil input", func(t *testing.T) {
+		t.Parallel()
+
+		x := &{{ .Entity.Name }}{}
+		x.Update(nil)
+	})
+}
+
+func Test{{ .Entity.Name }}CreationRequestInput_ValidateWithContext(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		x := &{{ .Entity.Name }}CreationRequestInput{}
+		assert.NoError(t, fake.Struct(&x))
+
+		assert.NoError(t, x.ValidateWithContext(ctx))
+	})
+
+{{ if requiredFields (creatableFields .Entity.AllFields) }}
+	T.Run("with invalid structure", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		x := &{{ .Entity.Name }}CreationRequestInput{}
+
+		assert.Error(t, x.ValidateWithContext(ctx))
+	})
+{{ end }}
+}
+
+func Test{{ .Entity.Name }}DatabaseCreationInput_ValidateWithContext(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		x := &{{ .Entity.Name }}DatabaseCreationInput{}
+		assert.NoError(t, fake.Struct(&x))
+
+		assert.NoError(t, x.ValidateWithContext(ctx))
+	})
+
+	T.Run("with invalid structure", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		x := &{{ .Entity.Name }}DatabaseCreationInput{}
+
+		assert.Error(t, x.ValidateWithContext(ctx))
+	})
+}
+
+func Test{{ .Entity.Name }}UpdateRequestInput_ValidateWithContext(T *testing.T) {
+	T.Parallel()
+
+	T.Run("standard", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+		x := &{{ .Entity.Name }}UpdateRequestInput{}
+		assert.NoError(t, fake.Struct(&x))
+
+		assert.NoError(t, x.ValidateWithContext(ctx))
+	})
+}
